@@ -8,7 +8,7 @@
 ###########################################################################
 
 ## Data handling from HTML format
-require(XML)
+require(rvest)
 
 ## Visualizations
 require(ggplot2)
@@ -37,6 +37,133 @@ require(shinycssloaders)
 require(shinyjs)
 require(shinydashboard)
 require(dashboardthemes)
+
+
+##################################################################
+##                      SSL Logo and Theme                      ##
+##################################################################
+
+
+sslBlueD <- "#00044d"
+sslBlueD <- "#2229b2"
+sslRed <- "#f51515"
+
+# customLogo <- 
+#   shinyDashboardLogoDIY(
+#     boldText = "",
+#     mainText = tags$a(
+#       href='https://simulationhockey.com/',
+#       target="_blank",
+#       tags$img(src='shl_analytics_logo.png', height = "70"),
+#     ),
+#     badgeText = version,
+#     badgeTextColor = "white",
+#     badgeBackColor = sslRed
+#   )
+
+customTheme <- 
+  shinyDashboardThemeDIY(
+    
+    ### general
+    appFontFamily = "Tahoma"
+    ,appFontColor = "#000000"
+    ,primaryFontColor = "#FFFFFF"
+    ,infoFontColor = "#000000"
+    ,successFontColor = "#000000"
+    ,warningFontColor = "#000000"
+    ,dangerFontColor = "#FFFFFF"
+    ,bodyBackColor = "#F1f1f1"
+    
+    ### header
+    ,logoBackColor = sslBlueD
+    
+    ,headerButtonBackColor = sslBlueD
+    ,headerButtonIconColor = "#000000"
+    ,headerButtonBackColorHover = sslRed
+    ,headerButtonIconColorHover = "#000000"
+    
+    ,headerBackColor = sslBlueD
+    ,headerBoxShadowColor = ""
+    ,headerBoxShadowSize = "0px 0px 0px"
+    
+    ### sidebar
+    ,sidebarBackColor = sslBlueD
+    ,sidebarPadding = "0"
+    
+    ,sidebarMenuBackColor = "transparent"
+    ,sidebarMenuPadding = "5"
+    ,sidebarMenuBorderRadius = 0
+    
+    ,sidebarShadowRadius = ""
+    ,sidebarShadowColor = "0px 0px 0px"
+    
+    ,sidebarUserTextColor = "#FFFFFF"
+    
+    ,sidebarSearchBackColor = "#FFFFFF"
+    ,sidebarSearchIconColor = "#000000"
+    ,sidebarSearchBorderColor = "#000000"
+    
+    ,sidebarTabTextColor = "#FFFFFF"
+    ,sidebarTabTextSize = "14"
+    ,sidebarTabBorderStyle = "none"
+    ,sidebarTabBorderColor = "none"
+    ,sidebarTabBorderWidth = "0"
+    
+    ,sidebarTabBackColorSelected = "#D1D1D1"
+    ,sidebarTabTextColorSelected = "#000000"
+    ,sidebarTabRadiusSelected = "0px"
+    
+    ,sidebarTabBackColorHover = sslRed
+    ,sidebarTabTextColorHover = "#000000"
+    ,sidebarTabBorderStyleHover = "none solid none none"
+    ,sidebarTabBorderColorHover = "#000000"
+    ,sidebarTabBorderWidthHover = "6"
+    ,sidebarTabRadiusHover = "0px"
+    
+    ### boxes
+    ,boxBackColor = "#FFFFFF"
+    ,boxBorderRadius = "5"
+    ,boxShadowSize = "none"
+    ,boxShadowColor = ""
+    ,boxTitleSize = "18"
+    ,boxDefaultColor = sslBlueD
+    ,boxPrimaryColor = sslBlueD
+    ,boxInfoColor = "#CCCCCC"
+    ,boxSuccessColor = sslBlueD
+    ,boxWarningColor = sslRed
+    ,boxDangerColor = "#000000"
+    
+    ,tabBoxTabColor = "#EDEDED"
+    ,tabBoxTabTextSize = "14"
+    ,tabBoxTabTextColor = sslBlueD
+    ,tabBoxTabTextColorSelected = "#000000"
+    ,tabBoxBackColor = "#EDEDED"
+    ,tabBoxHighlightColor = sslBlueD
+    ,tabBoxBorderRadius = "5"
+    
+    ### inputs
+    ,buttonBackColor = sslRed
+    ,buttonTextColor = "#000000"
+    ,buttonBorderColor = "#000000"
+    ,buttonBorderRadius = "5"
+    
+    ,buttonBackColorHover = sslBlueD
+    ,buttonTextColorHover = "#FFFFFF"
+    ,buttonBorderColorHover = "#000000"
+    
+    ,textboxBackColor = "#FFFFFF"
+    ,textboxBorderColor = "#000000"
+    ,textboxBorderRadius = "5"
+    ,textboxBackColorSelect = "#B3D1E6"
+    ,textboxBorderColorSelect = "#000000"
+    
+    ### tables
+    ,tableBackColor = "#F7F7F7"
+    ,tableBorderColor = "#B3D1E650"
+    ,tableBorderTopSize = "0"
+    ,tableBorderRowSize = "0"
+  )
+
 
 #################################################################
 ##               Running all modules for the app               ##
@@ -138,7 +265,7 @@ ui <-
       )
     ),
     dashboardBody(
-      # customTheme,
+      customTheme,
       useShinyjs(),
       ### Specifies a custom color for value and info boxes
       tags$style(".small-box.bg-orange { background-color: #e08b46 !important; color: #000000 !important; }"),

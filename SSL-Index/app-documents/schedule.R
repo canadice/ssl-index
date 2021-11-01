@@ -36,7 +36,13 @@ scheduleSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
      
-      schedule <- readHTMLTable(doc = "data/scheduleFM.html")
+      url <- "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/scheduleFM.html"
+      
+      schedule <- 
+        url %>% 
+        read_html() %>% 
+        html_elements("table") %>% 
+        html_table()
       
       output$schedule <- renderDT({
         schedule[[1]]

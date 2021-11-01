@@ -37,8 +37,14 @@ standingsSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
      
-      standings <- readHTMLTable(doc = "data/standingsfm.html", encoding = "UTF-8")
+      url <- "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/standingsfm.html"
       
+      standings <- 
+        url %>% 
+        read_html() %>% 
+        html_elements("table") %>% 
+        html_table()
+     
       output$standings <- renderDT({
         standings[[1]]
       })
