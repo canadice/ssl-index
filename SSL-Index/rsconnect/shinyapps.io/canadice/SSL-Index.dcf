@@ -1,0 +1,13 @@
+name: SSL-Index
+title: SSL-Index
+username:
+account: canadice
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5018489
+bundleId: 5199472
+url: https://canadice.shinyapps.io/SSL-Index/
+when: 1635794243.95127
+lastSyncTime: 1635794243.95127
+asMultiple: FALSE
+asStatic: FALSE
