@@ -18,7 +18,7 @@ standingsUI <- function(id){
     fluidPage(
       fluidRow(
         column(
-          width = 2,
+          width = 10,
           offset = 1,
           DTOutput(outputId = ns("standings")),
           DTOutput(outputId = ns("standings2"))
@@ -37,22 +37,43 @@ standingsSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
      
-      url <- "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/standingsfm.html"
+      url <- "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/standings.html"
       
       standings <- 
         url %>% 
         read_html() %>% 
         html_elements("table") %>% 
-        html_table()
+        html_table() %>% 
+        .[[1]] %>% 
+        rename(
+          GP = Pld,
+          W = Won,
+          D = Drn,
+          L = Lst,
+          GF = For,
+          GA = Ag
+        )
      
       output$standings <- renderDT({
-        standings[[1]]
-      })
-      
-      output$standings2 <- renderDT({
-        standings[[2]]
-      })
-       
+        standings
+      },
+      class = 'compact cell-border stripe',
+      rownames = FALSE,
+      escape = FALSE,
+      options = 
+        list(
+          ordering = TRUE, 
+          ## Sets size of rows shown
+          scrollCollapse = TRUE,
+          pageLength = 20,
+          dom = 'Rt',
+          ## Sets color of table background
+          initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+            "}")
+        )
+      )
     }
   )
 }
