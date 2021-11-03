@@ -30,6 +30,10 @@ require(stringi)
 require(googlesheets4)
 require(googledrive)
 
+## Loading packages for handling RMarkdown files
+require(rmarkdown)
+require(markdown)
+
 ## Loading Shiny packages
 require(shiny)
 require(DT)
