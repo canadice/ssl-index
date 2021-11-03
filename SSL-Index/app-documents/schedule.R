@@ -18,8 +18,9 @@ scheduleUI <- function(id){
     fluidPage(
       fluidRow(
         column(
-          width = 2,
+          width = 10,
           offset = 1,
+          h3("Placeholder schedule"),
           DTOutput(outputId = ns("schedule"))
         )
       )
@@ -36,17 +37,43 @@ scheduleSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
      
-      url <- "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/scheduleFM.html"
+      url <- "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/schedule.html"
       
       schedule <- 
         url %>% 
         read_html() %>% 
         html_elements("table") %>% 
-        html_table()
+        html_table() %>% 
+        .[[1]]
       
       output$schedule <- renderDT({
-        schedule[[1]]
-      })
+        if(length(schedule) == 0){
+          stop("The current schedule file is empty. Please notify the owners.")
+          # NULL
+        } else {
+          schedule
+        }
+      },
+      class = 'compact cell-border stripe',
+      rownames = FALSE,
+      escape = FALSE,
+      options = 
+        list(
+          ordering = TRUE, 
+          ## Sets a scroller for the rows
+          scrollY = '80%',
+          sScrollX = "100%",
+          ## Sets size of rows shown
+          scrollCollapse = TRUE,
+          pageLength = 10,
+          dom = 'Rftp',
+          ## Sets color of table background
+          initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+            "}")
+        )
+      )
        
     }
   )
