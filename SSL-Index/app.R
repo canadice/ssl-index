@@ -10,6 +10,9 @@
 ## Data handling from HTML format
 require(rvest)
 
+## Data handling
+require(dplyr)
+
 ## Visualizations
 require(ggplot2)
 require(ggnewscale)
@@ -45,7 +48,7 @@ require(dashboardthemes)
 
 
 sslBlueD <- "#00044d"
-sslBlueD <- "#2229b2"
+sslBlueL <- "#2229b2"
 sslRed <- "#f51515"
 
 # customLogo <- 
@@ -65,43 +68,43 @@ customTheme <-
   shinyDashboardThemeDIY(
     
     ### general
-    appFontFamily = "Tahoma"
-    ,appFontColor = "#000000"
+    appFontFamily = "Arial"
+    ,appFontColor = "#2D2D2D"
     ,primaryFontColor = "#FFFFFF"
-    ,infoFontColor = "#000000"
-    ,successFontColor = "#000000"
-    ,warningFontColor = "#000000"
-    ,dangerFontColor = "#FFFFFF"
-    ,bodyBackColor = "#F1f1f1"
+    ,infoFontColor = "#0F0F0F"
+    ,successFontColor = "#FFFFFF"
+    ,warningFontColor = "#0F0F0F"
+    ,dangerFontColor = "#0F0F0F"
+    ,bodyBackColor = "#F5F5F5"
     
     ### header
-    ,logoBackColor = sslBlueD
+    ,logoBackColor = "#00044D"
     
-    ,headerButtonBackColor = sslBlueD
-    ,headerButtonIconColor = "#000000"
-    ,headerButtonBackColorHover = sslRed
+    ,headerButtonBackColor = "#00044D"
+    ,headerButtonIconColor = "#F51515"
+    ,headerButtonBackColorHover = "#FFFFFF"
     ,headerButtonIconColorHover = "#000000"
     
-    ,headerBackColor = sslBlueD
+    ,headerBackColor = "#00044D"
     ,headerBoxShadowColor = ""
     ,headerBoxShadowSize = "0px 0px 0px"
     
     ### sidebar
-    ,sidebarBackColor = sslBlueD
+    ,sidebarBackColor = "#00044D"
     ,sidebarPadding = "0"
     
     ,sidebarMenuBackColor = "transparent"
-    ,sidebarMenuPadding = "5"
+    ,sidebarMenuPadding = "10"
     ,sidebarMenuBorderRadius = 0
     
     ,sidebarShadowRadius = ""
     ,sidebarShadowColor = "0px 0px 0px"
     
-    ,sidebarUserTextColor = "#FFFFFF"
+    ,sidebarUserTextColor = "#F51515"
     
-    ,sidebarSearchBackColor = "#FFFFFF"
-    ,sidebarSearchIconColor = "#000000"
-    ,sidebarSearchBorderColor = "#000000"
+    ,sidebarSearchBackColor = "#F51515"
+    ,sidebarSearchIconColor = "#FFFFFF"
+    ,sidebarSearchBorderColor = "#FFFFFF"
     
     ,sidebarTabTextColor = "#FFFFFF"
     ,sidebarTabTextSize = "14"
@@ -109,15 +112,15 @@ customTheme <-
     ,sidebarTabBorderColor = "none"
     ,sidebarTabBorderWidth = "0"
     
-    ,sidebarTabBackColorSelected = "#D1D1D1"
-    ,sidebarTabTextColorSelected = "#000000"
+    ,sidebarTabBackColorSelected = "#F51515"
+    ,sidebarTabTextColorSelected = "#FFFFFF"
     ,sidebarTabRadiusSelected = "0px"
     
-    ,sidebarTabBackColorHover = sslRed
+    ,sidebarTabBackColorHover = "#FFFFFF"
     ,sidebarTabTextColorHover = "#000000"
     ,sidebarTabBorderStyleHover = "none solid none none"
-    ,sidebarTabBorderColorHover = "#000000"
-    ,sidebarTabBorderWidthHover = "6"
+    ,sidebarTabBorderColorHover = "#FFFFFF"
+    ,sidebarTabBorderWidthHover = "10"
     ,sidebarTabRadiusHover = "0px"
     
     ### boxes
@@ -126,42 +129,42 @@ customTheme <-
     ,boxShadowSize = "none"
     ,boxShadowColor = ""
     ,boxTitleSize = "18"
-    ,boxDefaultColor = sslBlueD
-    ,boxPrimaryColor = sslBlueD
-    ,boxInfoColor = "#CCCCCC"
-    ,boxSuccessColor = sslBlueD
-    ,boxWarningColor = sslRed
-    ,boxDangerColor = "#000000"
+    ,boxDefaultColor = "#E1E1E1"
+    ,boxPrimaryColor = "#F51515"
+    ,boxInfoColor = "#B4B4B4"
+    ,boxSuccessColor = "#2229B2"
+    ,boxWarningColor = "#ED7D31"
+    ,boxDangerColor = "#E84C22"
     
-    ,tabBoxTabColor = "#EDEDED"
+    ,tabBoxTabColor = "#F8F8F8"
     ,tabBoxTabTextSize = "14"
-    ,tabBoxTabTextColor = sslBlueD
-    ,tabBoxTabTextColorSelected = "#000000"
-    ,tabBoxBackColor = "#EDEDED"
-    ,tabBoxHighlightColor = sslBlueD
+    ,tabBoxTabTextColor = "#646464"
+    ,tabBoxTabTextColorSelected = "#2D2D2D"
+    ,tabBoxBackColor = "#F8F8F8"
+    ,tabBoxHighlightColor = "#C8C8C8"
     ,tabBoxBorderRadius = "5"
     
     ### inputs
-    ,buttonBackColor = sslRed
-    ,buttonTextColor = "#000000"
-    ,buttonBorderColor = "#000000"
+    ,buttonBackColor = "#D7D7D7"
+    ,buttonTextColor = "#2D2D2D"
+    ,buttonBorderColor = "#969696"
     ,buttonBorderRadius = "5"
     
-    ,buttonBackColorHover = sslBlueD
-    ,buttonTextColorHover = "#FFFFFF"
-    ,buttonBorderColorHover = "#000000"
+    ,buttonBackColorHover = "#BEBEBE"
+    ,buttonTextColorHover = "#000000"
+    ,buttonBorderColorHover = "#969696"
     
     ,textboxBackColor = "#FFFFFF"
-    ,textboxBorderColor = "#000000"
+    ,textboxBorderColor = "#767676"
     ,textboxBorderRadius = "5"
-    ,textboxBackColorSelect = "#B3D1E6"
-    ,textboxBorderColorSelect = "#000000"
+    ,textboxBackColorSelect = "#F5F5F5"
+    ,textboxBorderColorSelect = "#6C6C6C"
     
     ### tables
-    ,tableBackColor = "#F7F7F7"
-    ,tableBorderColor = "#B3D1E650"
-    ,tableBorderTopSize = "0"
-    ,tableBorderRowSize = "0"
+    ,tableBackColor = "#F8F8F8"
+    ,tableBorderColor = "#EEEEEE"
+    ,tableBorderTopSize = "1"
+    ,tableBorderRowSize = "1"
   )
 
 
@@ -209,29 +212,29 @@ ui <-
   dashboardPage(
     title = "SSL Index",
     dashboardHeader(
-      # title = customLogo,
+      title = "SSL Index",
       tags$li(
         class = "dropdown",
         tags$head(
           ## HTML code so that a href link inherits the text color, not the link color
           tags$style(HTML("a, a:hover, a:visited, a:active {color: inherit}")),
           
-          ## Increases the size of the logo box at the top left
-          tags$style(".main-header {max-height: 80px}"),
-          tags$style(".main-header .logo {height: 80px}"),
-          tags$style(".main-header .logo {width: 300px}"),
-          
-          ## Changes the margin of the sidebar
-          tags$style(".main-header .navbar {margin-left: 300px}"),
-          tags$style(type="text/css", "text {font-family: sans-serif, courier}"),
-          
+          # ## Increases the size of the logo box at the top left
+          # tags$style(".main-header {max-height: 80px}"),
+          # tags$style(".main-header .logo {height: 80px}"),
+          # tags$style(".main-header .logo {width: 300px}"),
+          # 
+          # ## Changes the margin of the sidebar
+          # tags$style(".main-header .navbar {margin-left: 300px}"),
+          # tags$style(type="text/css", "text {font-family: sans-serif, courier}"),
+          # 
         )
       )
     ),
     dashboardSidebar(
-      width = 300,
-      # Adjust the sidebar in accordance with the higher header
-      tags$style(".left-side, .main-sidebar {padding-top: 100px}"),
+      width = NULL,
+      # # Adjust the sidebar in accordance with the higher header
+      # tags$style(".left-side, .main-sidebar {padding-top: 100px}"),
       sidebarMenu(
         id = "tabs",
         
