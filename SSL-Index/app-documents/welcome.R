@@ -13,6 +13,10 @@ welcomeUI <- function(id){
   
   tagList(
     ## Welcome text
-    "HELLO"
+    withMathJax(
+      includeMarkdown(
+        "app-documents/mdWelcome.md"
+      )
+    )
   )
 }
