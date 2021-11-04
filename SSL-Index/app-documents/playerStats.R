@@ -108,7 +108,7 @@ playerStatsSERVER <- function(id){
         mutate(
           across(
             !contains(
-              c("Name", "Information", "Nationality")
+              c("Name", "Information", "Nationality", "Position")
             ),
             as.numeric
           )
@@ -125,6 +125,9 @@ playerStatsSERVER <- function(id){
         ) %>% 
         select(
           -Information
+        ) %>% 
+        arrange(
+          `Average Rating`
         ) %>% 
         # As there are non-numeric values being transformed correctly to NA, warnings are suppressed. 
         suppressWarnings()
