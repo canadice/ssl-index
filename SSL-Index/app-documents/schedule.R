@@ -65,7 +65,7 @@ scheduleSERVER <- function(id){
           sScrollX = "100%",
           ## Sets size of rows shown
           scrollCollapse = TRUE,
-          pageLength = 10,
+          pageLength = 25,
           dom = 'Rftp',
           ## Sets color of table background
           initComplete = JS(

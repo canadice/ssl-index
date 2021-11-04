@@ -71,7 +71,7 @@ playerStatsSERVER <- function(id){
           `Player of the Match` = `PoM`
         ) %>% 
         mutate(
-          Position = NA,
+          # Position = NA,
           Nationality = 
             Name %>% 
             str_split(
