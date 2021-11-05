@@ -20,7 +20,66 @@ playerStatsUI <- function(id){
         column(
           width = 10,
           offset = 1,
-          DTOutput(outputId = ns("playerStats"))
+          tabBox(
+            width = NULL,
+            selected = "Player Stats",
+            tabPanel(
+              "Player Stats",
+              DT::DTOutput(
+                outputId = ns("playerStats")
+              )
+            ),
+            tabPanel(
+              "Leaders",
+              fluidRow(
+                column(
+                  width = 5,
+                  offset = 1,
+                  DT::DTOutput(
+                    outputId = ns("leaderGoals")
+                  )
+                ),
+                column(
+                  width = 5,
+                  DT::DTOutput(
+                    outputId = ns("leaderAssists")
+                  )
+                )
+              ),
+              br(),
+              fluidRow(
+                column(
+                  width = 5,
+                  offset = 1,
+                  DT::DTOutput(
+                    outputId = ns("leaderSoT")
+                  )
+                ),
+                column(
+                  width = 5,
+                  DT::DTOutput(
+                    outputId = ns("leaderInterceptions")
+                  )
+                )
+              ),
+              br(),
+              fluidRow(
+                column(
+                  width = 5,
+                  offset = 1,
+                  DT::DTOutput(
+                    outputId = ns("leaderFouls")
+                  )
+                ),
+                column(
+                  width = 5,
+                  DT::DTOutput(
+                    outputId = ns("leaderPoM")
+                  )
+                )
+              )
+            )
+          )
         )
       )
     )
@@ -91,13 +150,13 @@ playerStatsSERVER <- function(id){
             str_remove_all(
               pattern = "%"
             ) %>% 
-            as.numeric()/100,
+            as.numeric(),
           `Headers%` =
             `Headers%` %>% 
             str_remove_all(
               pattern = "%"
             ) %>% 
-            as.numeric()/100,
+            as.numeric(),
           `Distance Run (mi)` = 
             `Distance Run (mi)` %>% 
             str_remove_all(
@@ -127,7 +186,7 @@ playerStatsSERVER <- function(id){
           -Information
         ) %>% 
         arrange(
-          `Average Rating`
+          `Average Rating` %>% desc()
         ) %>% 
         # As there are non-numeric values being transformed correctly to NA, warnings are suppressed. 
         suppressWarnings()
@@ -137,29 +196,211 @@ playerStatsSERVER <- function(id){
         if(length(playerStats) == 0){
           NULL
         } else {
-          playerStats  
+          datatable(
+            playerStats,
+            style = "bootstrap",
+            class = 'compact cell-border stripe',
+            rownames = FALSE,
+            escape = FALSE,
+            options = 
+              list(
+                ordering = TRUE, 
+                ## Sets a scroller for the rows
+                scrollY = '80%',
+                sScrollX = "100%",
+                ## Sets size of rows shown
+                scrollCollapse = TRUE,
+                pageLength = 10,
+                dom = 'Rftp',
+                ## Sets color of table background
+                initComplete = JS(
+                  "function(settings, json) {",
+                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
+                  "}")
+              )
+          )  
         }
-      },
-      class = 'compact cell-border stripe',
-      rownames = FALSE,
-      escape = FALSE,
-      options = 
-        list(
-          ordering = TRUE, 
-          ## Sets a scroller for the rows
-          scrollY = '80%',
-          sScrollX = "100%",
-          ## Sets size of rows shown
-          scrollCollapse = TRUE,
-          pageLength = 10,
-          dom = 'Rftp',
-          ## Sets color of table background
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-            "}")
-        )
-      )
+      })
+      
+      output$leaderGoals <- renderDT({
+        if(length(playerStats) == 0){
+          NULL
+        } else {
+          datatable(
+            playerStats %>% 
+              select(Name, Goals) %>% 
+              arrange(-Goals) %>% 
+              slice_head(n = 10),
+            style = "bootstrap",
+            class = 'compact cell-border stripe',
+            rownames = FALSE,
+            escape = FALSE,
+            options = 
+              list(
+                ordering = FALSE, 
+                ## Sets size of rows shown
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                dom = 't',
+                ## Sets color of table background
+                initComplete = JS(
+                  "function(settings, json) {",
+                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
+                  "}")
+              )
+          )  
+        }
+      })
+      
+      output$leaderAssists <- renderDT({
+        if(length(playerStats) == 0){
+          NULL
+        } else {
+          datatable(
+            playerStats %>% 
+              select(Name, Assists) %>% 
+              arrange(-Assists) %>% 
+              slice_head(n = 10),
+            style = "bootstrap",
+            class = 'compact cell-border stripe',
+            rownames = FALSE,
+            escape = FALSE,
+            options = 
+              list(
+                ordering = FALSE, 
+                ## Sets size of rows shown
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                dom = 't',
+                ## Sets color of table background
+                initComplete = JS(
+                  "function(settings, json) {",
+                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
+                  "}")
+              )
+          )  
+        }
+      })
+      
+      output$leaderSoT <- renderDT({
+        if(length(playerStats) == 0){
+          NULL
+        } else {
+          datatable(
+            playerStats %>% 
+              select(Name, `Shots on Target`) %>% 
+              arrange(-`Shots on Target`) %>% 
+              slice_head(n = 10),
+            style = "bootstrap",
+            class = 'compact cell-border stripe',
+            rownames = FALSE,
+            escape = FALSE,
+            options = 
+              list(
+                ordering = FALSE, 
+                ## Sets size of rows shown
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                dom = 't',
+                ## Sets color of table background
+                initComplete = JS(
+                  "function(settings, json) {",
+                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
+                  "}")
+              )
+          )  
+        }
+      })
+      
+      output$leaderInterceptions <- renderDT({
+        if(length(playerStats) == 0){
+          NULL
+        } else {
+          datatable(
+            playerStats %>% 
+              select(Name, Interceptions) %>% 
+              arrange(-Interceptions) %>% 
+              slice_head(n = 10),
+            style = "bootstrap",
+            class = 'compact cell-border stripe',
+            rownames = FALSE,
+            escape = FALSE,
+            options = 
+              list(
+                ordering = FALSE, 
+                ## Sets size of rows shown
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                dom = 't',
+                ## Sets color of table background
+                initComplete = JS(
+                  "function(settings, json) {",
+                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
+                  "}")
+              )
+          )  
+        }
+      })
+      
+      output$leaderPoM <- renderDT({
+        if(length(playerStats) == 0){
+          NULL
+        } else {
+          datatable(
+            playerStats %>% 
+              select(Name, `Player of the Match`) %>% 
+              arrange(-`Player of the Match`) %>% 
+              slice_head(n = 10),
+            style = "bootstrap",
+            class = 'compact cell-border stripe',
+            rownames = FALSE,
+            escape = FALSE,
+            options = 
+              list(
+                ordering = FALSE, 
+                ## Sets size of rows shown
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                dom = 't',
+                ## Sets color of table background
+                initComplete = JS(
+                  "function(settings, json) {",
+                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
+                  "}")
+              )
+          )  
+        }
+      })
+      
+      output$leaderFouls <- renderDT({
+        if(length(playerStats) == 0){
+          NULL
+        } else {
+          datatable(
+            playerStats %>% 
+              select(Name, Fouls) %>% 
+              arrange(-Fouls) %>% 
+              slice_head(n = 10),
+            style = "bootstrap",
+            class = 'compact cell-border stripe',
+            rownames = FALSE,
+            escape = FALSE,
+            options = 
+              list(
+                ordering = FALSE, 
+                ## Sets size of rows shown
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                dom = 't',
+                ## Sets color of table background
+                initComplete = JS(
+                  "function(settings, json) {",
+                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
+                  "}")
+              )
+          )  
+        }
+      })
     }
   )
 }

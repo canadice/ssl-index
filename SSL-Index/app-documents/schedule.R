@@ -51,29 +51,31 @@ scheduleSERVER <- function(id){
           stop("The current schedule file is empty. Please notify the owners.")
           # NULL
         } else {
-          schedule
+          datatable(
+            schedule,
+            style = "bootstrap",
+            class = 'compact cell-border stripe',
+            rownames = FALSE,
+            escape = FALSE,
+            options = 
+              list(
+                ordering = TRUE, 
+                ## Sets a scroller for the rows
+                scrollY = '80%',
+                sScrollX = "100%",
+                ## Sets size of rows shown
+                scrollCollapse = TRUE,
+                pageLength = 25,
+                dom = 'Rftp',
+                ## Sets color of table background
+                initComplete = JS(
+                  "function(settings, json) {",
+                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
+                  "}")
+              )
+          )
         }
-      },
-      class = 'compact cell-border stripe',
-      rownames = FALSE,
-      escape = FALSE,
-      options = 
-        list(
-          ordering = TRUE, 
-          ## Sets a scroller for the rows
-          scrollY = '80%',
-          sScrollX = "100%",
-          ## Sets size of rows shown
-          scrollCollapse = TRUE,
-          pageLength = 25,
-          dom = 'Rftp',
-          ## Sets color of table background
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-            "}")
-        )
-      )
+      })
        
     }
   )

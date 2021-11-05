@@ -128,7 +128,7 @@ customTheme <-
     ,sidebarTabRadiusHover = "0px"
     
     ### boxes
-    ,boxBackColor = "#FFFFFF"
+    ,boxBackColor = "#F8F8F8"
     ,boxBorderRadius = "5"
     ,boxShadowSize = "none"
     ,boxShadowColor = ""
@@ -145,7 +145,7 @@ customTheme <-
     ,tabBoxTabTextColor = "#646464"
     ,tabBoxTabTextColorSelected = "#2D2D2D"
     ,tabBoxBackColor = "#F8F8F8"
-    ,tabBoxHighlightColor = "#C8C8C8"
+    ,tabBoxHighlightColor = sslRed
     ,tabBoxBorderRadius = "5"
     
     ### inputs
@@ -301,6 +301,13 @@ ui <-
             h1("Player Stats", align = "center")
           ),
           playerStatsUI(id = "playerStats")
+        ),
+        tabItem(
+          "playerAttributes",
+          titlePanel(
+            h1("Player Attributes", align = "center")
+          ),
+          playerStatsUI(id = "playerAttributes")
         )
       )
     )
@@ -312,7 +319,7 @@ server <- function(input, output) {
   loadedModuleSchedule <- reactiveVal(FALSE)
   loadedModuleStandings <- reactiveVal(FALSE)
   loadedModulePlayerStats <- reactiveVal(FALSE)
-  # loadedModuleIIHF <- reactiveVal(FALSE)
+  loadedModulePlayerAttributes <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
@@ -341,12 +348,12 @@ server <- function(input, output) {
       
       playerStatsSERVER(id = "playerStats")
       
-    # } else if(input$tabs == "trackerTeam" & !loadedModuleTeam()){
-    #   
-    #   loadedModuleTeam(TRUE)
-    #   
-    #   teamSERVER(id = "teamUI")
-    #   
+    } else if(input$tabs == "playerAttributes" & !loadedModulePlayerAttributes()){
+
+      loadedModulePlayerAttributes(TRUE)
+
+      playerAttributesSERVER(id = "playerAttributes")
+
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
   
