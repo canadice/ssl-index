@@ -18,6 +18,8 @@ require(ggplot2)
 require(ggnewscale)
 require(RColorBrewer)
 require(cowplot)
+require(plotly)
+require(magick)
 
 ## Package for handling date and time
 require(lubridate)
@@ -264,6 +266,14 @@ ui <-
           "Player Statistics",
           tabName = "playerStats"
         ),
+        # menuItem(
+        #   "Player Comparisons",
+        #   tabName = "playerComparison"
+        # ),
+        menuItem(
+          "Player Builder",
+          tabName = "playerBuilder"
+        ),
         menuItem(
           "Github", 
           icon = icon("github"),
@@ -303,28 +313,41 @@ ui <-
           playerStatsUI(id = "playerStats")
         ),
         tabItem(
-          "playerAttributes",
+          "playerComparison",
           titlePanel(
-            h1("Player Attributes", align = "center")
+            h1("Player Comparison", align = "center")
           ),
-          playerStatsUI(id = "playerAttributes")
+          playerComparisonUI(id = "playerComparison")
+        ),
+        tabItem(
+          "playerBuilder",
+          titlePanel(
+            h1("Player Builder", align = "center")
+          ),
+          hr(),
+          p(
+            paste("The Player Builder allows you to build your player",
+              "using your earned TPE as a bank. The resulting build",
+              "can then be exported to the Forum using the Export button.")
+          ),
+          hr(),
+          playerBuilderUI(id = "playerBuilder")
         )
       )
     )
   )
 
-# Define server logic required to draw a histogram
 server <- function(input, output) {
   
   loadedModuleSchedule <- reactiveVal(FALSE)
   loadedModuleStandings <- reactiveVal(FALSE)
   loadedModulePlayerStats <- reactiveVal(FALSE)
-  loadedModulePlayerAttributes <- reactiveVal(FALSE)
+  loadedModulePlayerComparison <- reactiveVal(FALSE)
+  loadedModulePlayerBuilder <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
-  
   
   ##---------------------------------------------------------------
   ##          Loading each of the different backend sites         -
@@ -348,12 +371,18 @@ server <- function(input, output) {
       
       playerStatsSERVER(id = "playerStats")
       
-    } else if(input$tabs == "playerAttributes" & !loadedModulePlayerAttributes()){
+    } else if(input$tabs == "playerComparison" & !loadedModulePlayerComparison()){
 
-      loadedModulePlayerAttributes(TRUE)
+      loadedModulePlayerComparison(TRUE)
 
-      playerAttributesSERVER(id = "playerAttributes")
+      playerComparisonSERVER(id = "playerComparison")
 
+    } else if(input$tabs == "playerBuilder" & !loadedModulePlayerBuilder()){
+      
+      loadedModulePlayerBuilder(TRUE)
+      
+      playerBuilderSERVER(id = "playerBuilder")
+      
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
   

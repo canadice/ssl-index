@@ -52,6 +52,9 @@ standingsSERVER <- function(id){
           L = Lst,
           GF = For,
           GA = Ag
+        ) %>% 
+        select(
+          -`Inf`
         )
      
       output$standings <- renderDT({
