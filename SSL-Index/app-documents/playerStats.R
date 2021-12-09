@@ -110,11 +110,11 @@ playerStatsSERVER <- function(id){
         rename(
           Information = `Inf`,
           Appearances = Apps,
-          `Minutes per Game` = `Mins/Gm`,
+          # `Minutes per Game` = `Mins/Gm`,
           Goals = Gls,
           Assists = Ast,
           `Completed Passes` = `Ps C`,
-          `Pass%` = `Pas %`,
+          # `Pass%` = `Pas %`,
           `Shots on Target` = ShT,
           `Tackles Won` = `Tck W`,
           `Tackles Lost` = `Tck A`,
@@ -145,12 +145,12 @@ playerStatsSERVER <- function(id){
               simplify = TRUE
             ) %>% 
             .[,1],
-          `Pass%` = 
-            `Pass%` %>% 
-            str_remove_all(
-              pattern = "%"
-            ) %>% 
-            as.numeric(),
+          # `Pass%` = 
+          #   `Pass%` %>% 
+          #   str_remove_all(
+          #     pattern = "%"
+          #   ) %>% 
+          #   as.numeric(),
           `Headers%` =
             `Headers%` %>% 
             str_remove_all(
@@ -177,7 +177,7 @@ playerStatsSERVER <- function(id){
             Nationality,
             Position,
             Appearances,
-            `Minutes per Game`,
+            # `Minutes per Game`,
             `Distance Run (mi)`
           ),
           .after = Name
