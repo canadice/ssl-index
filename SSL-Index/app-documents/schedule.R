@@ -20,7 +20,6 @@ scheduleUI <- function(id){
         column(
           width = 10,
           offset = 1,
-          h3("Placeholder schedule"),
           DTOutput(outputId = ns("schedule"))
         )
       )
@@ -37,14 +36,14 @@ scheduleSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
      
-      url <- "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/schedule.html"
-      
-      schedule <- 
-        url %>% 
-        read_html() %>% 
-        html_elements("table") %>% 
-        html_table() %>% 
-        .[[1]]
+      schedule <-
+        read_sheet(
+          ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
+          sheet = "Season 1"
+        ) %>% 
+        mutate(
+          `In-game Date` = `In-game Date` %>% as_date() %>% format(format = "%m/%d")
+        )
       
       output$schedule <- renderDT({
         if(length(schedule) == 0){
@@ -59,21 +58,35 @@ scheduleSERVER <- function(id){
             escape = FALSE,
             options = 
               list(
-                ordering = TRUE, 
+                ordering = FALSE, 
                 ## Sets a scroller for the rows
                 scrollY = '80%',
                 sScrollX = "100%",
                 ## Sets size of rows shown
                 scrollCollapse = TRUE,
-                pageLength = 25,
-                dom = 'Rftp',
+                pageLength = 100,
+                dom = 'Rt',
                 ## Sets color of table background
                 initComplete = JS(
                   "function(settings, json) {",
                   "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
                   "}")
               )
-          )
+          ) %>% 
+            formatStyle(
+              columns = c("Home", "Away"),
+              # backgroundColor = 
+              #   styleEqual(
+              #     levels = teamInfo$team,
+              #     values = teamInfo$color.primary  
+              #   ),
+              color = 
+                styleEqual(
+                  levels = teamInfo$team,
+                  values = teamInfo$color.primary 
+                )
+            ) 
+            
         }
       })
        

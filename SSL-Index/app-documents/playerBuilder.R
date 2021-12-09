@@ -39,14 +39,32 @@ playerBuilderUI <- function(id){
                 selected = "Player"
               ),
               h4("Points information", align = "center"),
-              uiOutput(
-                outputId = ns("usedTPE")
-              ) %>% 
+              fluidRow(
                 column(
                   width = 10,
-                  offset = 1
-                ) %>% 
-                fluidRow(),
+                  offset = 1,
+                  fluidRow(
+                    column(
+                      width = 6,
+                      h5("Earned TPE")
+                    ),
+                    column(
+                      width = 6,
+                      numericInput(
+                        inputId = ns("earnedTPE"),
+                        label = NULL,
+                        value = 350,
+                        min = 350,
+                        max = 2500,
+                        width = "80%"
+                      )
+                    )
+                  ),
+                  uiOutput(
+                    outputId = ns("usedTPE")
+                  )
+                )
+              ),
               br(),
               h5("Update Scale" %>% strong(), align = "center"),
               DTOutput(
@@ -1558,12 +1576,12 @@ playerBuilderSERVER <- function(id){
       )
       
       observeEvent(
-        currentBuild(),
+        currentBuild() | input$earnedTPE,
         {
           currentAvailable(input$earnedTPE - sum(currentBuild()$cost))
           currentCost(sum(currentBuild()$cost))
         },
-        ignoreInit = TRUE
+        ignoreInit = FALSE
       )
       
       ### Observer for the export button that creates a formatted text with all info of the build
@@ -1592,7 +1610,6 @@ playerBuilderSERVER <- function(id){
                       First Name: EMPTY<br>
                       Last Name: EMPTY<br>
                       Discord: EMPTY<br>
-                      Date of Birth: EMPTY<br>
                       Birthplace: EMPTY<br>
                       Height: EMPTY<br>
                       Weight: EMPTY<br>
@@ -1743,7 +1760,6 @@ playerBuilderSERVER <- function(id){
                   First Name: EMPTY<br>
                   Last Name: EMPTY<br>
                   Discord: EMPTY<br>
-                  Date of Birth: EMPTY<br>
                   Birthplace: EMPTY<br>
                   Height: EMPTY<br>
                   Weight: EMPTY<br>
@@ -1968,7 +1984,9 @@ playerBuilderSERVER <- function(id){
                 column(
                   width = 5,
                   h5("Distribute 50 experience points among the 
-                     different positions your player can play."),
+                     different positions your player can play.
+                     As per rule 2.2.a.i of the Rulebook, your main
+                     position must have 20 XP."),
                   em("Double click on the Experience value you want 
                      to edit. The maximum experience in a position is 
                      20."),
@@ -2058,23 +2076,6 @@ playerBuilderSERVER <- function(id){
       ### TPE information UI
       output$usedTPE <- renderUI({
         tagList(
-          fluidRow(
-            column(
-              width = 6,
-              h5("Earned TPE")
-            ),
-            column(
-              width = 6,
-              numericInput(
-                inputId = session$ns("earnedTPE"),
-                label = NULL,
-                value = 350,
-                min = 350,
-                max = 2500,
-                width = "80%"
-              )
-            )
-          ),
           fluidRow(
             column(
               width = 6,

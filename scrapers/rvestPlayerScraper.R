@@ -24,9 +24,13 @@ playerScraper <-
       stringr::str_split(pattern = "\\n") %>% 
       unlist() %>% 
       .[stringr::str_detect(string = ., pattern = ":")] %>% 
+      .[!stringr::str_detect(string = ., pattern = "edited by")] %>% 
       stringr::str_split(pattern = ":", simplify = TRUE) %>% 
       matrix(ncol = 2) %>% 
       data.frame() %>% 
+      mutate(
+        X2 = stringr::str_squish(X2)
+      ) %>% 
       tidyr::pivot_wider(
         names_from = X1,
         values_from = X2
@@ -48,6 +52,8 @@ playerScraper <-
       stringr::str_extract_all(pattern = "(?<=\\().*?(?=\\))", simplify = TRUE) %>% 
       c()
     
+    postData$`Preferred Position` <- postData$Position
+    
     postData$Position <- 
       topic %>% 
       rvest::html_elements(".topic-title") %>% 
@@ -56,8 +62,20 @@ playerScraper <-
       dplyr::nth(2) %>% 
       c()
     
+    postData$TPE <- 
+      topic %>% 
+      rvest::html_elements(".topic-desc") %>% 
+      rvest::html_text() %>% 
+      stringr::str_split(pattern = ":", simplify = TRUE) %>% 
+      dplyr::nth(2) %>% 
+      stringr::str_squish() %>% 
+      as.numeric()
+    
      playerTeam <-
-      teams %>% 
+      teamInfo %>% 
+      select(
+        team
+      ) %>% 
       dplyr::slice(
         topic %>% 
           rvest::html_elements("#navstrip") %>% 
@@ -65,7 +83,7 @@ playerScraper <-
           stringr::str_squish() %>% 
           stringr::str_detect(
             ## Takes team information from a separate data set 
-            pattern = teams$team
+            pattern = teamInfo$team
           ) %>% 
           which()  
       )
@@ -83,10 +101,15 @@ playerScraper <-
       relocate(
         c(
           Class,
+          TPE,
           Created,
           Team
         ),
         .after = Username
+      ) %>% 
+      relocate(
+        `Preferred Position`,
+        .after = Position
       )
     
     return(postData)

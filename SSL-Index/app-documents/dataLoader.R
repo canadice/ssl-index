@@ -1,11 +1,77 @@
 ## Loading data
 
+## Positional coordinates for the pitch and their positions
+{positionalCoord <- 
+  data.frame(
+    x = 
+      c(
+        375, 
+        
+        130,
+        375,
+        620,
+        
+        130,
+        375,
+        620,
+        
+        130,
+        375,
+        620,
+        
+        130,
+        375,
+        620,
+        
+        375
+      ),
+    y = 
+      c(
+        775,
+        
+        625,
+        625,
+        625,
+        
+        455,
+        455,
+        455,
+        
+        310,
+        310,
+        310,
+        
+        150,
+        150,
+        150,
+        
+        50
+      ),
+    Position = 
+      c(
+        "Striker",
+        "Attacking Midfielder R",
+        "Attacking Midfielder C",
+        "Attacking Midfielder L",
+        "Midfielder R",
+        "Midfielder C",
+        "Midfielder L",
+        "Fullback R",
+        "Defensive Midfielder",
+        "Fullback L",
+        "Defender R",
+        "Defender C",
+        "Defender L",
+        "Goalkeeper"
+      )
+  )}
+
 tpeCost <- 
   data.frame(
     value = 5:20,
+    ## -2 comes from an initial error in the costs as 5 is free (starting value)
     cost = c(2,4,6,10,14,18,24,30,36,48,60,72,90,108,132,157)-2
   )
-
 
 attributeNames <- 
   c(
@@ -89,28 +155,43 @@ goalieAttributeNames <-
     "GoalieThrowing"
   )
 
-teams <- 
-  data.frame(
-    team = 
-      c(
-        "Athênai F.C.",
-        "Cairo City F.C.",
-        "Football Club de Rio",
-        "Hollywood FC",
-        "Inter London FC",
-        "Tokyo S.C."
-      )
+googlesheets4::gs4_deauth()
+
+teamInfo <- 
+  googlesheets4::read_sheet(
+    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    sheet = "Team Information"
   )
 
 pitch <- 
-  image_read_svg(
-    path = "graphics/pitch.svg"
+  try(
+    image_read_svg(
+      path = "https://raw.githubusercontent.com/canadice/ssl-index/main/graphics/pitch.svg"
+    ),
+    silent = TRUE
   )
-
-googlesheets4::gs4_deauth()
+  
 
 playerData <- 
   googlesheets4::read_sheet(
     ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
     sheet = "Daily Scrape"
   )
+
+roleMatrix <- 
+  googlesheets4::read_sheet(
+    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    sheet = "Duty and Role Matrix"
+  )
+
+abilityMatrix <- 
+  googlesheets4::read_sheet(
+    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    sheet = "Current Ability Calculation Matrix"
+  )
+
+
+
+
+
+

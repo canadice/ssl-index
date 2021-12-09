@@ -29,9 +29,10 @@ playerComparisonUI <- function(id){
             label = "Select team to search",
             choices = 
               c(
-                "Free Agents" = "FA"#,
-                #teams$team
-              )
+                "Free Agents" = "FA",
+                teamInfo$team
+              ),
+            selected = "Free Agents"
           ),
           uiOutput(
             outputId = ns("selectPlayerOne")
@@ -50,9 +51,10 @@ playerComparisonUI <- function(id){
             label = "Select team to search",
             choices = 
               c(
-                "Free Agents" = "FA"#,
-                #teams$team
-              )
+                "Free Agents" = "FA",
+                teamInfo$team
+              ),
+            selected = "Free Agents"
           ),
           uiOutput(
             outputId = ns("selectPlayerTwo")
@@ -75,13 +77,19 @@ playerComparisonUI <- function(id){
         column(
           width = 6,
           box(
+            id = ns("fieldExperience"),
             status = "primary",
             solidHeader = TRUE,
             width = NULL,
             title = "Positional Experience",
-            plotlyOutput(
-              outputId = ns("fieldPlotly")
-            )
+            imageOutput(
+              outputId = ns("fieldImage"),
+              width = "100%",
+              height = "100%"
+            ) %>% 
+              div(
+                align = "center"
+                )
           )
         )
       )
@@ -97,32 +105,79 @@ playerComparisonSERVER <- function(id){
     
     ## Definining the mechanisms
     function(input, output, session){
-
+      
+      {positionalCoord <- 
+        data.frame(
+          x = 
+            c(
+              372, 
+              
+              130,
+              372,
+              620,
+              
+              130,
+              372,
+              620,
+              
+              130,
+              372,
+              620,
+              
+              130,
+              372,
+              620,
+              
+              372
+            ),
+          y = 
+            c(
+              775,
+              
+              625,
+              625,
+              625,
+              
+              455,
+              455,
+              455,
+              
+              310,
+              310,
+              310,
+              
+              150,
+              150,
+              150,
+              
+              50
+            )
+        )}
+      
+      
       ###  Selecting a player
       output$selectPlayerOne <- renderUI({
         selectInput(
           inputId = session$ns("playerOne"),
-          label = "Select player",
+          label = tags$span(style="color: #cf5b00;","Select player"),
           choices = 
             playerData %>% 
             filter(
               Team == input$teamOne
             ) %>% 
-            transmute(
-              Name = paste(`First Name`, `Last Name`)
+            select(
+              Name
             ) %>% 
             arrange(
               Name
-            ) %>% 
-            unname() %>% 
-            unlist()
+            )
         )
       })
       
       output$selectPlayerTwo <- renderUI({
         selectInput(
           inputId = session$ns("playerTwo"),
-          label = "Select player",
+          label = tags$span(style="color: #0074CF;","Select player"),
           choices = 
             c(
               "",
@@ -130,14 +185,12 @@ playerComparisonSERVER <- function(id){
                 filter(
                   Team == input$teamTwo
                 ) %>% 
-                transmute(
-                  Name = paste(`First Name`, `Last Name`)
+                select(
+                  Name
                 ) %>% 
                 arrange(
                   Name
-                ) %>%
-                unname() %>% 
-                unlist()
+                ) 
             )
         )
       })
@@ -148,9 +201,6 @@ playerComparisonSERVER <- function(id){
           NULL
         } else {
           playerData %>% 
-            mutate(
-              Name = paste(`First Name`, `Last Name`)
-            ) %>% 
             filter(
               Name == input$playerOne
             )  
@@ -164,9 +214,6 @@ playerComparisonSERVER <- function(id){
           NULL
         } else {
           playerData %>% 
-            mutate(
-              Name = paste(`First Name`, `Last Name`)
-            ) %>% 
             filter(
               Name == input$playerTwo
             )  
@@ -175,7 +222,7 @@ playerComparisonSERVER <- function(id){
       
       ### Visualization
       output$radarPlotly <- renderPlotly({
-        if(playerOne() %>% is.null()){
+        if(playerOne() %>% is.null() & playerTwo() %>% is.null()){
           plotly_empty(
             type = "scatter", 
             mode = "markers",
@@ -188,18 +235,37 @@ playerComparisonSERVER <- function(id){
             layout(
               autosize = TRUE,
               title = list(
-                text = "Select a player in the table below to show visualization",
+                text = "Select a player to show visualization",
                 yref = "paper",
                 y = 0.5
               )
             )
-        } else {
+        } else if(playerTwo() %>% is.null()){
+          
+          data <- playerOne()
+          
+          if(data$Position == "Goalkeeper"){
+            data <- 
+              data %>% 
+              select(
+                Name,
+                Acceleration:`Work Rate`,
+                `Aerial Reach`:`Tendency to Rush`
+              ) %>% 
+              select_if(
+                ~mean(is.na(.)) < 0.9
+              )
+          } else {
+            data <- 
+              data %>% 
+              select(
+                Name,
+                Acceleration:`Work Rate`
+              ) 
+          }
+          
           fig <- 
-            playerOne() %>% 
-            select(
-              Name,
-              Acceleration:`Work Rate`
-            ) %>% 
+            data %>% 
             pivot_longer(
               where(is.numeric),
               names_to = "attributeIndex",
@@ -221,37 +287,7 @@ playerComparisonSERVER <- function(id){
               width = NULL,
               height = NULL
             ) 
-          ## Adding on a second trace for another player
-          if(playerTwo() %>% is.null()){
-            
-          } else {
-            
-            data <- 
-              playerTwo() %>% 
-              select(
-                Name,
-                Acceleration:`Work Rate`
-              ) %>% 
-              pivot_longer(
-                where(is.numeric),
-                names_to = "attributeIndex",
-                values_to = "Rating"
-              ) %>% 
-              mutate(
-                text = paste(attributeIndex, Rating, sep = ": ")
-              ) 
-            
-            fig <- 
-              fig %>%
-              add_trace(
-                r = data$Rating,
-                theta = data$attributeIndex,
-                text = data$text,
-                color = I("#0074CF"),
-                name = data$Name
-              )
-          }
-          
+
           fig %>%
             plotly::config(
               modeBarButtonsToRemove =
@@ -273,118 +309,228 @@ playerComparisonSERVER <- function(id){
               ## Legend is put to false so the plot is the same size
               showlegend = FALSE
             )
+        } else {
+          data <- playerOne()
+          data2 <- playerTwo()
+          
+          if(sum(data2$Position == "Goalkeeper", data$Position == "Goalkeeper") == 1){
+            plotly_empty(
+              type = "scatter", 
+              mode = "markers",
+              width = NULL,
+              height = NULL
+            ) %>%
+              plotly::config(
+                displayModeBar = FALSE
+              ) %>%
+              layout(
+                autosize = TRUE,
+                title = list(
+                  text = "You have selected a goalkeeper and an <br> outfielder which cannot be compared",
+                  yref = "paper",
+                  y = 0.5
+                )
+              )
+          } else {
+            if(data$Position == "Goalkeeper"){
+              data <- 
+                data %>% 
+                select(
+                  Name,
+                  Acceleration:`Work Rate`,
+                  `Aerial Reach`:`Tendency to Rush`
+                ) %>% 
+                select_if(
+                  ~mean(is.na(.)) < 0.9
+                )
+            } else {
+              data <- 
+                data %>% 
+                select(
+                  Name,
+                  Acceleration:`Work Rate`
+                ) 
+            }
+            
+            if(data2$Position == "Goalkeeper"){
+              data2 <- 
+                data2 %>% 
+                select(
+                  Name,
+                  Acceleration:`Work Rate`,
+                  `Aerial Reach`:`Tendency to Rush`
+                ) %>% 
+                select_if(
+                  ~mean(is.na(.)) < 0.9
+                )
+            } else {
+              data2 <- 
+                data2 %>% 
+                select(
+                  Name,
+                  Acceleration:`Work Rate`
+                ) 
+            }
+            
+            data2 <- 
+              data2 %>%  
+              pivot_longer(
+                where(is.numeric),
+                names_to = "attributeIndex",
+                values_to = "Rating"
+              ) %>% 
+              mutate(
+                text = paste(attributeIndex, Rating, sep = ": ")
+              ) 
+
+            fig <- 
+              data %>% 
+              pivot_longer(
+                where(is.numeric),
+                names_to = "attributeIndex",
+                values_to = "Rating"
+              ) %>% 
+              mutate(
+                text = paste(attributeIndex, Rating, sep = ": ")
+              ) %>%
+              plot_ly(
+                type = 'scatterpolar',
+                mode = "markers",
+                r = ~Rating,
+                theta = ~attributeIndex,
+                text = ~text,
+                fill = 'toself',
+                hoverinfo = "text",
+                color = I("#cf5b00"),
+                name = ~Name,
+                width = NULL,
+                height = NULL
+              ) %>%
+              add_trace(
+                r = data2$Rating,
+                theta = data2$attributeIndex,
+                text = data2$text,
+                color = I("#0074CF"),
+                name = data2$Name
+              )
+            
+            fig %>%
+              plotly::config(
+                modeBarButtonsToRemove =
+                  c("pan2d", "zoomIn2d", "zoomOut2d", "autoScale2d",
+                    "resetScale2d", "hoverClosestCartesian",
+                    "hoverCompareCartesian", "toggleSpikelines"
+                  )
+              ) %>%
+              layout(
+                autosize = TRUE,
+                polar =
+                  list(
+                    radialaxis =
+                      list(
+                        visible = TRUE,
+                        range = c(0,20)
+                      )
+                  ),
+                ## Legend is put to false so the plot is the same size
+                showlegend = FALSE
+              )
+          }
         }
       })
       
-      output$pitchExp <- renderPlotly({
+      output$fieldImage <- renderImage({
+        base <- pitch %>% image_ggplot()
+        
+        p <- 
+          base + 
+          geom_point(
+            mapping = aes(x = x, y = y),
+            data = positionalCoord
+          ) 
+        
         if(playerOne() %>% is.null()){
-          ggplot(NULL) + 
-            annotation_custom(
-              pitch %>% rastergrob,
-              xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf
-            )
-          
-          
-          
-          plotly_empty(
-            type = "scatter", 
-            mode = "markers",
-            width = NULL,
-            height = NULL
-          ) %>%
-            plotly::config(
-              displayModeBar = FALSE
-            ) %>%
-            layout(
-              autosize = TRUE,
-              title = list(
-                text = "Select a player in the table below to show visualization",
-                yref = "paper",
-                y = 0.5
-              )
-            )
+          p
         } else {
-          fig <- 
+          expData1 <- 
             playerOne() %>% 
             select(
               Name,
-              Acceleration:`Work Rate`
+              Striker:Goalkeeper
             ) %>% 
             pivot_longer(
               where(is.numeric),
-              names_to = "attributeIndex",
-              values_to = "Rating"
+              names_to = "posExp",
+              values_to = "Value"
             ) %>% 
-            mutate(
-              text = paste(attributeIndex, Rating, sep = ": ")
-            ) %>%
-            plot_ly(
-              type = 'scatterpolar',
-              mode = "markers",
-              r = ~Rating,
-              theta = ~attributeIndex,
-              text = ~text,
-              fill = 'toself',
-              hoverinfo = "text",
-              color = I("#cf5b00"),
-              name = ~Name,
-              width = NULL,
-              height = NULL
+            cbind(
+              positionalCoord,
+              .
             ) 
+            
+          
+          p <- 
+            base + 
+            geom_point(
+              mapping = aes(x = x-20, y = y, size = Value),
+              data = expData1,
+              color = "#cf5b00"
+            )
+          
           ## Adding on a second trace for another player
           if(playerTwo() %>% is.null()){
             
           } else {
             
-            data <- 
+            expData2 <- 
               playerTwo() %>% 
               select(
                 Name,
-                Acceleration:`Work Rate`
+                Striker:Goalkeeper
               ) %>% 
               pivot_longer(
                 where(is.numeric),
-                names_to = "attributeIndex",
-                values_to = "Rating"
+                names_to = "posExp",
+                values_to = "Value"
               ) %>% 
-              mutate(
-                text = paste(attributeIndex, Rating, sep = ": ")
-              ) 
-            
-            fig <- 
-              fig %>%
-              add_trace(
-                r = data$Rating,
-                theta = data$attributeIndex,
-                text = data$text,
-                color = I("#0074CF"),
-                name = data$Name
+              cbind(
+                positionalCoord,
+                .
               )
+            
+            p <- 
+              p + 
+              geom_point(
+                mapping = aes(x = x+20, y = y, size = Value),
+                data = expData2,
+                color = "#0074CF"
+              )
+            
           }
-          
-          fig %>%
-            plotly::config(
-              modeBarButtonsToRemove =
-                c("pan2d", "zoomIn2d", "zoomOut2d", "autoScale2d",
-                  "resetScale2d", "hoverClosestCartesian",
-                  "hoverCompareCartesian", "toggleSpikelines"
-                )
-            ) %>%
-            layout(
-              autosize = TRUE,
-              polar =
-                list(
-                  radialaxis =
-                    list(
-                      visible = TRUE,
-                      range = c(0,20)
-                    )
-                ),
-              ## Legend is put to false so the plot is the same size
-              showlegend = FALSE
-            )
         }
-      })
+        card <- image_graph(res = 96)
+        print(
+          p + 
+          theme(
+            legend.position = "none"
+          )
+        )
+        dev.off()
+        
+        tempImage <- 
+          card %>% 
+          image_crop(geometry = "480x600+160") %>% 
+          image_write(tempfile(fileext = "png"), format = "png")
+        
+        return(
+          list(
+            src = tempImage, 
+            contentType = "image/png"
+            )
+          )
+      },
+      deleteFile = TRUE
+      )
     }
   )
 }

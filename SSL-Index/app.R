@@ -12,6 +12,7 @@ require(rvest)
 
 ## Data handling
 require(dplyr)
+require(tidyr)
 
 ## Visualizations
 require(ggplot2)
@@ -20,6 +21,13 @@ require(RColorBrewer)
 require(cowplot)
 require(plotly)
 require(magick)
+require(rsvg)
+require(grid)
+require(ggpubr)
+require(ggforce)
+
+## Tables
+require(formattable)
 
 ## Package for handling date and time
 require(lubridate)
@@ -46,7 +54,7 @@ require(shinycssloaders)
 require(shinyjs)
 require(shinydashboard)
 require(dashboardthemes)
-
+require(shiny.router)
 
 ##################################################################
 ##                      SSL Logo and Theme                      ##
@@ -214,9 +222,12 @@ sapply(
 ##                  The UI and Server function                  ##
 ##################################################################
 
-ui <- 
+ui <- function(request){
   dashboardPage(
-    title = "SSL Index",
+    ##----------------------------------------------------------------
+    ##                            Header                             -
+    ##----------------------------------------------------------------
+    
     dashboardHeader(
       title = "SSL Index",
       tags$li(
@@ -224,7 +235,10 @@ ui <-
         tags$head(
           ## HTML code so that a href link inherits the text color, not the link color
           tags$style(HTML("a, a:hover, a:visited, a:active {color: inherit}")),
-          
+          tags$style(
+            type="text/css",
+            "#playerComparison-fieldImage img {max-width: 480px; width: inherit; max-height: 600px;}"
+          )
           # ## Increases the size of the logo box at the top left
           # tags$style(".main-header {max-height: 80px}"),
           # tags$style(".main-header .logo {height: 80px}"),
@@ -237,42 +251,59 @@ ui <-
         )
       )
     ),
+    
+    ##---------------------------------------------------------------
+    ##                            Sidebar                           -
+    ##---------------------------------------------------------------
+    
     dashboardSidebar(
-      width = NULL,
       # # Adjust the sidebar in accordance with the higher header
       # tags$style(".left-side, .main-sidebar {padding-top: 100px}"),
       sidebarMenu(
         id = "tabs",
-        
-        #################################################################
-        ##                           Welcome                           ##
-        #################################################################
-        
         menuItem(
           "Welcome",
           tabName = "welcome",
           selected = TRUE
         ),
-        
         menuItem(
-          "Schedule",
-          tabName = "schedule"
+          "Index",
+          menuSubItem(
+            "Schedule",
+            tabName = "schedule"
+          ),
+          menuSubItem(
+            "Standings",
+            tabName = "standings"
+          ),
+          menuSubItem(
+            "Player Statistics",
+            tabName = "playerStats"
+          )
         ),
         menuItem(
-          "Standings",
-          tabName = "standings"
+          "SSL Teams",
+          tabName = "teamOverview"
         ),
         menuItem(
-          "Player Statistics",
-          tabName = "playerStats"
+          "Tools",
+          menuSubItem(
+            "Player Comparisons",
+            tabName = "playerComparison"  
+          ),
+          menuSubItem(
+            "Position Tracker",
+            tabName = "trackerPosition"
+          ),
+          menuSubItem(
+            "Player Builder",
+            tabName = "playerBuilder"
+          )
         ),
-        # menuItem(
-        #   "Player Comparisons",
-        #   tabName = "playerComparison"
-        # ),
         menuItem(
-          "Player Builder",
-          tabName = "playerBuilder"
+          "SSL Forum",
+          icon = icon("external-link-alt"),
+          href = "http://sslforums.com/index.php"
         ),
         menuItem(
           "Github", 
@@ -281,6 +312,11 @@ ui <-
         )
       )
     ),
+    
+    ##----------------------------------------------------------------
+    ##                              Body                             -
+    ##----------------------------------------------------------------
+    
     dashboardBody(
       customTheme,
       useShinyjs(),
@@ -306,6 +342,13 @@ ui <-
           standingsUI(id = "standings")
         ),
         tabItem(
+          "teamOverview",
+          titlePanel(
+            h1("Team Overview", align = "center")
+          ),
+          teamOverviewUI(id = "teamOverview")
+        ),
+        tabItem(
           "playerStats",
           titlePanel(
             h1("Player Stats", align = "center")
@@ -318,6 +361,13 @@ ui <-
             h1("Player Comparison", align = "center")
           ),
           playerComparisonUI(id = "playerComparison")
+        ),
+        tabItem(
+          "trackerPosition",
+          titlePanel(
+            h1("Position Tracker", align = "center")
+          ),
+          trackerPositionUI(id = "trackerPosition")
         ),
         tabItem(
           "playerBuilder",
@@ -335,19 +385,22 @@ ui <-
         )
       )
     )
+    ##----------------------------------------------------------------
   )
+}
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   
   loadedModuleSchedule <- reactiveVal(FALSE)
   loadedModuleStandings <- reactiveVal(FALSE)
   loadedModulePlayerStats <- reactiveVal(FALSE)
   loadedModulePlayerComparison <- reactiveVal(FALSE)
   loadedModulePlayerBuilder <- reactiveVal(FALSE)
+  loadedModuleTrackerPosition <- reactiveVal(FALSE)
+  loadedModuleOverviewTeam <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
-  # loadedModuleIIHF <- reactiveVal(FALSE)
-  # loadedModuleIIHF <- reactiveVal(FALSE)
+  
   
   ##---------------------------------------------------------------
   ##          Loading each of the different backend sites         -
@@ -383,11 +436,46 @@ server <- function(input, output) {
       
       playerBuilderSERVER(id = "playerBuilder")
       
+    } else if(input$tabs == "trackerPosition" & !loadedModuleTrackerPosition()){
+      
+      loadedModuleTrackerPosition(TRUE)
+      
+      trackerPositionSERVER(id = "trackerPosition")
+      
+    } else if(input$tabs == "teamOverview" & !loadedModuleOverviewTeam()){
+      
+      loadedModuleOverviewTeam(TRUE)
+      
+      teamOverviewSERVER(id = "teamOverview")
+      
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
+  
+  ### Sets the url for each tab
+  observeEvent(input$tabs,{
+    ## Writes a different url based on the tab
+    newURL <- paste0(
+      session$clientData$url_protocol,
+      "//",
+      session$clientData$url_hostname,
+      ":",
+      session$clientData$url_port,
+      session$clientData$url_pathname,
+      "#",
+      input$tabs
+    )
+    updateQueryString(newURL, mode = "replace", session)
+  })
+  
+  observe({
+    currentTab <- sub("#", "", session$clientData$url_hash)
+    if(!is.null(currentTab)){
+      updateTabItems(session, "tabs", selected = currentTab)
+    }
+  })
   
   
 }
 
 # Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server, enableBookmarking = "disable")
