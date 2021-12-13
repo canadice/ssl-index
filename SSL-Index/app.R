@@ -277,7 +277,7 @@ ui <- function(request){
             tabName = "standings"
           ),
           menuSubItem(
-            "Player Statistics",
+            "Individual Statistics",
             tabName = "playerStats"
           )
         ),
@@ -351,7 +351,7 @@ ui <- function(request){
         tabItem(
           "playerStats",
           titlePanel(
-            h1("Player Stats", align = "center")
+            h1("Individual Stats", align = "center")
           ),
           playerStatsUI(id = "playerStats")
         ),
