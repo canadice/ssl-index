@@ -100,7 +100,7 @@ playerData <-
       as.numeric
     ),
     across(
-      .cols = `Aerial Reach`:`Tendency to Rush`,
+      .cols = `Aerial Reach`:`Throwing`,
       as.numeric
     ),
     `Natural Fitness` = 20,
@@ -175,7 +175,8 @@ playerData <-
   ) %>% 
   arrange(
     Created
-  )
+  ) 
+  
 }
 
 
@@ -315,6 +316,12 @@ playerData <-
       ~ replace_na(.x, 0)
     )
   )
+
+colnames(playerData) <- 
+  colnames(playerData) %>% 
+  str_replace_all(pattern = "\\.", replacement = " ") %>% 
+  str_squish()
+
 # playerData$`currentAbility Goalkeeper` <- playerData$`currentAbility Goalkeeper`*(playerData$Goalkeeper/20)
 # playerData$`currentAbility Defender.L` <- playerData$`currentAbility Defender.L`*(playerData$`Defense .L.`/20)
 # playerData$`currentAbility Defender.R` <- playerData$`currentAbility Defender.R`*(playerData$`Defense .R.`/20)

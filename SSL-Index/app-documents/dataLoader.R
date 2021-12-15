@@ -1,50 +1,27 @@
 ## Loading data
 
-## Positional coordinates for the pitch and their positions
+
+##################################################################
+##                    Positional Coordinates                    ##
+##################################################################
 {positionalCoord <- 
   data.frame(
     x = 
       c(
         375, 
-        
-        130,
-        375,
-        620,
-        
-        130,
-        375,
-        620,
-        
-        130,
-        375,
-        620,
-        
-        130,
-        375,
-        620,
-        
+        130,375,620,
+        130,375,620,
+        130,375,620,
+        130,375,620,
         375
       ),
     y = 
       c(
         775,
-        
-        625,
-        625,
-        625,
-        
-        455,
-        455,
-        455,
-        
-        310,
-        310,
-        310,
-        
-        150,
-        150,
-        150,
-        
+        625,625,625,
+        455,455,455,
+        310,310,310,
+        150,150,150,
         50
       ),
     Position = 
@@ -64,7 +41,11 @@
         "Defender L",
         "Goalkeeper"
       )
-  )}
+  )
+}
+#################################################################
+##                       TPE Cost Matrix                       ##
+#################################################################
 
 tpeCost <- 
   data.frame(
@@ -72,6 +53,9 @@ tpeCost <-
     ## -2 comes from an initial error in the costs as 5 is free (starting value)
     cost = c(2,4,6,10,14,18,24,30,36,48,60,72,90,108,132,157)-2
   )
+#################################################################
+##                       Attribute names                       ##
+#################################################################
 
 attributeNames <- 
   c(
@@ -155,6 +139,11 @@ goalieAttributeNames <-
     "GoalieThrowing"
   )
 
+
+##################################################################
+##             Loading data sets from Google Sheets             ##
+##################################################################
+
 googlesheets4::gs4_deauth()
 
 teamInfo <- 
@@ -190,6 +179,11 @@ abilityMatrix <-
     sheet = "Current Ability Calculation Matrix"
   )
 
+attributes <- 
+  googlesheets4::read_sheet(
+    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    sheet = "Attributes and Availability"
+  )
 
 
 

@@ -62,7 +62,7 @@ require(shiny.router)
 
 
 sslBlueD <- "#00044d"
-sslBlueL <- "#2229b2"
+sslBlueL <- "#78A1BB"
 sslRed <- "#f51515"
 
 # customLogo <- 
@@ -92,19 +92,19 @@ customTheme <-
     ,bodyBackColor = "#F5F5F5"
     
     ### header
-    ,logoBackColor = "#00044D"
+    ,logoBackColor = sslBlueD
     
-    ,headerButtonBackColor = "#00044D"
-    ,headerButtonIconColor = "#F51515"
+    ,headerButtonBackColor = sslBlueD
+    ,headerButtonIconColor = sslRed
     ,headerButtonBackColorHover = "#FFFFFF"
     ,headerButtonIconColorHover = "#000000"
     
-    ,headerBackColor = "#00044D"
+    ,headerBackColor = sslBlueD
     ,headerBoxShadowColor = ""
     ,headerBoxShadowSize = "0px 0px 0px"
     
     ### sidebar
-    ,sidebarBackColor = "#00044D"
+    ,sidebarBackColor = sslBlueL
     ,sidebarPadding = "0"
     
     ,sidebarMenuBackColor = "transparent"
@@ -114,9 +114,9 @@ customTheme <-
     ,sidebarShadowRadius = ""
     ,sidebarShadowColor = "0px 0px 0px"
     
-    ,sidebarUserTextColor = "#F51515"
+    ,sidebarUserTextColor = sslRed
     
-    ,sidebarSearchBackColor = "#F51515"
+    ,sidebarSearchBackColor = sslRed
     ,sidebarSearchIconColor = "#FFFFFF"
     ,sidebarSearchBorderColor = "#FFFFFF"
     
@@ -126,7 +126,7 @@ customTheme <-
     ,sidebarTabBorderColor = "none"
     ,sidebarTabBorderWidth = "0"
     
-    ,sidebarTabBackColorSelected = "#F51515"
+    ,sidebarTabBackColorSelected = sslRed
     ,sidebarTabTextColorSelected = "#FFFFFF"
     ,sidebarTabRadiusSelected = "0px"
     
@@ -144,9 +144,9 @@ customTheme <-
     ,boxShadowColor = ""
     ,boxTitleSize = "18"
     ,boxDefaultColor = "#E1E1E1"
-    ,boxPrimaryColor = "#F51515"
+    ,boxPrimaryColor = sslRed
     ,boxInfoColor = "#B4B4B4"
-    ,boxSuccessColor = "#2229B2"
+    ,boxSuccessColor = sslBlueL
     ,boxWarningColor = "#ED7D31"
     ,boxDangerColor = "#E84C22"
     
@@ -155,7 +155,7 @@ customTheme <-
     ,tabBoxTabTextColor = "#646464"
     ,tabBoxTabTextColorSelected = "#2D2D2D"
     ,tabBoxBackColor = "#F8F8F8"
-    ,tabBoxHighlightColor = sslRed
+    ,tabBoxHighlightColor = sslBlueL
     ,tabBoxBorderRadius = "5"
     
     ### inputs
@@ -286,6 +286,10 @@ ui <- function(request){
           tabName = "teamOverview"
         ),
         menuItem(
+          "SSL Players",
+          tabName = "playerDatabase"
+        ),
+        menuItem(
           "Tools",
           menuSubItem(
             "Player Comparisons",
@@ -363,6 +367,13 @@ ui <- function(request){
           playerComparisonUI(id = "playerComparison")
         ),
         tabItem(
+          "playerDatabase",
+          titlePanel(
+            h1("Player Database", align = "center")
+          ),
+          playerDatabaseUI(id = "playerDatabase")
+        ),
+        tabItem(
           "trackerPosition",
           titlePanel(
             h1("Position Tracker", align = "center")
@@ -398,7 +409,7 @@ server <- function(input, output, session) {
   loadedModulePlayerBuilder <- reactiveVal(FALSE)
   loadedModuleTrackerPosition <- reactiveVal(FALSE)
   loadedModuleOverviewTeam <- reactiveVal(FALSE)
-  # loadedModuleIIHF <- reactiveVal(FALSE)
+  loadedModulePlayerDatabase <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
   
@@ -447,6 +458,12 @@ server <- function(input, output, session) {
       loadedModuleOverviewTeam(TRUE)
       
       teamOverviewSERVER(id = "teamOverview")
+      
+    } else if(input$tabs == "playerDatabase" & !loadedModulePlayerDatabase()){
+      
+      loadedModulePlayerDatabase(TRUE)
+      
+      playerDatabaseSERVER(id = "playerDatabase")
       
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)

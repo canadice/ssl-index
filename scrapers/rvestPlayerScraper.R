@@ -71,7 +71,7 @@ playerScraper <-
       stringr::str_squish() %>% 
       as.numeric()
     
-     playerTeam <-
+    playerTeam <-
       teamInfo %>% 
       select(
         team
@@ -87,12 +87,12 @@ playerScraper <-
           ) %>% 
           which()  
       )
-     
-     if((playerTeam %>% nrow()) == 0){
-       playerTeam <- 
-         playerTeam %>% 
-         dplyr::add_row() 
-     }
+    
+    if((playerTeam %>% nrow()) == 0){
+      playerTeam <- 
+        playerTeam %>% 
+        dplyr::add_row() 
+    }
     
     postData$Team <- playerTeam %>% unname() %>% unlist()
     
