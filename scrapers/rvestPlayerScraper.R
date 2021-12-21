@@ -96,6 +96,19 @@ playerScraper <-
     
     postData$Team <- playerTeam %>% unname() %>% unlist()
     
+    # userData <- 
+    #   topic %>% 
+    #   html_elements(".normalname a") %>% 
+    #   nth(1) %>% 
+    #   html_attr("href") %>% 
+    #   read_html() %>% 
+    #   html_elements("div") %>% 
+    #   html_attrs() 
+      
+    
+    
+    
+    
     postData <- 
       postData %>% 
       relocate(

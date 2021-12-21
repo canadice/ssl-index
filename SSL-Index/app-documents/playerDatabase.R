@@ -36,29 +36,35 @@ playerDatabaseUI <- function(id){
                   selectInput(
                     inputId = ns("player"),
                     label = "Select a player",
-                    choices = playerData$Name %>% sort()
+                    choices = 
+                      playerData %>% 
+                      select(Team, Name) %>% 
+                      group_by(Team) %>% 
+                      arrange(Name) %>% 
+                      group_split(.keep = FALSE) %>% 
+                      setNames(playerData$Team %>% unique() %>% sort()) %>% 
+                      lapply(
+                        X = .,
+                        FUN = function(x){
+                          c(x) %>% 
+                            unname() %>% 
+                            lapply(
+                              X = .,
+                              FUN = function(x){
+                                as.list(x)
+                              }
+                            ) %>% 
+                            unlist(recursive = FALSE)
+                        }
+                      )
                   ),
                   h4("TPE Information", align = "center"),
                   fluidRow(
                     column(
                       width = 10,
                       offset = 1,
-                      fluidRow(
-                        column(
-                          width = 6,
-                          h5("Earned TPE")
-                        ),
-                        column(
-                          width = 6,
-                          numericInput(
-                            inputId = ns("currentTPE"),
-                            label = NULL,
-                            value = 350,
-                            min = 350,
-                            max = 2500,
-                            width = "80%"
-                          )
-                        )
+                      uiOutput(
+                        outputId = ns("earnedTPE")
                       ),
                       uiOutput(
                         outputId = ns("usedTPE")
@@ -86,7 +92,8 @@ playerDatabaseUI <- function(id){
               ##------------------------------------
               column(
                 width = 8,
-                p("Edit the Value column by double clicking on the cell."),
+                p("Edit the Value column by double clicking on the cell of the attribute you want to edit. 
+                  Clicking on export provides a formatted text with all the updates you have made on your build."),
                 DTOutput(ns("attributeTable"), width = "80%")
               )
               ##------------------------------------
@@ -303,11 +310,18 @@ playerDatabaseSERVER <- function(id){
                   helpText(
                     paste(
                       paste(
-                        paste("Earned TPE: ", input$currentTPE),
-                        paste("Used TPE: ", currentCost()), 
-                        paste("Banked TPE: ", currentAvailable()),
+                        paste(
+                          "[b]Earned TPE:[/b] ", 
+                          playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname(),
+                          "+",
+                          input$currentTPE-playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname(),
+                          "=",
+                          input$currentTPE),
+                        paste("[b]Used TPE:[/b] ", currentCost()), 
+                        paste("[b]Banked TPE:[/b] ", currentAvailable()),
                         sep = "<br>"
                       ),
+                      " ",
                       paste(
                         apply(
                           X = merged,
@@ -412,6 +426,28 @@ playerDatabaseSERVER <- function(id){
             column(
               width = 6,
               h5(playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname())
+            )
+          )
+        )
+      })
+      
+      output$earnedTPE <- renderUI({
+        tagList(
+          fluidRow(
+            column(
+              width = 6,
+              h5("Earned TPE")
+            ),
+            column(
+              width = 6,
+              numericInput(
+                inputId = session$ns("currentTPE"),
+                label = NULL,
+                value = playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname(),
+                min = 350,
+                max = 2500,
+                width = "80%"
+              )
             )
           )
         )

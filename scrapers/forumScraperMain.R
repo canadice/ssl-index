@@ -9,31 +9,35 @@
 
 print(lubridate::today())
 
-### Loads all the required packages
-require(XML)
-require(parallel)
-require(fuzzyjoin)
-require(rvest)
-require(dplyr)
-require(tidyr)
-require(magick)
-require(stringr)
-
-if(getwd() == "D:/GitHubs/ssl-index"){
-  #Do Nothing
-} else {
-  setwd("D:/GitHubs/ssl-index")
-}
-
-### Loads the separate scripts containing created scraper functions
-## Functions to find links to teams and players from main forum page
-source("scrapers/rvestPlayerLinkScraper.R")
-
-## Functions to scrape and structure information from a player page
-source("scrapers/rvestPlayerScraper.R")
-
-## Loads data sets and other important objects
-source("SSL-Index/app-documents/dataLoader.R", encoding = "UTF-8")
+suppressMessages(
+  {
+    ### Loads all the required packages
+    require(XML)
+    require(parallel)
+    require(fuzzyjoin)
+    require(rvest)
+    require(dplyr)
+    require(tidyr)
+    require(magick)
+    require(stringr)
+    
+    if(getwd() == "D:/GitHubs/ssl-index"){
+      #Do Nothing
+    } else {
+      setwd("D:/GitHubs/ssl-index")
+    }
+    
+    ### Loads the separate scripts containing created scraper functions
+    ## Functions to find links to teams and players from main forum page
+    source("scrapers/rvestPlayerLinkScraper.R")
+    
+    ## Functions to scrape and structure information from a player page
+    source("scrapers/rvestPlayerScraper.R")
+    
+    ## Loads data sets and other important objects
+    source("SSL-Index/app-documents/dataLoader.R", encoding = "UTF-8")
+  }
+)
 
 
 ##################################################################

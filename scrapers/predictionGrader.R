@@ -15,7 +15,7 @@ require(dplyr)
 require(tidyr)
 
 url <- 
-  "http://sslforums.com/index.php?showtopic=268" %>% 
+  "http://sslforums.com/index.php?showtopic=314" %>% 
   c(
     .,
     paste(., "&st=15", sep = "")
@@ -24,8 +24,8 @@ url <-
 correct <- 
   c(
     "1", 
-    "2", 
     "1", 
+    "2", 
     "1"
   )
 

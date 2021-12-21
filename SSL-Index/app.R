@@ -61,9 +61,9 @@ require(shiny.router)
 ##################################################################
 
 
-sslBlueD <- "#00044d"
-sslBlueL <- "#78A1BB"
-sslRed <- "#f51515"
+sslBlueD <- "#00044D"
+sslBlueL <- "#141204"
+sslRed <- "#F6AE2D"
 
 # customLogo <- 
 #   shinyDashboardLogoDIY(
@@ -104,7 +104,7 @@ customTheme <-
     ,headerBoxShadowSize = "0px 0px 0px"
     
     ### sidebar
-    ,sidebarBackColor = sslBlueL
+    ,sidebarBackColor = sslBlueD
     ,sidebarPadding = "0"
     
     ,sidebarMenuBackColor = "transparent"
@@ -231,6 +231,13 @@ ui <- function(request){
     dashboardHeader(
       title = "SSL Index",
       tags$li(
+        tags$head(
+          tags$link(
+            rel = "icon", 
+            type = "image/png", 
+            href = "favicon.png"),
+          tags$title("SSL Index")
+        ),
         class = "dropdown",
         tags$head(
           ## HTML code so that a href link inherits the text color, not the link color
@@ -267,7 +274,7 @@ ui <- function(request){
           selected = TRUE
         ),
         menuItem(
-          "Index",
+          "SSL Index",
           menuSubItem(
             "Schedule",
             tabName = "schedule"
@@ -282,15 +289,19 @@ ui <- function(request){
           )
         ),
         menuItem(
-          "SSL Teams",
+          "Teams",
           tabName = "teamOverview"
         ),
         menuItem(
-          "SSL Players",
-          tabName = "playerDatabase"
+          "Player Pages",
+          tabName = "playerPages"
         ),
         menuItem(
-          "Tools",
+          "Player Build Tools",
+          menuSubItem(
+            "Build a new player",
+            tabName = "playerBuilder"
+          ),
           menuSubItem(
             "Player Comparisons",
             tabName = "playerComparison"  
@@ -298,10 +309,6 @@ ui <- function(request){
           menuSubItem(
             "Position Tracker",
             tabName = "trackerPosition"
-          ),
-          menuSubItem(
-            "Player Builder",
-            tabName = "playerBuilder"
           )
         ),
         menuItem(
@@ -367,11 +374,11 @@ ui <- function(request){
           playerComparisonUI(id = "playerComparison")
         ),
         tabItem(
-          "playerDatabase",
+          "playerPages",
           titlePanel(
-            h1("Player Database", align = "center")
+            h1("Player Pages", align = "center")
           ),
-          playerDatabaseUI(id = "playerDatabase")
+          playerDatabaseUI(id = "playerPages")
         ),
         tabItem(
           "trackerPosition",
@@ -459,11 +466,11 @@ server <- function(input, output, session) {
       
       teamOverviewSERVER(id = "teamOverview")
       
-    } else if(input$tabs == "playerDatabase" & !loadedModulePlayerDatabase()){
+    } else if(input$tabs == "playerPages" & !loadedModulePlayerDatabase()){
       
       loadedModulePlayerDatabase(TRUE)
       
-      playerDatabaseSERVER(id = "playerDatabase")
+      playerDatabaseSERVER(id = "playerPages")
       
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)

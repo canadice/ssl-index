@@ -13,6 +13,7 @@ require(stringi)
 require(plyr)
 require(dplyr)
 require(tidyr)
+require(arsenal)
 
 source("D:/GitHubs/ssl-index/SSL-Index/app-documents/dataLoader.R")
 
@@ -33,6 +34,9 @@ FMAttributes <-
   select(
     -"Inf",
     -"Rec"
+  ) %>% 
+  mutate(
+    Name = if_else(str_detect(Name, "GFuel"), "A Singular Tub of FazeBerry ® GFuel ® Energy Formula - The Official Drink of ESports ®", Name)
   )
 
 colnames(FMAttributes) <- 
@@ -52,15 +56,15 @@ colnames(FMAttributes) <-
   )
 
 audit <- 
-  FMAttributes %>% 
+  playerData %>% 
+  select(
+    Name,
+    Acceleration:Throwing
+  ) %>% 
   left_join(
-    playerData %>% 
-      select(
-        Name,
-        Acceleration:Throwing
-      ),
+    FMAttributes,
     by = "Name", 
-    suffix = c(".FM", ".Forum")
+    suffix = c(".Forum", ".FM")
   ) %>% 
   relocate(
     sort(colnames(.))
@@ -68,24 +72,56 @@ audit <-
   relocate(
     contains("Name"),
     .before = "Acceleration.FM"
+  ) %>% 
+  relocate(
+    contains("."),
+    .after = "Name"
   )
   
 comparison <- 
   comparedf(
     FMAttributes %>% 
       arrange(Name) %>% 
+      filter(
+        Name %in% playerData$Name
+      ) %>% 
       select(
         Name,
         Acceleration:Throwing
+      ) %>% 
+      mutate(
+        across(
+          Acceleration:Throwing,
+          as.numeric)
       ),
     playerData %>% 
       arrange(Name) %>% 
       select(
         Name,
         Acceleration:Throwing
-      )
+      ),
+    by = "Name"
   ) %>% 
-  summary()
+  summary() %>% 
+  .$diffs.table %>% 
+  arrange(Name) %>% 
+  filter(
+    !is.na(values.y)
+  )
+
+colnames(comparison) <- 
+  str_replace(
+    colnames(comparison),
+    ".x",
+    ".FM"
+    )
+
+colnames(comparison) <- 
+  str_replace(
+    colnames(comparison),
+    ".y",
+    ".Forum"
+  )
 
 
 
