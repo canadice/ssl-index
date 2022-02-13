@@ -3,10 +3,10 @@ playerLinkScraper <-
     ### Takes the player link scraped from the team pages
     ##  If it is a complete link with the base url there it scrapes it directly
     ##  For use with teamLinkScraper and playerLinkScraper then only the endings are used, requiring the baseLink addition
-    if(stringr::str_detect(forum, "sslforums")){
+    if(stringr::str_detect(forum, "simsoccer")){
       
     } else{
-      baseLink <- "https://sslforums.com/"
+      baseLink <- "https://simsoccer.jcink.net/"
       
       forum <- paste(baseLink, forum, sep = "")
       
@@ -22,7 +22,7 @@ playerLinkScraper <-
       rvest::html_elements(".row4 a") %>% 
       rvest::html_attr("href") %>% 
       .[
-        stringr::str_detect(string = ., pattern = "sslforums")
+        stringr::str_detect(string = ., pattern = "simsoccer")
       ]
     
     return(playerLinks)

@@ -284,13 +284,13 @@ teamOverviewSERVER <- function(id){
               Class,
               Position,
               Username,
-              TPE#,
-              # Active,
+              TPE,
+              Active#,
               # Roster,
               # Prospect,
             ) %>%
             arrange(
-              # Active,
+              Active,
               -TPE
             ) %>% 
             datatable(

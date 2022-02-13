@@ -3,10 +3,10 @@ playerScraper <-
     ### Takes the player link scraped from the team pages
     ##  If it is a complete link with the base url there it scrapes it directly
     ##  For use with teamLinkScraper and playerLinkScraper then only the endings are used, requiring the baseLink addition
-    if(stringr::str_detect(player, "sslforums")){
+    if(stringr::str_detect(player, "simsoccer")){
       
     } else{
-      baseLink <- "https://sslforums.com/"
+      baseLink <- "https://simsoccer.jcink.net/"
       
       player <- paste(baseLink, player, sep = "")
       
@@ -52,7 +52,16 @@ playerScraper <-
       stringr::str_extract_all(pattern = "(?<=\\().*?(?=\\))", simplify = TRUE) %>% 
       c()
     
-    postData$`Preferred Position` <- postData$Position
+    if(!("Preferred Position" %in% colnames(postData))){
+      postData$`Preferred Position` <- postData$Position
+      
+      postData <-
+        postData %>% 
+        relocate(
+          `Preferred Position`,
+          .after = Position
+        )
+    }
     
     postData$Position <- 
       topic %>% 
@@ -96,18 +105,40 @@ playerScraper <-
     
     postData$Team <- playerTeam %>% unname() %>% unlist()
     
-    # userData <- 
-    #   topic %>% 
-    #   html_elements(".normalname a") %>% 
-    #   nth(1) %>% 
-    #   html_attr("href") %>% 
-    #   read_html() %>% 
-    #   html_elements("div") %>% 
-    #   html_attrs() 
+    userData <-
+      topic %>%
+      html_elements(".normalname a") %>%
+      nth(1) %>%
+      html_attr("href") %>%
+      read_html() %>%
+      html_elements("div.row2") %>%
+      html_text() %>% 
+      .[str_detect(., pattern = "Last Post")] %>% 
+      str_split(pattern = ": ", simplify = TRUE) %>% 
+      .[,2] %>% 
+      str_squish()
+    
+    postData$lastPost <- userData 
+    
+    postData <- 
+      postData %>% 
+      mutate(
+        lastPost = 
+          dplyr::case_when(
+            stringr::str_detect(lastPost, pattern = "minute") ~ lubridate::today(),
+            stringr::str_detect(lastPost, pattern = "hour") ~ lubridate::today(),
+            stringr::str_detect(lastPost, pattern = "Today") ~ lubridate::today(),
+            stringr::str_detect(lastPost, pattern = "Yesterday") ~ lubridate::today()-1,
+            TRUE ~ lubridate::as_date(lastPost, format = "%b %d %Y")
+          ),
+        Active = 
+          dplyr::case_when(
+            lubridate::today() - (lastPost %>% unlist()) > 21 ~ "IA",
+            TRUE ~ "Active"
+          )
+      )
       
-    
-    
-    
+    # postData$lastPost
     
     postData <- 
       postData %>% 
@@ -121,9 +152,10 @@ playerScraper <-
         .after = Username
       ) %>% 
       relocate(
-        `Preferred Position`,
-        .after = Position
+        Position,
+        .before = `Preferred Position`
       )
+      
     
     return(postData)
   }

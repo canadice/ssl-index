@@ -18,10 +18,25 @@ standingsUI <- function(id){
     fluidPage(
       fluidRow(
         column(
+          width = 2,
+          selectInput(
+            inputId = ns("season"),
+            label = "Select season",
+            choices = 
+              unique(
+                playerData$Class
+              ) %>% 
+              str_extract(pattern = "[0-9]+") %>% 
+              unname() %>% 
+              sort(decreasing = TRUE)
+          )
+        )
+      ),
+      fluidRow(
+        column(
           width = 10,
           offset = 1,
-          DTOutput(outputId = ns("standings")),
-          DTOutput(outputId = ns("standings2"))
+          DTOutput(outputId = ns("standings"))
         )
       )
     )
@@ -37,30 +52,48 @@ standingsSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
       
-      url <- "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/standings.html"
-      
-      standings <- 
+      standings <- reactive({
+        
+        url <- 
+          paste(
+            "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/S",
+            input$season,
+            "_standings.html",
+            sep = ""
+          )
+        
         url %>% 
-        read_html() %>% 
-        html_elements("table") %>% 
-        html_table() %>% 
-        .[[1]] %>% 
-        rename(
-          GP = Pld,
-          W = Won,
-          D = Drn,
-          L = Lst,
-          GF = For,
-          GA = Ag
-        ) %>% 
-        select(
-          -`Inf`,
-          -Form
-        )
-     
+          read_html() %>% 
+          html_elements("table") %>% 
+          html_table() %>% 
+          .[[1]] %>% 
+          rename(
+            GP = Pld,
+            W = Won,
+            D = Drn,
+            L = Lst,
+            GF = For,
+            GA = Ag
+          ) %>% 
+          select(
+            -`Inf`,
+            -Form
+          ) %>% 
+          left_join(
+            teamInfo %>% 
+              select(
+                team, 
+                color.primary,
+                color.secondary
+              ),
+            by = c("Team" = "team")
+          ) 
+        
+      })
+      
       output$standings <- renderDT({
         datatable(
-          standings,
+          standings(), 
           style = "bootstrap",
           class = 'compact cell-border stripe',
           rownames = FALSE,
@@ -72,13 +105,33 @@ standingsSERVER <- function(id){
               scrollCollapse = TRUE,
               pageLength = 20,
               dom = 'Rt',
-              ## Sets color of table background
-              initComplete = JS(
-                "function(settings, json) {",
-                "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
-                "}")
+              columnDefs = 
+                list(
+                  list(
+                    targets = 10:11,
+                    visible = FALSE
+                  )
+                )
             )
-        )
+        ) %>% 
+          formatStyle(
+            columns = 1:10,
+            valueColumns = "color.primary",
+            backgroundColor = 
+              styleEqual(
+                sort(unique(teamInfo$color.primary)), 
+                sort(unique(teamInfo$color.primary))
+              )
+          ) %>% 
+          formatStyle(
+            columns = 1:10,
+            valueColumns = "color.secondary",
+            color = 
+              styleEqual(
+                sort(unique(teamInfo$color.secondary)), 
+                sort(unique(teamInfo$color.secondary))
+              )
+          )
       })
     }
   )

@@ -53,7 +53,16 @@ suppressMessages(
 #   )
 
 prospectForum <- 
-  "http://sslforums.com/index.php?showforum=61" %>% 
+  "https://simsoccer.jcink.net/index.php?showforum=61" %>% 
+  c(
+    .,
+    paste(., "&st=15", sep = ""),
+    paste(., "&st=30", sep = ""),
+    paste(., "&st=45", sep = "")
+  )
+
+faForum <- 
+  "https://simsoccer.jcink.net/index.php?showforum=63" %>% 
   c(
     .,
     paste(., "&st=15", sep = ""),
@@ -63,19 +72,26 @@ prospectForum <-
 
 teamForums <- 
   c(
-    "http://sslforums.com/index.php?showforum=44",
-    "http://sslforums.com/index.php?showforum=45",
-    "http://sslforums.com/index.php?showforum=51",
-    "http://sslforums.com/index.php?showforum=53",
-    "http://sslforums.com/index.php?showforum=55",
-    "http://sslforums.com/index.php?showforum=66"
+    "https://simsoccer.jcink.net/index.php?showforum=44",
+    "https://simsoccer.jcink.net/index.php?showforum=45",
+    "https://simsoccer.jcink.net/index.php?showforum=51",
+    "https://simsoccer.jcink.net/index.php?showforum=53",
+    "https://simsoccer.jcink.net/index.php?showforum=55",
+    "https://simsoccer.jcink.net/index.php?showforum=66",
+    "https://simsoccer.jcink.net/index.php?showforum=90",
+    "https://simsoccer.jcink.net/index.php?showforum=48"
+  ) %>% 
+  c(
+    .,
+    paste(., "&st=15", sep = "")
   )
 
 forumsToScrape <-
   c(
     # createdForum,
     prospectForum,
-    teamForums
+    teamForums,
+    faForum
   )
 
 players <- 
@@ -98,13 +114,28 @@ playerData <-
     what = plyr::rbind.fill,
     args = .
   ) %>% 
-  mutate(
+  dplyr::relocate(
+    c(
+      Acceleration,Agility,Balance,`Jumping Reach`,
+      `Natural Fitness`,Pace,Stamina,Strength,
+      Corners,Crossing,Dribbling,Finishing,`First Touch`,
+      `Free Kick`,Heading,`Long Shots`,`Long Throws`,
+      Marking,Passing,`Penalty Taking`,Tackling,
+      Technique,Aggression,Anticipation,Bravery,
+      Composure,Concentration,Decisions,
+      Determination,Flair,Leadership,`Off the Ball`,
+      Positioning,Teamwork,Vision,`Work Rate`,
+      `Aerial Reach`:`Throwing`
+    ),
+    .after = `TPE Available`
+  ) %>% 
+  dplyr::relocate(
+    c(lastPost, Active),
+    .after = `Trait 2`
+  ) %>% 
+  dplyr::mutate(
     across(
       .cols = `TPE Available`:`Defense [R]`,
-      as.numeric
-    ),
-    across(
-      .cols = `Aerial Reach`:`Throwing`,
       as.numeric
     ),
     `Natural Fitness` = 20,
@@ -168,18 +199,18 @@ playerData <-
     Striker:Goalkeeper,
     .after = `Preferred Position`
   ) %>% 
-  relocate(
-    `Aerial Reach`:`Throwing`,
-    .after = `Work Rate`
-  ) %>% 
-  mutate(
+  dplyr::mutate(
     Position = ifelse(is.na(Position), "Undefined", Position),
     Position = 
       factor(Position, levels = c("Goalkeeper", "Defender", "Midfielder", "Forward", "Undefined"))
   ) %>% 
   arrange(
     Created
-  ) 
+  ) %>% 
+  relocate(
+    `Minimum Wage`,
+    .after = `Trait 2`
+  )
   
 }
 
@@ -193,7 +224,7 @@ playerAttributesMatrix <-
   select(
     Acceleration:Throwing
   ) %>% 
-  mutate(
+  dplyr::mutate(
     across(
       .fns = ~ replace_na(., 0) %>% as.numeric()
     )
@@ -202,11 +233,11 @@ playerAttributesMatrix <-
 
 abilityMatrixFixed <- 
   abilityMatrix[,playerData %>% select(Acceleration:Throwing) %>% colnames()] %>% 
-  mutate(
+  dplyr::mutate(
     rowSum = rowSums(.)
   ) %>% 
   rowwise() %>% 
-  mutate(
+  dplyr::mutate(
     across(
       .fns = ~ .x/rowSum
     )
@@ -258,7 +289,7 @@ colnames(playerData) <-
 ## Hard-code positional experience as factor in current ability
 playerData <- 
   playerData %>% 
-  mutate(
+  dplyr::mutate(
     across(
       contains("Ability Goalkeeper"),
       ~ .x * (playerData$Goalkeeper/20)

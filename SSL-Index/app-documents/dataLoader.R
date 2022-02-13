@@ -27,18 +27,18 @@
     Position = 
       c(
         "Striker",
-        "Attacking Midfielder R",
-        "Attacking Midfielder C",
         "Attacking Midfielder L",
-        "Midfielder R",
-        "Midfielder C",
+        "Attacking Midfielder C",
+        "Attacking Midfielder R",
         "Midfielder L",
-        "Fullback R",
+        "Midfielder C",
+        "Midfielder R",
+        "Wingback L",
         "Defensive Midfielder",
-        "Fullback L",
-        "Defender R",
-        "Defender C",
+        "Wingback R",
         "Defender L",
+        "Defender C",
+        "Defender R",
         "Goalkeeper"
       )
   )
@@ -51,7 +51,7 @@ tpeCost <-
   data.frame(
     value = 5:20,
     ## -2 comes from an initial error in the costs as 5 is free (starting value)
-    cost = c(2,4,6,10,14,18,24,30,36,48,60,72,90,108,132,157)-2
+    cost = c(2,4,6,10,14,18,24,30,36,48,60,72,90,108,133,158)-2
   )
 #################################################################
 ##                       Attribute names                       ##

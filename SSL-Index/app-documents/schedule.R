@@ -18,8 +18,21 @@ scheduleUI <- function(id){
     fluidPage(
       fluidRow(
         column(
+          width = 2,
+          selectInput(
+            inputId = ns("season"),
+            label = "Select season",
+            choices = 
+              unique(
+                playerData$Class
+              ) %>% 
+              str_extract(pattern = "[0-9]+") %>% 
+              unname() %>% 
+              sort(decreasing = TRUE)
+          )
+        ),
+        column(
           width = 10,
-          offset = 1,
           DTOutput(outputId = ns("schedule"))
         )
       )
@@ -36,22 +49,24 @@ scheduleSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
      
-      schedule <-
+      schedule <- reactive({
         read_sheet(
           ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
-          sheet = "Season 1"
+          sheet = paste("Season", input$season)
         ) %>% 
-        mutate(
-          `In-game Date` = `In-game Date` %>% as_date() %>% format(format = "%m/%d")
-        )
+          mutate(
+            `In-game Date` = `In-game Date` %>% as_date() %>% format(format = "%m/%d"),
+            `IRL Date` = `IRL Date` %>% as_date() %>% format(format = "%m/%d")
+          )
+      })
       
       output$schedule <- renderDT({
-        if(length(schedule) == 0){
+        if(length(schedule()) == 0){
           stop("The current schedule file is empty. Please notify the owners.")
           # NULL
         } else {
           datatable(
-            schedule,
+            schedule(),
             style = "bootstrap",
             class = 'compact cell-border stripe',
             rownames = FALSE,

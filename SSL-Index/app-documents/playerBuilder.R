@@ -38,7 +38,7 @@ playerBuilderUI <- function(id){
                 choices = c("Player", "Goalkeeper"),
                 selected = "Player"
               ),
-              h4("Points information", align = "center"),
+              h4("Points Information", align = "center"),
               fluidRow(
                 column(
                   width = 10,
@@ -87,6 +87,123 @@ playerBuilderUI <- function(id){
           
           column(
             width = 8,
+            box(
+              title = "Player Information and Cosmetics",
+              solidHeader = TRUE,
+              status = "success",
+              width = NULL,
+              h4("Player Details", align = "center"),
+              fluidRow(
+                column(
+                  width = 4,
+                  style = "margin-top: 21px;",
+                  textInput(
+                    inputId = ns("playerFirstName"),
+                    label = "Write the First Name"
+                  ),
+                  numericInput(
+                    inputId = ns("playerHeight"),
+                    label = "Set Height in Inches",
+                    value = 60,
+                    min = 55,
+                    max = 90,
+                    step = 1
+                  )
+                ),
+                column(
+                  width = 4,
+                  style = "margin-top: 21px;",
+                  textInput(
+                    inputId = ns("playerLastName"),
+                    label = "Write the Last Name"
+                  ),
+                  numericInput(
+                    inputId = ns("playerWeight"),
+                    label = "Set Weight in Pounds",
+                    value = 140,
+                    min = 100,
+                    max = 350,
+                    step = 5
+                  ),
+                  selectInput(
+                    inputId = ns("playerPosition"),
+                    label = "Select Preferred Position",
+                    choices = 
+                      abilityMatrix$Attribute
+                  )
+                ),
+                column(
+                  width = 4,
+                  textInput(
+                    inputId = ns("playerBirthplace"),
+                    label = "Write the Birthplace <br> (City and Country)" %>% HTML()
+                  ),
+                  selectInput(
+                    inputId = ns("playerFoot"),
+                    label = "Select Preferred Foot",
+                    choices = 
+                      c(
+                        "Left",
+                        "Right"
+                      )
+                  )
+                )
+              ),
+              h4("Cosmetics", align = "center"),
+              fluidRow(
+                column(
+                  width = 4,
+                  style = "margin-top: 21px;",
+                  selectInput(
+                    inputId = ns("playerHairColor"),
+                    label = "Select Hair Color",
+                    choices = 
+                      apply(
+                        expand.grid(
+                          c("Light Brown",
+                            "Dark Brown",
+                            "Black",
+                            "Red",
+                            "Blonde"),
+                          1:3
+                        ) %>% 
+                          arrange(Var1),
+                        1,
+                        paste,
+                        collapse = " "
+                      )
+                  )
+                ),
+                column(
+                  width = 4,
+                  style = "margin-top: 21px;",
+                  selectInput(
+                    inputId = ns("playerHairLength"),
+                    label = "Select Hair Length",
+                    choices = 
+                      c(
+                        "Bald",
+                        "Buzzcut",
+                        "Short",
+                        "Medium",
+                        "Long"
+                      )
+                  )
+                ),
+                column(
+                  width = 4,
+                  selectInput(
+                    inputId = ns("playerSkinTone"),
+                    label = "Select Skin Tone <br> (1 is lightest, 20 is darkest)" %>% HTML(),
+                    choices = 
+                      paste(
+                        "Skin Tone",
+                        1:20
+                      )
+                  )
+                )
+              )
+            ),
             box(
               title = "Player Attributes",
               solidHeader = TRUE,
@@ -1566,11 +1683,13 @@ playerBuilderSERVER <- function(id){
       observeEvent(
         input$playerType,
         {
-          
-          toggle(id = "goalieBuilder")
-          
-          toggle(id = "playerBuilder")
-          
+          if(input$playerType == "Player"){
+            hide(id = "goalieBuilder")  
+            show(id = "playerBuilder")
+          } else {
+            show(id = "goalieBuilder")  
+            hide(id = "playerBuilder")
+          }
         },
         ignoreInit = TRUE
       )
@@ -1607,24 +1726,24 @@ playerBuilderSERVER <- function(id){
                     paste(
                       "[size=7][u][b]Player Details[/b][/u][/size]<br>
                       Username: EMPTY<br>
-                      First Name: EMPTY<br>
-                      Last Name: EMPTY<br>
+                      First Name: ", input$playerFirstName, "<br>
+                      Last Name: ", input$playerLastName, "<br>
                       Discord: EMPTY<br>
-                      Birthplace: EMPTY<br>
-                      Height: EMPTY<br>
-                      Weight: EMPTY<br>
-                      Preferred Foot: EMPTY<br>
-                      Position: EMPTY<br>
+                      Birthplace: ", input$playerBirthplace, "<br>
+                      Height: ", input$playerHeight, "<br>
+                      Weight: ", input$playerWeight, "<br>
+                      Preferred Foot: ", input$playerFoot, "<br>
+                      Preferred Position: ", input$playerPosition, "<br>
                       <br>
                       [size=7][u][b]Cosmetics[/b][/u][/size]<br>
-                      Hair Color: EMPTY<br>
-                      Hair Length: EMPTY<br>
-                      Skin Tone: EMPTY<br>
+                      Hair Color: ", input$playerHairColor, "<br>
+                      Hair Length: ", input$playerHairLength, "<br>
+                      Skin Tone: ", input$playerSkinTone, "<br>
                       <br>
                       [size=7][u][b]Player Attributes[/b][/u][/size]<br>
                       TPE Available:",
                           currentAvailable(),
-                          "<br>
+                          "<br><br>
                       [u][b]Physical[/b][/u]<br>
                       Acceleration:",
                           currentBuild()$value[15],
@@ -1756,25 +1875,25 @@ playerBuilderSERVER <- function(id){
                   helpText(
                     paste(
                       "[size=7][u][b]Player Details[/b][/u][/size]<br>
-                  Username: EMPTY<br>
-                  First Name: EMPTY<br>
-                  Last Name: EMPTY<br>
-                  Discord: EMPTY<br>
-                  Birthplace: EMPTY<br>
-                  Height: EMPTY<br>
-                  Weight: EMPTY<br>
-                  Preferred Foot: EMPTY<br>
-                  Position: Goalkeeper<br>
-                  <br>
-                  [size=7][u][b]Cosmetics[/b][/u][/size]<br>
-                  Hair Color: EMPTY<br>
-                  Hair Length: EMPTY<br>
-                  Skin Tone: EMPTY<br>
-                  <br>
+                      Username: EMPTY<br>
+                      First Name: ", input$playerFirstName, "<br>
+                      Last Name: ", input$playerLastName, "<br>
+                      Discord: EMPTY<br>
+                      Birthplace: ", input$playerBirthplace, "<br>
+                      Height: ", input$playerHeight, "<br>
+                      Weight: ", input$playerWeight, "<br>
+                      Preferred Foot: ", input$playerFoot, "<br>
+                      Preferred Position: ", input$playerPosition, "<br>
+                      <br>
+                      [size=7][u][b]Cosmetics[/b][/u][/size]<br>
+                      Hair Color: ", input$playerHairColor, "<br>
+                      Hair Length: ", input$playerHairLength, "<br>
+                      Skin Tone: ", input$playerSkinTone, "<br>
+                      <br>
                   [size=7][u][b]Player Attributes[/b][/u][/size]<br>
                   TPE Available:",
                       currentAvailable(),
-                      "<br>
+                      "<br><br>
                   [u][b]Physical[/b][/u]<br>
                   Acceleration:",
                       currentBuild()$value[15],
@@ -1909,7 +2028,7 @@ playerBuilderSERVER <- function(id){
                       list(
                         "Movement - On the Ball" = 
                           list(
-                            "Cuts Inside",
+                            "Cuts Inside From Both Wings",
                             "Knocks Ball Past Opponent",
                             "Runs With Ball Rarely",
                             "Runs With Ball Often",
@@ -1929,7 +2048,7 @@ playerBuilderSERVER <- function(id){
                             "Moves Into Channels",
                             "Plays One-Twos",
                             "Plays With Back to Goal",
-                            "Static Target Man",
+                            "Does Not Move Into Channels",
                             "Stays Back at All Times"
                           ),
                         "Passing" = 
@@ -1968,7 +2087,6 @@ playerBuilderSERVER <- function(id){
                           ),
                         "Technique" =
                           list(
-                            "Attempts to Develop Weaker Foot",
                             "Avoids Using Weaker Foot",
                             "Curls Ball",
                             "Dwells On Ball",

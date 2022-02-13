@@ -61,9 +61,9 @@ require(shiny.router)
 ##################################################################
 
 
-sslBlueD <- "#00044D"
+sslBlueD <- "#070B51"
 sslBlueL <- "#141204"
-sslRed <- "#F6AE2D"
+sslGold <- "#BD9523"
 
 # customLogo <- 
 #   shinyDashboardLogoDIY(
@@ -95,7 +95,7 @@ customTheme <-
     ,logoBackColor = sslBlueD
     
     ,headerButtonBackColor = sslBlueD
-    ,headerButtonIconColor = sslRed
+    ,headerButtonIconColor = sslGold
     ,headerButtonBackColorHover = "#FFFFFF"
     ,headerButtonIconColorHover = "#000000"
     
@@ -114,9 +114,9 @@ customTheme <-
     ,sidebarShadowRadius = ""
     ,sidebarShadowColor = "0px 0px 0px"
     
-    ,sidebarUserTextColor = sslRed
+    ,sidebarUserTextColor = sslGold
     
-    ,sidebarSearchBackColor = sslRed
+    ,sidebarSearchBackColor = sslGold
     ,sidebarSearchIconColor = "#FFFFFF"
     ,sidebarSearchBorderColor = "#FFFFFF"
     
@@ -126,7 +126,7 @@ customTheme <-
     ,sidebarTabBorderColor = "none"
     ,sidebarTabBorderWidth = "0"
     
-    ,sidebarTabBackColorSelected = sslRed
+    ,sidebarTabBackColorSelected = sslGold
     ,sidebarTabTextColorSelected = "#FFFFFF"
     ,sidebarTabRadiusSelected = "0px"
     
@@ -144,7 +144,7 @@ customTheme <-
     ,boxShadowColor = ""
     ,boxTitleSize = "18"
     ,boxDefaultColor = "#E1E1E1"
-    ,boxPrimaryColor = sslRed
+    ,boxPrimaryColor = sslGold
     ,boxInfoColor = "#B4B4B4"
     ,boxSuccessColor = sslBlueL
     ,boxWarningColor = "#ED7D31"
@@ -242,6 +242,11 @@ ui <- function(request){
         tags$head(
           ## HTML code so that a href link inherits the text color, not the link color
           tags$style(HTML("a, a:hover, a:visited, a:active {color: inherit}")),
+          tags$style(HTML('
+            thead th {
+              background-color:#00044d !important;
+              color:#ffffff !important;
+            }')),
           tags$style(
             type="text/css",
             "#playerComparison-fieldImage img {max-width: 480px; width: inherit; max-height: 600px;}"
@@ -314,7 +319,7 @@ ui <- function(request){
         menuItem(
           "SSL Forum",
           icon = icon("external-link-alt"),
-          href = "http://sslforums.com/index.php"
+          href = "https://simsoccer.jcink.net/index.php"
         ),
         menuItem(
           "Github", 
