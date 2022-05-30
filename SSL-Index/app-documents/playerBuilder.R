@@ -2089,7 +2089,7 @@ playerBuilderSERVER <- function(id){
                           list(
                             "Avoids Using Weaker Foot",
                             "Curls Ball",
-                            "Dwells On Ball",
+                            # "Dwells On Ball",
                             "Possesses Long Flat Throw",
                             "Tries to Play Way Out of Trouble"
                           )
