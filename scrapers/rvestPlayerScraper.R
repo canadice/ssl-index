@@ -138,10 +138,29 @@ playerScraper <-
           )
       )
       
+    postData$Username <-
+      topic %>%
+      html_elements(".normalname") %>%
+      nth(1) %>% 
+      html_text()
+    
+    postData$`All Traits` <- 
+      paste(
+        postData %>% 
+          select(
+            contains("Trait")
+          ),
+        collapse = " \\ "
+      )
+        
+    
     # postData$lastPost
     
     postData <- 
-      postData %>% 
+      postData %>%
+      select(
+        !starts_with("Trait")
+      ) %>% 
       relocate(
         c(
           Class,
@@ -154,8 +173,11 @@ playerScraper <-
       relocate(
         Position,
         .before = `Preferred Position`
+      ) %>% 
+      relocate(
+        `All Traits`,
+        .before = lastPost
       )
-      
     
     return(postData)
   }
