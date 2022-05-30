@@ -36,6 +36,26 @@ suppressMessages(
     
     ## Loads data sets and other important objects
     source("SSL-Index/app-documents/dataLoader.R", encoding = "UTF-8")
+    
+    # ## Loads help data
+    # roleMatrix <- 
+    #   googlesheets4::read_sheet(
+    #     ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    #     sheet = "Duty and Role Matrix"
+    #   )
+    # 
+    # abilityMatrix <- 
+    #   googlesheets4::read_sheet(
+    #     ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    #     sheet = "Current Ability Calculation Matrix"
+    #   )
+    # 
+    # attributes <- 
+    #   googlesheets4::read_sheet(
+    #     ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    #     sheet = "Attributes and Availability"
+    #   )
+    
   }
 )
 
@@ -79,7 +99,11 @@ teamForums <-
     "https://simsoccer.jcink.net/index.php?showforum=55",
     "https://simsoccer.jcink.net/index.php?showforum=66",
     "https://simsoccer.jcink.net/index.php?showforum=90",
-    "https://simsoccer.jcink.net/index.php?showforum=48"
+    "https://simsoccer.jcink.net/index.php?showforum=48",
+    "https://simsoccer.jcink.net/index.php?showforum=101",
+    "https://simsoccer.jcink.net/index.php?showforum=98",
+    "https://simsoccer.jcink.net/index.php?showforum=117",
+    "https://simsoccer.jcink.net/index.php?showforum=120"
   ) %>% 
   c(
     .,
@@ -108,7 +132,21 @@ players <-
 playerData <- 
   lapply(
     players,
-    playerScraper
+    FUN = function(x){
+      
+      temp <- try(playerScraper(x), silent=TRUE)
+      
+      if( 
+        inherits(
+          temp,  
+          "try-error")
+      ){
+        print(x)
+      } 
+      else {
+        temp
+      }  
+    }
   ) %>% 
   do.call(
     what = plyr::rbind.fill,
@@ -130,12 +168,16 @@ playerData <-
     .after = `TPE Available`
   ) %>% 
   dplyr::relocate(
+    contains("Trait"),
+    .after = Throwing
+  ) %>% 
+  dplyr::relocate(
     c(lastPost, Active),
-    .after = `Trait 2`
+    .after = `All Traits`
   ) %>% 
   dplyr::mutate(
     across(
-      .cols = `TPE Available`:`Defense [R]`,
+      .cols = `TPE Available`:`Throwing`,
       as.numeric
     ),
     `Natural Fitness` = 20,
@@ -202,16 +244,22 @@ playerData <-
   dplyr::mutate(
     Position = ifelse(is.na(Position), "Undefined", Position),
     Position = 
-      factor(Position, levels = c("Goalkeeper", "Defender", "Midfielder", "Forward", "Undefined"))
+      factor(Position, levels = c("Goalkeeper", "Defender", "Midfielder", "Forward", "Undefined")),
+    across(
+      .cols = Striker:Goalkeeper,
+      as.numeric
+    )
   ) %>% 
   arrange(
     Created
   ) %>% 
   relocate(
     `Minimum Wage`,
-    .after = `Trait 2`
-  )
-  
+    .after = `All Traits`
+  ) %>% 
+    select(
+      Username:Active
+    )
 }
 
 
