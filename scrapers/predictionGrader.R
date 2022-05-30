@@ -15,16 +15,17 @@ require(dplyr)
 require(tidyr)
 
 url <- 
-  "http://sslforums.com/index.php?showtopic=314" %>% 
+  "https://simsoccer.jcink.net/index.php?showtopic=430" %>% 
   c(
     .,
-    paste(., "&st=15", sep = "")
+    paste(., "&st=15", sep = ""),
+    paste(., "&st=30", sep = "")
   )
 
 correct <- 
   c(
-    "1", 
-    "1", 
+    "2", 
+    "X", 
     "2", 
     "1"
   )
@@ -96,7 +97,8 @@ predictions <-
     V4 = str_remove_all(string = V4, pattern = "[0-9][\\.: ]+") %>% toupper(),
     correct = NA
   ) %>% 
-  arrange(users)
+  arrange(users) %>% 
+  unique()
 
 for(i in 1:nrow(predictions)){
   predictions$correct[i] = sum(predictions[i,1:4] == correct) %>% as.numeric()
