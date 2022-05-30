@@ -18,78 +18,118 @@ playerComparisonUI <- function(id){
     fluidPage(
       fluidRow(
         
-        ##----------------------------------------------------------------
-        ##                          First column                         -
-        ##----------------------------------------------------------------
-        
-        column(
-          width = 4,
-          selectInput(
-            inputId = ns("teamOne"),
-            label = "Select team to search",
-            choices = 
-              c(
-                "Free Agents" = "FA",
-                teamInfo$team
-              ),
-            selected = "Free Agents"
-          ),
-          uiOutput(
-            outputId = ns("selectPlayerOne")
-          )
-        ),
-        
-        ##----------------------------------------------------------------
-        ##                          Third column                         -
-        ##----------------------------------------------------------------
-        
-        column(
-          width = 4,
-          offset = 4,
-          selectInput(
-            inputId = ns("teamTwo"),
-            label = "Select team to search",
-            choices = 
-              c(
-                "Free Agents" = "FA",
-                teamInfo$team
-              ),
-            selected = "Free Agents"
-          ),
-          uiOutput(
-            outputId = ns("selectPlayerTwo")
-          )
-        )
-      ),
-      fluidRow(
-        column(
-          width = 6,
-          box(
-            status = "primary",
-            solidHeader = TRUE,
-            width = NULL,
-            title = "Visualization",
-            plotlyOutput(
-              outputId = ns("radarPlotly")
-            )
-          )
-        ),
-        column(
-          width = 6,
-          box(
-            id = ns("fieldExperience"),
-            status = "primary",
-            solidHeader = TRUE,
-            width = NULL,
-            title = "Positional Experience",
-            imageOutput(
-              outputId = ns("fieldImage"),
-              width = "100%",
-              height = "100%"
-            ) %>% 
-              div(
-                align = "center"
+        tabBox(
+          width = NULL,
+          tabPanel(
+            "Compare Players",
+            ##----------------------------------------------------------------
+            ##                          First column                         -
+            ##----------------------------------------------------------------
+            fluidRow(
+              column(
+                width = 4,
+                selectInput(
+                  inputId = ns("teamOne"),
+                  label = "Select team to search",
+                  choices = 
+                    c(
+                      "Free Agents" = "FA",
+                      teamInfo$team
+                    ),
+                  selected = "Free Agents"
+                ),
+                uiOutput(
+                  outputId = ns("selectPlayerOne")
                 )
+              ),
+              
+              ##----------------------------------------------------------------
+              ##                          Third column                         -
+              ##----------------------------------------------------------------
+              
+              column(
+                width = 4,
+                offset = 4,
+                selectInput(
+                  inputId = ns("teamTwo"),
+                  label = "Select team to search",
+                  choices = 
+                    c(
+                      "Free Agents" = "FA",
+                      teamInfo$team
+                    ),
+                  selected = "Free Agents"
+                ),
+                uiOutput(
+                  outputId = ns("selectPlayerTwo")
+                )
+              )
+            ),
+            fluidRow(
+              column(
+                width = 6,
+                box(
+                  status = "primary",
+                  solidHeader = TRUE,
+                  width = NULL,
+                  title = "Visualization",
+                  plotlyOutput(
+                    outputId = ns("radarPlotly")
+                  )
+                )
+              ),
+              column(
+                width = 6,
+                box(
+                  id = ns("fieldExperience"),
+                  status = "primary",
+                  solidHeader = TRUE,
+                  width = NULL,
+                  title = "Positional Experience",
+                  imageOutput(
+                    outputId = ns("fieldImage"),
+                    width = "100%",
+                    height = "100%"
+                  ) %>% 
+                    div(
+                      align = "center"
+                    )
+                )
+              )
+            )
+          ),
+          tabPanel(
+            "Draft Class Tracker",
+            fluidRow(
+              column(
+                width = 2,
+                box(
+                  title = "Information",
+                  status = "info",
+                  solidHeader = TRUE,
+                  width = NULL,
+                  selectInput(
+                    inputId = ns("class"),
+                    label = "Select Draft Class",
+                    choices = c(
+                      "ALL",
+                      unique(playerData$Class) %>% sort(decreasing = TRUE))
+                  )
+                )
+              ),
+              column(
+                width = 10,
+                box(
+                  title = "Tracker",
+                  status = "primary",
+                  solidHeader = TRUE,
+                  width = NULL,
+                  DT::DTOutput(
+                    outputId = ns("tableTPE")
+                  )
+                )
+              )
+            )
           )
         )
       )
@@ -153,7 +193,98 @@ playerComparisonSERVER <- function(id){
               50
             )
         )}
+      ## Loads selected data for TPE Tracker
+      currentTPEData <- reactive({
+        if(input$class != "ALL"){
+          playerData <- 
+            playerData %>% 
+            filter(
+              Class == input$class
+            )  
+        }
+        
+        playerData %>% 
+          select(
+            Name,
+            Username,
+            Class,
+            Team,
+            `Preferred Position`,
+            TPE,
+            # `Applied TPE` = TPE - `TPE Available`,
+            Active
+          ) %>% 
+          left_join(
+            teamInfo %>% 
+              select(
+                team, 
+                color.primary,
+                color.secondary
+              ),
+            by = c("Team" = "team")
+          )
+        
+      })
       
+      ## js function for automatic reranking
+      js <- c(
+        "table.on('draw.dt', function(){",
+        "  var PageInfo = table.page.info();",
+        "  table.column(0, {page: 'current'}).nodes().each(function(cell,i){", 
+        "    cell.innerHTML = i + 1 + PageInfo.start;",
+        "  });",
+        "})")
+      
+      ## TPE Tracker for different classes
+      output$tableTPE <- renderDT({
+        datatable(
+          currentTPEData() %>% 
+            arrange(
+              -TPE
+            ), 
+          callback = JS(js),
+          style = "bootstrap",
+          class = 'compact cell-border stripe',
+          rownames = TRUE,
+          escape = FALSE,
+          options = 
+            list(
+              ordering = TRUE, 
+              ## Sets a scroller for the rows
+              scrollX = '800px',
+              scrollY = '550px',
+              ## Sets size of rows shown
+              scrollCollapse = TRUE,
+              paging = FALSE,
+              dom = 'ft',
+              columnDefs = 
+                list(
+                  list(
+                    targets = 8:9,
+                    visible = FALSE
+                  )
+                )
+            )
+        ) %>% 
+          formatStyle(
+            columns = 0:7,
+            valueColumns = "color.primary",
+            backgroundColor = 
+              styleEqual(
+                sort(unique(teamInfo$color.primary)), 
+                sort(unique(teamInfo$color.primary))
+              )
+          ) %>% 
+          formatStyle(
+            columns = 0:7,
+            valueColumns = "color.secondary",
+            color = 
+              styleEqual(
+                sort(unique(teamInfo$color.secondary)), 
+                sort(unique(teamInfo$color.secondary))
+              )
+          )
+      })
       
       ###  Selecting a player
       output$selectPlayerOne <- renderUI({
