@@ -36,14 +36,16 @@ FMAttributes <-
     -"Rec"
   ) %>% 
   mutate(
-    Name = if_else(str_detect(Name, "GFuel"), "A Singular Tub of FazeBerry ® GFuel ® Energy Formula - The Official Drink of ESports ®", Name)
-  )
+    Name = 
+      case_when(
+        str_detect(Name, "GFuel") ~ "A Singular Tub of FazeBerry ® GFuel ® Energy Formula - The Official Drink of ESports ®", 
+        str_detect(Name, "Liang") ~ "Kuai Liang",
+        TRUE ~ Name)
+  ) 
 
 colnames(FMAttributes) <- 
   c(
     "Name",
-    "Club",
-    "Position",
     # Attributes
     playerData %>% 
       select(
@@ -82,23 +84,25 @@ comparison <-
   comparedf(
     FMAttributes %>% 
       arrange(Name) %>% 
-      filter(
-        Name %in% playerData$Name
-      ) %>% 
       select(
         Name,
         Acceleration:Throwing
       ) %>% 
-      mutate(
+      dplyr::mutate(
         across(
           Acceleration:Throwing,
-          as.numeric)
+          ~ as.numeric(.x))
       ),
     playerData %>% 
       arrange(Name) %>% 
       select(
         Name,
         Acceleration:Throwing
+      )%>% 
+      dplyr::mutate(
+        across(
+          Acceleration:Throwing,
+          ~ as.numeric(.x))
       ),
     by = "Name"
   ) %>% 
