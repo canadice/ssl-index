@@ -20,6 +20,7 @@ require(ggnewscale)
 require(RColorBrewer)
 require(cowplot)
 require(plotly)
+require(ggimage)
 require(magick)
 require(rsvg)
 require(grid)
@@ -28,6 +29,10 @@ require(ggforce)
 
 ## Tables
 require(formattable)
+# require(gt)
+# require(gtExtras) #Github package
+require(reactable)
+
 
 ## Package for handling date and time
 require(lubridate)
