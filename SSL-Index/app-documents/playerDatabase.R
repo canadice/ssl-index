@@ -17,6 +17,45 @@ playerDatabaseUI <- function(id){
   tagList(
     fluidPage(
       fluidRow(
+        column(
+          width = 4,
+          selectInput(
+            inputId = ns("player"),
+            label = "Select a player",
+            choices = 
+              playerData %>% 
+                select(Name) %>% 
+                arrange(Name)
+            # select(Team, Name) %>% 
+            # group_by(Team) %>% 
+            # arrange(Name) %>% 
+            # group_split(.keep = FALSE) %>% 
+            # setNames(playerData$Team %>% unique() %>% sort()) %>% 
+            # lapply(
+            #   X = .,
+            #   FUN = function(x){
+            #     c(x) %>% 
+            #       unname() %>% 
+            #       lapply(
+            #         X = .,
+            #         FUN = function(x){
+            #           as.list(x)
+            #         }
+            #       ) %>% 
+            #       unlist(recursive = FALSE)
+            #   }
+            # )
+          )
+        ),
+        column(
+          width = 8,
+          plotlyOutput(
+            outputId = ns("radarPlotly"),
+            height = "250px"
+          )
+        )
+      ),
+      fluidRow(
         tabBox(
           width = NULL,
           tabPanel(
@@ -33,31 +72,6 @@ playerDatabaseUI <- function(id){
                   status = "info",
                   solidHeader = TRUE,
                   width = NULL,
-                  selectInput(
-                    inputId = ns("player"),
-                    label = "Select a player",
-                    choices = 
-                      playerData %>% 
-                      select(Team, Name) %>% 
-                      group_by(Team) %>% 
-                      arrange(Name) %>% 
-                      group_split(.keep = FALSE) %>% 
-                      setNames(playerData$Team %>% unique() %>% sort()) %>% 
-                      lapply(
-                        X = .,
-                        FUN = function(x){
-                          c(x) %>% 
-                            unname() %>% 
-                            lapply(
-                              X = .,
-                              FUN = function(x){
-                                as.list(x)
-                              }
-                            ) %>% 
-                            unlist(recursive = FALSE)
-                        }
-                      )
-                  ),
                   h4("TPE Information", align = "center"),
                   fluidRow(
                     column(
@@ -93,41 +107,46 @@ playerDatabaseUI <- function(id){
               column(
                 width = 8,
                 p("Edit the Value column by double clicking on the cell of the attribute you want to edit. 
-                  Clicking on export provides a formatted text with all the updates you have made on your build."),
+                Clicking on export provides a formatted text with all the updates you have made on your build."),
                 DTOutput(ns("attributeTable"), width = "80%")
               )
               ##------------------------------------
             )
           ),
           tabPanel(
-            "Draft Class Tracker",
+            "Game Log",
             fluidRow(
               column(
-                width = 2,
-                box(
-                  title = "Information",
-                  status = "info",
-                  solidHeader = TRUE,
-                  width = NULL,
-                  selectInput(
-                    inputId = ns("class"),
-                    label = "Select Draft Class",
-                    choices = c(
-                      "ALL",
-                      unique(playerData$Class) %>% sort(decreasing = TRUE))
-                  )
+                width = 4,
+                selectizeInput(
+                  inputId = ns("gameSeason"),
+                  label = "Filter Season",
+                  choices =
+                    keeperGameData$Season %>%
+                    unique() %>%
+                    sort(),
+                  multiple = TRUE
                 )
               ),
               column(
-                width = 10,
-                box(
-                  title = "Tracker",
-                  status = "primary",
-                  solidHeader = TRUE,
-                  width = NULL,
-                  DT::DTOutput(
-                    outputId = ns("tableTPE")
-                  )
+                width = 4,
+                selectizeInput(
+                  inputId = ns("gameFilter"),
+                  label = "Filter type of Game",
+                  choices =
+                    c(
+                      "Cup",
+                      "League"
+                    ),
+                  multiple = TRUE
+                )
+              )
+            ),
+            fluidRow(
+              column(
+                width = 12,
+                reactableOutput(
+                  outputId = ns("GameData")
                 )
               )
             )
@@ -152,42 +171,18 @@ playerDatabaseSERVER <- function(id){
       ##                        Reactive values                       -
       ##---------------------------------------------------------------
       
-      ## Loads selected data for TPE Tracker
-      currentTPEData <- reactive({
-        if(input$class != "ALL"){
-          playerData <- 
-            playerData %>% 
-            filter(
-              Class == input$class
-            )  
-        }
-        
-        playerData %>% 
-          select(
-            Name,
-            Username,
-            Class,
-            Team,
-            `Preferred Position`,
-            TPE,
-            # `Applied TPE` = TPE - `TPE Available`,
-            Active
-          ) %>% 
-          left_join(
-            teamInfo %>% 
-              select(
-                team, 
-                color.primary,
-                color.secondary
-              ),
-            by = c("Team" = "team")
-          )
-        
-      })
-      
       currentAvailable <- reactiveVal(350)
       
       currentCost <- reactiveVal(0)
+      
+      radarAttributes <- reactive(
+        playerData %>% 
+          filter(Name == input$player) %>% 
+          select(
+            Name,
+            DEFENDING:MENTAL
+          )
+      )
       
       ## Reactive data set that updates the input build of a player
       reactives <- reactiveValues(
@@ -519,66 +514,6 @@ playerDatabaseSERVER <- function(id){
         )
       })
       
-      ## js function for automatic reranking
-      js <- c(
-        "table.on('draw.dt', function(){",
-        "  var PageInfo = table.page.info();",
-        "  table.column(0, {page: 'current'}).nodes().each(function(cell,i){", 
-        "    cell.innerHTML = i + 1 + PageInfo.start;",
-        "  });",
-        "})")
-      
-      ## TPE Tracker for different classes
-      output$tableTPE <- renderDT({
-        datatable(
-          currentTPEData() %>% 
-            arrange(
-              -TPE
-            ), 
-          callback = JS(js),
-          style = "bootstrap",
-          class = 'compact cell-border stripe',
-          rownames = TRUE,
-          escape = FALSE,
-          options = 
-            list(
-              ordering = TRUE, 
-              ## Sets a scroller for the rows
-              scrollX = '800px',
-              scrollY = '550px',
-              ## Sets size of rows shown
-              scrollCollapse = TRUE,
-              paging = FALSE,
-              dom = 'ft',
-              columnDefs = 
-                list(
-                  list(
-                    targets = 8:9,
-                    visible = FALSE
-                  )
-                )
-            )
-        ) %>% 
-          formatStyle(
-            columns = 0:7,
-            valueColumns = "color.primary",
-            backgroundColor = 
-              styleEqual(
-                sort(unique(teamInfo$color.primary)), 
-                sort(unique(teamInfo$color.primary))
-              )
-          ) %>% 
-          formatStyle(
-            columns = 0:7,
-            valueColumns = "color.secondary",
-            color = 
-              styleEqual(
-                sort(unique(teamInfo$color.secondary)), 
-                sort(unique(teamInfo$color.secondary))
-              )
-          )
-      })
-      
       ##----------------------------------------------------------------
       ##              Datatable output for attributes                  -
       ##----------------------------------------------------------------
@@ -619,7 +554,379 @@ playerDatabaseSERVER <- function(id){
           )
       })
       
+      # Using reactable
+      output$GameData <- renderReactable({
+        if(any(reactives$currentBuild$Group == "Goalkeeper")){
+          data <- 
+            keeperGameData %>% 
+            filter(
+              Name == input$player
+            )
+        } else {
+          data <- 
+            playerGameData %>% 
+            filter(
+              Name == input$player
+            ) %>% 
+            mutate(
+              `Average Rating` = round(`Average Rating`, 2),
+              xG = round(xG, 2)
+            ) 
+        }
+        
+        if(!is.null(input$gameSeason)){
+          data <- 
+            data %>% 
+            filter(
+              Season %in% input$gameSeason
+            )
+        }
+        
+        if(!is.null(input$gameFilter)){
+          if("Cup" %in% input$gameFilter){
+            data <- 
+              data %>% 
+              filter(
+                str_detect(Matchday, "Cup")
+              )
+          } else {
+            data <- 
+              data %>% 
+              filter(
+                str_detect(Matchday, "Cup", negate = TRUE)
+              )
+          }
+        }
+        
+        data %>% 
+          select(
+            -Name,
+            -Nationality,
+            -Position,
+            -Apps
+          ) %>%
+          relocate(
+            c(
+              Season,
+              Matchday,
+              Club,
+              Opponent,
+              Result
+            ),
+            .before = `Minutes Played` 
+          ) %>% 
+          reactable(
+            pagination = FALSE,
+            columns = 
+              list(
+                Club = 
+                  colDef(
+                    maxWidth = 50,
+                    align = "center",
+                    class = "cell",
+                    cell = function(value, index){
+                      logo <- 
+                        img(
+                          class = "logo",
+                          src = teamInfo$logo[teamInfo$team == value],
+                          alt = value,
+                          height = 30
+                        )
+                      
+                      div(class = "club", logo)
+                    }
+                  ),
+                Opponent = 
+                  colDef(
+                    name = "Opp.",
+                    maxWidth = 50,
+                    class = "cell",
+                    align = "center",
+                    cell = function(value, index){
+                      
+                      if(value %>% is.na()){
+                        div(class = "club", " ")
+                        
+                      } else {
+                        logo <- 
+                          img(
+                            class = "logo",
+                            src = teamInfo$logo[teamInfo$team == value],
+                            alt = value,
+                            height = 30
+                          )
+                        
+                        div(class = "club", logo)
+                      }
+                    }
+                  ),
+                Result = 
+                  colDef(
+                    maxWidth = 60,
+                    cell = function(value) {
+                      
+                      if(is.na(value)){
+                        div(
+                          style = list(background = "#FFFFFF"),
+                          " "
+                        )
+                      } else {
+                        
+                        values <- str_split(value, pattern = "-", simplify = TRUE)
+                        
+                        if(any(str_detect(values, pattern = "p"))){
+                          
+                          if(which(str_detect(values, pattern = "p")) == 1){
+                            color <- "#A4D1A2"
+                          } else {
+                            color <- "#CB8491"
+                          }
+                          
+                        } else {
+                          values <- values %>% as.numeric()
+                          
+                          if(values[1] > values[2]){
+                            color <- "#A4D1A2"
+                          } else if(values[1] < values[2]){
+                            color <- "#CB8491"
+                          } else {
+                            color <- "#FFFFBF"
+                          }
+                        }
+                        
+                        div(
+                          align = "center",
+                          style = list(background = color),
+                          value
+                        )
+                      }
+                    }
+                  )
+              )
+          ) 
+        
+      })
       
+      # Using DT
+      # output$GameData <- renderDT({
+      #   if(any(reactives$currentBuild$Group == "Goalkeeper")){
+      #     data <- 
+      #       keeperGameData %>% 
+      #       filter(
+      #         Name == input$player
+      #       )
+      #   } else {
+      #     data <- 
+      #       playerGameData %>% 
+      #       filter(
+      #         Name == input$player
+      #       ) 
+      #   }
+      #   
+      #   if(!is.null(input$gameSeason)){
+      #     data <- 
+      #       data %>% 
+      #       filter(
+      #         Season %in% input$gameSeason
+      #       )
+      #   }
+      #   
+      #   if(!is.null(input$gameFilter)){
+      #     if("Cup" %in% input$gameFilter){
+      #       data <- 
+      #         data %>% 
+      #         filter(
+      #           str_detect(Matchday, "Cup")
+      #         )
+      #     } else {
+      #       data <- 
+      #         data %>% 
+      #         filter(
+      #           str_detect(Matchday, "Cup", negate = TRUE)
+      #         )
+      #     }
+      #   }
+      #   
+      #   data %>% 
+      #     select(
+      #       -Name,
+      #       -Nationality,
+      #       -Position,
+      #       -Apps
+      #     ) %>% 
+      #     relocate(
+      #       Season,
+      #       .before = "Minutes Played"
+      #     ) %>% 
+      #     relocate(
+      #       Matchday,
+      #       .after = "Season"
+      #     ) %>% 
+      #     relocate(
+      #       c(
+      #         Club,
+      #         Opponent,
+      #         Result
+      #       ),
+      #       .after = "Matchday"
+      #     ) %>% 
+      #     mutate(
+      #       `Average Rating` = `Average Rating` %>% round(2),
+      #       xG = xG %>% round(2)
+      #     ) %>% 
+      #     rename(
+      #       S = Season,
+      #       MD = Matchday
+      #     )
+      # },
+      # rownames = FALSE,
+      # escape = FALSE,
+      # style = "bootstrap",
+      # class = 'compact cell-border stripe',
+      # selection = "none",
+      # extensions = "FixedColumns",
+      # options = 
+      #   list(
+      #     orderClasses = FALSE, 
+      #     # order = list(list(0, 'asc')),
+      #     ## Sets a scroller for the rows
+      #     scrollY = '500px',
+      #     ## Sets size of rows shown
+      #     scrollCollapse = TRUE,
+      #     ## Removes pages in the table
+      #     paging = FALSE,
+      #     ## Adds scrollable horizontal
+      #     scrollX = TRUE,
+      #     dom = 't',
+      #     bInfo = FALSE,
+      #     fixedColumns = 
+      #       list(
+      #         leftColumns = 4
+      #       )
+      #   ))
+      
+      ##----------------------------------------------------------------
+      ##                        Visualizations                         -
+      ##----------------------------------------------------------------
+      
+      output$radarPlotly <- renderPlotly({
+        if(radarAttributes() %>% is.null()){
+          plotly_empty(
+            type = "scatter", 
+            mode = "markers",
+            width = NULL,
+            height = NULL
+          ) %>%
+            plotly::config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              autosize = TRUE,
+              title = list(
+                text = "Select a player to show visualization",
+                yref = "paper",
+                y = 0.5
+              )
+            )
+        } else {
+          
+          data <- radarAttributes() %>% 
+            pivot_longer(
+              where(is.numeric),
+              names_to = "attributeIndex",
+              values_to = "Rating"
+            ) %>% 
+            mutate(
+              text = paste(attributeIndex, Rating, sep = ": ")
+            ) %>% 
+            ## Adds a duplicated first observation to allow the lines to connect
+            add_row(
+              .[1,]
+            )
+          
+          fig <- 
+            plot_ly(
+              data = data,
+              r = 0,
+              theta = ~attributeIndex,
+              width = 400,
+              height = 250
+            ) %>% 
+            add_trace(
+              type = 'scatterpolar',
+              mode = 'lines',
+              r = ~Rating,
+              theta = ~attributeIndex,
+              text = ~text,
+              fill = 'none',
+              hoverinfo = "text",
+              line = 
+                list(
+                  color = "#ffffff",
+                  width = 3
+                ),
+              name = ~Name,
+              data = data
+            ) %>% 
+            add_trace(
+              type = 'barpolar',
+              width = 360,
+              hoverinfo = "none",
+              r = 10,
+              marker = 
+                list(
+                  color = "#B81D13"
+                )
+            ) %>% 
+            add_trace(
+              type = 'barpolar',
+              width = 360,
+              hoverinfo = "none",
+              r = 5,
+              marker = 
+                list(
+                  color = "#EFB700"
+                )
+            ) %>% 
+            add_trace(
+              type = 'barpolar',
+              width = 360,
+              hoverinfo = "none",
+              r = 5,
+              marker = 
+                list(
+                  color = "#008450"
+                )
+            ) 
+            
+          
+          fig %>%
+            plotly::config(
+              modeBarButtonsToRemove =
+                c("zoom", "pan2d", "zoomIn2d", "zoomOut2d", "autoScale2d",
+                  "resetScale2d", "hoverClosestCartesian",
+                  "hoverCompareCartesian", "toggleSpikelines"
+                )
+            ) %>%
+            layout(
+              autosize = TRUE,
+              dragmode= FALSE,
+              polar =
+                list(
+                  radialaxis =
+                    list(
+                      visible = FALSE,
+                      range = c(0,20)
+                    )
+                ),
+              ## Legend is put to false so the plot is the same size
+              showlegend = FALSE,
+              paper_bgcolor='#ffffff00',
+              plot_bgcolor='#ffffff00'
+            )
+        }
+      }
+      )
     }
   )
 }
