@@ -159,14 +159,58 @@ pitch <-
     ),
     silent = TRUE
   )
-  
 
 playerData <- 
   googlesheets4::read_sheet(
     ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
     sheet = "Daily Scrape"
+  ) %>% 
+  mutate(
+    DEFENDING = 
+      (Marking + Tackling + Positioning)/3,
+    PHYSICAL = 
+      (Agility + Balance + Stamina + Strength)/4,
+    SPEED = 
+      (Acceleration + Pace)/2,
+    VISION = 
+      (Passing + Flair + Vision)/3,
+    ATTACKING = 
+      (Finishing + Composure + `Off the Ball`)/3,
+    TECHNICAL = 
+      (Dribbling + `First Touch` + Technique)/3,
+    AERIAL = 
+      (Heading + `Jumping Reach`)/2,
+    MENTAL = 
+      (Anticipation + Bravery + Concentration + Decisions + Determination + Teamwork)/6
+  ) %>% 
+  mutate(
+    across(
+      DEFENDING:MENTAL,
+      ~ floor(.x)
+    )
   )
 
+## Loads game data
+keeperGameData <- 
+  googlesheets4::read_sheet(
+    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    sheet = "KeeperGameData"
+  ) %>% 
+  mutate(
+    Season = as.numeric(Season)
+  )
+
+playerGameData <- 
+  googlesheets4::read_sheet(
+    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    sheet = "PlayerGameData",
+    guess_max = 2400
+  ) %>% 
+  mutate(
+    Season = as.numeric(Season)
+  )
+
+## Loads help data
 roleMatrix <- 
   googlesheets4::read_sheet(
     ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
@@ -185,7 +229,322 @@ attributes <-
     sheet = "Attributes and Availability"
   )
 
+##################################################################
+##                      Loading Index data                      ##
+##################################################################
 
+url <- 
+  paste(
+    "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/S",
+    1:3,
+    "_standings.html",
+    sep = ""
+  )
 
+readStandings <- function(x) {
+  x %>% 
+    read_html() %>% 
+    html_elements("table") %>% 
+    html_table() %>% 
+    .[[1]] %>% 
+    dplyr::rename(
+      GP = Pld,
+      W = Won,
+      D = Drn,
+      L = Lst,
+      GF = For,
+      GA = Ag
+    ) %>% 
+    select(
+      -`Inf`,
+      -Form
+    ) %>% 
+    left_join(
+      teamInfo %>% 
+        select(
+          team, 
+          color.primary,
+          color.secondary
+        ),
+      by = c("Team" = "team")
+    )
+}
+
+standings <- lapply(X = url, FUN = readStandings)
+
+### The Github exports from FM are not used. Game Logs are used instead.# 
+{
+# outfieldUrl <- 
+#   paste(
+#     "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/S",
+#     1:3,
+#     "_playerStats.html",
+#     sep = ""
+#   )
+# 
+# goalieUrl <-
+#   paste(
+#     "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/S",
+#     1:3,
+#     "_goalieStats.html",
+#     sep = ""
+#   )
+# 
+# readPlayerStats <- function(x){
+#   x %>% 
+#     read_html() %>% 
+#     html_elements("table") %>% 
+#     html_table() %>% 
+#     .[[1]] %>% 
+#     dplyr::rename(
+#       Apps = Apps,
+#       Goals = Gls,
+#       Assists = Ast,
+#       `Minutes Played` = Mins,
+#       `Attempted Passes` = `Pas A`,
+#       `Successful Passes` = `Ps C`,
+#       `Key Passes` = `K Pas`,
+#       `Successful Crosses` = `Cr C`,
+#       `Attempted Crosses` = `Cr A`,
+#       `Chances Created` = CCC,
+#       `Tackles Won` = `Tck W`,
+#       `Tackle%` = `Tck R`,
+#       `Key Tackles` = `K Tck`,
+#       `Successful Headers` = Hdrs,
+#       `Attempted Headers` = `Hdrs A`,
+#       `Header%` = `Hdr %`,
+#       `Key Headers` = `K Hdrs`,
+#       `Shots on Target` = ShT,
+#       `Mistakes Leading to Goals` = `Gl Mst`,
+#       Dribbles = `Drb`,
+#       Offsides = Off,
+#       `Fouls Against` = FA,
+#       Interceptions = Itc,
+#       `Yellow Cards` = Yel,
+#       `Red Cards` = Red,
+#       Fouls = Fls,
+#       `Penalties Taken` = Pens,
+#       `Penalties Scored` = `Pens S`,
+#       `Distance Run (km)` = Distance,
+#       `Average Rating` = `Av Rat`,
+#       `Player of the Match` = `PoM`
+#     ) %>% 
+#     dplyr::mutate(
+#       Starts = (str_split(Apps, pattern = "\\(", simplify = TRUE)[,1] %>% 
+#                   as.numeric()),
+#       Subs = (str_split(Apps, pattern = "\\(", simplify = TRUE)[,2] %>% 
+#                 str_extract(pattern = "[0-9]+") %>% 
+#                 as.numeric())
+#     ) %>% 
+#     dplyr::mutate(
+#       Apps = rowSums(data.frame(.$Starts, .$Subs), na.rm = TRUE)
+#     ) %>%
+#     dplyr::select(
+#       -Starts, -Subs
+#     ) %>%
+#     dplyr::mutate(
+#       across(
+#         c(
+#           `Minutes Played`:`Average Rating`
+#         ),
+#         .fns = str_replace_all,
+#         pattern = "[^\\d\\.]+",
+#         replacement = ""
+#       )
+#     ) %>% 
+#     dplyr::mutate(
+#       Name = 
+#         case_when(
+#           str_detect(Name, "GFuel") ~ "FazeBerry GFuel - American",
+#           TRUE ~ Name
+#         )
+#     ) %>% 
+#     dplyr::mutate(
+#       `Pass%` = (`Successful Passes` %>% as.numeric()/`Attempted Passes` %>% as.numeric()) %>% round(4)*100,
+#       `Header%` = (`Successful Headers` %>% as.numeric()/`Attempted Headers` %>% as.numeric()) %>% round(4)*100,
+#       # Position = NA,
+#       Nationality = 
+#         Name %>% 
+#         str_split(
+#           pattern = " - ", 
+#           simplify = TRUE
+#         ) %>% 
+#         .[,2],
+#       Name = 
+#         Name %>% 
+#         str_split(
+#           pattern = " - ", 
+#           simplify = TRUE
+#         ) %>% 
+#         .[,1],
+#       `Cross%` = (`Successful Crosses` %>% as.numeric()/`Attempted Crosses` %>% as.numeric()) %>% round(4)*100,
+#       # `Header%` =
+#       #   `Header%` %>% 
+#       #   as.numeric(),
+#       `Tackle%` =
+#         `Tackle%` %>% 
+#         as.numeric(),
+#       `Distance Run (km)` = 
+#         `Distance Run (km)` %>% 
+#         as.numeric(),
+#       Club =
+#         Club %>%
+#         str_split(pattern = "-", simplify = TRUE) %>% 
+#         .[,1] %>% 
+#         str_squish()
+#     ) %>% 
+#     dplyr::mutate(
+#       across(
+#         !contains(
+#           c("Name", "Information", "Nationality", "Position", "Club")
+#         ),
+#         as.numeric
+#       ),
+#       `Attempted Tackles` = ((`Tackles Won` %>% as.numeric())/(`Tackle%`/100)) %>% round(0)
+#     ) %>% 
+#     relocate(
+#       c(
+#         Nationality,
+#         Position,
+#         Apps,
+#         `Minutes Played`,
+#         `Distance Run (km)`
+#       ),
+#       .after = Name
+#     ) %>% 
+#     relocate(
+#       c(
+#         `Attempted Passes`,
+#         `Pass%`
+#       ),
+#       .after = `Successful Passes`
+#     ) %>% 
+#     relocate(
+#       c(
+#         `Attempted Crosses`,
+#         `Cross%`
+#       ),
+#       .after = `Successful Crosses`
+#     ) %>% 
+#     relocate(
+#       c(
+#         `Attempted Headers`
+#       ),
+#       .after = `Successful Headers`
+#     ) %>% 
+#     relocate(
+#       c(
+#         `Attempted Tackles`,
+#         `Tackle%`
+#       ),
+#       .after = `Tackles Won`
+#     ) %>% 
+#     relocate(
+#       `Shots on Target`,
+#       .before = `Shots`
+#     ) %>% 
+#     select(
+#       -`Inf`,
+#       -`Tck A`,
+#       -Rec
+#     ) %>% 
+#     arrange(
+#       `Average Rating` %>% desc()
+#     ) %>% 
+#     # As there are non-numeric values being transformed correctly to NA, warnings are suppressed. 
+#     suppressWarnings()
+# }
+# 
+# readKeeperStats <- function(x){
+#   x %>% 
+#     read_html() %>% 
+#     html_elements("table") %>% 
+#     html_table() %>% 
+#     .[[1]] %>% 
+#     dplyr::rename(
+#       Apps = Apps,
+#       `Minutes Played` = Mins,
+#       Drawn = D,
+#       Conceded = Conc,
+#       `Saves Parried` = Svp,
+#       `Saves Held`= Svh,
+#       `Saves Tipped` = Svt,
+#       `Penalties Saved` = `Pens Saved`,
+#       `Penalties Faced` = `Pens Faced`,
+#       `Average Rating` = `Av Rat`,
+#       `Player of the Match` = `PoM`,
+#       # `Clean Sheets` = `Clean sheets`
+#       `Clean Sheets` = Shutouts
+#     ) %>% 
+#     dplyr::mutate(
+#       across(
+#         c(
+#           `Minutes Played`:`Average Rating`
+#         ),
+#         .fns = str_replace_all,
+#         pattern = "[^\\d\\.]+",
+#         replacement = ""
+#       )
+#     ) %>% 
+#     dplyr::mutate(
+#       Nationality = 
+#         Name %>% 
+#         str_split(
+#           pattern = " - ", 
+#           simplify = TRUE
+#         ) %>% 
+#         .[,2],
+#       Name = 
+#         Name %>% 
+#         str_split(
+#           pattern = " - ", 
+#           simplify = TRUE
+#         ) %>% 
+#         .[,1],
+#       Club =
+#         Club %>%
+#         str_split(pattern = "-", simplify = TRUE) %>% 
+#         .[,1] %>% 
+#         str_squish()
+#     ) %>% 
+#     dplyr::mutate(
+#       across(
+#         !contains(
+#           c("Name", "Information", "Nationality", "Position", "Club")
+#         ),
+#         as.numeric
+#       )
+#     ) %>% 
+#     dplyr::mutate(
+#       `Save%` = ((`Saves Parried`+`Saves Held`+`Saves Tipped`)/(`Saves Parried`+`Saves Held`+`Saves Tipped`+Conceded)) %>% round(4) * 100
+#     ) %>% 
+#     relocate(
+#       `Save%`,
+#       .after = `Saves Tipped`
+#     ) %>% 
+#     relocate(
+#       c(
+#         Nationality,
+#         Position,
+#         Apps,
+#         `Minutes Played`,
+#       ),
+#       .after = Name
+#     ) %>% 
+#     select(
+#       -`Inf`,
+#       -Rec
+#     ) %>% 
+#     arrange(
+#       `Average Rating` %>% desc()
+#     ) %>% 
+#     # As there are non-numeric values being transformed correctly to NA, warnings are suppressed. 
+#     suppressWarnings()
+# }
+# 
+# playerStats <- lapply(outfieldUrl, readPlayerStats)
+# 
+# goalieStats <- lapply(goalieUrl, readKeeperStats)
+}
 
 
