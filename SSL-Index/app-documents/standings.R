@@ -23,11 +23,7 @@ standingsUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              unique(
-                playerData$Class
-              ) %>% 
-              str_extract(pattern = "[0-9]+") %>% 
-              unname() %>% 
+              1:length(url) %>% 
               sort(decreasing = TRUE)
           )
         )
@@ -52,48 +48,9 @@ standingsSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
       
-      standings <- reactive({
-        
-        url <- 
-          paste(
-            "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/S",
-            input$season,
-            "_standings.html",
-            sep = ""
-          )
-        
-        url %>% 
-          read_html() %>% 
-          html_elements("table") %>% 
-          html_table() %>% 
-          .[[1]] %>% 
-          rename(
-            GP = Pld,
-            W = Won,
-            D = Drn,
-            L = Lst,
-            GF = For,
-            GA = Ag
-          ) %>% 
-          select(
-            -`Inf`,
-            -Form
-          ) %>% 
-          left_join(
-            teamInfo %>% 
-              select(
-                team, 
-                color.primary,
-                color.secondary
-              ),
-            by = c("Team" = "team")
-          ) 
-        
-      })
-      
       output$standings <- renderDT({
         datatable(
-          standings(), 
+          standings[[input$season %>% as.numeric()]], 
           style = "bootstrap",
           class = 'compact cell-border stripe',
           rownames = FALSE,

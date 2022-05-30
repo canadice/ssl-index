@@ -23,11 +23,7 @@ scheduleUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              unique(
-                playerData$Class
-              ) %>% 
-              str_extract(pattern = "[0-9]+") %>% 
-              unname() %>% 
+              1:4 %>% 
               sort(decreasing = TRUE)
           )
         ),
@@ -79,7 +75,7 @@ scheduleSERVER <- function(id){
                 sScrollX = "100%",
                 ## Sets size of rows shown
                 scrollCollapse = TRUE,
-                pageLength = 100,
+                pageLength = 999,
                 dom = 'Rt',
                 ## Sets color of table background
                 initComplete = JS(
