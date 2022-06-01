@@ -27,6 +27,11 @@ dbListTables(con)
 ##              Duty and Role Matrix                           ##
 #################################################################
 
+# ability <- googlesheets4::read_sheet(
+#   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+#   sheet = "Duty and Role Matrix"
+# )
+
 #################################################################
 ##              Insert Team Information                        ##
 #################################################################
@@ -51,6 +56,6 @@ dbListTables(con)
 ##                    Insert TPE Cost table                    ##
 #################################################################
 
-# dbWriteTable(con, "Keeper_Game_Data", aggregateOutfield, overwrite = TRUE)
+dbWriteTable(con, "Duty_and_Role_Matrix", ability, overwrite = TRUE)
 
 dbDisconnect(con)
