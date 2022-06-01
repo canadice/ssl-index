@@ -104,7 +104,7 @@ playerBuilderUI <- function(id){
                   numericInput(
                     inputId = ns("playerHeight"),
                     label = "Set Height in Inches",
-                    value = 60,
+                    value = 70,
                     min = 55,
                     max = 90,
                     step = 1
@@ -120,7 +120,7 @@ playerBuilderUI <- function(id){
                   numericInput(
                     inputId = ns("playerWeight"),
                     label = "Set Weight in Pounds",
-                    value = 140,
+                    value = 145,
                     min = 100,
                     max = 350,
                     step = 5
