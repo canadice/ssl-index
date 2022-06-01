@@ -7,7 +7,7 @@
 ###########################################################################
 ###########################################################################
 
-# remotes::install_github("Canadice/sslrtools")
+#remotes::install_github("Canadice/sslrtools")
 require(sslrtools)
 
 require(rvest)
@@ -25,7 +25,7 @@ require(dbplyr)
 require(RSQLite)
 
 ## Opens the connection to the SQLite Database
-con <- dbConnect(SQLite(), "database/SSL_Database.db")
+con <- DBI::dbConnect(RSQLite::SQLite(), "database/SSL_Database.db")
 
 
 #################################################################
@@ -146,8 +146,8 @@ forumData <-
 
 write.csv(forumData, file = "data/forumData.csv", row.names = FALSE)
 
-dbWriteTable(con, "Daily_Scrape", forumData, overwrite = TRUE)
+DBI::dbWriteTable(con, "Daily_Scrape", forumData, overwrite = TRUE)
 
-dbDisconnect(con)
+DBI::dbDisconnect(con)
 
 
