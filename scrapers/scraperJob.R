@@ -25,7 +25,7 @@ require(dbplyr)
 require(RSQLite)
 
 ## Opens the connection to the SQLite Database
-con <- DBI::dbConnect(RSQLite::SQLite(), "database/SSL_Database.db")
+con <- RSQLite::dbConnect(RSQLite::SQLite(), "database/SSL_Database.db")
 
 
 #################################################################
@@ -146,8 +146,8 @@ forumData <-
 
 write.csv(forumData, file = "data/forumData.csv", row.names = FALSE)
 
-DBI::dbWriteTable(con, "Daily_Scrape", forumData, overwrite = TRUE)
+RSQLite::dbWriteTable(con, "Daily_Scrape", forumData, overwrite = TRUE)
 
-DBI::dbDisconnect(con)
+RSQLite::dbDisconnect(con)
 
 
