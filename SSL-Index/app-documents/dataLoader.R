@@ -5,62 +5,39 @@ require(dbplyr)
 require(RSQLite)
 require(stringr)
 
+## Adding a deauthorization for reading of Google Sheets that are still being used. 
+googlesheets4::gs4_deauth()
 
+## Opens the connection to the SSL Database
 con <- dbConnect(SQLite(), "../database/SSL_Database.db")
 
 
 ##################################################################
-##                    Positional Coordinates                    ##
+##           Loading tables with information                    ##
 ##################################################################
-{positionalCoord <- 
-  data.frame(
-    x = 
-      c(
-        375, 
-        130,375,620,
-        130,375,620,
-        130,375,620,
-        130,375,620,
-        375
-      ),
-    y = 
-      c(
-        775,
-        625,625,625,
-        455,455,455,
-        310,310,310,
-        150,150,150,
-        50
-      ),
-    Position = 
-      c(
-        "Striker",
-        "Attacking Midfielder L",
-        "Attacking Midfielder C",
-        "Attacking Midfielder R",
-        "Midfielder L",
-        "Midfielder C",
-        "Midfielder R",
-        "Wingback L",
-        "Defensive Midfielder",
-        "Wingback R",
-        "Defender L",
-        "Defender C",
-        "Defender R",
-        "Goalkeeper"
-      )
-  )
-}
-#################################################################
-##                       TPE Cost Matrix                       ##
-#################################################################
+
+## Doesn't necessarily have to load here. Need to check when it is being used.
+positionalCoord <- 
+  dbSendQuery(con, "SELECT * FROM positionalCoord") %>% 
+  dbFetch()
 
 tpeCost <- 
-  data.frame(
-    value = 5:20,
-    ## -2 comes from an initial error in the costs as 5 is free (starting value)
-    cost = c(2,4,6,10,14,18,24,30,36,48,60,72,90,108,133,158)-2
-  )
+  dbSendQuery(con, "SELECT * FROM tpeCost") %>% 
+  dbFetch()
+
+
+## These are only used when scraping data
+roleMatrix <- 
+  dbGetQuery(con, "SELECT * from Duty_and_Role_Matrix")
+
+abilityMatrix <- 
+  dbGetQuery(con, "SELECT * from Current_Ability_Calculation_Matrix")
+
+## These are used when grouping the attributes in the player builder and update tool
+attributes <- 
+  dbGetQuery(con, "SELECT * from Attributes_And_Availability")
+
+
 #################################################################
 ##                       Attribute names                       ##
 #################################################################
@@ -152,8 +129,8 @@ goalieAttributeNames <-
 ##             Loading data sets from Google Sheets             ##
 ##################################################################
 
-
-teamInfo <-dbGetQuery(con, "SELECT * from Team_Information")
+teamInfo <-
+  dbGetQuery(con, "SELECT * from Team_Information")
 
 pitch <- 
   try(
@@ -163,7 +140,8 @@ pitch <-
     silent = TRUE
   )
 
-playerData <- dbGetQuery(con, "SELECT * from Daily_Scrape")  %>%
+playerData <- 
+  dbGetQuery(con, "SELECT * from Daily_Scrape") %>%
   mutate(
     DEFENDING =
       (Marking + Tackling + Positioning)/3,
@@ -190,23 +168,17 @@ playerData <- dbGetQuery(con, "SELECT * from Daily_Scrape")  %>%
   )
 
 ## Loads game data
-keeperGameData <- dbGetQuery(con, "SELECT * from Keeper_Game_Data") %>%
+keeperGameData <- 
+  dbGetQuery(con, "SELECT * from Keeper_Game_Data") %>%
   mutate(
     Season = as.numeric(Season)
   )
 
-playerGameData <- dbGetQuery(con, "SELECT * from Player_Game_Data") %>% 
+playerGameData <- 
+  dbGetQuery(con, "SELECT * from Player_Game_Data") %>% 
   mutate(
     Season = as.numeric(Season)
   )
-
-roleMatrix <- dbGetQuery(con, "SELECT * from Duty_and_Role_Matrix")
-
-
-abilityMatrix <- dbGetQuery(con, "SELECT * from Current_Ability_Calculation_Matrix")
-
-attributes <- dbGetQuery(con, "SELECT * from Attributes_And_Availability")
-
 
 ##################################################################
 ##                      Loading Index data                      ##
