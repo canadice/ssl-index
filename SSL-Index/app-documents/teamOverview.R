@@ -203,7 +203,7 @@ teamOverviewSERVER <- function(id){
             filter(
               team == input$selectedTeam
             ) %>% 
-            select(color.primary) %>% 
+            select(color_primary) %>% 
             unname() %>% 
             teamColor()
         }
@@ -544,8 +544,8 @@ teamOverviewSERVER <- function(id){
             teamData() %>% 
             select(
               Name,
-              `Preferred Foot`,
-              `Preferred Position`,
+              Preferred_Foot,
+              Preferred_Position,
               input$rolePicker
             ) %>% 
             arrange(

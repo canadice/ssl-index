@@ -209,7 +209,7 @@ playerComparisonSERVER <- function(id){
             Username,
             Class,
             Team,
-            `Preferred Position`,
+            Preferred_Position,
             TPE,
             # `Applied TPE` = TPE - `TPE Available`,
             Active
@@ -218,8 +218,8 @@ playerComparisonSERVER <- function(id){
             teamInfo %>% 
               select(
                 team, 
-                color.primary,
-                color.secondary
+                color_primary,
+                color_secondary
               ),
             by = c("Team" = "team")
           )
@@ -271,8 +271,8 @@ playerComparisonSERVER <- function(id){
             valueColumns = "color.primary",
             backgroundColor = 
               styleEqual(
-                sort(unique(teamInfo$color.primary)), 
-                sort(unique(teamInfo$color.primary))
+                sort(unique(teamInfo$color_primary)), 
+                sort(unique(teamInfo$color_primary))
               )
           ) %>% 
           formatStyle(
@@ -280,8 +280,8 @@ playerComparisonSERVER <- function(id){
             valueColumns = "color.secondary",
             color = 
               styleEqual(
-                sort(unique(teamInfo$color.secondary)), 
-                sort(unique(teamInfo$color.secondary))
+                sort(unique(teamInfo$color_secondary)), 
+                sort(unique(teamInfo$color_secondary))
               )
           )
       })
@@ -380,8 +380,8 @@ playerComparisonSERVER <- function(id){
               data %>% 
               select(
                 Name,
-                Acceleration:`Work Rate`,
-                `Aerial Reach`:`Tendency to Rush`
+                Acceleration:Work_Rate,
+                Aerial_Reach:Tendency_to_Rush
               ) %>% 
               select_if(
                 ~mean(is.na(.)) < 0.9
@@ -391,7 +391,7 @@ playerComparisonSERVER <- function(id){
               data %>% 
               select(
                 Name,
-                Acceleration:`Work Rate`
+                Acceleration:Work_Rate
               ) 
           }
           
@@ -468,8 +468,8 @@ playerComparisonSERVER <- function(id){
                 data %>% 
                 select(
                   Name,
-                  Acceleration:`Work Rate`,
-                  `Aerial Reach`:`Tendency to Rush`
+                  Acceleration:Work_Rate,
+                  Aerial_Reach:Tendency_to_Rush
                 ) %>% 
                 select_if(
                   ~mean(is.na(.)) < 0.9
@@ -479,7 +479,7 @@ playerComparisonSERVER <- function(id){
                 data %>% 
                 select(
                   Name,
-                  Acceleration:`Work Rate`
+                  Acceleration:Work_Rate
                 ) 
             }
             
@@ -488,8 +488,8 @@ playerComparisonSERVER <- function(id){
                 data2 %>% 
                 select(
                   Name,
-                  Acceleration:`Work Rate`,
-                  `Aerial Reach`:`Tendency to Rush`
+                  Acceleration:Work_Rate,
+                  Aerial_Reach:Tendency_to_Rush
                 ) %>% 
                 select_if(
                   ~mean(is.na(.)) < 0.9
@@ -499,7 +499,7 @@ playerComparisonSERVER <- function(id){
                 data2 %>% 
                 select(
                   Name,
-                  Acceleration:`Work Rate`
+                  Acceleration:Work_Rate
                 ) 
             }
             

@@ -193,18 +193,18 @@ playerStatsSERVER <- function(id){
           dplyr::summarize(
             Nationality = last(Nationality),
             Club = last(Club),
-            `Average Rating` = mean(`Average Rating`, na.rm = TRUE),
+            Average_Rating = mean(Average_Rating, na.rm = TRUE),
             across(
               where(is.numeric),
               ~ sum(.x, na.rm = TRUE)
             )
           ) %>% 
           dplyr::mutate(
-            `Pass%` = (`Successful Passes` / `Attempted Passes`) %>% round(3)*100,
-            `Cross%` = (`Successful Crosses` / `Attempted Crosses`) %>% round(3)*100,
-            `Header%` = (`Successful Headers` / `Attempted Headers`) %>% round(3)*100,
-            `Tackle%` = (`Tackles Won` / `Attempted Tackles`) %>% round(3)*100,
-            `Average Rating` = `Average Rating` %>% round(2)
+            Pass_Percentage = (Successful_Passes / Attempted_Passes) %>% round(3)*100,
+            Cross_Percentage = (Successful_Crosses / Attempted_Crosses) %>% round(3)*100,
+            Header_Percentage = (Successful_Headers / Attempted_Headers) %>% round(3)*100,
+            Tackle_Percentage = (Tackles_Won / Attempted_Tackles) %>% round(3)*100,
+            Average_Rating = Average_Rating %>% round(2)
           )
       })
       
@@ -244,29 +244,29 @@ playerStatsSERVER <- function(id){
           dplyr::summarize(
             Nationality = last(Nationality),
             Club = last(Club),
-            `Average Rating` = mean(`Average Rating`, na.rm = TRUE),
-            `xSave%` = mean(`xSave%`, na.rm = TRUE) %>% round(2),
+            Average_Rating = mean(Average_Rating, na.rm = TRUE),
+            xSave_Percentage = mean(xSave_Percentage, na.rm = TRUE) %>% round(2),
             across(
               where(is.numeric),
               ~ sum(.x, na.rm = TRUE)
             )
           ) %>% 
           dplyr::mutate(
-            `Save%` = 
-              ((`Saves Parried` + `Saves Held` + `Saves Tipped`) / 
-              (`Saves Parried` + `Saves Held` + `Saves Tipped` + Conceded)) %>% round(3)*100,
-            `Average Rating` = `Average Rating` %>% round(2)
+            Save_Percentage = 
+              ((Saves_Parried + Saves_Held + Saves_Tipped) / 
+              (Saves_Parried + Saves_Held + Saves_Tipped + Conceded)) %>% round(3)*100,
+            Average_Rating = Average_Rating %>% round(2)
           ) %>% 
           relocate(
-            `xSave%`,
-            .after = `Penalties Saved`
+            xSave_Percentage,
+            .after = Penalties_Saved
           )
       })
       
       output$playerStats <- renderReactable({
         activePlayerData() %>% 
           arrange(
-            `Average Rating` %>% desc()
+            Average_Rating %>% desc()
           ) %>% 
           reactable(
             pagination = TRUE,
@@ -307,7 +307,7 @@ playerStatsSERVER <- function(id){
       output$goalieStats <- renderReactable({
         activeKeeperData() %>% 
           arrange(
-            `Average Rating` %>% desc()
+            Average_Rating %>% desc()
           ) %>% 
           reactable(
             pagination = TRUE,
@@ -439,10 +439,10 @@ playerStatsSERVER <- function(id){
           select(
             Name, 
             Club,
-            `Shots on Target`
+            Shots_on_Target
           ) %>% 
           arrange(
-            desc(`Shots on Target`)
+            desc(Shots_on_Target)
           ) %>% 
           slice_head(n = 10) %>% 
           reactable(
@@ -527,10 +527,10 @@ playerStatsSERVER <- function(id){
           select(
             Name, 
             Club,
-            `Player of the Match`
+            Player_of_the_Match
           ) %>% 
           arrange(
-            desc(`Player of the Match`)
+            desc(Player_of_the_Match)
           ) %>% 
           slice_head(n = 10) %>% 
           reactable(
@@ -615,10 +615,10 @@ playerStatsSERVER <- function(id){
           select(
             Name, 
             Club,
-            `Save%`
+            Save_Percentage
           ) %>% 
           arrange(
-            desc(`Save%`)
+            desc(Save_Percentage)
           ) %>% 
           slice_head(n = 10) %>% 
           reactable(
@@ -703,10 +703,10 @@ playerStatsSERVER <- function(id){
           select(
             Name, 
             Club,
-            `Clean Sheets`
+            Clean_Sheets
           ) %>% 
           arrange(
-            desc(`Clean Sheets`)
+            desc(Clean_Sheets)
           ) %>% 
           slice_head(n = 10) %>% 
           reactable(

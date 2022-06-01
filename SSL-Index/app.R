@@ -49,6 +49,11 @@ require(googledrive)
 require(rmarkdown)
 require(markdown)
 
+##Loading Database packages for SQLite database
+require(DBI)
+require(dbplyr)
+require(RSQLite)
+
 ## Loading Shiny packages
 require(shiny)
 require(DT)
@@ -510,6 +515,5 @@ server <- function(input, output, session) {
   
   
 }
-
 # Run the application 
 shinyApp(ui = ui, server = server, enableBookmarking = "disable")

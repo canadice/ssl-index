@@ -73,20 +73,20 @@ standingsSERVER <- function(id){
         ) %>% 
           formatStyle(
             columns = 1:10,
-            valueColumns = "color.primary",
+            valueColumns = "color_primary",
             backgroundColor = 
               styleEqual(
-                sort(unique(teamInfo$color.primary)), 
-                sort(unique(teamInfo$color.primary))
+                sort(unique(teamInfo$color_primary)), 
+                sort(unique(teamInfo$color_primary))
               )
           ) %>% 
           formatStyle(
             columns = 1:10,
-            valueColumns = "color.secondary",
+            valueColumns = "color_secondary",
             color = 
               styleEqual(
-                sort(unique(teamInfo$color.secondary)), 
-                sort(unique(teamInfo$color.secondary))
+                sort(unique(teamInfo$color_secondary)), 
+                sort(unique(teamInfo$color_secondary))
               )
           )
       })

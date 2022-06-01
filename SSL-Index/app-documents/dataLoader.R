@@ -1,4 +1,12 @@
 ## Loading data
+require(dplyr)
+require(DBI)
+require(dbplyr)
+require(RSQLite)
+require(stringr)
+
+
+con <- dbConnect(SQLite(), "../database/SSL_Database.db")
 
 
 ##################################################################
@@ -144,13 +152,8 @@ goalieAttributeNames <-
 ##             Loading data sets from Google Sheets             ##
 ##################################################################
 
-googlesheets4::gs4_deauth()
 
-teamInfo <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Team Information"
-  )
+teamInfo <-dbGetQuery(con, "SELECT * from Team_Information")
 
 pitch <- 
   try(
@@ -160,29 +163,25 @@ pitch <-
     silent = TRUE
   )
 
-playerData <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Daily Scrape"
-  ) %>% 
+playerData <- dbGetQuery(con, "SELECT * from Daily_Scrape")  %>%
   mutate(
-    DEFENDING = 
+    DEFENDING =
       (Marking + Tackling + Positioning)/3,
-    PHYSICAL = 
+    PHYSICAL =
       (Agility + Balance + Stamina + Strength)/4,
-    SPEED = 
+    SPEED =
       (Acceleration + Pace)/2,
-    VISION = 
+    VISION =
       (Passing + Flair + Vision)/3,
-    ATTACKING = 
-      (Finishing + Composure + `Off the Ball`)/3,
-    TECHNICAL = 
-      (Dribbling + `First Touch` + Technique)/3,
-    AERIAL = 
-      (Heading + `Jumping Reach`)/2,
-    MENTAL = 
+    ATTACKING =
+      (Finishing + Composure + Off_the_Ball)/3,
+    TECHNICAL =
+      (Dribbling + First_Touch + Technique)/3,
+    AERIAL =
+      (Heading + Jumping_Reach)/2,
+    MENTAL =
       (Anticipation + Bravery + Concentration + Decisions + Determination + Teamwork)/6
-  ) %>% 
+  ) %>%
   mutate(
     across(
       DEFENDING:MENTAL,
@@ -191,43 +190,23 @@ playerData <-
   )
 
 ## Loads game data
-keeperGameData <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "KeeperGameData"
-  ) %>% 
+keeperGameData <- dbGetQuery(con, "SELECT * from Keeper_Game_Data") %>%
   mutate(
     Season = as.numeric(Season)
   )
 
-playerGameData <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "PlayerGameData",
-    guess_max = 2400
-  ) %>% 
+playerGameData <- dbGetQuery(con, "SELECT * from Player_Game_Data") %>% 
   mutate(
     Season = as.numeric(Season)
   )
 
-## Loads help data
-roleMatrix <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Duty and Role Matrix"
-  )
+roleMatrix <- dbGetQuery(con, "SELECT * from Duty_and_Role_Matrix")
 
-abilityMatrix <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Current Ability Calculation Matrix"
-  )
 
-attributes <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Attributes and Availability"
-  )
+abilityMatrix <- dbGetQuery(con, "SELECT * from Current_Ability_Calculation_Matrix")
+
+attributes <- dbGetQuery(con, "SELECT * from Attributes_And_Availability")
+
 
 ##################################################################
 ##                      Loading Index data                      ##
@@ -263,8 +242,8 @@ readStandings <- function(x) {
       teamInfo %>% 
         select(
           team, 
-          color.primary,
-          color.secondary
+          color_primary,
+          color_secondary
         ),
       by = c("Team" = "team")
     )
@@ -547,4 +526,4 @@ standings <- lapply(X = url, FUN = readStandings)
 # goalieStats <- lapply(goalieUrl, readKeeperStats)
 }
 
-
+dbDisconnect(con)
