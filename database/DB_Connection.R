@@ -56,6 +56,6 @@ dbListTables(con)
 ##                    Insert TPE Cost table                    ##
 #################################################################
 
-dbWriteTable(con, "Duty_and_Role_Matrix", ability, overwrite = TRUE)
+# dbWriteTable(con, "Duty_and_Role_Matrix", ability, overwrite = TRUE)
 
 dbDisconnect(con)
