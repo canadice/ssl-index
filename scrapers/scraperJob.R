@@ -59,6 +59,42 @@ forumData <-
         scrape
       }  
     }
+  )
+
+playerLinks <-
+  topic %>%
+  rvest::html_elements(".topic-row") %>%
+  rvest::html_elements(".row4 a") %>%
+  rvest::html_attr("href") %>%
+  .[
+    stringr::str_detect(string = ., pattern = "simsoccer")
+  ]
+
+
+
+try <- forumData %>%
+  do.call(
+  what = plyr::rbind.fill,
+  args = .
+)
+
+forumData <- 
+  lapply(
+    playerLinks,
+    FUN = function(x){
+      scrape <- try(playerScraper(x), silent=TRUE)
+      
+      if( 
+        inherits(
+          scrape,  
+          "try-error")
+      ){
+        print(x)
+      } 
+      else {
+        scrape
+      }  
+    }
   ) %>% 
   do.call(
     what = plyr::rbind.fill,
