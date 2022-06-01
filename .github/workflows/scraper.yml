@@ -78,7 +78,7 @@ jobs:
         
       - name: Generate data
         run: |
-          source("R/scraperFunctions.R")
+          source("scrapers/scraperFunctions.R")
         shell: Rscript {0} 
         
       - name: Commit the results of the scraper
