@@ -44,5 +44,8 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 
+# SQLiteStudio
+database/SQLiteStudio/*
+
 # R Environment Variables
 .Renviron
