@@ -150,11 +150,11 @@ playerData <-
     VISION =
       (Passing + Flair + Vision)/3,
     ATTACKING =
-      (Finishing + Composure + Off_the_Ball)/3,
+      (Finishing + Composure + `Off the Ball`)/3,
     TECHNICAL =
-      (Dribbling + First_Touch + Technique)/3,
+      (Dribbling + `First Touch` + Technique)/3,
     AERIAL =
-      (Heading + Jumping_Reach)/2,
+      (Heading + `Jumping Reach`)/2,
     MENTAL =
       (Anticipation + Bravery + Concentration + Decisions + Determination + Teamwork)/6
   ) %>%
