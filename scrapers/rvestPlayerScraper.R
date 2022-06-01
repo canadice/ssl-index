@@ -98,9 +98,22 @@ playerScraper <-
       )
     
     if((playerTeam %>% nrow()) == 0){
+      forum <- topic %>% 
+        rvest::html_elements("#navstrip") %>% 
+        rvest::html_text() %>% 
+        stringr::str_squish()
+      
       playerTeam <- 
         playerTeam %>% 
-        dplyr::add_row() 
+        dplyr::add_row() %>%
+        mutate(
+          team = 
+            case_when(
+              stringr::str_detect(forum, pattern = "Retired") ~ "Retired",
+              stringr::str_detect(forum, pattern = "Prospect") ~ "Prospect",
+              TRUE ~ "FA"
+            )
+        )
     }
     
     postData$Team <- playerTeam %>% unname() %>% unlist()
