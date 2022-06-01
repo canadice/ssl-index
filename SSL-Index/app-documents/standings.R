@@ -23,7 +23,7 @@ standingsUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              1:length(url) %>% 
+              1:max(playerGameData$Season) %>% 
               sort(decreasing = TRUE)
           )
         )
