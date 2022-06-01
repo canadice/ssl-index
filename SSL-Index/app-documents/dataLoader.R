@@ -18,12 +18,10 @@ con <- dbConnect(SQLite(), "../database/SSL_Database.db")
 
 ## Doesn't necessarily have to load here. Need to check when it is being used.
 positionalCoord <- 
-  dbSendQuery(con, "SELECT * FROM positionalCoord") %>% 
-  dbFetch()
+  dbGetQuery(con, "SELECT * FROM positionalCoord")
 
 tpeCost <- 
-  dbSendQuery(con, "SELECT * FROM tpeCost") %>% 
-  dbFetch()
+  dbGetQuery(con, "SELECT * FROM tpeCost")
 
 
 ## These are only used when scraping data
