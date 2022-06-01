@@ -17,7 +17,8 @@ Imports:
   RColorBrewer, ggpubr, scales,
   png, grid, magick, rsvg, lubridate, 
   stringr, stringi, googlesheets4, xml2,
-  parallel, fuzzyjoin, grDevices, rlang
+  parallel, fuzzyjoin, grDevices, rlang, DBI,
+  dbplyr, RSQLite
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
