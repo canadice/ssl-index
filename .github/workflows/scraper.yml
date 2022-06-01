@@ -7,11 +7,12 @@
 # additional example workflows available for the R community.
 
 on:
+   schedule:
+         - cron: "5 * * * *"
    push:
       branches:
         - Update-To-Sqlite
-   schedule:
-         - cron: "5 * * * *"
+
  
 jobs:
   generate-data:
