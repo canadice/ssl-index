@@ -1,0 +1,26 @@
+Package: sslrtools
+Type: Package
+Title: R functions and data sets for the Simulation Soccer League
+Version: 0.1.0
+Authors@R: person("Canadice", "SHL", email = "canadice.shl@gmail.com", role = c("aut", "cre"))
+Description: Package provides functions and tools for the Simulation Soccer League. The package has functions for 
+  scraping the forum website, analyzing exported data from Football Manager, 
+  and tools for the SSL Index.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+  httr, jsonlite, rvest, RCurl, dplyr, 
+  plyr, tidyr, janitor, tibble,
+  purrr, ggplot2, ggnewscale, 
+  RColorBrewer, ggpubr, scales,
+  png, grid, magick, rsvg, lubridate, 
+  stringr, stringi, googlesheets4, xml2,
+  parallel, fuzzyjoin, grDevices, rlang
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Depends: 
+    R (>= 3.5.0)
+LazyData: true
