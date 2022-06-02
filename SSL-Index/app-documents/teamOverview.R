@@ -72,46 +72,50 @@ teamOverviewUI <- function(id){
                     offset = 1,
                     id = ns("teamTabBox"),
                     uiOutput(outputId = ns("dataTableCSS")),
-                    tabBox(
-                      width = NULL,
-                      id = ns("tabBox"),
-                      tabPanel(
-                        title = "Current Roster",
-                        id = ns("roster"),
-                        DTOutput(outputId = ns("dataTableRoster")),
-                        
-                      ),
-                      tabPanel(
-                        title = "TPE Visualizer",
-                        id = ns("tpeVisualizer"),
-                        column(
-                          width = 8,
-                          offset = 2,
-                          h5("TPE Distribution", align = "center"),
-                          p("The following visualization shows the TPE distribution of the chosen team.",
-                            "Hovering over each bar shows the class distribution of players within the TPE interval."),
-                          plotlyOutput(
-                            outputId = ns("teamTPECharts")
-                          )  
-                        )
-                      ),
-                      tabPanel(
-                        title = "Role and Duties",
-                        column(
-                          width = 4,
-                          plotlyOutput(
-                            outputId = ns("positionPicker"),
-                            width = "250px",
-                            height= "225px"
-                          ),
-                          uiOutput(
-                            outputId = ns("rolePicker")
+                    fluidRow(
+                      tabBox(
+                        width = NULL,
+                        id = ns("tabBox"),
+                        tabPanel(
+                          title = "Current Roster",
+                          id = ns("roster"),
+                          DTOutput(outputId = ns("dataTableRoster")),
+                          
+                        ),
+                        tabPanel(
+                          title = "TPE Visualizer",
+                          id = ns("tpeVisualizer"),
+                          column(
+                            width = 8,
+                            offset = 2,
+                            h5("TPE Distribution", align = "center"),
+                            p("The following visualization shows the TPE distribution of the chosen team.",
+                              "Hovering over each bar shows the class distribution of players within the TPE interval."),
+                            plotlyOutput(
+                              outputId = ns("teamTPECharts")
+                            )  
                           )
                         ),
-                        column(
-                          width = 8,
-                          DTOutput(
-                            outputId = ns("roleDataTable")
+                        tabPanel(
+                          title = "Role and Duties",
+                          fluidRow(
+                            column(
+                              width = 4,
+                              plotlyOutput(
+                                outputId = ns("positionPicker"),
+                                width = "250px",
+                                height= "225px"
+                              ),
+                              uiOutput(
+                                outputId = ns("rolePicker")
+                              )
+                            ),
+                            column(
+                              width = 8,
+                              DTOutput(
+                                outputId = ns("roleDataTable")
+                              )
+                            )
                           )
                         )
                       )
@@ -432,8 +436,10 @@ teamOverviewSERVER <- function(id){
           
       })
       
+      
+      
       ##---------------------------------------------------------------
-      ##              Visualization of position ability               -
+      ##              Fixes data for Duty and Role tables             -
       ##---------------------------------------------------------------
       
       playerAttributesMatrix <- 
@@ -499,11 +505,11 @@ teamOverviewSERVER <- function(id){
             ~ .x * (playerData$`Defense [C]`/20)
           ),
           across(
-            contains("Ability Fullback L"),
+            contains("Ability Wingback L"),
             ~ .x * (playerData$`Wingback [L]`/20)
           ),
           across(
-            contains("Ability Fullback R"),
+            contains("Ability Wingback R"),
             ~ .x * (playerData$`Wingback [R]`/20)
           ),
           across(
@@ -569,7 +575,81 @@ teamOverviewSERVER <- function(id){
         roleAbility %>% 
         dplyr::mutate(
           Name = playerData$Name
-        ) 
+        ) %>% 
+        left_join(
+          playerData %>% 
+            select(
+              Name, 
+              Striker:Goalkeeper
+            ),
+          by = "Name"
+        ) %>% 
+        dplyr::mutate(
+          across(
+            contains("Ability Goalkeeper"),
+            ~ .x * (playerData$Goalkeeper/20)
+          ),
+          across(
+            contains("Ability Defender L"),
+            ~ .x * (playerData$`Defense [L]`/20)
+          ),
+          across(
+            contains("Ability Defender R"),
+            ~ .x * (playerData$`Defense [R]`/20)
+          ),
+          across(
+            contains("Ability Defender C"),
+            ~ .x * (playerData$`Defense [C]`/20)
+          ),
+          across(
+            contains("Ability Wingback L"),
+            ~ .x * (playerData$`Wingback [L]`/20)
+          ),
+          across(
+            contains("Ability Wingback R"),
+            ~ .x * (playerData$`Wingback [R]`/20)
+          ),
+          across(
+            contains("Ability Defensive Midfielder"),
+            ~ .x * (playerData$`Defensive Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Midfielder L"), 
+            ~ .x * (playerData$`Midfielder [L]`/20)
+          ),
+          across(
+            contains("Ability Midfielder R"),
+            ~ .x * (playerData$`Midfielder [R]`/20)
+          ),
+          across(
+            contains("Ability Midfielder C"),
+            ~ .x * (playerData$`Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder L"),
+            ~ .x * (playerData$`Attacking Midfielder [L]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder R"),
+            ~ .x * (playerData$`Attacking Midfielder [R]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder C"),
+            ~ .x * (playerData$`Attacking Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Striker"),
+            ~ .x * (playerData$Striker/20)
+          ),
+          across(
+            contains("Ability"),
+            ~ replace_na(.x, 0)
+          )
+        )
+      
+      ##---------------------------------------------------------------
+      ##              Visualization of position ability               -
+      ##---------------------------------------------------------------
       
       output$positionPicker <- renderPlotly({
         p <- 
@@ -655,7 +735,10 @@ teamOverviewSERVER <- function(id){
             which()
           
           roleNames <- 
-            colnames(roleAbility)[roles] %>% 
+            colnames(roleAbility)[roles]
+          
+          names(roleNames) <- 
+            roleNames %>% 
             str_replace_all(
               pattern = "\\.",
               replacement = " "
@@ -690,8 +773,15 @@ teamOverviewSERVER <- function(id){
             select(
               Name,
               `Preferred Foot`,
-              `Preferred Position`,
-              input$rolePicker
+              `Preferred Position`
+            ) %>% 
+            left_join(
+              roleAbility %>% 
+                select(
+                  Name,
+                  input$rolePicker
+                ),
+              by = "Name"
             ) %>% 
             arrange(
               across(input$rolePicker, desc)
@@ -700,16 +790,15 @@ teamOverviewSERVER <- function(id){
               across(
                 input$rolePicker,
                 ~ sapply(
-                    X = (.x %/% 50) + 1,
+                    X = (.x %/% 46.5),
                     FUN = function(x) {
                       replicate(
                         x,
-                        expr = icontext("star") %>% as.character()    
-                      ) %>% 
+                        expr = icontext("star") %>% as.character()
+                      ) %>%
                         paste0(collapse = "")
                     }
-                  )  
-                  
+                  )
               )
             )
           
