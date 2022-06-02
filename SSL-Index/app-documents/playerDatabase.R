@@ -1046,7 +1046,7 @@ playerDatabaseSERVER <- function(id){
               dataSum <- 
                 KeeperSumPlayoff %>%
                 filter(
-                  name == input$player
+                  Name == input$player
                 )
               
               data %>% 
@@ -1198,7 +1198,7 @@ playerDatabaseSERVER <- function(id){
               dataSum <- 
                 KeeperSumRegular %>%
                 filter(
-                  name == input$player
+                  Name == input$player
                 )
               
               
