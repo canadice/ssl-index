@@ -1037,7 +1037,6 @@ playerDatabaseSERVER <- function(id){
         if(!is.null(input$careerFilter)){
           if("Cup" %in% input$careerFilter){
             if(any(reactives$currentBuild$Group == "Goalkeeper")){
-              print(input$player)
               data <- 
                 KeeperDataPlayoff %>% 
                 filter(
@@ -1185,7 +1184,6 @@ playerDatabaseSERVER <- function(id){
             }
           } else {
             if(any(reactives$currentBuild$Group == "Goalkeeper")){
-              print(input$player)
               KeeperDataRegularSeason %>% 
                 filter(
                   Name == input$player
