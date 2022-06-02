@@ -7,23 +7,23 @@
 # additional example workflows available for the R community.
 
 on:
-   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
-      tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
-   #schedule:
-   #      - cron: "5 * * * *"
+#   workflow_dispatch:
+    #inputs:
+    #  logLevel:
+    #    description: 'Log level'
+    #    required: true
+    #    default: 'warning'
+    #    type: choice
+    #    options:
+    #    - info
+    #    - warning
+    #    - debug
+    #  tags:
+  #      description: 'Test scenario tags'
+#        required: false
+        #type: boolean
+   schedule:
+         - cron: "* 1 * * *"
    push:
       branches:
         - Update-To-Sqlite
@@ -88,4 +88,4 @@ jobs:
           git config --local user.name "GitHub Actions"
           git add --all
           git commit -am "Daily data"
-          git push 
+          git push
