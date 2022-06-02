@@ -26,6 +26,8 @@ dbListTables(con)
 PlayerDataRegularSeason <- dbGetQuery(con, 
 "SELECT 
 Name,
+Club,
+Season,
 sum(`Minutes Played`) as `Minutes Played` ,
 sum(`Distance Run (km)`) as `Distance Run (km)` ,
 avg(`Average Rating`) as `Average Rating` ,
@@ -62,15 +64,14 @@ sum(`Red Cards`) as `Red Cards` ,
 sum(`Fouls`) as Fouls ,
 sum(`Fouls Against`) as `Fouls Against` ,
 sum(`Offsides`) as Offsides,
-count(Matchday) as GamesPlaye
+count(Matchday) as GamesPlayed
   FROM Player_Game_Data  group by Name, Season"
 )
 
-
-
-PlayeRDataPlayoffQuery <- 
-'SELECT 
+PlayerDataPlayoff <- dbGetQuery(con,'SELECT 
 Name,
+Club,
+Season,
 sum(`Minutes Played`) as `Minutes Played` ,
 sum(`Distance Run (km)`) as `Distance Run (km)` ,
 avg(`Average Rating`) as `Average Rating` ,
@@ -107,10 +108,8 @@ sum(`Red Cards`) as `Red Cards` ,
 sum(`Fouls`) as Fouls ,
 sum(`Fouls Against`) as `Fouls Against` ,
 sum(`Offsides`) as Offsides,
-count(Matchday) as GamesPlaye
-  FROM Player_Game_Data  where MatchDay LIKE  "%Cup%" group by Name, Season'
-
-PlayeRDataPlayoff <- dbGetQuery(con,PlayeRDataPlayoffQuery)
+count(Matchday) as GamesPlayed
+  FROM Player_Game_Data  where MatchDay LIKE  "%Cup%" group by Name, Season')
 
 
 PlayerSumRegular <- dbGetQuery(con, 
@@ -152,7 +151,7 @@ sum(`Red Cards`) as `Red Cards` ,
 sum(`Fouls`) as Fouls ,
 sum(`Fouls Against`) as `Fouls Against` ,
 sum(`Offsides`) as Offsides,
-count(Matchday) as GamesPlaye
+count(Matchday) as GamesPlayed
   FROM Player_Game_Data  group by Name"
 )
                                
@@ -196,7 +195,7 @@ sum(`Red Cards`) as `Red Cards` ,
 sum(`Fouls`) as Fouls ,
 sum(`Fouls Against`) as `Fouls Against` ,
 sum(`Offsides`) as Offsides,
-count(Matchday) as GamesPlaye
+count(Matchday) as GamesPlayed
   FROM Player_Game_Data  where MatchDay LIKE  \"%Cup%\" group by Name"
 )                          
 
@@ -204,6 +203,8 @@ count(Matchday) as GamesPlaye
 KeeperDataRegularSeason <-dbGetQuery(con,
                                      "SELECT 
                                      Name,
+                                     Club,
+                                     Season,
                                      sum(`Minutes Played`) as `Minutes Played` ,
                                      avg(`Average Rating`) as `Average Rating` ,
                                      sum(`Player of the Match`) as `Player of the Match` ,
@@ -231,6 +232,8 @@ KeeperDataRegularSeason <-dbGetQuery(con,
 KeeperDataPlayoff <-dbGetQuery(con,
                                      "SELECT 
                                      Name,
+                                     Club,
+                                     Season,
                                      sum(`Minutes Played`) as `Minutes Played` ,
                                      avg(`Average Rating`) as `Average Rating` ,
                                      sum(`Player of the Match`) as `Player of the Match` ,
