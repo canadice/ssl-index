@@ -7,7 +7,6 @@
 # additional example workflows available for the R community.
 
 on:
-<<<<<<< HEAD
 #   workflow_dispatch:
     #inputs:
     #  logLevel:
@@ -25,34 +24,8 @@ on:
         #type: boolean
    schedule:
          - cron: "* 1 * * *"
-=======
-   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
-        default: 'warning' 
-        type: choice
-        options:
-        - info
-        - warning
-        - debug 
-      tags:
-        description: 'Test scenario tags'
-        required: false 
-        type: boolean
-   #schedule:
-   #      - cron: "5 * * * *"
->>>>>>> 84b929a7f8de7579e1ecdda85ffc11b970bd24b7
-   push:
-      branches:
-        - Update-To-Sqlite
 
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> 84b929a7f8de7579e1ecdda85ffc11b970bd24b7
 jobs:
   generate-data:
     runs-on: ${{ matrix.config.os }}
@@ -71,11 +44,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-<<<<<<< HEAD
       - uses: actions/checkout@v3
-=======
-      - uses: actions/checkout@v2
->>>>>>> 84b929a7f8de7579e1ecdda85ffc11b970bd24b7
 
       - uses: r-lib/actions/setup-r@master
         with:
@@ -101,7 +70,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-<<<<<<< HEAD
           remotes::install_github("Canadice/sslrtools")
           remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
@@ -111,24 +79,11 @@ jobs:
           source("scrapers/scraperJob.R")
         shell: Rscript {0}
 
-=======
-          remotes::install_deps(dependencies = TRUE)
-        shell: Rscript {0}    
-        
-      - name: Generate data
-        run: |
-          source("scrapers/scraperFunctions.R")
-        shell: Rscript {0} 
-        
->>>>>>> 84b929a7f8de7579e1ecdda85ffc11b970bd24b7
       - name: Commit the results of the scraper
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add --all
           git commit -am "Daily data"
-<<<<<<< HEAD
-          git push
-=======
           git push 
->>>>>>> 84b929a7f8de7579e1ecdda85ffc11b970bd24b7
+
