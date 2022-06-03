@@ -34,6 +34,8 @@ playerComparisonUI <- function(id){
                   choices = 
                     c(
                       "Free Agents" = "FA",
+                      "Retired",
+                      "Prospects",
                       teamInfo$team
                     ),
                   selected = "Free Agents"
@@ -56,6 +58,8 @@ playerComparisonUI <- function(id){
                   choices = 
                     c(
                       "Free Agents" = "FA",
+                      "Retired",
+                      "Prospects",
                       teamInfo$team
                     ),
                   selected = "Free Agents"
@@ -146,6 +150,7 @@ playerComparisonSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
       
+      ## Creates positional coordinates off-center compared to the ones in the database
       {positionalCoord <- 
         data.frame(
           x = 
@@ -218,8 +223,8 @@ playerComparisonSERVER <- function(id){
             teamInfo %>% 
               select(
                 team, 
-                color.primary,
-                color.secondary
+                color_primary,
+                color_secondary
               ),
             by = c("Team" = "team")
           )
@@ -268,20 +273,20 @@ playerComparisonSERVER <- function(id){
         ) %>% 
           formatStyle(
             columns = 0:7,
-            valueColumns = "color.primary",
+            valueColumns = "color_primary",
             backgroundColor = 
               styleEqual(
-                sort(unique(teamInfo$color.primary)), 
-                sort(unique(teamInfo$color.primary))
+                sort(unique(teamInfo$color_primary)), 
+                sort(unique(teamInfo$color_primary))
               )
           ) %>% 
           formatStyle(
             columns = 0:7,
-            valueColumns = "color.secondary",
+            valueColumns = "color_secondary",
             color = 
               styleEqual(
-                sort(unique(teamInfo$color.secondary)), 
-                sort(unique(teamInfo$color.secondary))
+                sort(unique(teamInfo$color_secondary)), 
+                sort(unique(teamInfo$color_secondary))
               )
           )
       })

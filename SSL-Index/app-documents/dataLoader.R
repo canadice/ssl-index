@@ -1,58 +1,41 @@
 ## Loading data
+require(dplyr)
+require(DBI)
+require(dbplyr)
+require(RSQLite)
+require(stringr)
+
+## Adding a deauthorization for reading of Google Sheets that are still being used. 
+googlesheets4::gs4_deauth()
+
+## Opens the connection to the SSL Database
+con <- dbConnect(SQLite(), "../database/SSL_Database.db")
 
 
 ##################################################################
-##                    Positional Coordinates                    ##
+##           Loading tables with information                    ##
 ##################################################################
-{positionalCoord <- 
-  data.frame(
-    x = 
-      c(
-        375, 
-        130,375,620,
-        130,375,620,
-        130,375,620,
-        130,375,620,
-        375
-      ),
-    y = 
-      c(
-        775,
-        625,625,625,
-        455,455,455,
-        310,310,310,
-        150,150,150,
-        50
-      ),
-    Position = 
-      c(
-        "Striker",
-        "Attacking Midfielder L",
-        "Attacking Midfielder C",
-        "Attacking Midfielder R",
-        "Midfielder L",
-        "Midfielder C",
-        "Midfielder R",
-        "Wingback L",
-        "Defensive Midfielder",
-        "Wingback R",
-        "Defender L",
-        "Defender C",
-        "Defender R",
-        "Goalkeeper"
-      )
-  )
-}
-#################################################################
-##                       TPE Cost Matrix                       ##
-#################################################################
+
+## Doesn't necessarily have to load here. Need to check when it is being used.
+positionalCoord <- 
+  dbGetQuery(con, "SELECT * FROM positionalCoord")
 
 tpeCost <- 
-  data.frame(
-    value = 5:20,
-    ## -2 comes from an initial error in the costs as 5 is free (starting value)
-    cost = c(2,4,6,10,14,18,24,30,36,48,60,72,90,108,133,158)-2
-  )
+  dbGetQuery(con, "SELECT * FROM tpeCost")
+
+
+## These are only used when scraping data
+roleMatrix <- 
+  dbGetQuery(con, "SELECT * from Duty_and_Role_Matrix")
+
+abilityMatrix <- 
+  dbGetQuery(con, "SELECT * from Current_Ability_Calculation_Matrix")
+
+## These are used when grouping the attributes in the player builder and update tool
+attributes <- 
+  dbGetQuery(con, "SELECT * from Attributes_And_Availability")
+
+
 #################################################################
 ##                       Attribute names                       ##
 #################################################################
@@ -144,13 +127,8 @@ goalieAttributeNames <-
 ##             Loading data sets from Google Sheets             ##
 ##################################################################
 
-googlesheets4::gs4_deauth()
-
-teamInfo <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Team Information"
-  )
+teamInfo <-
+  dbGetQuery(con, "SELECT * from Team_Information")
 
 pitch <- 
   try(
@@ -161,28 +139,25 @@ pitch <-
   )
 
 playerData <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Daily Scrape"
-  ) %>% 
+  dbGetQuery(con, "SELECT * from Daily_Scrape") %>%
   mutate(
-    DEFENDING = 
+    DEFENDING =
       (Marking + Tackling + Positioning)/3,
-    PHYSICAL = 
+    PHYSICAL =
       (Agility + Balance + Stamina + Strength)/4,
-    SPEED = 
+    SPEED =
       (Acceleration + Pace)/2,
-    VISION = 
+    VISION =
       (Passing + Flair + Vision)/3,
-    ATTACKING = 
+    ATTACKING =
       (Finishing + Composure + `Off the Ball`)/3,
-    TECHNICAL = 
+    TECHNICAL =
       (Dribbling + `First Touch` + Technique)/3,
-    AERIAL = 
+    AERIAL =
       (Heading + `Jumping Reach`)/2,
-    MENTAL = 
+    MENTAL =
       (Anticipation + Bravery + Concentration + Decisions + Determination + Teamwork)/6
-  ) %>% 
+  ) %>%
   mutate(
     across(
       DEFENDING:MENTAL,
@@ -192,41 +167,15 @@ playerData <-
 
 ## Loads game data
 keeperGameData <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "KeeperGameData"
-  ) %>% 
+  dbGetQuery(con, "SELECT * from Keeper_Game_Data") %>%
   mutate(
     Season = as.numeric(Season)
   )
 
 playerGameData <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "PlayerGameData",
-    guess_max = 2400
-  ) %>% 
+  dbGetQuery(con, "SELECT * from Player_Game_Data") %>% 
   mutate(
     Season = as.numeric(Season)
-  )
-
-## Loads help data
-roleMatrix <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Duty and Role Matrix"
-  )
-
-abilityMatrix <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Current Ability Calculation Matrix"
-  )
-
-attributes <- 
-  googlesheets4::read_sheet(
-    ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    sheet = "Attributes and Availability"
   )
 
 ##################################################################
@@ -263,8 +212,8 @@ readStandings <- function(x) {
       teamInfo %>% 
         select(
           team, 
-          color.primary,
-          color.secondary
+          color_primary,
+          color_secondary
         ),
       by = c("Team" = "team")
     )
@@ -547,4 +496,4 @@ standings <- lapply(X = url, FUN = readStandings)
 # goalieStats <- lapply(goalieUrl, readKeeperStats)
 }
 
-
+dbDisconnect(con)

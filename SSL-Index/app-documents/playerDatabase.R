@@ -78,6 +78,9 @@ playerDatabaseUI <- function(id){
                       width = 10,
                       offset = 1,
                       uiOutput(
+                        outputId = ns("claimedTPE")
+                      ),
+                      uiOutput(
                         outputId = ns("earnedTPE")
                       ),
                       uiOutput(
@@ -122,7 +125,7 @@ playerDatabaseUI <- function(id){
                   inputId = ns("gameSeason"),
                   label = "Filter Season",
                   choices =
-                    keeperGameData$Season %>%
+                    playerGameData$Season %>%
                     unique() %>%
                     sort(),
                   multiple = TRUE
@@ -222,9 +225,13 @@ playerDatabaseSERVER <- function(id){
       
       ## Observer that calculates the correct used TPE and available TPE for the build
       observeEvent(
-        input$currentTPE,
+        input$earnedTPE,
         {
-          currentAvailable(input$currentTPE - sum(reactives$currentBuild$cost))
+          currentAvailable(
+            (playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname()) +
+              input$earnedTPE -
+              sum(reactives$currentBuild$cost)
+          )
           currentCost(sum(reactives$currentBuild$cost))
         },
         ignoreInit = FALSE
@@ -263,7 +270,11 @@ playerDatabaseSERVER <- function(id){
               -Keeper
             )
           
-          currentAvailable(input$currentTPE - sum(reactives$currentBuild$cost))
+          currentAvailable(
+            (playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname()) +
+              input$earnedTPE -
+              sum(reactives$currentBuild$cost)
+            )
           currentCost(sum(reactives$currentBuild$cost))
         }
       )
@@ -295,7 +306,11 @@ playerDatabaseSERVER <- function(id){
             reactives$currentBuild[i,"cost"] <- tpeCost$cost[tpeCost$value == k]  
           }
           
-          currentAvailable(input$currentTPE - sum(reactives$currentBuild$cost))
+          currentAvailable(
+            (playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname()) +
+              input$earnedTPE -
+              sum(reactives$currentBuild$cost)
+          )
           currentCost(sum(reactives$currentBuild$cost))
         }
       )
@@ -375,9 +390,10 @@ playerDatabaseSERVER <- function(id){
                           "[b]Earned TPE:[/b] ", 
                           playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname(),
                           "+",
-                          input$currentTPE-playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname(),
+                          input$earnedTPE,
                           "=",
-                          input$currentTPE),
+                          (playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname())+input$earnedTPE
+                          ),
                         paste("[b]Used TPE:[/b] ", currentCost()), 
                         paste("[b]Banked TPE:[/b] ", currentAvailable()),
                         sep = "<br>"
@@ -478,11 +494,16 @@ playerDatabaseSERVER <- function(id){
               width = 6,
               h5(currentAvailable())
             )
-          ),
+          )
+        )
+      })
+      
+      output$claimedTPE <- renderUI({
+        tagList(
           fluidRow(
             column(
               width = 6,
-              h5("Forum TPE")
+              h5("Claimed TPE")
             ),
             column(
               width = 6,
@@ -502,11 +523,11 @@ playerDatabaseSERVER <- function(id){
             column(
               width = 6,
               numericInput(
-                inputId = session$ns("currentTPE"),
+                inputId = session$ns("earnedTPE"),
                 label = NULL,
-                value = playerData %>% filter(Name == input$player) %>% select(TPE) %>% unlist() %>% unname(),
-                min = 350,
-                max = 2500,
+                value = 0,
+                min = 0,
+                max = 500,
                 width = "80%"
               )
             )
@@ -554,6 +575,12 @@ playerDatabaseSERVER <- function(id){
           )
       })
       
+      
+      
+      ##---------------------------------------------------------------
+      ##                        Game log output                       -
+      ##---------------------------------------------------------------
+      
       # Using reactable
       output$GameData <- renderReactable({
         if(any(reactives$currentBuild$Group == "Goalkeeper")){
@@ -583,7 +610,9 @@ playerDatabaseSERVER <- function(id){
         }
         
         if(!is.null(input$gameFilter)){
-          if("Cup" %in% input$gameFilter){
+          if(input$gameFilter %>% length() == 2){
+            # Do nothing
+          } else if("Cup" %in% input$gameFilter){
             data <- 
               data %>% 
               filter(
@@ -624,7 +653,7 @@ playerDatabaseSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
+                    cell = function(value){
                       logo <- 
                         img(
                           class = "logo",
@@ -642,7 +671,7 @@ playerDatabaseSERVER <- function(id){
                     maxWidth = 50,
                     class = "cell",
                     align = "center",
-                    cell = function(value, index){
+                    cell = function(value){
                       
                       if(value %>% is.na()){
                         div(class = "club", " ")
@@ -655,7 +684,6 @@ playerDatabaseSERVER <- function(id){
                             alt = value,
                             height = 30
                           )
-                        
                         div(class = "club", logo)
                       }
                     }
@@ -664,19 +692,17 @@ playerDatabaseSERVER <- function(id){
                   colDef(
                     maxWidth = 60,
                     cell = function(value) {
-                      
                       if(is.na(value)){
                         div(
                           style = list(background = "#FFFFFF"),
                           " "
                         )
                       } else {
-                        
                         values <- str_split(value, pattern = "-", simplify = TRUE)
                         
-                        if(any(str_detect(values, pattern = "p"))){
+                        if(any(str_detect(values, pattern = "p|e"))){
                           
-                          if(which(str_detect(values, pattern = "p")) == 1){
+                          if(which(str_detect(values, pattern = "p|e")) == 1){
                             color <- "#A4D1A2"
                           } else {
                             color <- "#CB8491"

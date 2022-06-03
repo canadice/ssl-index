@@ -72,46 +72,50 @@ teamOverviewUI <- function(id){
                     offset = 1,
                     id = ns("teamTabBox"),
                     uiOutput(outputId = ns("dataTableCSS")),
-                    tabBox(
-                      width = NULL,
-                      id = ns("tabBox"),
-                      tabPanel(
-                        title = "Current Roster",
-                        id = ns("roster"),
-                        DTOutput(outputId = ns("dataTableRoster")),
-                        
-                      ),
-                      tabPanel(
-                        title = "TPE Visualizer",
-                        id = ns("tpeVisualizer"),
-                        column(
-                          width = 8,
-                          offset = 2,
-                          h5("TPE Distribution", align = "center"),
-                          p("The following visualization shows the TPE distribution of the chosen team.",
-                            "Hovering over each bar shows the class distribution of players within the TPE interval."),
-                          plotlyOutput(
-                            outputId = ns("teamTPECharts")
-                          )  
-                        )
-                      ),
-                      tabPanel(
-                        title = "Role and Duties",
-                        column(
-                          width = 4,
-                          plotlyOutput(
-                            outputId = ns("positionPicker"),
-                            width = "250px",
-                            height= "225px"
-                          ),
-                          uiOutput(
-                            outputId = ns("rolePicker")
+                    fluidRow(
+                      tabBox(
+                        width = NULL,
+                        id = ns("tabBox"),
+                        tabPanel(
+                          title = "Current Roster",
+                          id = ns("roster"),
+                          DTOutput(outputId = ns("dataTableRoster")),
+                          
+                        ),
+                        tabPanel(
+                          title = "TPE Visualizer",
+                          id = ns("tpeVisualizer"),
+                          column(
+                            width = 8,
+                            offset = 2,
+                            h5("TPE Distribution", align = "center"),
+                            p("The following visualization shows the TPE distribution of the chosen team.",
+                              "Hovering over each bar shows the class distribution of players within the TPE interval."),
+                            plotlyOutput(
+                              outputId = ns("teamTPECharts")
+                            )  
                           )
                         ),
-                        column(
-                          width = 8,
-                          DTOutput(
-                            outputId = ns("roleDataTable")
+                        tabPanel(
+                          title = "Role and Duties",
+                          fluidRow(
+                            column(
+                              width = 4,
+                              plotlyOutput(
+                                outputId = ns("positionPicker"),
+                                width = "250px",
+                                height= "225px"
+                              ),
+                              uiOutput(
+                                outputId = ns("rolePicker")
+                              )
+                            ),
+                            column(
+                              width = 8,
+                              DTOutput(
+                                outputId = ns("roleDataTable")
+                              )
+                            )
                           )
                         )
                       )
@@ -199,13 +203,24 @@ teamOverviewSERVER <- function(id){
             teamData()
           
           ### Updates the team colors to the selected team
-          teamInfo %>% 
-            filter(
-              team == input$selectedTeam
-            ) %>% 
-            select(color.primary) %>% 
-            unname() %>% 
-            teamColor()
+          if(input$selectedTeam %in% c("FA", "Prospect", "Retired")){
+            teamInfo %>% 
+              filter(
+                team == "FA"
+              ) %>% 
+              select(color_primary) %>% 
+              unname() %>% 
+              teamColor() 
+          } else {
+            teamInfo %>% 
+              filter(
+                team == input$selectedTeam
+              ) %>% 
+              select(color_primary) %>% 
+              unname() %>% 
+              teamColor()
+          }
+         
         }
       )
       
@@ -242,7 +257,7 @@ teamOverviewSERVER <- function(id){
             selectInput(
               inputId = session$ns("selectedTeam"),
               label = "Select a team",
-              choices = SSLData %>% select(Team) %>% unique()
+              choices = SSLData %>% select(Team) %>% unique() %>% arrange(Team)
             )  
         })
       
@@ -315,11 +330,19 @@ teamOverviewSERVER <- function(id){
               image_blank(width = 200, height = 200) %>% 
               image_write(tempfile(fileext = "png"), format = "png")
           } else {
-            visData <- 
-              teamInfo %>% 
-              filter(
-                team == input$selectedTeam
-              ) 
+            if(input$selectedTeam %in% c("FA", "Prospect", "Retired")){
+              visData <- 
+                teamInfo %>% 
+                filter(
+                  team == "FA"
+                ) 
+            } else {
+              visData <- 
+                teamInfo %>% 
+                filter(
+                  team == input$selectedTeam
+                )   
+            }
             
             tempImage <- 
               image_draw(
@@ -347,15 +370,15 @@ teamOverviewSERVER <- function(id){
         
         data <- 
           teamData() %>% 
-          group_by(TPEbins, Class) %>% 
-          mutate(
+          dplyr::group_by(TPEbins, Class) %>% 
+          dplyr::mutate(
             classCount = n()
           ) 
           
         classText <- 
           data %>% 
-          group_by(TPEbins) %>% 
-          summarize(
+          dplyr::group_by(TPEbins) %>% 
+          dplyr::summarize(
             binCount = n(),
             text = paste(Class, classCount, sep = ": ") %>% unique() %>% sort() %>% paste(collapse = "\n")
           )
@@ -413,6 +436,217 @@ teamOverviewSERVER <- function(id){
           
       })
       
+      
+      
+      ##---------------------------------------------------------------
+      ##              Fixes data for Duty and Role tables             -
+      ##---------------------------------------------------------------
+      
+      playerAttributesMatrix <- 
+        playerData %>% 
+        select(
+          Acceleration:Throwing
+        ) %>% 
+        dplyr::mutate(
+          across(
+            .fns = ~ replace_na(., 0) %>% as.numeric()
+          )
+        ) %>% 
+        as.matrix()
+      
+      abilityMatrixFixed <- 
+        abilityMatrix[,playerData %>% select(Acceleration:Throwing) %>% colnames()] %>% 
+        dplyr::mutate(
+          rowSum = rowSums(.)
+        ) %>% 
+        rowwise() %>% 
+        dplyr::mutate(
+          across(
+            .fns = ~ .x/rowSum
+          )
+        ) %>% 
+        select(-rowSum) %>% 
+        t() 
+      
+      currentAbility <- 
+        playerAttributesMatrix%*%abilityMatrixFixed %>% 
+        as.data.frame()
+      
+      colnames(currentAbility) <- paste("Ability", abilityMatrix$Attribute)
+      
+      currentAbility <-
+        currentAbility %>% 
+        dplyr::mutate(
+          Name = playerData$Name
+        ) %>% 
+        left_join(
+          playerData %>% 
+            select(
+              Name, 
+              Striker:Goalkeeper
+            ),
+          by = "Name"
+        ) %>% 
+        dplyr::mutate(
+          across(
+            contains("Ability Goalkeeper"),
+            ~ .x * (playerData$Goalkeeper/20)
+          ),
+          across(
+            contains("Ability Defender L"),
+            ~ .x * (playerData$`Defense [L]`/20)
+          ),
+          across(
+            contains("Ability Defender R"),
+            ~ .x * (playerData$`Defense [R]`/20)
+          ),
+          across(
+            contains("Ability Defender C"),
+            ~ .x * (playerData$`Defense [C]`/20)
+          ),
+          across(
+            contains("Ability Wingback L"),
+            ~ .x * (playerData$`Wingback [L]`/20)
+          ),
+          across(
+            contains("Ability Wingback R"),
+            ~ .x * (playerData$`Wingback [R]`/20)
+          ),
+          across(
+            contains("Ability Defensive Midfielder"),
+            ~ .x * (playerData$`Defensive Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Midfielder L"), 
+            ~ .x * (playerData$`Midfielder [L]`/20)
+          ),
+          across(
+            contains("Ability Midfielder R"),
+            ~ .x * (playerData$`Midfielder [R]`/20)
+          ),
+          across(
+            contains("Ability Midfielder C"),
+            ~ .x * (playerData$`Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder L"),
+            ~ .x * (playerData$`Attacking Midfielder [L]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder R"),
+            ~ .x * (playerData$`Attacking Midfielder [R]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder C"),
+            ~ .x * (playerData$`Attacking Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Striker"),
+            ~ .x * (playerData$Striker/20)
+          ),
+          across(
+            contains("Ability"),
+            ~ replace_na(.x, 0)
+          )
+        )
+      
+      roleMatrixFixed <-
+        roleMatrix[,playerData %>% select(Acceleration:Throwing) %>% colnames()] %>% 
+        t()
+      
+      roleAbility <- 
+        playerAttributesMatrix%*%roleMatrixFixed %>% 
+        as.data.frame()
+      
+      colnames(roleAbility) <- 
+        paste(
+          paste(
+            "roleAbility",
+            roleMatrix$pos, 
+            roleMatrix$side %>% replace_na(""),
+            sep = " "
+          ) %>% 
+            str_squish(),
+          roleMatrix$role, sep = "\n"
+        ) %>% 
+        str_replace(pattern = " - ", replacement = "\n")
+      
+      roleAbility <- 
+        roleAbility %>% 
+        dplyr::mutate(
+          Name = playerData$Name
+        ) %>% 
+        left_join(
+          playerData %>% 
+            select(
+              Name, 
+              Striker:Goalkeeper
+            ),
+          by = "Name"
+        ) %>% 
+        dplyr::mutate(
+          across(
+            contains("Ability Goalkeeper"),
+            ~ .x * (playerData$Goalkeeper/20)
+          ),
+          across(
+            contains("Ability Defender L"),
+            ~ .x * (playerData$`Defense [L]`/20)
+          ),
+          across(
+            contains("Ability Defender R"),
+            ~ .x * (playerData$`Defense [R]`/20)
+          ),
+          across(
+            contains("Ability Defender C"),
+            ~ .x * (playerData$`Defense [C]`/20)
+          ),
+          across(
+            contains("Ability Wingback L"),
+            ~ .x * (playerData$`Wingback [L]`/20)
+          ),
+          across(
+            contains("Ability Wingback R"),
+            ~ .x * (playerData$`Wingback [R]`/20)
+          ),
+          across(
+            contains("Ability Defensive Midfielder"),
+            ~ .x * (playerData$`Defensive Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Midfielder L"), 
+            ~ .x * (playerData$`Midfielder [L]`/20)
+          ),
+          across(
+            contains("Ability Midfielder R"),
+            ~ .x * (playerData$`Midfielder [R]`/20)
+          ),
+          across(
+            contains("Ability Midfielder C"),
+            ~ .x * (playerData$`Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder L"),
+            ~ .x * (playerData$`Attacking Midfielder [L]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder R"),
+            ~ .x * (playerData$`Attacking Midfielder [R]`/20)
+          ),
+          across(
+            contains("Ability Attacking Midfielder C"),
+            ~ .x * (playerData$`Attacking Midfielder [C]`/20)
+          ),
+          across(
+            contains("Ability Striker"),
+            ~ .x * (playerData$Striker/20)
+          ),
+          across(
+            contains("Ability"),
+            ~ replace_na(.x, 0)
+          )
+        )
+      
       ##---------------------------------------------------------------
       ##              Visualization of position ability               -
       ##---------------------------------------------------------------
@@ -434,7 +668,7 @@ teamOverviewSERVER <- function(id){
           ## Central circle
           geom_path(aes(x, y), data = circleFun(c(375, 450), 100), color = "white", size = 1) +
           geom_point(aes(x = 375, y = 450), size = 5, color = "white") +
-          geom_point(aes(text = Position), size = 4) + 
+          geom_point(ggplot2::aes(text = Position), size = 4) + 
           coord_flip() + 
           scale_x_continuous(
             breaks = NULL,
@@ -490,7 +724,7 @@ teamOverviewSERVER <- function(id){
           position(selectedPosition)
           
           roles <- 
-            colnames(playerData) %>% 
+            colnames(roleAbility) %>% 
             str_replace_all(
               pattern = "\\.",
               replacement = " "
@@ -501,7 +735,10 @@ teamOverviewSERVER <- function(id){
             which()
           
           roleNames <- 
-            colnames(playerData)[roles] %>% 
+            colnames(roleAbility)[roles]
+          
+          names(roleNames) <- 
+            roleNames %>% 
             str_replace_all(
               pattern = "\\.",
               replacement = " "
@@ -515,25 +752,16 @@ teamOverviewSERVER <- function(id){
                 )
             )
           
-          availableRoles <- 
-            colnames(playerData)[roles]
-          
-          names(availableRoles) <- roleNames
-          
           tagList(
             h3(selectedPosition),
             selectInput(
               inputId = session$ns("rolePicker"),
               choices = 
-                availableRoles,
+                roleNames,
               label = "Select the role and duty for the position"
             )
           )
         }
-        
-        
-        
-        
       })
       
       output$roleDataTable <- renderDT({
@@ -545,8 +773,15 @@ teamOverviewSERVER <- function(id){
             select(
               Name,
               `Preferred Foot`,
-              `Preferred Position`,
-              input$rolePicker
+              `Preferred Position`
+            ) %>% 
+            left_join(
+              roleAbility %>% 
+                select(
+                  Name,
+                  input$rolePicker
+                ),
+              by = "Name"
             ) %>% 
             arrange(
               across(input$rolePicker, desc)
@@ -555,16 +790,15 @@ teamOverviewSERVER <- function(id){
               across(
                 input$rolePicker,
                 ~ sapply(
-                    X = (.x %/% 50) + 1,
+                    X = (.x %/% 46.5),
                     FUN = function(x) {
                       replicate(
                         x,
-                        expr = icontext("star") %>% as.character()    
-                      ) %>% 
+                        expr = icontext("star") %>% as.character()
+                      ) %>%
                         paste0(collapse = "")
                     }
-                  )  
-                  
+                  )
               )
             )
           

@@ -200,10 +200,10 @@ playerStatsSERVER <- function(id){
             )
           ) %>% 
           dplyr::mutate(
-            `Pass%` = (`Successful Passes` / `Attempted Passes`) %>% round(3)*100,
-            `Cross%` = (`Successful Crosses` / `Attempted Crosses`) %>% round(3)*100,
-            `Header%` = (`Successful Headers` / `Attempted Headers`) %>% round(3)*100,
-            `Tackle%` = (`Tackles Won` / `Attempted Tackles`) %>% round(3)*100,
+            `Pass Percentage` = (`Successful Passes` / `Attempted Passes`) %>% round(3)*100,
+            `Cross Percentage` = (`Successful Crosses` / `Attempted Crosses`) %>% round(3)*100,
+            `Header Percentage` = (`Successful Headers` / `Attempted Headers`) %>% round(3)*100,
+            `Tackle Percentage` = (`Tackles Won` / `Attempted Tackles`) %>% round(3)*100,
             `Average Rating` = `Average Rating` %>% round(2)
           )
       })

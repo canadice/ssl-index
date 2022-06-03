@@ -7,28 +7,25 @@
 # additional example workflows available for the R community.
 
 on:
-   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
-        default: 'warning' 
-        type: choice
-        options:
-        - info
-        - warning
-        - debug 
-      tags:
-        description: 'Test scenario tags'
-        required: false 
-        type: boolean
-   #schedule:
-   #      - cron: "5 * * * *"
-   push:
-      branches:
-        - Update-To-Sqlite
+#   workflow_dispatch:
+    #inputs:
+    #  logLevel:
+    #    description: 'Log level'
+    #    required: true
+    #    default: 'warning'
+    #    type: choice
+    #    options:
+    #    - info
+    #    - warning
+    #    - debug
+    #  tags:
+  #      description: 'Test scenario tags'
+#        required: false
+        #type: boolean
+   schedule:
+         - cron: "* 1 * * *"
 
- 
+
 jobs:
   generate-data:
     runs-on: ${{ matrix.config.os }}
@@ -47,7 +44,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: r-lib/actions/setup-r@master
         with:
@@ -73,14 +70,15 @@ jobs:
 
       - name: Install dependencies
         run: |
+          remotes::install_github("Canadice/sslrtools")
           remotes::install_deps(dependencies = TRUE)
-        shell: Rscript {0}    
-        
+        shell: Rscript {0}
+
       - name: Generate data
         run: |
-          source("scrapers/scraperFunctions.R")
-        shell: Rscript {0} 
-        
+          source("scrapers/scraperJob.R")
+        shell: Rscript {0}
+
       - name: Commit the results of the scraper
         run: |
           git config --local user.email "actions@github.com"
@@ -88,3 +86,4 @@ jobs:
           git add --all
           git commit -am "Daily data"
           git push 
+

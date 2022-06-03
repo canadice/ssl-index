@@ -8,6 +8,9 @@
 ###########################################################################
 
 ## Data handling from HTML format
+# remotes::install_github("Canadice/sslrtools")
+require(sslrtools)
+
 require(rvest)
 
 ## Data handling
@@ -48,6 +51,11 @@ require(googledrive)
 ## Loading packages for handling RMarkdown files
 require(rmarkdown)
 require(markdown)
+
+##Loading Database packages for SQLite database
+require(DBI)
+require(dbplyr)
+require(RSQLite)
 
 ## Loading Shiny packages
 require(shiny)
@@ -510,6 +518,5 @@ server <- function(input, output, session) {
   
   
 }
-
 # Run the application 
 shinyApp(ui = ui, server = server, enableBookmarking = "disable")

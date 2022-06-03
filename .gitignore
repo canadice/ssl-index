@@ -6,10 +6,6 @@
 # Secret files
 .secrets/
 
-# Temporary png files
-/SHL-Analytics/*.png
-/SHL-Analytics/boxscores/
-
 # Session Data files
 .RData
 
@@ -47,6 +43,9 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
+
+# SQLiteStudio
+database/SQLiteStudio/*
 
 # R Environment Variables
 .Renviron

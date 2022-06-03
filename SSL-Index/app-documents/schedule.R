@@ -94,7 +94,7 @@ scheduleSERVER <- function(id){
               color = 
                 styleEqual(
                   levels = teamInfo$team,
-                  values = teamInfo$color.primary 
+                  values = teamInfo$color_primary 
                 )
             ) 
             
