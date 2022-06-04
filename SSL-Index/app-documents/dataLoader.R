@@ -8,8 +8,18 @@ require(stringr)
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
 
-## Opens the connection to the SSL Database
-con <- dbConnect(SQLite(), "../database/SSL_Database.db")
+## Downloads a local file for the database
+dbFile <- tempfile(fileext = ".db")
+
+dbUrl <- ("https://github.com/canadice/ssl-index/blob/main/database/SSL_Database.db?raw=true")
+
+download.file(dbUrl, destfile = dbFile, mode = "wb")
+
+con <- 
+  dbConnect(
+    SQLite(), 
+    dbFile
+    )
 
 
 ##################################################################
