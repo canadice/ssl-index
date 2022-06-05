@@ -63,7 +63,7 @@ sum(`Offsides`) as Offsides
   FROM Player_Game_Data  group by Name, Season"
 )
 
-PlayerDataPlayoff <- dbGetQuery(con,'SELECT 
+PlayerDataCup <- dbGetQuery(con,'SELECT 
 Name,
 Club,
 Season,
@@ -151,7 +151,7 @@ sum(`Offsides`) as Offsides
 )
 
 
-PlayerSumPlayoff <- dbGetQuery(con, 
+PlayerSumCup <- dbGetQuery(con, 
                                "SELECT 
 Name,
 count(Matchday) as GamesPlayed,
@@ -223,7 +223,7 @@ KeeperDataRegularSeason <-dbGetQuery(con,
 )
 
 
-KeeperDataPlayoff <-dbGetQuery(con,
+KeeperDataCup <-dbGetQuery(con,
                                "SELECT 
                                      Name,
                                      Club,
@@ -251,7 +251,7 @@ KeeperDataPlayoff <-dbGetQuery(con,
                                
 )
 
-KeeperSumPlayoff <-dbGetQuery(con,
+KeeperSumCup <-dbGetQuery(con,
                               "SELECT 
                                      Name,
                                      count(Matchday) as GamesPlayed,
@@ -1038,12 +1038,12 @@ playerDatabaseSERVER <- function(id){
           if("Cup" %in% input$careerFilter){
             if(any(reactives$currentBuild$Group == "Goalkeeper")){
               data <- 
-                KeeperDataPlayoff %>% 
+                KeeperDataCup %>% 
                 filter(
                   Name == input$player
                 )
               dataSum <- 
-                KeeperSumPlayoff %>%
+                KeeperSumCup %>%
                 filter(
                   Name == input$player
                 )
@@ -1096,7 +1096,7 @@ playerDatabaseSERVER <- function(id){
               
             } else {
               data <- 
-                PlayerDataPlayoff %>% 
+                PlayerDataCup %>% 
                 filter(
                   Name == input$player
                 ) %>% 
@@ -1105,7 +1105,7 @@ playerDatabaseSERVER <- function(id){
                   xG = round(xG, 2)
                 ) 
               dataSum <- 
-                PlayerSumPlayoff %>% 
+                PlayerSumCup %>% 
                 filter(
                   Name == input$player
                 ) %>% 
