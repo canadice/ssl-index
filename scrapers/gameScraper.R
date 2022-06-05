@@ -9,38 +9,78 @@
 
 require(rvest)
 require(stringr)
+require(sslrtools)
 require(stringi)
 require(plyr)
 require(dplyr)
 require(tidyr)
 require(dplyover)
+require(DBI)
+require(dbplyr)
+require(RSQLite)
 
 
-source("D:/GitHubs/ssl-index/SSL-Index/app-documents/dataLoader.R")
+# source("D:/GitHubs/ssl-index/SSL-Index/app-documents/dataLoader.R")
+
+con <- 
+  dbConnect(
+    SQLite(), 
+    "database/SSL_Database.db"
+  )
+
 
 goalieFunction <- function(season){
-  aggregateGoalie <- 
-    googlesheets4::read_sheet(
-      ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-      sheet = "KeeperGameData"
-    ) %>% 
-    filter(
-      Season == season
-    ) %>% 
-    group_by(
-      Name,
-      Club
-    ) %>% 
-    dplyr::summarize(
-      across(
-        where(is.numeric),
-        ~ sum(.x, na.rm = TRUE)
-      )
-    ) %>% 
-    mutate(
-      `Average Rating` = `Average Rating`/(Apps-1),
-      `xSave%` = `xSave%`/(Apps -1)
+  
+  getQuery <- 
+    paste(
+      "SELECT Name,
+        Club,
+        sum(Apps) as Apps,
+        sum(`Minutes Played`) as `Minutes Played` ,
+        sum(`Average Rating`) as `Average Rating` ,
+        sum(`Player of the Match`) as `Player of the Match` ,
+        sum(`Won`) as Won ,
+        sum(`Lost`) as Lost ,
+        sum(`Drawn`) as Drawn ,
+        sum(`Clean Sheets`) as `Clean Sheets` ,
+        sum(`Conceded`) as Conceded ,
+        sum(`Saves Parried`) as `Saves Parried` ,
+        sum(`Saves Held`) as `Saves Held` ,
+        sum(`Saves Tipped`) as `Saves Tipped` ,
+        sum(`Save%`) as `Save%` ,
+        sum(`Penalties Faced`) as `Penalties Faced` ,
+        sum(`Penalties Saved`) as `Penalties Saved` ,
+        avg(`xSave%`) as `xSave%` 
+      FROM Keeper_Game_Data
+      WHERE Season = ", season, 
+      " GROUP BY Name, Club",
+      sep = ""
     )
+  
+  aggregateGoalie <- 
+    dbGetQuery(con, getQuery)
+    # 
+    # googlesheets4::read_sheet(
+    #   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    #   sheet = "KeeperGameData"
+    # ) %>% 
+    # filter(
+    #   Season == season
+    # ) %>% 
+    # group_by(
+    #   Name,
+    #   Club
+    # ) %>% 
+    # dplyr::summarize(
+    #   across(
+    #     where(is.numeric),
+    #     ~ sum(.x, na.rm = TRUE)
+    #   )
+    # ) %>% 
+    # mutate(
+    #   `Average Rating` = `Average Rating`/(Apps-1),
+    #   `xSave%` = `xSave%`/(Apps -1)
+    # )
   
   FMGoalie <- 
     {
@@ -71,7 +111,9 @@ goalieFunction <- function(season){
             .fns = str_replace_all,
             pattern = "[^\\d\\.]+",
             replacement = ""
-          )
+          ),
+          Club = 
+            if_else(Club == "Accra FC", "Adowa Accra FC", Club)
         ) %>% 
         mutate(
           Nationality = 
@@ -196,9 +238,8 @@ goalieFunction <- function(season){
         case_when(
           is.na(`xSave%Season`) ~ `xSave%Day`,
           TRUE ~ (
-            (`xSave%Day` + `xSave%Season`) * 
-              (`AppsSeason` + 1) -
-              `xSave%Season`*`AppsSeason`
+            ((`xSave%Day` + `xSave%Season`) -
+              `xSave%Season`/2)*2
           )
         ) 
     ) %>% 
@@ -213,27 +254,77 @@ goalieFunction <- function(season){
 }
 
 outfieldFunction <- function(season){
-  aggregateOutfield <- 
-    googlesheets4::read_sheet(
-      ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-      sheet = "PlayerGameData"
-    ) %>% 
-    filter(
-      Season == season
-    ) %>% 
-    group_by(
-      Name,
-      Club
-    ) %>% 
-    dplyr::summarize(
-      across(
-        where(is.numeric),
-        ~ sum(.x, na.rm = TRUE)
-      )
-    ) %>% 
-    mutate(
-      `Average Rating` = `Average Rating`/(Apps-1)
+  getQuery <- 
+    paste(
+      "SELECT Name,
+        Club,
+        sum(Apps) as Apps,
+        sum(`Minutes Played`) as `Minutes Played` ,
+        sum(`Distance Run (km)`) as `Distance Run (km)` ,
+        sum(`Average Rating`) as `Average Rating` ,
+        sum(`Player of the Match`) as `Player of the Match` ,
+        sum(`Goals`) as Goals ,
+        sum(`Assists`) as Assists ,
+        sum(`xG`) as xG ,
+        sum(`Shots on Target`) as `Shots on Target` ,
+        sum(`Shots`) as Shots ,
+        sum(`Penalties Taken`) as `Penalties Taken` ,
+        sum(`Penalties Scored`) as `Penalties Scored` ,
+        sum(`Successful Passes`) as `Successful Passes` ,
+        sum(`Attempted Passes`) as `Attempted Passes` ,
+        sum(`Pass%`) as `Pass%` ,
+        sum(`Key Passes`) as `Key Passes` ,
+        sum(`Successful Crosses`) as `Successful Crosses` ,
+        sum(`Attempted Crosses`) as `Attempted Crosses` ,
+        sum(`Cross%`) as `Cross%` ,
+        sum(`Chances Created`) as `Chances Created` ,
+        sum(`Successful Headers`) as `Successful Headers` ,
+        sum(`Attempted Headers`) as `Attempted Headers` ,
+        sum(`Header%`) as `Header%` ,
+        sum(`Key Headers`) as `Key Headers` ,
+        sum(`Dribbles`) as Dribbles ,
+        sum(`Tackles Won`) as `Tackles Won` ,
+        sum(`Attempted Tackles`) as `Attempted Tackles` ,
+        sum(`Tackle%`) as `Tackle%` ,
+        sum(`Key Tackles`) as `Key Tackles` ,
+        sum(`Interceptions`) as Interceptions ,
+        sum(`Clearances`) as Clearances ,
+        sum(`Mistakes Leading to Goals`) as `Mistakes Leading to Goals` ,
+        sum(`Yellow Cards`) as `Yellow Cards` ,
+        sum(`Red Cards`) as `Red Cards` ,
+        sum(`Fouls`) as Fouls ,
+        sum(`Fouls Against`) as `Fouls Against` ,
+        sum(`Offsides`) as Offsides
+      FROM Player_Game_Data
+      WHERE Season = ", season, 
+      " GROUP BY Name, Club",
+      sep = ""
     )
+  
+  aggregateOutfield <-
+    dbGetQuery(con, getQuery)
+    
+    # 
+    # googlesheets4::read_sheet(
+    #   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+    #   sheet = "PlayerGameData"
+    # ) %>% 
+    # filter(
+    #   Season == season
+    # ) %>% 
+    # group_by(
+    #   Name,
+    #   Club
+    # ) %>% 
+    # dplyr::summarize(
+    #   across(
+    #     where(is.numeric),
+    #     ~ sum(.x, na.rm = TRUE)
+    #   )
+    # ) %>% 
+    # mutate(
+    #   `Average Rating` = `Average Rating`/(Apps-1)
+    # )
   
   FMOutfield <- 
     {
@@ -275,11 +366,24 @@ outfieldFunction <- function(season){
           Clearances = Clear
         ) %>% 
         dplyr::mutate(
-          Starts = (str_split(Apps, pattern = "\\(", simplify = TRUE)[,1] %>% 
-                      as.numeric()),
-          Subs = (str_split(Apps, pattern = "\\(", simplify = TRUE)[,2] %>% 
-                    str_extract(pattern = "[0-9]+") %>% 
-                    as.numeric())
+          Starts = 
+            case_when(
+              str_detect(Apps, pattern = "\\(") ~
+                (str_split(Apps, pattern = "\\(", simplify = TRUE)[,1] %>% 
+                   as.numeric()
+                 ),
+              TRUE ~ Apps %>% as.numeric()
+            ),
+          Subs = 
+            case_when(
+              str_detect(Apps, pattern = "\\(") ~
+                (str_split(Apps, pattern = "\\(", simplify = TRUE)[,1] %>% 
+                   as.numeric()
+                ),
+              TRUE ~ 0
+            ),
+          Club = 
+            if_else(Club == "Accra FC", "Adowa Accra FC", Club)
         ) %>% 
         dplyr::mutate(
           Apps = rowSums(data.frame(.$Starts, .$Subs), na.rm = TRUE)
@@ -617,9 +721,12 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 3
+season <- 4
 
-date <- "2022-05-18" %>% as.Date()
+date <- "2022-08-21" %>% as.Date()
+
+## Adding a deauthorization for reading of Google Sheets that are still being used. 
+googlesheets4::gs4_deauth()
 
 matchGoalie <- goalieOutput(season, date) %>% 
   unique()
@@ -627,23 +734,30 @@ matchGoalie <- goalieOutput(season, date) %>%
 matchOutfield <- outfieldOutput(season, date) %>% 
   unique()
 
-## Writing data to Google Sheet for easier distribution
-googlesheets4::gs4_auth(path = ".secrets/client_secret.json")
 
-## Writes the current scrape data to the sheet
-googlesheets4::sheet_append(
-  data = matchGoalie,
-  ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-  sheet = "KeeperGameData"
-)
+## Writing to the database
+dbAppendTable(con, "Player_Game_Data", matchOutfield)
+dbAppendTable(con, "Keeper_Game_Data", matchGoalie)
 
-## Writes the current scrape data to the sheet
-googlesheets4::sheet_append(
-  data = matchOutfield,
-  ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-  sheet = "PlayerGameData"
-)
+dbDisconnect(con)
 
+# ## Writing data to Google Sheet for easier distribution
+# googlesheets4::gs4_auth(path = ".secrets/client_secret.json")
+# 
+# ## Writes the current scrape data to the sheet
+# googlesheets4::sheet_append(
+#   data = matchGoalie,
+#   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+#   sheet = "KeeperGameData"
+# )
+# 
+# ## Writes the current scrape data to the sheet
+# googlesheets4::sheet_append(
+#   data = matchOutfield,
+#   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+#   sheet = "PlayerGameData"
+# )
+# 
 
 
 
