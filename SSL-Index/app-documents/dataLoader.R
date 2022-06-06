@@ -172,7 +172,9 @@ playerData <-
     across(
       DEFENDING:MENTAL,
       ~ floor(.x)
-    )
+    ),
+    Created = as.Date(Created, origin = "1970-01-01"),
+    lastPost = as.Date(lastPost, origin = "1970-01-01")
   )
 
 ## Loads game data
