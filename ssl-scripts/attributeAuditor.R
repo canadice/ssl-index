@@ -14,8 +14,21 @@ require(plyr)
 require(dplyr)
 require(tidyr)
 require(arsenal)
+require(DBI)
+require(dbplyr)
+require(RSQLite)
 
-source("D:/GitHubs/ssl-index/SSL-Index/app-documents/dataLoader.R")
+# source("D:/GitHubs/ssl-index/SSL-Index/app-documents/dataLoader.R")
+
+con <- 
+  dbConnect(
+    SQLite(), 
+    "database/SSL_Database.db"
+  )
+
+playerData <- 
+  dbGetQuery(con, "SELECT * from Daily_Scrape")
+
 
 FMAttributes <- 
   read_html("D:/FootballManager2022/screenshots/attributes.html", encoding = "UTF-8") %>% 
@@ -127,7 +140,7 @@ colnames(comparison) <-
     ".Forum"
   )
 
-
+dbDisconnect(con)
 
 
 
