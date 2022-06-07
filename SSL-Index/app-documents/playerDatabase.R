@@ -9,60 +9,6 @@
 
 
 
-
-
-#Right now put the queries in here. In the future put them somewhere else?
-require(DBI)
-require(dbplyr)
-require(RSQLite)
-con <- dbConnect(SQLite(), "../database/SSL_Database.db")
-
-
-PlayerDataRegularSeason <- dbGetQuery(con, 
-                                      "SELECT 
-Name,
-Club,
-Season,
-count(Matchday) as GamesPlayed,
-sum(`Minutes Played`) as `Minutes Played` ,
-sum(`Distance Run (km)`) as `Distance Run (km)` ,
-avg(`Average Rating`) as `Average Rating` ,
-sum(`Player of the Match`) as `Player of the Match` ,
-sum(`Goals`) as Goals ,
-sum(`Assists`) as Assists ,
-sum(`xG`) as xG ,
-sum(`Shots on Target`) as `Shots on Target` ,
-sum(`Shots`) as Shots ,
-sum(`Penalties Taken`) as `Penalties Taken` ,
-sum(`Penalties Scored`) as `Penalties Scored` ,
-sum(`Successful Passes`) as `Successful Passes` ,
-sum(`Attempted Passes`) as `Attempted Passes` ,
-avg(`Pass%`) as `Pass%` ,
-sum(`Key Passes`) as `Key Passes` ,
-sum(`Successful Crosses`) as `Successful Crosses` ,
-sum(`Attempted Crosses`) as `Attempted Crosses` ,
-avg(`Cross%`) as `Cross%` ,
-sum(`Chances Created`) as `Chances Created` ,
-sum(`Successful Headers`) as `Successful Headers` ,
-sum(`Attempted Headers`) as `Attempted Headers` ,
-avg(`Header%`) as `Header%` ,
-sum(`Key Headers`) as `Key Headers` ,
-sum(`Dribbles`) as Dribbles ,
-sum(`Tackles Won`) as `Tackles Won` ,
-sum(`Attempted Tackles`) as `Attempted Tackles` ,
-avg(`Tackle%`) as `Tackle%` ,
-sum(`Key Tackles`) as `Key Tackles` ,
-sum(`Interceptions`) as Interceptions ,
-sum(`Clearances`) as Clearances ,
-sum(`Mistakes Leading to Goals`) as `Mistakes Leading to Goals` ,
-sum(`Yellow Cards`) as `Yellow Cards` ,
-sum(`Red Cards`) as `Red Cards` ,
-sum(`Fouls`) as Fouls ,
-sum(`Fouls Against`) as `Fouls Against` ,
-sum(`Offsides`) as Offsides
-  FROM Player_Game_Data  group by Name, Season"
-)
-
 PlayerDataCup <- dbGetQuery(con,'SELECT 
 Name,
 Club,
@@ -489,6 +435,115 @@ playerDatabaseSERVER <- function(id){
     
     ## Definining the mechanisms
     function(input, output, session){
+      
+      
+      ##----------------------------------------------------------------
+      ##                Loading data from the Database                 -
+      ##----------------------------------------------------------------
+      
+      keeperCareerData <- 
+        reactive({
+          con <- 
+            dbConnect(
+              SQLite(), 
+              dbFile
+            )
+          
+          # MatchDay like \"%", input$gameFilter, "%\" AND
+          
+          dbGetQuery(
+            con, 
+            paste(
+              "SELECT Name,
+              Club,
+              Season,
+              sum(Apps) as Apps,
+              sum(`Minutes Played`) as `Minutes Played` ,
+              avg(`Average Rating`) as `Average Rating` ,
+              sum(`Player of the Match`) as `Player of the Match` ,
+              sum(`Won`) as Won ,
+              sum(`Lost`) as Lost ,
+              sum(`Drawn`) as Drawn ,
+              sum(`Clean Sheets`) as `Clean Sheets` ,
+              sum(`Conceded`) as Conceded ,
+              sum(`Saves Parried`) as `Saves Parried` ,
+              sum(`Saves Held`) as `Saves Held` ,
+              sum(`Saves Tipped`) as `Saves Tipped` ,
+              sum(`Save%`) as `Save%` ,
+              sum(`Penalties Faced`) as `Penalties Faced` ,
+              sum(`Penalties Saved`) as `Penalties Saved` ,
+              avg(`xSave%`) as `xSave%` 
+            FROM Keeper_Game_Data
+            WHERE Name = \"%", input$player, "%\"",  
+            " GROUP BY Name, Season",
+            sep = ""
+            )
+          )
+          
+          dbDisconnect(con)
+        })
+      
+      playerCareerData <- 
+        reactive({
+          con <- 
+            dbConnect(
+              SQLite(), 
+              dbFile
+            )
+          
+          #MatchDay like \"%", input$gameFilter, "%\" AND 
+          dbGetQuery(
+            con, 
+            paste(
+              "SELECT Name,
+                Club,
+                Season,
+                sum(Apps) as Apps,
+                sum(`Minutes Played`) as `Minutes Played` ,
+                sum(`Distance Run (km)`) as `Distance Run (km)` ,
+                avg(`Average Rating`) as `Average Rating` ,
+                sum(`Player of the Match`) as `Player of the Match` ,
+                sum(`Goals`) as Goals ,
+                sum(`Assists`) as Assists ,
+                sum(`xG`) as xG ,
+                sum(`Shots on Target`) as `Shots on Target` ,
+                sum(`Shots`) as Shots ,
+                sum(`Penalties Taken`) as `Penalties Taken` ,
+                sum(`Penalties Scored`) as `Penalties Scored` ,
+                sum(`Successful Passes`) as `Successful Passes` ,
+                sum(`Attempted Passes`) as `Attempted Passes` ,
+                sum(`Pass%`) as `Pass%` ,
+                sum(`Key Passes`) as `Key Passes` ,
+                sum(`Successful Crosses`) as `Successful Crosses` ,
+                sum(`Attempted Crosses`) as `Attempted Crosses` ,
+                sum(`Cross%`) as `Cross%` ,
+                sum(`Chances Created`) as `Chances Created` ,
+                sum(`Successful Headers`) as `Successful Headers` ,
+                sum(`Attempted Headers`) as `Attempted Headers` ,
+                sum(`Header%`) as `Header%` ,
+                sum(`Key Headers`) as `Key Headers` ,
+                sum(`Dribbles`) as Dribbles ,
+                sum(`Tackles Won`) as `Tackles Won` ,
+                sum(`Attempted Tackles`) as `Attempted Tackles` ,
+                sum(`Tackle%`) as `Tackle%` ,
+                sum(`Key Tackles`) as `Key Tackles` ,
+                sum(`Interceptions`) as Interceptions ,
+                sum(`Clearances`) as Clearances ,
+                sum(`Mistakes Leading to Goals`) as `Mistakes Leading to Goals` ,
+                sum(`Yellow Cards`) as `Yellow Cards` ,
+                sum(`Red Cards`) as `Red Cards` ,
+                sum(`Fouls`) as Fouls ,
+                sum(`Fouls Against`) as `Fouls Against` ,
+                sum(`Offsides`) as Offsides
+              FROM Player_Game_Data
+              WHERE Name = \"%", input$player, "%\"",
+              " GROUP BY Name, Season",
+              sep = ""
+            )
+          )
+          
+          dbDisconnect(con)
+        })
       
       
       ##---------------------------------------------------------------
