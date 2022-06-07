@@ -37,7 +37,7 @@ goalieFunction <- function(season){
         Club,
         sum(Apps) as Apps,
         sum(`Minutes Played`) as `Minutes Played` ,
-        sum(`Average Rating`) as `Average Rating` ,
+        avg(`Average Rating`) as `Average Rating` ,
         sum(`Player of the Match`) as `Player of the Match` ,
         sum(`Won`) as Won ,
         sum(`Lost`) as Lost ,
@@ -261,7 +261,7 @@ outfieldFunction <- function(season){
         sum(Apps) as Apps,
         sum(`Minutes Played`) as `Minutes Played` ,
         sum(`Distance Run (km)`) as `Distance Run (km)` ,
-        sum(`Average Rating`) as `Average Rating` ,
+        avg(`Average Rating`) as `Average Rating` ,
         sum(`Player of the Match`) as `Player of the Match` ,
         sum(`Goals`) as Goals ,
         sum(`Assists`) as Assists ,
@@ -723,7 +723,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 4
 
-date <- "2022-08-21" %>% as.Date()
+date <- "2022-08-28" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
