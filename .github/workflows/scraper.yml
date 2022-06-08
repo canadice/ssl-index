@@ -24,10 +24,8 @@ on:
         #type: boolean
    schedule:
          - cron: "* 1 * * *"
-   push:
-      branches:
-        - Update-To-Sqlite
-
+  
+   workflow_dispatch:
 
 jobs:
   generate-data:
@@ -88,4 +86,5 @@ jobs:
           git config --local user.name "GitHub Actions"
           git add --all
           git commit -am "Daily data"
-          git push
+          git push 
+

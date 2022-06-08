@@ -347,6 +347,9 @@ KeeperSumRegular <-dbGetQuery(con,
 ##                    Insert TPE Cost table                    ##
 #################################################################
 
+## Updating a table
+# dbExecute(con, "UPDATE Player_Game_Data SET Result = '2-3e' WHERE Season = '3' AND Matchday = 'SSL Cup Final' AND Club = 'Sydney City'")
+
 # dbWriteTable(con, "Duty_and_Role_Matrix", ability, overwrite = TRUE)
 
 dbDisconnect(con)

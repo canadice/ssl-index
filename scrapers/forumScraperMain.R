@@ -182,51 +182,22 @@ playerData <-
     ),
     `Natural Fitness` = 20,
     Stamina = 20,
-    Team = if_else(is.na(Team), "FA", Team),
     Goalkeeper = if_else(Position == "Goalkeeper", 20, NaN),
     Name = paste(`First Name`, `Last Name`) %>% str_squish(),
     
     `Minimum Wage` = 
-      if_else(
-        TPE <= 350,
-        1*10^6,
-        if_else(
-          TPE <= 500,
-          1.5*10^6,
-          if_else(
-            TPE <= 650,
-            2*10^6,
-            if_else(
-              TPE <= 800,
-              2.5*10^6,
-              if_else(
-                TPE <= 950,
-                3*10^6,
-                if_else(
-                  TPE <= 1100,
-                  3.5*10^6,
-                  if_else(
-                    TPE <= 1250,
-                    4*10^6,
-                    if_else(
-                      TPE <= 1400,
-                      4.5*10^6,
-                      if_else(
-                        TPE <= 1550,
-                        5*10^6,
-                        if_else(
-                          TPE <= 1750,
-                          5.5*10^6,
-                          6*10^6
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
+      case_when(
+        TPE <= 350 ~ 1*10^6,
+        TPE <= 500 ~ 1.5*10^6,
+        TPE <= 650 ~ 2*10^6,
+        TPE <= 800 ~ 2.5*10^6,
+        TPE <= 950 ~ 3*10^6,
+        TPE <= 1100 ~ 3.5*10^6,
+        TPE <= 1250 ~ 4*10^6,
+        TPE <= 1400 ~ 4.5*10^6,
+        TPE <= 1550 ~ 5*10^6,
+        TPE <= 1750 ~ 5.5*10^6,
+        TRUE ~ 6*10^6
       )
   ) %>% 
   relocate(
