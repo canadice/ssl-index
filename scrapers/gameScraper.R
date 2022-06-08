@@ -232,7 +232,7 @@ goalieFunction <- function(season){
               (`AppsSeason` + 1) -
               `Average RatingSeason`*`AppsSeason`
           )
-        ),
+        ) %>% round(2),
       `Save%` = ((`Saves Parried`+`Saves Held`+`Saves Tipped`)/(`Saves Parried`+`Saves Held`+`Saves Tipped`+Conceded)) %>% round(4) * 100,
       `xSave%Day` = 
         case_when(
@@ -241,7 +241,7 @@ goalieFunction <- function(season){
             ((`xSave%Day` + `xSave%Season`) -
               `xSave%Season`/2)*2
           )
-        ) 
+        ) %>% round(2) 
     ) %>% 
     select(
       !contains("Season"),
@@ -370,6 +370,7 @@ outfieldFunction <- function(season){
             case_when(
               str_detect(Apps, pattern = "\\(") ~
                 (str_split(Apps, pattern = "\\(", simplify = TRUE)[,1] %>% 
+                   str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
                    as.numeric()
                  ),
               TRUE ~ Apps %>% as.numeric()
@@ -377,7 +378,8 @@ outfieldFunction <- function(season){
           Subs = 
             case_when(
               str_detect(Apps, pattern = "\\(") ~
-                (str_split(Apps, pattern = "\\(", simplify = TRUE)[,1] %>% 
+                (str_split(Apps, pattern = "\\(", simplify = TRUE)[,2] %>% 
+                   str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
                    as.numeric()
                 ),
               TRUE ~ 0
@@ -584,7 +586,7 @@ outfieldFunction <- function(season){
               (`AppsSeason` + 1) -
               `Average RatingSeason`*`AppsSeason`
           )
-        ),
+        ) %>% round(2),
       `Pass%` = (`Successful Passes` %>% as.numeric()/`Attempted Passes` %>% as.numeric()) %>% round(4)*100,
       `Header%` = (`Successful Headers` %>% as.numeric()/`Attempted Headers` %>% as.numeric()) %>% round(4)*100,
       `Cross%` = (`Successful Crosses` %>% as.numeric()/`Attempted Crosses` %>% as.numeric()) %>% round(4)*100,
@@ -723,7 +725,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 4
 
-date <- "2022-08-28" %>% as.Date()
+date <- "2022-09-11" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
