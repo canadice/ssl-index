@@ -32,7 +32,7 @@ standingsUI <- function(id){
         column(
           width = 10,
           offset = 1,
-          DTOutput(outputId = ns("standings"))
+          reactableOutput(outputId = ns("standings"))
         )
       )
     )
@@ -48,47 +48,174 @@ standingsSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
       
-      output$standings <- renderDT({
-        datatable(
-          standings[[input$season %>% as.numeric()]], 
-          style = "bootstrap",
-          class = 'compact cell-border stripe',
-          rownames = FALSE,
-          escape = FALSE,
-          options = 
-            list(
-              ordering = TRUE, 
-              ## Sets size of rows shown
-              scrollCollapse = TRUE,
-              pageLength = 20,
-              dom = 'Rt',
-              columnDefs = 
+      standings <- 
+        reactive({
+          schedule[[input$season %>% as.numeric()]] %>% 
+            mutate(
+              `In-game Date` = `In-game Date` %>% as_date() %>% format(format = "%m/%d"),
+              `IRL Date` = `IRL Date` %>% as_date() %>% format(format = "%m/%d"),
+              HomeScore = 
+                stringr::str_split(
+                  Result, 
+                  pattern = "-", 
+                  simplify = TRUE
+                )[,1], 
+              AwayScore = 
+                stringr::str_split(
+                  Result, 
+                  pattern = "-", 
+                  simplify = TRUE
+                )[,2]
+            ) %>%
+            mutate(
+              HomePoints = 
+                case_when(
+                  str_detect(HomeScore, "e|p") ~ 3,
+                  HomeScore > AwayScore ~ 3,
+                  HomeScore == AwayScore ~ 1,
+                  TRUE ~ 0
+                ),
+              AwayPoints = 
+                case_when(
+                  str_detect(AwayScore, "e|p") ~ 3,
+                  HomeScore < AwayScore ~ 3,
+                  HomeScore == AwayScore ~ 1,
+                  TRUE ~ 0
+                )
+            ) %>% 
+            select(
+              -`IRL Date`,
+              -`In-game Date`,
+              -Result
+            ) %>% 
+            pivot_longer(
+              c(HomePoints, AwayPoints),
+              names_to = c("set", ".value"),
+              names_pattern = "(....)(.*)$"
+            ) %>% 
+            mutate(
+              Team = 
+                case_when(
+                  set == "Home" ~ Home,
+                  TRUE ~ Away
+                ),
+              GF = 
+                case_when(
+                  set == "Home" ~ HomeScore,
+                  TRUE ~ AwayScore
+                ),
+              GA = 
+                case_when(
+                  set == "Home" ~ AwayScore,
+                  TRUE ~ HomeScore
+                ),
+              Matchday = unlist(Matchday)
+            ) %>% 
+            select(
+              -contains("Home"),
+              -contains("Away"),
+              -set
+            ) %>% 
+            filter(
+              !is.na(GF) & GF != "",
+              !is.na(as.numeric(Matchday)) 
+            ) %>% 
+            group_by(
+              Team
+            ) %>% 
+            summarize(
+              W = sum(Points == 3),
+              D = sum(Points == 1),
+              L = sum(Points == 0),
+              GF = sum(as.numeric(GF)),
+              GA = sum(as.numeric(GA)),
+              GD = GF-GA,
+              Points = sum(Points)
+            ) %>% 
+            arrange(
+              desc(Points),
+              desc(GD)
+            ) %>% 
+            ungroup() %>% 
+            mutate(
+              Pos = 1:n()
+            ) %>% 
+            left_join(
+              teamInfo %>% 
+                select(
+                  team, 
+                  color_primary,
+                  color_secondary,
+                  logo
+                ),
+              by = c("Team" = "team")
+            ) %>% 
+            relocate(
+              c(Pos, logo), 
+              .before = Team
+            ) %>% 
+            rename(
+              ` ` = logo,
+              Pts = Points
+            )
+        })
+      
+      output$standings <- renderReactable({
+        reactable(
+          standings() %>% 
+            select(
+              -contains("color")
+            ), 
+          pagination = FALSE,
+          fullWidth = FALSE,
+          defaultColDef = 
+            colDef(
+              maxWidth = 60,
+              align = "center",
+              style = function(value, index){
                 list(
-                  list(
-                    targets = 10:11,
-                    visible = FALSE
+                  background = 
+                    standings()$color_primary[index],
+                  color = 
+                    standings()$color_secondary[index]
                   )
+              }
+            ),
+          columns = 
+            list(
+              ` ` = 
+                colDef(
+                  width = 50,
+                  align = "center",
+                  class = "cell",
+                  cell = function(value){
+                    logo <- 
+                      img(
+                        class = "logo",
+                        src = value,
+                        height = 30
+                      )
+                    
+                    div(class = "club", logo)
+                  }
+                ),
+              Team = 
+                colDef(
+                  width = 150,
+                  align = "left",
+                  style = 
+                    function(value, index){
+                      list(
+                        background = 
+                          standings()$color_primary[index],
+                        color = 
+                          standings()$color_secondary[index],
+                        fontWeight = "bold"
+                      )
+                    }
                 )
             )
-        ) %>% 
-          formatStyle(
-            columns = 1:10,
-            valueColumns = "color_primary",
-            backgroundColor = 
-              styleEqual(
-                sort(unique(teamInfo$color_primary)), 
-                sort(unique(teamInfo$color_primary))
-              )
-          ) %>% 
-          formatStyle(
-            columns = 1:10,
-            valueColumns = "color_secondary",
-            color = 
-              styleEqual(
-                sort(unique(teamInfo$color_secondary)), 
-                sort(unique(teamInfo$color_secondary))
-              )
-          )
+        ) 
       })
     }
   )

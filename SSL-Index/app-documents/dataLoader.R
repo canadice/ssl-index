@@ -194,44 +194,17 @@ playerGameData <-
 ##                      Loading Index data                      ##
 ##################################################################
 
-url <- 
-  paste(
-    "https://raw.githack.com/canadice/ssl-index/main/SSL-Index/data/S",
-    1:3,
-    "_standings.html",
-    sep = ""
+schedule <- 
+  lapply(
+    X = 1:max(playerGameData$Season),
+    FUN = function(x){
+      read_sheet(
+        ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
+        sheet = paste("Season", x)
+      )  
+    }
   )
 
-readStandings <- function(x) {
-  x %>% 
-    read_html() %>% 
-    html_elements("table") %>% 
-    html_table() %>% 
-    .[[1]] %>% 
-    dplyr::rename(
-      GP = Pld,
-      W = Won,
-      D = Drn,
-      L = Lst,
-      GF = For,
-      GA = Ag
-    ) %>% 
-    select(
-      -`Inf`,
-      -Form
-    ) %>% 
-    left_join(
-      teamInfo %>% 
-        select(
-          team, 
-          color_primary,
-          color_secondary
-        ),
-      by = c("Team" = "team")
-    )
-}
-
-standings <- lapply(X = url, FUN = readStandings)
 
 ### The Github exports from FM are not used. Game Logs are used instead.# 
 {
