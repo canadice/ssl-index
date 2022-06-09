@@ -7,7 +7,6 @@
 ###########################################################################
 ###########################################################################
 
-
 ### UI module for player similarities using MDS
 playerDatabaseUI <- function(id){
   
@@ -153,6 +152,33 @@ playerDatabaseUI <- function(id){
                 )
               )
             )
+          ),
+          tabPanel(
+            "Career Stats",
+            fluidRow(
+              column(
+                width = 4,
+                selectInput(
+                  #same as gameFilter, but for career tab
+                  inputId = ns("careerFilter"),
+                  label = "Filter type of Game",
+                  choices =
+                    c(
+                      "Cup",
+                      "League"
+                    ),
+                  multiple = FALSE
+                )
+              )
+            ),
+            fluidRow(
+              column(
+                width = 12,
+                reactableOutput(
+                  outputId = ns("CareerData")
+                )
+              )
+            )
           )
         )
       )
@@ -169,6 +195,400 @@ playerDatabaseSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
       
+      con <- 
+        dbConnect(
+          SQLite(), 
+          dbFile
+        )
+      
+      ##----------------------------------------------------------------
+      ##                Loading data from the Database                 -
+      ##----------------------------------------------------------------
+      
+      careerSeasonData <- 
+        reactive({
+          
+          filterName <- input$player
+          
+          if(any(reactives$currentBuild$Group == "Goalkeeper")){
+            
+            table <- 
+              tbl(con, "Keeper_Game_Data") %>% 
+              filter(
+                Name == filterName
+                )
+            
+            if(input$careerFilter == "Cup"){
+              table <- 
+                table %>% 
+                filter(
+                  Matchday %like% "%Cup%"
+                )
+            } else {
+              table <- 
+                table %>% 
+                filter(
+                  !(Matchday %like% "%Cup%")
+                )
+            }
+            
+            table %>%  
+              group_by(
+                Season
+              ) %>% 
+              summarize(
+                Club = Club,
+                Apps = 
+                  sum(`Apps`, na.rm = TRUE),
+                `Minutes Played` = 
+                  sum(`Minutes Played`, na.rm = TRUE),
+                `Average Rating` = 
+                  mean(`Average Rating`, na.rm = TRUE) %>% round(2),
+                `Player of the Match` = 
+                  sum(`Player of the Match`, na.rm = TRUE),
+                Won = 
+                  sum(`Won`, na.rm = TRUE),
+                Lost = 
+                  sum(`Lost`, na.rm = TRUE),
+                Drawn = 
+                  sum(`Drawn`, na.rm = TRUE),
+                `Clean Sheets` = 
+                  sum(`Clean Sheets`, na.rm = TRUE),
+                Conceded = 
+                  sum(`Conceded`, na.rm = TRUE),
+                `Saves Parried` = 
+                  sum(`Saves Parried`, na.rm = TRUE),
+                `Saves Held`= 
+                  sum(`Saves Held`, na.rm = TRUE),
+                `Saves Tipped` = 
+                  sum(`Saves Tipped`, na.rm = TRUE),
+                `Save%` = 
+                  sum(`Save%`, na.rm = TRUE),
+                `Penalties Faced`= 
+                  sum(`Penalties Faced`, na.rm = TRUE),
+                `Penalties Saved` = 
+                  sum(`Penalties Saved`, na.rm = TRUE),
+                `xSave%` = 
+                  mean(`xSave%`, na.rm = TRUE) %>% round(2)
+              ) %>% 
+              group_by(
+                Season
+              ) %>% 
+              mutate(
+                `Save%` = 
+                  ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
+                     (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
+                  round(4)*100
+              ) %>% 
+              collect()
+            
+          } else {
+            ### Players
+            
+            table <- 
+              tbl(con, "Player_Game_Data") %>% 
+              filter(
+                Name == filterName
+              )
+            
+            if(input$careerFilter == "Cup"){
+              table <- 
+                table %>% 
+                filter(
+                  Matchday %like% "%Cup%"
+                )
+            } else {
+              table <- 
+                table %>% 
+                filter(
+                  !(Matchday %like% "%Cup%")
+                )
+            }
+            
+            table %>%  
+              group_by(
+                Season
+              ) %>% 
+              summarize(
+                Club = Club,
+                Apps = sum(Apps),
+                `Minutes Played` = 
+                  sum(`Minutes Played`),
+                `Distance Run (km)` = 
+                  sum(`Distance Run (km)`),
+                `Average Rating` = 
+                  mean(`Average Rating`) %>% round(2),
+                `Player of the Match` = 
+                  sum(`Player of the Match`),
+                Goals = 
+                  sum(`Goals`),
+                Assists = 
+                  sum(`Assists`),
+                xG = 
+                  sum(`xG`) %>% round(2),
+                `Shots on Target` = 
+                  sum(`Shots on Target`),
+                Shots = 
+                  sum(`Shots`),
+                `Penalties Taken` = 
+                  sum(`Penalties Taken`),
+                `Penalties Scored` = 
+                  sum(`Penalties Scored`),
+                `Successful Passes` = 
+                  sum(`Successful Passes`),
+                `Attempted Passes` = 
+                  sum(`Attempted Passes`),
+                `Pass%` = 
+                  sum(`Pass%`),
+                `Key Passes` = 
+                  sum(`Key Passes`),
+                `Successful Crosses` = 
+                  sum(`Successful Crosses`),
+                `Attempted Crosses` = 
+                  sum(`Attempted Crosses`),
+                `Cross%` = 
+                  sum(`Cross%`),
+                `Chances Created` = 
+                  sum(`Chances Created`),
+                `Successful Headers` = 
+                  sum(`Successful Headers`),
+                `Attempted Headers` = 
+                  sum(`Attempted Headers`),
+                `Header%` = 
+                  sum(`Header%`),
+                `Key Headers` = 
+                  sum(`Key Headers`),
+                Dribbles = 
+                  sum(`Dribbles`),
+                `Tackles Won` = 
+                  sum(`Tackles Won`),
+                `Attempted Tackles` = 
+                  sum(`Attempted Tackles`),
+                `Tackle%` =
+                  sum(`Tackle%`),
+                `Key Tackles`= 
+                  sum(`Key Tackles`),
+                Interceptions = 
+                  sum(`Interceptions`),
+                Clearances = 
+                  sum(`Clearances`),
+                `Mistakes Leading to Goals` = 
+                  sum(`Mistakes Leading to Goals`),
+                `Yellow Cards` = 
+                  sum(`Yellow Cards`),
+                `Red Cards` = 
+                  sum(`Red Cards`),
+                Fouls = 
+                  sum(`Fouls`),
+                `Fouls Against` = 
+                  sum(`Fouls Against`),
+                Offsides = 
+                  sum(`Offsides`)
+              ) %>%
+              group_by(
+                Season
+              ) %>% 
+              mutate(
+                `Pass%` = 
+                  round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
+                `Cross%` = 
+                  round(sum(`Successful Crosses`)/sum(`Attempted Crosses`), 4)*100,
+                `Header%` = 
+                  round(sum(`Successful Headers`)/sum(`Attempted Headers`), 4)*100,
+                `Tackle%` =
+                  round(sum(`Tackles Won`)/sum(`Attempted Tackles`), 4)*100
+              ) %>% 
+              collect()
+          }
+        })
+      
+      careerData <- 
+        reactive({
+          
+          filterName <- input$player
+          
+          if(any(reactives$currentBuild$Group == "Goalkeeper")){
+            table <- 
+              tbl(con, "Keeper_Game_Data") %>% 
+              filter(
+                Name == filterName
+              )
+            
+            if(input$careerFilter == "Cup"){
+              table <- 
+                table %>% 
+                filter(
+                  Matchday %like% "%Cup%"
+                )
+            } else {
+              table <- 
+                table %>% 
+                filter(
+                  !(Matchday %like% "%Cup%")
+                )
+            }
+            
+            table %>%
+              # group_by(
+              #   Season
+              # ) %>% 
+              summarize(
+                Club = Club,
+                Apps = 
+                  sum(`Apps`, na.rm = TRUE),
+                `Minutes Played` = 
+                  sum(`Minutes Played`, na.rm = TRUE),
+                `Average Rating` = 
+                  mean(`Average Rating`, na.rm = TRUE) %>% round(2),
+                `Player of the Match` = 
+                  sum(`Player of the Match`, na.rm = TRUE),
+                Won = 
+                  sum(`Won`, na.rm = TRUE),
+                Lost = 
+                  sum(`Lost`, na.rm = TRUE),
+                Drawn = 
+                  sum(`Drawn`, na.rm = TRUE),
+                `Clean Sheets` = 
+                  sum(`Clean Sheets`, na.rm = TRUE),
+                Conceded = 
+                  sum(`Conceded`, na.rm = TRUE),
+                `Saves Parried` = 
+                  sum(`Saves Parried`, na.rm = TRUE),
+                `Saves Held`= 
+                  sum(`Saves Held`, na.rm = TRUE),
+                `Saves Tipped` = 
+                  sum(`Saves Tipped`, na.rm = TRUE),
+                `Save%` = 
+                  sum(`Save%`, na.rm = TRUE),
+                `Penalties Faced`= 
+                  sum(`Penalties Faced`, na.rm = TRUE),
+                `Penalties Saved` = 
+                  sum(`Penalties Saved`, na.rm = TRUE),
+                `xSave%` = 
+                  mean(`xSave%`, na.rm = TRUE) %>% round(2)
+              ) %>% 
+              mutate(
+                `Save%` = 
+                  ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
+                     (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
+                  round(4)*100
+              ) %>% 
+              collect()
+          } else {
+            table <- 
+              tbl(con, "Player_Game_Data") %>% 
+              filter(
+                Name == filterName
+              )
+            
+            if(input$careerFilter == "Cup"){
+              table <- 
+                table %>% 
+                filter(
+                  Matchday %like% "%Cup%"
+                )
+            } else {
+              table <- 
+                table %>% 
+                filter(
+                  !(Matchday %like% "%Cup%")
+                )
+            }
+            
+            table %>% 
+              # group_by(
+              #   Season
+              # ) %>% 
+              summarize(
+                Club = Club,
+                Apps = sum(Apps),
+                `Minutes Played` = 
+                  sum(`Minutes Played`),
+                `Distance Run (km)` = 
+                  sum(`Distance Run (km)`),
+                `Average Rating` = 
+                  mean(`Average Rating`) %>% round(2),
+                `Player of the Match` = 
+                  sum(`Player of the Match`),
+                Goals = 
+                  sum(`Goals`),
+                Assists = 
+                  sum(`Assists`),
+                xG = 
+                  sum(`xG`) %>% round(2),
+                `Shots on Target` = 
+                  sum(`Shots on Target`),
+                Shots = 
+                  sum(`Shots`),
+                `Penalties Taken` = 
+                  sum(`Penalties Taken`),
+                `Penalties Scored` = 
+                  sum(`Penalties Scored`),
+                `Successful Passes` = 
+                  sum(`Successful Passes`),
+                `Attempted Passes` = 
+                  sum(`Attempted Passes`),
+                `Pass%` = 
+                  sum(`Pass%`),
+                `Key Passes` = 
+                  sum(`Key Passes`),
+                `Successful Crosses` = 
+                  sum(`Successful Crosses`),
+                `Attempted Crosses` = 
+                  sum(`Attempted Crosses`),
+                `Cross%` = 
+                  sum(`Cross%`),
+                `Chances Created` = 
+                  sum(`Chances Created`),
+                `Successful Headers` = 
+                  sum(`Successful Headers`),
+                `Attempted Headers` = 
+                  sum(`Attempted Headers`),
+                `Header%` = 
+                  sum(`Header%`),
+                `Key Headers` = 
+                  sum(`Key Headers`),
+                Dribbles = 
+                  sum(`Dribbles`),
+                `Tackles Won` = 
+                  sum(`Tackles Won`),
+                `Attempted Tackles` = 
+                  sum(`Attempted Tackles`),
+                `Tackle%` =
+                  sum(`Tackle%`),
+                `Key Tackles`= 
+                  sum(`Key Tackles`),
+                Interceptions = 
+                  sum(`Interceptions`),
+                Clearances = 
+                  sum(`Clearances`),
+                `Mistakes Leading to Goals` = 
+                  sum(`Mistakes Leading to Goals`),
+                `Yellow Cards` = 
+                  sum(`Yellow Cards`),
+                `Red Cards` = 
+                  sum(`Red Cards`),
+                Fouls = 
+                  sum(`Fouls`),
+                `Fouls Against` = 
+                  sum(`Fouls Against`),
+                Offsides = 
+                  sum(`Offsides`)
+              ) %>%
+              mutate(
+                `Pass%` = 
+                  round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
+                `Cross%` = 
+                  round(sum(`Successful Crosses`)/sum(`Attempted Crosses`), 4)*100,
+                `Header%` = 
+                  round(sum(`Successful Headers`)/sum(`Attempted Headers`), 4)*100,
+                `Tackle%` =
+                  round(sum(`Tackles Won`)/sum(`Attempted Tackles`), 4)*100
+              ) %>% 
+              collect()
+          }
+          # MatchDay like \"%", input$gameFilter, "%\" AND
+        })
       
       ##---------------------------------------------------------------
       ##                        Reactive values                       -
@@ -575,13 +995,11 @@ playerDatabaseSERVER <- function(id){
           )
       })
       
-      
-      
+      # Using reactable for Game Log
       ##---------------------------------------------------------------
       ##                        Game log output                       -
       ##---------------------------------------------------------------
-      
-      # Using reactable
+
       output$GameData <- renderReactable({
         if(any(reactives$currentBuild$Group == "Goalkeeper")){
           data <- 
@@ -731,6 +1149,142 @@ playerDatabaseSERVER <- function(id){
               )
           ) 
         
+      })
+      
+      
+      # Using CareerData 
+      output$CareerData <- renderReactable({
+        if(!is.null(input$careerFilter)){
+          data <- 
+            careerSeasonData()
+          
+          dataSum <- 
+            careerData()
+          
+          if(any(reactives$currentBuild$Group == "Goalkeeper")){
+            data %>% 
+              reactable(
+                pagination = FALSE,
+                columns = 
+                  list(
+                    Season = colDef(
+                      footer = "Totals",
+                      maxWidth = 80,
+                      style = list(position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1),
+                      headerStyle = list(position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1),
+                      footerStyle = list(fontWeight = "bold", position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1)
+                    ),
+                    Club = 
+                      colDef(
+                        maxWidth = 50,
+                        align = "center",
+                        class = "cell",
+                        cell = function(value, index){
+                          logo <- 
+                            img(
+                              class = "logo",
+                              src = teamInfo$logo[teamInfo$team == value],
+                              alt = value,
+                              height = 30
+                            )
+                          
+                          div(class = "club", logo)
+                        }
+                      ),
+                    `Minutes Played` = colDef(footer = dataSum$`Minutes Played`),
+                    `Average Rating` = colDef(footer = dataSum$`Average Rating`),
+                    `Player of the Match` = colDef(footer = dataSum$`Player of the Match`),
+                    `Won` = colDef(footer = dataSum$`Won`),
+                    `Lost` = colDef(footer = dataSum$`Lost`),
+                    `Drawn` = colDef(footer = dataSum$`Drawn`),
+                    `Clean Sheets` = colDef(footer = dataSum$`Clean Sheets`),
+                    `Conceded` = colDef(footer = dataSum$`Conceded`),
+                    `Saves Parried` = colDef(footer = dataSum$`Saves Parried`),
+                    `Saves Held` = colDef(footer = dataSum$`Saves Held`),
+                    `Saves Tipped` = colDef(footer = dataSum$`Saves Tipped`),
+                    `Save%` = colDef(footer = dataSum$`Save%`),
+                    `Penalties Faced` = colDef(footer = dataSum$`Penalties Faced`),
+                    `Penalties Saved` = colDef(footer = dataSum$`Penalties Saved`),
+                    `xSave%` = colDef(footer = dataSum$`xSave%`),
+                    `Apps` = colDef(footer = dataSum$`Apps`)
+                    
+                  ),
+                defaultColDef = colDef(footerStyle = list(fontWeight = "bold"))
+              )
+              
+          } else {
+            data %>% 
+              reactable(
+                pagination = FALSE,
+                columns = 
+                  list(
+                    Season = colDef(
+                      footer = "Totals",
+                      maxWidth = 80,
+                      style = list(position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1),
+                      headerStyle = list(position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1),
+                      footerStyle = list(fontWeight = "bold", position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1)
+                    ),
+                    Club = 
+                      colDef(
+                        maxWidth = 50,
+                        align = "center",
+                        class = "cell",
+                        cell = function(value, index){
+                          logo <- 
+                            img(
+                              class = "logo",
+                              src = teamInfo$logo[teamInfo$team == value],
+                              alt = value,
+                              height = 30
+                            )
+                          
+                          div(class = "club", logo)
+                        }
+                      ),
+                    `Minutes Played` = colDef(footer = dataSum$`Minutes Played`),
+                    `Distance Run (km)` = colDef(footer = dataSum$`Distance Run (km)`),
+                    `Average Rating` = colDef(footer = dataSum$`Average Rating`),
+                    `Player of the Match` = colDef(footer = dataSum$`Player of the Match`),
+                    `Goals` = colDef(footer = dataSum$`Goals`),
+                    `Assists` = colDef(footer = dataSum$`Assists`),
+                    `xG` = colDef(footer = dataSum$`xG`),
+                    `Shots on Target` = colDef(footer = dataSum$`Shots on Target`),
+                    `Shots` = colDef(footer = dataSum$`Shots`),
+                    `Penalties Taken` = colDef(footer = dataSum$`Penalties Taken`),
+                    `Penalties Scored` = colDef(footer = dataSum$`Penalties Scored`),
+                    `Successful Passes` = colDef(footer = dataSum$`Successful Passes`),
+                    `Attempted Passes` = colDef(footer = dataSum$`Attempted Passes`),
+                    `Pass%` = colDef(footer = dataSum$`Pass%`),
+                    `Key Passes` = colDef(footer = dataSum$`Key Passes`),
+                    `Successful Crosses` = colDef(footer = dataSum$`Successful Crosses`),
+                    `Attempted Crosses` = colDef(footer = dataSum$`Attempted Crosses`),
+                    `Cross%` = colDef(footer = dataSum$`Cross%`),
+                    `Chances Created` = colDef(footer = dataSum$`Chances Created`),
+                    `Successful Headers` = colDef(footer = dataSum$`Successful Headers`),
+                    `Attempted Headers` = colDef(footer = dataSum$`Attempted Headers`),
+                    `Header%` = colDef(footer = dataSum$`Header%`),
+                    `Key Headers` = colDef(footer = dataSum$`Key Headers`),
+                    `Dribbles` = colDef(footer = dataSum$`Dribbles`),
+                    `Tackles Won` = colDef(footer = dataSum$`Tackles Won`),
+                    `Attempted Tackles` = colDef(footer = dataSum$`Attempted Tackles`),
+                    `Tackle%` = colDef(footer = dataSum$`Tackle%`),
+                    `Key Tackles` = colDef(footer = dataSum$`Key Tackles`),
+                    `Interceptions` = colDef(footer = dataSum$`Interceptions`),
+                    `Clearances` = colDef(footer = dataSum$`Clearances`),
+                    `Mistakes Leading to Goals` = colDef(footer = dataSum$`Mistakes Leading to Goals`),
+                    `Yellow Cards` = colDef(footer = dataSum$`Yellow Cards`),
+                    `Red Cards` = colDef(footer = dataSum$`Red Cards`),
+                    `Fouls` = colDef(footer = dataSum$`Fouls`),
+                    `Fouls Against` = colDef(footer = dataSum$`Fouls Against`),
+                    `Offsides` = colDef(footer = dataSum$`Offsides`),
+                    `Apps` = colDef(footer = dataSum$`Apps`)
+                    
+                  ),
+                defaultColDef = colDef(footerStyle = list(fontWeight = "bold"))
+              )
+          }
+        }
       })
       
       # Using DT
