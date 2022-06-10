@@ -598,6 +598,13 @@ outfieldFunction <- function(season){
       `Average Rating` = `Average RatingDay`,
       `Apps` = `AppsDay`
     ) %>% 
+    mutate(
+      Apps = 
+        case_when(
+          `Minutes Played` > 45 ~ 1,
+          TRUE ~ 0.5
+        )
+    ) %>% 
     return()
 }
 
@@ -725,7 +732,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 4
 
-date <- "2022-09-18" %>% as.Date()
+date <- "2022-09-25" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
