@@ -71,8 +71,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          remotes::install_github("Canadice/sslrtools")
           remotes::install_deps(dependencies = TRUE)
+          remotes::install_github("Canadice/sslrtools")
         shell: Rscript {0}
 
       - name: Generate data
