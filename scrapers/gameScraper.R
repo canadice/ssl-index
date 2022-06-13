@@ -563,7 +563,7 @@ outfieldFunction <- function(season){
       ~ str_replace(.x, ".x", "")
     ) %>% 
     filter(
-      Apps == 1
+      `Minutes Played`>0
     ) %>% 
     left_join(
       aggregateOutfield %>% 
@@ -732,7 +732,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 4
 
-date <- "2022-09-25" %>% as.Date()
+date <- "2022-10-02" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
@@ -743,6 +743,8 @@ matchGoalie <- goalieOutput(season, date) %>%
 matchOutfield <- outfieldOutput(season, date) %>% 
   unique()
 
+## Checks sum of minutes played per player per team
+sum(matchOutfield$`Minutes Played`)/12/11
 
 ## Writing to the database
 dbAppendTable(con, "Player_Game_Data", matchOutfield)
