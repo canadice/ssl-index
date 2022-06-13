@@ -23,7 +23,7 @@ on:
 #        required: false
         #type: boolean
    schedule:
-         - cron: "0 0 1,7,17 ? * * *"
+         - cron: "0 0/8 * * *"
   
    workflow_dispatch:
 
