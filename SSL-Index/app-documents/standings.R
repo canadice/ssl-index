@@ -50,7 +50,10 @@ standingsSERVER <- function(id){
       
       standings <- 
         reactive({
-          schedule[[input$season %>% as.numeric()]] %>% 
+          read_sheet(
+            ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
+            sheet = paste("Season", input$season)
+          ) %>% 
             mutate(
               `In-game Date` = `In-game Date` %>% as_date() %>% format(format = "%m/%d"),
               `IRL Date` = `IRL Date` %>% as_date() %>% format(format = "%m/%d"),
@@ -118,7 +121,7 @@ standingsSERVER <- function(id){
             ) %>% 
             filter(
               !is.na(GF) & GF != "",
-              !is.na(as.numeric(Matchday)) 
+              !is.na(as.numeric(Matchday) %>% suppressWarnings()) 
             ) %>% 
             group_by(
               Team

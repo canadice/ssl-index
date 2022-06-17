@@ -193,17 +193,17 @@ playerGameData <-
 ##################################################################
 ##                      Loading Index data                      ##
 ##################################################################
-
-schedule <- 
-  lapply(
-    X = 1:max(playerGameData$Season),
-    FUN = function(x){
-      read_sheet(
-        ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
-        sheet = paste("Season", x)
-      )  
-    }
-  )
+# 
+# schedule <- 
+#   lapply(
+#     X = 1:max(playerGameData$Season),
+#     FUN = function(x){
+#       read_sheet(
+#         ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
+#         sheet = paste("Season", x)
+#       )  
+#     }
+#   )
 
 
 ### The Github exports from FM are not used. Game Logs are used instead.# 
