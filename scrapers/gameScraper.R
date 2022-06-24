@@ -732,7 +732,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 4
 
-date <- "2022-12-04" %>% as.Date()
+date <- "2022-12-11" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
@@ -743,8 +743,10 @@ matchGoalie <- goalieOutput(season, date) %>%
 matchOutfield <- outfieldOutput(season, date) %>% 
   unique()
 
+table(matchOutfield$Club)
+
 ## Checks sum of minutes played per player per team
-sum(matchOutfield$`Minutes Played`)/12/11
+sum(matchOutfield$`Minutes Played`)/length(unique(matchOutfield$Club))/11
 
 ## Writing to the database
 dbAppendTable(con, "Player_Game_Data", matchOutfield)
