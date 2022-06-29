@@ -348,7 +348,18 @@ KeeperSumRegular <-dbGetQuery(con,
 #################################################################
 
 ## Updating a table
-# dbExecute(con, "UPDATE Player_Game_Data SET Result = '2-3e' WHERE Season = '3' AND Matchday = 'SSL Cup Final' AND Club = 'Sydney City'")
+# dbExecute(con, "UPDATE Player_Game_Data SET Result = '0-3' WHERE Season = '4' AND Matchday = '11' AND Club = 'Adowa Accra FC'")
+# dbExecute(con, "UPDATE Player_Game_Data SET Result = '3-0' WHERE Season = '4' AND Matchday = '11' AND Club = 'Athênai F.C.'")
+# 
+# tbl(con, "Player_Game_Data") %>% 
+#   filter(
+#     Season == 4,
+#     Matchday == "11",
+#     Club == "Athênai F.C."
+#   ) %>% 
+#   select(
+#     Result
+#   )
 
 # dbWriteTable(con, "Duty_and_Role_Matrix", ability, overwrite = TRUE)
 
