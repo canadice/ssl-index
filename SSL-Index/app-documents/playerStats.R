@@ -226,6 +226,7 @@ playerStatsUI <- function(id){
               ),
               column(
                 width = 8,
+                h3("Top 20", align = "center"),
                 reactableOutput(
                   outputId = ns("leagueRecord")
                 )
@@ -235,15 +236,73 @@ playerStatsUI <- function(id){
               title = "Cup Records",
               column(
                 width = 4,
-                h1("Cup Records"),
-                uiOutput(
-                  outputId = ns("topGoalC")
+                h3("Record for"),
+                actionLink(
+                  ns("topGoalC"),
+                  uiOutput(
+                    outputId = ns("topGoalC")
+                  )
                 ),
-                uiOutput(
-                  outputId = ns("topAssistC")
+                actionLink(
+                  ns("topAssistC"),
+                  uiOutput(
+                    outputId = ns("topAssistC")
+                  )  
                 ),
-                uiOutput(
-                  outputId = ns("topPassC")
+                actionLink(
+                  ns("topxGC"),
+                  uiOutput(
+                    outputId = ns("topxGC")
+                  )  
+                ),
+                actionLink(
+                  ns("topKeyPassesC"),
+                  uiOutput(
+                    outputId = ns("topKeyPassesC")
+                  )  
+                ),
+                actionLink(
+                  ns("topChancesCreatedC"),
+                  uiOutput(
+                    outputId = ns("topChancesCreatedC")
+                  )  
+                ),
+                actionLink(
+                  ns("topPotMC"),
+                  uiOutput(
+                    outputId = ns("topPotMC")
+                  )  
+                ),
+                actionLink(
+                  ns("topDistanceRunC"),
+                  uiOutput(
+                    outputId = ns("topDistanceRunC")
+                  )  
+                ),
+                actionLink(
+                  ns("topYellowsC"),
+                  uiOutput(
+                    outputId = ns("topYellowsC")
+                  )  
+                ),
+                actionLink(
+                  ns("topRedsC"),
+                  uiOutput(
+                    outputId = ns("topRedsC")
+                  )  
+                ),
+                actionLink(
+                  ns("topInterceptionsC"),
+                  uiOutput(
+                    outputId = ns("topInterceptionsC")
+                  )  
+                )
+              ),
+              column(
+                width = 8,
+                h3("Top 20", align = "center"),
+                reactableOutput(
+                  outputId = ns("cupRecord")
                 )
               )
             )
@@ -1273,13 +1332,10 @@ playerStatsSERVER <- function(id){
       output$topGoalC <- renderUI({
         
         leader <- 
-          tbl(con, "Player_Game_Data") %>% 
-          filter(
-            (Matchday %like% "%Cup%")
-          ) %>% 
-          group_by(Name) %>% 
-          summarize(
-            Stat = sum(Goals)
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = Goals,
           ) %>% 
           arrange(
             desc(Stat)
@@ -1293,32 +1349,29 @@ playerStatsSERVER <- function(id){
               paste(
                 "Goals")
             ),
-          color = "orange",
+          color = "navy",
           width = NULL,
           icon = tags$i(class = "fas fa-futbol", style="font-size: 36px; color: white"),
           fill = TRUE,
           value = 
             tags$p(
               paste(
-                leader$Name, "with", leader$Stat, "Goals.",
+                leader$Name, "with", leader$Stat, "goals.",
                 sep = " "
               ),
               style = "font-size: 75%;"
             )
-        )
+        ) 
         
       })
       
       output$topAssistC <- renderUI({
         
         leader <- 
-          tbl(con, "Player_Game_Data") %>% 
-          filter(
-            (Matchday %like% "%Cup%")
-          ) %>%
-          group_by(Name) %>% 
-          summarize(
-            Stat = sum(Assists)
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = Assists,
           ) %>% 
           arrange(
             desc(Stat)
@@ -1332,32 +1385,29 @@ playerStatsSERVER <- function(id){
               paste(
                 "Assists")
             ),
-          color = "orange",
+          color = "navy",
           width = NULL,
-          icon = tags$i(class = "fas fa-futbol", style="font-size: 36px; color: white"),
+          icon = tags$i(class = "fas fa-shoe-prints", style="font-size: 36px; color: white"),
           fill = TRUE,
           value = 
             tags$p(
               paste(
-                leader$Name, "with", leader$Stat, "Assists.",
+                leader$Name, "with", leader$Stat, "assists.",
                 sep = " "
               ),
               style = "font-size: 75%;"
             )
-        )
+        ) 
         
       })
       
-      output$topPassC <- renderUI({
+      output$topxGC <- renderUI({
         
         leader <- 
-          tbl(con, "Player_Game_Data") %>% 
-          filter(
-            (Matchday %like% "%Cup%")
-          ) %>%
-          group_by(Name) %>% 
-          summarize(
-            Stat = sum(`Successful Passes`)
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = xG,
           ) %>% 
           arrange(
             desc(Stat)
@@ -1369,25 +1419,276 @@ playerStatsSERVER <- function(id){
           title = 
             tags$b(
               paste(
-                "Successful Passes")
+                "Expected Goals")
             ),
-          color = "orange",
+          color = "navy",
           width = NULL,
           icon = tags$i(class = "fas fa-futbol", style="font-size: 36px; color: white"),
           fill = TRUE,
           value = 
             tags$p(
               paste(
-                leader$Name, "with", leader$Stat, "Passes.",
+                leader$Name, "with", leader$Stat, "expected goals.",
                 sep = " "
               ),
               style = "font-size: 75%;"
             )
-        )
+        ) 
         
       })
       
+      output$topKeyPassesC <- renderUI({
+        
+        leader <- 
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = "`Key Passes`",
+          ) %>% 
+          arrange(
+            desc(Stat)
+          ) %>% 
+          collect() %>% 
+          slice_head(n = 1)
+        
+        infoBox(
+          title = 
+            tags$b(
+              paste(
+                "Key Passes")
+            ),
+          color = "navy",
+          width = NULL,
+          icon = tags$i(class = "fas fa-key", style="font-size: 36px; color: white"),
+          fill = TRUE,
+          value = 
+            tags$p(
+              paste(
+                leader$Name, "with", leader$Stat, "passes.",
+                sep = " "
+              ),
+              style = "font-size: 75%;"
+            )
+        ) 
+        
+      })
       
+      output$topChancesCreatedC <- renderUI({
+        
+        leader <- 
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = "`Chances Created`",
+          ) %>% 
+          arrange(
+            desc(Stat)
+          ) %>% 
+          collect() %>% 
+          slice_head(n = 1)
+        
+        infoBox(
+          title = 
+            tags$b(
+              paste(
+                "Chances Created")
+            ),
+          color = "navy",
+          width = NULL,
+          icon = tags$i(class = "fas fa-eye", style="font-size: 36px; color: white"),
+          fill = TRUE,
+          value = 
+            tags$p(
+              paste(
+                leader$Name, "with", leader$Stat, "chances.",
+                sep = " "
+              ),
+              style = "font-size: 75%;"
+            )
+        ) 
+        
+      })
+      
+      output$topInterceptionsC <- renderUI({
+        
+        leader <- 
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = "Interceptions",
+          ) %>% 
+          arrange(
+            desc(Stat)
+          ) %>% 
+          collect() %>% 
+          slice_head(n = 1)
+        
+        infoBox(
+          title = 
+            tags$b(
+              paste(
+                "Interceptions")
+            ),
+          color = "navy",
+          width = NULL,
+          icon = tags$i(class = "fas fa-ban", style="font-size: 36px; color: white"),
+          fill = TRUE,
+          value = 
+            tags$p(
+              paste(
+                leader$Name, "with", leader$Stat, "interceptions.",
+                sep = " "
+              ),
+              style = "font-size: 75%;"
+            )
+        ) 
+        
+      })
+      
+      output$topPotMC <- renderUI({
+        
+        leader <- 
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = "`Player of the Match`",
+          ) %>% 
+          arrange(
+            desc(Stat)
+          ) %>% 
+          collect() %>% 
+          slice_head(n = 1)
+        
+        infoBox(
+          title = 
+            tags$b(
+              paste(
+                "Player of the Match")
+            ),
+          color = "navy",
+          width = NULL,
+          icon = tags$i(class = "fas fa-award", style="font-size: 36px; color: white"),
+          fill = TRUE,
+          value = 
+            tags$p(
+              paste(
+                leader$Name, "with", leader$Stat, "awards.",
+                sep = " "
+              ),
+              style = "font-size: 75%;"
+            )
+        ) 
+        
+      })
+      
+      output$topYellowsC <- renderUI({
+        
+        leader <- 
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = "`Yellow Cards`",
+          ) %>% 
+          arrange(
+            desc(Stat)
+          ) %>% 
+          collect() %>% 
+          slice_head(n = 1)
+        
+        infoBox(
+          title = 
+            tags$b(
+              paste(
+                "Yellow Cards")
+            ),
+          color = "navy",
+          width = NULL,
+          icon = tags$i(class = "fas fa-square", style="font-size: 36px; color: white"),
+          fill = TRUE,
+          value = 
+            tags$p(
+              paste(
+                leader$Name, "with", leader$Stat, "yellow.",
+                sep = " "
+              ),
+              style = "font-size: 75%;"
+            )
+        ) 
+        
+      })
+      
+      output$topRedsC <- renderUI({
+        
+        leader <- 
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = "`Red Cards`",
+          ) %>% 
+          arrange(
+            desc(Stat)
+          ) %>% 
+          collect() %>% 
+          slice_head(n = 1)
+        
+        infoBox(
+          title = 
+            tags$b(
+              paste(
+                "Red Cards")
+            ),
+          color = "navy",
+          width = NULL,
+          icon = tags$i(class = "fas fa-exclamation", style="font-size: 36px; color: white"),
+          fill = TRUE,
+          value = 
+            tags$p(
+              paste(
+                leader$Name, "with", leader$Stat, "red.",
+                sep = " "
+              ),
+              style = "font-size: 75%;"
+            )
+        ) 
+        
+      })
+      
+      output$topDistanceRunC <- renderUI({
+        
+        leader <- 
+          cupRecords() %>% 
+          select(
+            Name, 
+            Stat = "`Distance Run (km)`",
+          ) %>% 
+          arrange(
+            desc(Stat)
+          ) %>% 
+          collect() %>% 
+          slice_head(n = 1)
+        
+        infoBox(
+          title = 
+            tags$b(
+              paste(
+                "Distance Run (km)")
+            ),
+          color = "navy",
+          width = NULL,
+          icon = icon("person-running", style="font-size: 36px; color: white", verify_fa = FALSE),
+          fill = TRUE,
+          value = 
+            tags$p(
+              paste(
+                leader$Name, "with", leader$Stat, "km.",
+                sep = " "
+              ),
+              style = "font-size: 75%;"
+            )
+        ) 
+        
+      })
+
       ##---------------------------------------------------------------
       ##                    Selected stat observers                   -
       ##---------------------------------------------------------------
@@ -1396,7 +1697,11 @@ playerStatsSERVER <- function(id){
         reactiveValues(
           league = "Goals",
           cup = "Goals"
-          )
+        )
+      
+      ##---------
+      ##  League  
+      ##---------
       
       observeEvent(
         input$topGoal, 
@@ -1468,6 +1773,84 @@ playerStatsSERVER <- function(id){
         }
       )
       
+      ##-------
+      ##  Cup  
+      ##-------
+
+      observeEvent(
+        input$topGoalC, 
+        {
+          currentStat$cup <- "Goals"
+        }
+      )
+      
+      observeEvent(
+        input$topPotMC, 
+        {
+          currentStat$cup <- "`Player of the Match`"
+        }
+      )
+      
+      observeEvent(
+        input$topInterceptionsC, 
+        {
+          currentStat$cup <- "Interceptions"
+        }
+      )
+      
+      observeEvent(
+        input$topChancesCreatedC, 
+        {
+          currentStat$cup <- "`Chances Created`"
+        }
+      )
+      
+      observeEvent(
+        input$topDistanceRunC, 
+        {
+          currentStat$cup <- "`Distance Run (km)`"
+        }
+      )
+      
+      observeEvent(
+        input$topYellowsC, 
+        {
+          currentStat$cup <- "`Yellow Cards`"
+        }
+      )
+      
+      observeEvent(
+        input$topRedsC, 
+        {
+          currentStat$cup <- "`Red Cards`"
+        }
+      )
+      
+      observeEvent(
+        input$topAssistC, 
+        {
+          currentStat$cup <- "Assists"
+        }
+      )
+      
+      observeEvent(
+        input$topxGC, 
+        {
+          currentStat$cup <- "xG"
+        }
+      )
+      
+      observeEvent(
+        input$topKeyPassesC, 
+        {
+          currentStat$cup <- "`Key Passes`"
+        }
+      )
+      
+      
+      ##--------
+      ##  Data  
+      ##--------
       
       leagueRecords <- reactive({
         tbl(con, "Player_Game_Data") %>% 
@@ -1508,6 +1891,76 @@ playerStatsSERVER <- function(id){
           arrange(
             across(
               currentStat$league,
+              desc
+            )
+          ) %>% 
+          slice_head(n = 20) %>% 
+          mutate(
+            Rank = 1:n()
+          ) %>% 
+          relocate(
+            Rank,
+            .before = Name
+          ) %>% 
+          reactable(
+            pagination = FALSE,
+            defaultColDef = 
+              colDef(
+                maxWidth = 150
+              ),
+            columns = 
+              list(
+                Rank = 
+                  colDef(
+                    width = 60
+                  ),
+                Name = 
+                  colDef(
+                    maxWidth = 350
+                  )
+              )
+          )
+      })
+      
+      cupRecords <- reactive({
+        tbl(con, "Player_Game_Data") %>% 
+          filter(
+            (Matchday %like% "%Cup%")
+          ) %>% 
+          group_by(Name) %>% 
+          summarize(
+            across(
+              c(Apps, 
+                Goals, 
+                Assists, 
+                xG, 
+                `Key Passes`,
+                `Key Headers`, 
+                `Key Tackles`,
+                `Chances Created`,
+                `Interceptions`,
+                `Distance Run (km)`,
+                `Penalties Scored`,
+                `Yellow Cards`,
+                `Red Cards`,
+                `Player of the Match`
+              ),
+              sum
+            )
+          ) %>% 
+          collect()
+      })
+      
+      output$cupRecord <- renderReactable({
+        cupRecords() %>% 
+          select(
+            Name, 
+            Apps,
+            currentStat$cup
+          ) %>% 
+          arrange(
+            across(
+              currentStat$cup,
               desc
             )
           ) %>% 
