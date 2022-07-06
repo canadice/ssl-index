@@ -235,6 +235,8 @@ sapply(
 ##                  The UI and Server function                  ##
 ##################################################################
 
+# jsResetCode <- "shinyjs.restart = function() {history.go(0)}"
+
 ui <- function(request){
   dashboardPage(
     ##----------------------------------------------------------------
@@ -253,6 +255,7 @@ ui <- function(request){
         ),
         class = "dropdown",
         tags$head(
+          
           ## HTML code so that a href link inherits the text color, not the link color
           tags$style(HTML("a, a:hover, a:visited, a:active {color: inherit}")),
           tags$style(HTML('
@@ -304,6 +307,10 @@ ui <- function(request){
           menuSubItem(
             "Individual Statistics",
             tabName = "playerStats"
+          ),
+          menuSubItem(
+            "Player Records",
+            tabName = "playerRecords"
           )
         ),
         menuItem(
@@ -339,7 +346,9 @@ ui <- function(request){
           icon = icon("github"),
           href = "https://github.com/canadice/ssl-index"
         )
-      )
+      )#,
+      # extendShinyjs(text = jsResetCode, functions = "restart"), # Add the js code to the page
+      # actionButton("reset_button", "Reload Page")
     ),
     
     ##----------------------------------------------------------------
@@ -406,6 +415,13 @@ ui <- function(request){
           trackerPositionUI(id = "trackerPosition")
         ),
         tabItem(
+          "playerRecords",
+          titlePanel(
+            h1("Individual Records", align = "center")
+          ),
+          playerRecordsUI(id = "playerRecords")
+        ),
+        tabItem(
           "playerBuilder",
           titlePanel(
             h1("Player Builder", align = "center")
@@ -427,6 +443,10 @@ ui <- function(request){
 
 server <- function(input, output, session) {
   
+  # ## Observes a reset
+  # observeEvent(input$reset_button, {js$restart()}) 
+  
+  
   loadedModuleSchedule <- reactiveVal(FALSE)
   loadedModuleStandings <- reactiveVal(FALSE)
   loadedModulePlayerStats <- reactiveVal(FALSE)
@@ -435,6 +455,7 @@ server <- function(input, output, session) {
   loadedModuleTrackerPosition <- reactiveVal(FALSE)
   loadedModuleOverviewTeam <- reactiveVal(FALSE)
   loadedModulePlayerDatabase <- reactiveVal(FALSE)
+  loadedModulePlayerRecords <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
   
@@ -489,6 +510,12 @@ server <- function(input, output, session) {
       loadedModulePlayerDatabase(TRUE)
       
       playerDatabaseSERVER(id = "playerPages")
+      
+    } else if(input$tabs == "playerRecords" & !loadedModulePlayerDatabase()){
+      
+      loadedModulePlayerRecords(TRUE)
+      
+      playerRecordsSERVER(id = "playerRecords")
       
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
