@@ -1,46 +1,49 @@
+source("SSL-Index/app-documents/dataLoader.R")
 require(googlesheets4)
-require(dplyr)
 
 exposedPlayers <- 
   playerData %>% 
   filter(
     !(Name %in% 
       c(
-        #ATH 7
+        #ATH 9
         "Henrik Lind",
         "Jannik Andersen",
         "Deedee Yoker",
         "Zinedine Gintonic",
-        "Eirlys Snooks",
+        "Sydney Ramirez",
         "Cal Labovitch",
         "Nico Fischer",
+        'Makrus "The Tater" Jager',
+        "Jeffrey LaVert",
         
         #CBA 7
         "Laurent Gourcuff",
-        "Antonio Governo",
-        "Siegward OfCatarina",
-        "Patrik Björkås",
-        "Aimo Tälli",
-        "Jaume Vila",
-        "Koschei Oakdown",
+        # "Antonio Governo",
+        # "Siegward OfCatarina",
+        # "Patrik Björkås",
+        # "Aimo Tälli",
+        # "Jaume Vila",
+        # "Koschei Oakdown",
         
-        #CAI 7
+        #CAI 8
         "Connor Azpilicueta",
         "Franco Torres",
         "Powdered ToastMan",
         "Ask Jeeves",
         "Alessio Calvatore",
         "Pierre Houde",
-        "Pascal Anvierre",
+        "Wesley Stains",
+        "Arnošt Hlemýžď",
         
         #CAT 7
         "Budget Busquets",
-        "Tim Sinclair",
+        # "Tim Sinclair",
         "Shion Okamoto",
-        "Juha Jarvinen",
-        "Jökull Júlíusson",
-        "Alexandra Gunnarsson",
-        "Vins Vins",
+        # "Juha Jarvinen",
+        # "Jökull Júlíusson",
+        # "Alexandra Gunnarsson",
+        # "Vins Vins",
         
         #HOL 9
         "Tiki Taka",
@@ -54,52 +57,59 @@ exposedPlayers <-
         "Alfredo Puttanesca",
         
         #LON 7
-        "Tony Yeboah",
-        "Mazrim Taim",
-        "Linnea Nesse",
+        # "Tony Yeboah",
+        # "Mazrim Taim",
+        # "Linnea Nesse",
         "Donna Rumma",
-        'Bud-Lite "Large Box" McGuirk',
-        "Gavin Millar",
-        "K Clamence",
-        "Kuai Liang",
+        # 'Bud-Lite "Large Box" McGuirk',
+        # "Gavin Millar",
+        # "K Clamence",
+        # "Kuai Liang",
         
-        #MTL
-        "Dr. Doofenshmirtz",
-        "Giannis Kroustis",
+        #MTL 8
+        "Alexander Eyesak",
+        "Manny Calavera",
         "Ioannis Papastathopoulos",
         "Siilver Druid",
         "Dorian Lexington",
         "Coffee Biscuit",
-        'Makrus "The Tater" Jager',
+        "Yves Mathieu",
+        "Seth Dolan",
         
         #SDY 8
         "Xherdan Xhaka",
         "Tim Possible",
-        "Owen Forty-Four",
-        "Sator Freddy",
-        "Skoomina Hulk a Votto",
-        "Certified Problem",
-        "Hunter Havok",
-        "Malakai Black",
+        # "Owen Forty-Four",
+        # "Sator Freddy",
+        # "Skoomina Hulk a Votto",
+        # "Certified Problem",
+        # "Hunter Havok",
+        # "Malakai Black",
         
         #SEO 8
-        "George Costanza",
         "King Kong",
         "Ketchup Noodle",
         "Cole Mertz",
         "Jay Jay Okocha",
-        "Marianne Maltais",
-        "Michael Müller",
         "Hugh Mann",
+        "Kjell Holmberg",
+        "Berocka Aloisi",
+        "Darren Lockyer",
         
         #TKY
+        "Sky Ryze",
+        "Mike Rup",
+        
+        #Paris
+        "Leonidas Papadopoulos",
+        
+        #Accra
+        "Kofi Anshah",
         
         # Retiring
-        "Icarus Isosceles",
-        "Blue Cod",
-        "Arcueid Brunestud"
+        "Haruka Mayoi"
       )),
-    Team != "FA"
+    !(Team %in% c("FA", "Prospect", "Retired"))
   ) %>% 
   relocate(
     Active,
@@ -109,6 +119,8 @@ exposedPlayers <-
     Team,
     Active
   )
+
+gs4_auth()
 
 write_sheet(
   data = exposedPlayers,
