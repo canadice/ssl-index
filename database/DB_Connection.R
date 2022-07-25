@@ -366,6 +366,6 @@ KeeperSumRegular <-dbGetQuery(con,
 #     Result
 #   )
 
-# dbWriteTable(con, "Duty_and_Role_Matrix", ability, overwrite = TRUE)
+# dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
 
 dbDisconnect(con)
