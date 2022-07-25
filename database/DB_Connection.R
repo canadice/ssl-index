@@ -327,6 +327,11 @@ KeeperSumRegular <-dbGetQuery(con,
 ##              Insert Team Information                        ##
 #################################################################
 
+# teamInfo <- googlesheets4::read_sheet(
+#   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+#   sheet = "Team Information"
+# )
+
 #################################################################
 ##             Insert Attributes and Availability              ##
 #################################################################
