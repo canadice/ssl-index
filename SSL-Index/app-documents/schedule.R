@@ -23,8 +23,11 @@ scheduleUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              1:4 %>% 
+              1:5 %>% 
               sort(decreasing = TRUE)
+          ),
+          uiOutput(
+            outputId = ns("divisionFilter")
           )
         ),
         column(
@@ -44,16 +47,40 @@ scheduleSERVER <- function(id){
     
     ## Definining the mechanisms
     function(input, output, session){
+      
+      output$divisionFilter <- renderUI({
+        if(input$season < 5){
+          NULL
+        } else {
+          selectInput(
+            inputId = session$ns("divisionFilter"),
+            label = "Select division",
+            choices = c("All", "1", "2"),
+            selected = "All"
+          )
+        }
+      })
      
       schedule <- reactive({
-        read_sheet(
-          ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
-          sheet = paste("Season", input$season)
-        ) %>% 
+        schedule <- 
+          read_sheet(
+            ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
+            sheet = paste("Season", input$season)
+          ) %>% 
           mutate(
             `In-game Date` = `In-game Date` %>% as_date() %>% format(format = "%m/%d"),
             `IRL Date` = `IRL Date` %>% as_date() %>% format(format = "%m/%d")
           )
+        
+        if(input$season > 4 & input$divisionFilter != "All"){
+          schedule %>% 
+            filter(
+              Division %in% c(input$divisionFilter, "Pre", "Cup", "Shield")
+            )  
+        } else {
+          schedule
+        }
+        
       })
       
       output$schedule <- renderDT({
