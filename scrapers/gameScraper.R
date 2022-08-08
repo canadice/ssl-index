@@ -113,7 +113,11 @@ goalieFunction <- function(season){
             replacement = ""
           ),
           Club = 
-            if_else(Club == "Accra FC", "Adowa Accra FC", Club)
+            case_when(
+              Club == "Accra FC" ~ "Adowa Accra FC",
+              Club == "São Paulo" ~ "União São Paulo",
+              TRUE ~ Club
+            )
         ) %>% 
         mutate(
           Nationality = 
@@ -385,7 +389,11 @@ outfieldFunction <- function(season){
               TRUE ~ 0
             ),
           Club = 
-            if_else(Club == "Accra FC", "Adowa Accra FC", Club)
+            case_when(
+              Club == "Accra FC" ~ "Adowa Accra FC",
+              Club == "São Paulo" ~ "União São Paulo",
+              TRUE ~ Club
+            )
         ) %>% 
         dplyr::mutate(
           Apps = rowSums(data.frame(.$Starts, .$Subs), na.rm = TRUE)
@@ -732,7 +740,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 5
 
-date <- "2022-08-14" %>% as.Date()
+date <- "2022-08-21" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
