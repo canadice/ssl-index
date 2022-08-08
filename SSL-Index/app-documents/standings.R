@@ -373,7 +373,7 @@ standingsSERVER <- function(id){
         if(is.null(standings2())){
           NULL
         } else {
-          reactableOutput(outputId = ns("standings2"))
+          reactableOutput(outputId = session$ns("standings2"))
         }
       })
       
