@@ -624,6 +624,7 @@ goalieOutput <- function(season, matchday){
     ) %>% 
     mutate(
       Matchday = unlist(Matchday),
+      Division = unlist(Division),
       `In-game Date` = `In-game Date` %>% as.Date()
     ) %>% 
     filter(
@@ -658,6 +659,11 @@ goalieOutput <- function(season, matchday){
               is.na(Matchday.x) ~ Matchday.y,
               TRUE ~ Matchday.x
             ),
+          Division = 
+            case_when(
+              is.na(Division.x) ~ Division.y,
+              TRUE ~ Division.x
+            ),
           Season = season,
           `Average Rating` = 
             case_when(
@@ -683,6 +689,7 @@ outfieldOutput <- function(season, matchday){
     ) %>% 
     mutate(
       Matchday = unlist(Matchday),
+      Division = unlist(Division),
       `In-game Date` = `In-game Date` %>% as.Date()
     ) %>% 
     filter(
@@ -717,6 +724,11 @@ outfieldOutput <- function(season, matchday){
               is.na(Matchday.x) ~ Matchday.y,
               TRUE ~ Matchday.x
             ),
+          Division = 
+            case_when(
+              is.na(Division.x) ~ Division.y,
+              TRUE ~ Division.x
+            ),
           Season = season,
           `Average Rating` = 
             case_when(
@@ -730,6 +742,10 @@ outfieldOutput <- function(season, matchday){
           !contains(".x") & !contains(".y"),
           -Away,
           -Home
+        ) %>% 
+        relocate(
+          Acc:Wor,
+          .after = Division
         )
     }
   
@@ -740,7 +756,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 5
 
-date <- "2022-08-21" %>% as.Date()
+date <- "2022-09-11" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
