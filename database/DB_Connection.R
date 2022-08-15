@@ -357,8 +357,8 @@ KeeperSumRegular <-dbGetQuery(con,
 # dbExecute(con, "UPDATE Player_Game_Data SET Name = 'Liang Kuai' WHERE Name = 'Kuai Liang'")
 # 
 # gameData <-
-  # tbl(con, "Keeper_Game_Data") %>%
-  # collect()
+# tbl(con, "Keeper_Game_Data") %>%
+# collect()
 
 # dbWriteTable(con, "Keeper_Game_Data", gameData, overwrite = TRUE)
 # dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
