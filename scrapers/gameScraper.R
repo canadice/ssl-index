@@ -51,7 +51,7 @@ goalieFunction <- function(season){
         sum(`Penalties Faced`) as `Penalties Faced` ,
         sum(`Penalties Saved`) as `Penalties Saved` ,
         avg(`xSave%`) as `xSave%` 
-      FROM Keeper_Game_Data
+      FROM gameDataKeeper
       WHERE Season = ", season, 
       " GROUP BY Name, Club",
       sep = ""
@@ -212,7 +212,7 @@ goalieFunction <- function(season){
       ~ str_replace(.x, ".x", "")
     ) %>% 
     filter(
-      Apps == 1
+      `Minutes Played`>0
     ) %>% 
     left_join(
       aggregateGoalie %>% 
@@ -299,7 +299,7 @@ outfieldFunction <- function(season){
         sum(`Fouls`) as Fouls ,
         sum(`Fouls Against`) as `Fouls Against` ,
         sum(`Offsides`) as Offsides
-      FROM Player_Game_Data
+      FROM gameDataPlayer
       WHERE Season = ", season, 
       " GROUP BY Name, Club",
       sep = ""
@@ -382,7 +382,7 @@ outfieldFunction <- function(season){
           Subs = 
             case_when(
               str_detect(Apps, pattern = "\\(") ~
-                (str_split(Apps, pattern = "\\(", simplify = TRUE)[,2] %>% 
+                (str_split(Apps, pattern = "\\(", simplify = TRUE)[,ncol(str_split(Apps, pattern = "\\(", simplify = TRUE))] %>% 
                    str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
                    as.numeric()
                 ),
@@ -754,9 +754,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 5
+season <- 3
 
-date <- "2022-11-06" %>% as.Date()
+date <- "2022-10-27" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
@@ -773,8 +773,11 @@ table(matchOutfield$Club)
 sum(matchOutfield$`Minutes Played`)/length(unique(matchOutfield$Club))/11
 
 ## Writing to the database
-dbAppendTable(con, "Player_Game_Data", matchOutfield)
-dbAppendTable(con, "Keeper_Game_Data", matchGoalie)
+dbAppendTable(con, "gameDataPlayer", matchOutfield)
+dbAppendTable(con, "gameDataKeeper", matchGoalie)
+
+# dbAppendTable(con, "Player_Game_Data", matchOutfield)
+# dbAppendTable(con, "Keeper_Game_Data", matchGoalie)
 
 dbDisconnect(con)
 
