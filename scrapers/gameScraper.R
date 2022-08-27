@@ -754,9 +754,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 3
+season <- 4
 
-date <- "2022-10-27" %>% as.Date()
+date <- "2022-08-21" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
@@ -768,6 +768,8 @@ matchOutfield <- outfieldOutput(season, date) %>%
   unique()
 
 table(matchOutfield$Club)
+
+table(matchOutfield$Opponent)
 
 ## Checks sum of minutes played per player per team
 sum(matchOutfield$`Minutes Played`)/length(unique(matchOutfield$Club))/11
