@@ -358,7 +358,12 @@ KeeperSumRegular <-dbGetQuery(con,
 # 
 # gameData <-
 # tbl(con, "Player_Game_Data") %>%
+#   filter(Name == "Blueberry Poptart", Season == 4, Matchday == "Cup Quarter Final Leg 1") %>% 
 # collect()
+# 
+# keeperGameData <- 
+#   tbl(con, "gameDataKeeper") %>%
+#   collect()
 # 
 # dbWriteTable(con, "gameDataPlayer", gameData, overwrite = TRUE)
 # dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
