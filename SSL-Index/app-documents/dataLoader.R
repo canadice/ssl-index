@@ -179,13 +179,13 @@ playerData <-
 
 ## Loads game data
 keeperGameData <- 
-  dbGetQuery(con, "SELECT * from Keeper_Game_Data") %>%
+  dbGetQuery(con, "SELECT * from gameDataKeeper") %>%
   mutate(
     Season = as.numeric(Season)
   )
 
 playerGameData <- 
-  dbGetQuery(con, "SELECT * from Player_Game_Data") %>% 
+  dbGetQuery(con, "SELECT * from gameDataPlayer") %>% 
   mutate(
     Season = as.numeric(Season)
   )
