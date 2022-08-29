@@ -354,12 +354,12 @@ KeeperSumRegular <-dbGetQuery(con,
 
 ## Updating a table
 # dbExecute(con, "UPDATE Player_Game_Data SET Result = '0-3' WHERE Season = '4' AND Matchday = '11' AND Club = 'Adowa Accra FC'")
-# dbExecute(con, "UPDATE gameDataPlayer SET Name = 'Kuai Liang' WHERE Name = 'Liang Kuai'")
+# dbExecute(con, "DELETE gameDataPlayer SET Season = '4' WHERE Name = 'Liang Kuai'")
 # 
 # gameData <-
-# tbl(con, "Player_Game_Data") %>%
-#   filter(Name == "Blueberry Poptart", Season == 4, Matchday == "Cup Quarter Final Leg 1") %>% 
-# collect()
+# tbl(con, "Keeper_Game_Data") %>%
+#   filter( Season == 4 & (Matchday == "13" | Matchday == "14")) %>%
+#   collect()
 # 
 # keeperGameData <- 
 #   tbl(con, "gameDataKeeper") %>%
