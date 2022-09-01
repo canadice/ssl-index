@@ -358,7 +358,6 @@ KeeperSumRegular <-dbGetQuery(con,
 # 
 # gameData <-
 # tbl(con, "Keeper_Game_Data") %>%
-#   filter( Season == 4 & (Matchday == "13" | Matchday == "14")) %>%
 #   collect()
 # 
 # keeperGameData <- 
