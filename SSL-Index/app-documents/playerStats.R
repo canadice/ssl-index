@@ -14,8 +14,6 @@ playerStatsUI <- function(id){
   ## Creating the namespacing function for all IDs
   ns <- NS(id)
   
-  
-  
   tagList(
     fluidPage(
       fluidRow(
@@ -28,15 +26,16 @@ playerStatsUI <- function(id){
               1:max(playerGameData$Season) %>% 
               sort(decreasing = TRUE)
           ),
-          selectizeInput(
-            inputId = ns("gameFilter"),
-            label = "Filter type of Game",
-            choices =
+          selectInput(
+            inputId = ns("division"),
+            label = "Select division",
+            choices = 
               c(
-                "Cup",
-                "League"
-              ),
-            multiple = TRUE
+                "ALL",
+                "Cup" = 0,
+                1,
+                2
+              )
           )
         )
       ),
@@ -177,28 +176,20 @@ playerStatsSERVER <- function(id){
             Season == input$season
           )
         
-        if(!is.null(input$gameFilter)){
-          if(input$gameFilter %>% length() == 2){
-            # Do nothing
-          } else if("Cup" %in% input$gameFilter){
-            data <- 
-              data %>% 
-              filter(
-                str_detect(Matchday, "Cup")
-              )
-          } else {
-            data <- 
-              data %>% 
-              filter(
-                str_detect(Matchday, "Cup", negate = TRUE)
-              )
-          }
+        if(input$division == "ALL"){
+          # Do nothing
+        } else {
+          data <- 
+            data %>% 
+            filter(
+              Division == input$division
+            )
         }
         
         # temp <- 
         data %>% 
           select(
-            -Season
+            -(Result:Wor)
           ) %>% 
           group_by(
             Name
@@ -228,28 +219,20 @@ playerStatsSERVER <- function(id){
             Season == input$season
           )
         
-        if(!is.null(input$gameFilter)){
-          if(input$gameFilter %>% length() == 2){
-            # Do nothing
-          } else if("Cup" %in% input$gameFilter){
-            data <- 
-              data %>% 
-              filter(
-                str_detect(Matchday, "Cup")
-              )
-          } else {
-            data <- 
-              data %>% 
-              filter(
-                str_detect(Matchday, "Cup", negate = TRUE)
-              )
-          }
+        if(input$division == "ALL"){
+          # Do nothing
+        } else {
+          data <- 
+            data %>% 
+            filter(
+              Division == input$division
+            )
         }
         
         # temp <- 
         data %>% 
           select(
-            -Season
+            -(Result:Division)
           ) %>% 
           group_by(
             Name
