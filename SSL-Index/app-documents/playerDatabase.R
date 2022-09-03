@@ -164,8 +164,8 @@ playerDatabaseUI <- function(id){
                   label = "Filter type of Game",
                   choices =
                     c(
-                      "Cup",
-                      "League"
+                      "League",
+                      "Cup"
                     ),
                   multiple = FALSE
                 )
@@ -213,7 +213,7 @@ playerDatabaseSERVER <- function(id){
           if(any(reactives$currentBuild$Group == "Goalkeeper")){
             
             table <- 
-              tbl(con, "Keeper_Game_Data") %>% 
+              tbl(con, "gameDataKeeper") %>% 
               filter(
                 Name == filterName
                 )
@@ -286,7 +286,7 @@ playerDatabaseSERVER <- function(id){
             ### Players
             
             table <- 
-              tbl(con, "Player_Game_Data") %>% 
+              tbl(con, "gameDataPlayer") %>% 
               filter(
                 Name == filterName
               )
@@ -409,7 +409,7 @@ playerDatabaseSERVER <- function(id){
           
           if(any(reactives$currentBuild$Group == "Goalkeeper")){
             table <- 
-              tbl(con, "Keeper_Game_Data") %>% 
+              tbl(con, "gameDataKeeper") %>% 
               filter(
                 Name == filterName
               )
@@ -476,7 +476,7 @@ playerDatabaseSERVER <- function(id){
               collect()
           } else {
             table <- 
-              tbl(con, "Player_Game_Data") %>% 
+              tbl(con, "gameDataPlayer") %>% 
               filter(
                 Name == filterName
               )
@@ -1001,22 +1001,27 @@ playerDatabaseSERVER <- function(id){
       ##---------------------------------------------------------------
 
       output$GameData <- renderReactable({
+        filterName <- input$player
+        
         if(any(reactives$currentBuild$Group == "Goalkeeper")){
           data <- 
-            keeperGameData %>% 
+            tbl(con, "gameDataKeeper") %>% 
             filter(
-              Name == input$player
-            )
+              Name == filterName
+            ) %>% 
+            collect()
+         
         } else {
           data <- 
-            playerGameData %>% 
+            tbl(con, "gameDataPlayer") %>% 
             filter(
-              Name == input$player
+              Name == filterName
             ) %>% 
-            mutate(
-              `Average Rating` = round(`Average Rating`, 2),
-              xG = round(xG, 2)
-            ) 
+            select(
+              -(Acc:Wor)  
+            ) %>% 
+            collect()
+            
         }
         
         if(!is.null(input$gameSeason)){
@@ -1055,6 +1060,7 @@ playerDatabaseSERVER <- function(id){
           relocate(
             c(
               Season,
+              Division,
               Matchday,
               Club,
               Opponent,
@@ -1062,8 +1068,18 @@ playerDatabaseSERVER <- function(id){
             ),
             .before = `Minutes Played` 
           ) %>% 
+          mutate(
+            Division = as.character(Division)
+          ) %>% 
+          mutate(
+            Division = if_else(Division == "0", "Cup", Division)
+          ) %>% 
           reactable(
             pagination = FALSE,
+            rowStyle = function(index) {
+              if (data$Season[index] %% 2 == 0) list(background = "rgba(0, 0, 0, 0.05)")
+              else list(background = "rgba(0, 0, 0, 0.0)")
+            },
             columns = 
               list(
                 Club = 
