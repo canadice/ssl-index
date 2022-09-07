@@ -57,13 +57,16 @@ playerDatabaseUI <- function(id){
       fluidRow(
         tabBox(
           width = NULL,
+          
+          ##---------------------------------------------------------------
+          ##                      Player Updater Tool                     -
+          ##---------------------------------------------------------------
+          
           tabPanel(
             "Player Updater",
             
             fluidRow(
-              ##-----------------------------------
               ##  Left hand side with information  
-              ##-----------------------------------
               column(
                 width = 4,
                 box(
@@ -102,19 +105,20 @@ playerDatabaseUI <- function(id){
                     div(align = "center")
                 )
               ),
-              
-              ##------------------------------------
               ##  Right hand side with the builder  
-              ##------------------------------------
               column(
                 width = 8,
                 p("Edit the Value column by double clicking on the cell of the attribute you want to edit. 
                 Clicking on export provides a formatted text with all the updates you have made on your build."),
                 DTOutput(ns("attributeTable"), width = "80%")
               )
-              ##------------------------------------
             )
           ),
+          
+          ##----------------------------------------------------------------
+          ##                        Game Log Stats                         -
+          ##----------------------------------------------------------------
+          
           tabPanel(
             "Game Log",
             fluidRow(
@@ -153,6 +157,11 @@ playerDatabaseUI <- function(id){
               )
             )
           ),
+          
+          ##----------------------------------------------------------------
+          ##                      Career Summary Stats                     -
+          ##----------------------------------------------------------------
+          
           tabPanel(
             "Career Stats",
             fluidRow(
@@ -179,7 +188,34 @@ playerDatabaseUI <- function(id){
                 )
               )
             )
+          ),
+          
+          ##---------------------------------------------------------------
+          ##                      Development History                     -
+          ##---------------------------------------------------------------
+          
+          tabPanel(
+            "Development History",
+            fluidRow(
+              column(
+                width = 10,
+                offset = 1,
+                p("The following plots show the development of the player over their career. 
+                  The subplots show the different groups of attributes, and the color codes are
+                  unique within each subplot. You can click on the attribute in the legend to hide 
+                  the line, or double-click to isolate the line in the plot."),
+                plotlyOutput(
+                  outputId = ns("Development"),
+                  height = "800px"
+                )
+              )
+            )
           )
+          
+          ##---------------------------------------------------------------
+          ##                          End of tabs                         -
+          ##---------------------------------------------------------------
+          
         )
       )
     )
@@ -635,7 +671,8 @@ playerDatabaseSERVER <- function(id){
             !is.na(Value)
           ) %>% 
           select(
-            -Keeper
+            -Keeper,
+            -abbr
           )
       })
       
@@ -968,6 +1005,9 @@ playerDatabaseSERVER <- function(id){
             ) %>% 
             rename(
               Cost = cost
+            ) %>% 
+            select(
+              -abbr
             ), 
           rownames = FALSE,
           selection = "none",
@@ -1404,6 +1444,378 @@ playerDatabaseSERVER <- function(id){
       ##----------------------------------------------------------------
       ##                        Visualizations                         -
       ##----------------------------------------------------------------
+      
+      output$Development <- renderPlotly({
+        filterName <- input$player
+        
+        data <- 
+          tbl(con, "gameDataPlayer") %>% 
+          filter(
+            Name == filterName
+          ) %>% 
+          select(
+            Name,
+            Club,
+            Result:Division,
+            Acc:Wor
+          ) %>% 
+          collect() %>% 
+          mutate(
+            index = 1:n()
+          ) %>% 
+          pivot_longer(
+            cols = Acc:Wor
+          ) %>% 
+          left_join(
+            attributes, 
+            by = c("name"= "abbr")
+          ) %>% 
+          filter(
+            !(Attribute %in% c("Stamina", "Natural Fitness"))
+          )
+        
+        if(any(reactives$currentBuild$Group == "Goalkeeper")){
+          data <- 
+            data %>% 
+            filter(
+              Keeper == TRUE
+            )
+        } else {
+          data <- 
+            data %>% 
+            filter(
+              Group != "Goalkeeper"
+            )
+        }
+        
+        
+        fig1 <-
+          plot_ly(
+            data = data %>% 
+              filter(Group == "Physical"),
+            x = ~index,
+            y = ~value,
+            color = ~Attribute,
+            text = ~Attribute,
+            type = "scatter",
+            mode = "lines",
+            hoverinfo = "text+y",
+            colors = "Paired",
+            name = 
+              paste(
+                "Physical",
+                data %>%
+                  filter(Group == "Physical") %>% 
+                  select(Attribute) %>% 
+                  unlist(),
+                sep = " - "
+                )
+          ) %>% 
+          layout(
+            yaxis = 
+              list(
+                title = "Value",
+                range = c(4, 21),
+                linecolor = "black",
+                linewidth = 0.2,
+                mirror = TRUE
+              ),
+            xaxis = 
+              list(
+                title = "Career",
+                showticklabels = FALSE,
+                linecolor = "black",
+                linewidth = 0.2,
+                mirror = TRUE
+              ),
+            hovermode = "x unified"
+          )
+        
+        fig2 <- 
+          plot_ly(
+            data = data %>% 
+              filter(Group == "Technical"),
+            x = ~index,
+            y = ~value,
+            color = ~Attribute,
+            text = ~Attribute,
+            type = "scatter",
+            mode = "lines",
+            hoverinfo = "text+y",
+            colors = "Paired",
+            name = 
+              paste(
+                "Technical",
+                data %>%
+                  filter(Group == "Technical") %>% 
+                  select(Attribute) %>% 
+                  unlist(),
+                sep = " - "
+              )
+          ) %>% 
+          layout(
+            yaxis = 
+              list(
+                title = "Value",
+                range = c(4, 21),
+                linecolor = "black",
+                linewidth = 0.2,
+                mirror = TRUE
+              ),
+            xaxis = 
+              list(
+                title = "Career",
+                showticklabels = FALSE,
+                linecolor = "black",
+                linewidth = 0.2,
+                mirror = TRUE
+              ),
+            hovermode = "x unified"
+          )
+        
+        fig3 <- 
+          plot_ly(
+            data = data %>% 
+              filter(Group == "Mental"),
+            x = ~index,
+            y = ~value,
+            color = ~Attribute,
+            text = ~Attribute,
+            type = "scatter",
+            mode = "lines",
+            hoverinfo = "text+y",
+            colors = "Paired",
+            name = 
+              paste(
+                "Mental",
+                data %>%
+                  filter(Group == "Mental") %>% 
+                  select(Attribute) %>% 
+                  unlist(),
+                sep = " - "
+              )
+          ) %>% 
+          layout(
+            yaxis = 
+              list(
+                title = "Value",
+                range = c(4, 21),
+                linecolor = "black",
+                linewidth = 0.2,
+                mirror = TRUE
+              ),
+            xaxis = 
+              list(
+                title = "Career",
+                showticklabels = FALSE,
+                linecolor = "black",
+                linewidth = 0.2,
+                mirror = TRUE
+              ),
+            hovermode = "x unified"
+          )
+        
+        
+        if(any(reactives$currentBuild$Group == "Goalkeeper")){
+          fig4 <- 
+            plot_ly(
+              data = data %>% 
+                filter(Group == "Goalkeeper"),
+              x = ~index,
+              y = ~value,
+              color = ~Attribute,
+              text = ~Attribute,
+              type = "scatter",
+              mode = "lines",
+              hoverinfo = "text+y",
+              colors = "Paired",
+              name = 
+                paste(
+                  "Goalkeeper",
+                  data %>%
+                    filter(Group == "Goalkeeper") %>% 
+                    select(Attribute) %>% 
+                    unlist(),
+                  sep = " - "
+                )
+            ) %>% 
+            layout(
+              yaxis = 
+                list(
+                  title = "Value",
+                  range = c(4, 21),
+                  linecolor = "black",
+                  linewidth = 0.2,
+                  mirror = TRUE
+                ),
+              xaxis = 
+                list(
+                  title = "Career",
+                  showticklabels = FALSE,
+                  linecolor = "black",
+                  linewidth = 0.2,
+                  mirror = TRUE
+                ),
+              hovermode = "x unified"
+            )
+          
+          fig <- 
+            subplot(
+              fig1, fig2, fig3, fig4, 
+              nrows = 4, 
+              shareY = TRUE,
+              titleY = FALSE
+            ) %>% 
+            suppressWarnings()
+          
+          annotations <-
+            list( 
+              list( 
+                x = -0.1,  
+                y = 1.0, 
+                font = list(size = 15),
+                text = "Physical",  
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              ),  
+              list( 
+                x = -0.1,  
+                y = 0.72,  
+                text = "Technical",  
+                font = list(size = 15),
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              ),  
+              list( 
+                x = -0.1,  
+                y = 0.47,  
+                text = "Mental",  
+                font = list(size = 15),
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              ),
+              list( 
+                x = -0.1,  
+                y = 0.22,  
+                text = "Goalkeeper",
+                font = list(size = 15),
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              ),
+              list( 
+                x = 0.5,  
+                y = -0.05,  
+                text = "Career",  
+                font = list(size = 12),
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              )
+            )
+          
+          
+        } else {
+          fig <- 
+            subplot(
+              fig1, fig2, fig3, 
+              nrows = 3, 
+              shareY = TRUE,
+              titleY = FALSE
+            ) %>% 
+            suppressWarnings()
+          
+          annotations <-
+            list( 
+              list( 
+                x = -0.1,  
+                y = 1.0,  
+                text = "Physical",  
+                font = list(size = 15),
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              ),  
+              list( 
+                x = -0.1,  
+                y = 0.63,  
+                text = "Technical", 
+                font = list(size = 15),
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              ),  
+              list( 
+                x = -0.1,  
+                y = 0.30,  
+                text = "Mental",  
+                font = list(size = 15),
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              ),
+              list( 
+                x = 0.5,  
+                y = -0.05,  
+                text = "Career",  
+                font = list(size = 12),
+                xref = "paper",  
+                yref = "paper",  
+                xanchor = "center",  
+                yanchor = "bottom",  
+                showarrow = FALSE 
+              )
+            )
+        }
+        
+        
+        fig %>%
+          plotly::config(
+            modeBarButtonsToRemove =
+              c("zoom", "pan2d", "zoomIn2d", "zoomOut2d", "autoScale2d",
+                "resetScale2d", "hoverClosestCartesian",
+                "hoverCompareCartesian", "toggleSpikelines"
+              )
+          ) %>%
+          layout(
+            annotations = annotations,
+            margin = 
+              list(
+                l = 120
+              ),
+            # autosize = TRUE,
+            dragmode= FALSE,
+            ## Legend is put to false so the plot is the same size
+            paper_bgcolor='#ffffff00',
+            plot_bgcolor='#ffffff00'
+          )
+        
+        
+        # p <- ggplot(data) + aes(x = index, y = value, color = Attribute) + geom_line() +
+        #   facet_wrap(vars(Group)) + scale_y_continuous(limits = c(5, 20)) +
+        #   theme_bw()
+        # p %>% 
+        #   ggplotly()
+      })
       
       output$radarPlotly <- renderPlotly({
         if(radarAttributes() %>% is.null()){
