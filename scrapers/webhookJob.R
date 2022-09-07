@@ -31,7 +31,7 @@ require(RSQLite)
 
 conn_obj <- 
   create_discord_connection(
-    webhook = 'https://discord.com/api/webhooks/1017045013944864849/Mfx9KjaQ96y-UvfsYun9QoFwb6gQjS2_gzjyth24pEmxlYdVkNB1PrGTjQ-qtc4iDl9K', 
+    webhook = 'https://discord.com/api/webhooks/1017071522197819402/Wt_qzKpds1Ujh6ss71ys9z_2RCT-_O3twnpNnGUoTRlnxFkf8USwj12cP6YJg13awEMQ', 
     username = 'Forum Watcher', 
     set_default = TRUE)
 
@@ -131,4 +131,200 @@ if(length(new) > 0){
   #Do Nothing
 }
 
+conn_obj <- 
+  create_discord_connection(
+    webhook = 'https://discord.com/api/webhooks/1017072285837971528/YFMW8m93hdj301BnAH9op-SCbBtT31Xpb-J0rOzjke2Ghx0fryExWLyFBNx2pqJuqIYV', 
+    username = 'PT Watcher', 
+    set_default = TRUE)
 
+##################################################################
+##                         New ACs                              ##
+##################################################################
+
+forum <- "https://simsoccer.jcink.net/index.php?showforum=7"
+
+topics <- 
+  read_html(forum) %>% 
+  html_elements(".topic-row")
+
+started <- 
+  topics %>% 
+  html_elements("[title]") %>% 
+  html_attr("title") %>% 
+  str_split(pattern = ": ", simplify = TRUE) %>% 
+  .[,2] %>% 
+  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
+  lubridate::with_tz(tzone = "Europe/Stockholm")
+
+new <- 
+  topics[
+    (now() - started) < hours(2)
+  ]
+
+if(length(new) > 0){
+  title <- 
+    new %>% 
+    html_elements("[title]") %>% 
+    html_text2()
+  
+  link <- 
+    new %>% 
+    html_elements("[title]") %>% 
+    html_attr("href")
+  
+  send_webhook_message(
+    paste(
+      "New Activity Check Thread!", "\n\n", 
+      paste(
+        title, link, sep = " - ", collapse = "\n\n"
+      )
+    )
+  )
+  
+} else {
+  #Do Nothing
+}
+
+
+##################################################################
+##                         New Affiliate                        ##
+##################################################################
+
+forum <- "https://simsoccer.jcink.net/index.php?showforum=34"
+
+topics <- 
+  read_html(forum) %>% 
+  html_elements(".topic-row")
+
+started <- 
+  topics %>% 
+  html_elements("[title]") %>% 
+  html_attr("title") %>% 
+  str_split(pattern = ": ", simplify = TRUE) %>% 
+  .[,2] %>% 
+  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
+  lubridate::with_tz(tzone = "Europe/Stockholm")
+
+new <- 
+  topics[
+    (now() - started) < hours(2)
+  ]
+
+if(length(new) > 0){
+  title <- 
+    new %>% 
+    html_elements("[title]") %>% 
+    html_text2()
+  
+  link <- 
+    new %>% 
+    html_elements("[title]") %>% 
+    html_attr("href")
+  
+  send_webhook_message(
+    paste(
+      "New Affiliate Thread!", "\n\n", 
+      paste(
+        title, link, sep = " - ", collapse = "\n\n"
+      )
+    )
+  )
+} else {
+  #Do Nothing
+}
+# 
+# 
+# ##################################################################
+# ##                         New Claims                           ##
+# ##################################################################
+# 
+# forum <- "https://simsoccer.jcink.net/index.php?showforum=82"
+# 
+# topics <-
+#   read_html(forum) %>%
+#   html_elements(".topic-row")
+# 
+# started <-
+#   topics %>%
+#   html_elements("span.desc") %>%
+#   html_text2() %>% 
+#   stringi::stri_remove_empty_na() %>% 
+#   str_split(pattern = "\n", simplify = TRUE) %>%
+#   .[,1] %>%
+#   stringr::str_remove_all(pattern = "th|rd|st") %>% 
+#   lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
+#   lubridate::with_tz(tzone = "Europe/Stockholm")
+# 
+# new <-
+#   topics[
+#     (now() - started) < hours(500)
+#   ]
+# 
+# if(length(new) > 0){
+#   posts <- 
+#     read_html(
+#       new %>% 
+#         html_elements("span.desc") %>% 
+#         html_elements("a") %>% 
+#         html_attr("href") %>% 
+#         nth(1)
+#       ) %>% 
+#     html_elements("span.post-normal")
+#   
+#   posted <- 
+#     posts %>% 
+#     html_elements(".row4 span.postdetails") %>% 
+#     html_text2() %>% 
+#     str_split(pattern = ": ", simplify = TRUE) %>%
+#     .[,2] %>% 
+#     lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
+#     lubridate::with_tz(tzone = "Europe/Stockholm")
+#   
+#   new <-
+#     posts[
+#       (now() - posted) < hours(500)
+#     ]   
+#   
+#   post <- 
+#     new %>% 
+#     html_elements("div.postcolor") %>% 
+#     html_text2()
+#   
+#   task <- 
+#     post %>% 
+#     str_split(
+#       pattern = "The following users may claim the specified TPE for|:\n",
+#       simplify = TRUE) %>% 
+#     .[,2] %>% 
+#     str_squish()
+#   
+#   claims <- 
+#     post %>% 
+#     str_split(
+#       pattern = "CODE",
+#       simplify = TRUE
+#     ) %>% 
+#     .[,2] %>% 
+#     str_split(
+#       pattern = "c2",
+#       simplify = TRUE
+#     ) %>% 
+#     .[,1]
+# 
+#   link <-
+#     new %>%
+#     html_elements("td[id]") %>%
+#     html_attr("id")
+# 
+#   send_webhook_message(
+#     paste(
+#       "New Activity Check Thread!", "\n\n",
+#       paste(
+#         title, link, sep = " - ", collapse = "\n\n"
+#       )
+#     )
+#   )
+# 
+# } else {
+#   #Do Nothing
+# }
