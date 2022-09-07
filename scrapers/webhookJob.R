@@ -59,7 +59,7 @@ new <-
     (now() - started) < hours(2)
   ]
 
-if(new > 0){
+if(length(new) > 0){
   title <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -107,7 +107,7 @@ new <-
     (now() - started) < hours(2)
   ]
 
-if(new > 0){
+if(length(new) > 0){
   title <- 
     new %>% 
     html_elements("[title]") %>% 
