@@ -22,6 +22,8 @@ require(tidyr)
 
 require(stringr)
 
+require(lubridate)
+
 require(DBI)
 require(dbplyr)
 require(RSQLite)
