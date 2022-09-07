@@ -1097,7 +1097,7 @@ playerRecordsSERVER <- function(id){
       ##--------
       
       leagueRecords <- reactive({
-        tbl(con, "Player_Game_Data") %>% 
+        tbl(con, "gameDataPlayer") %>% 
           filter(
             !(Matchday %like% "%Cup%")
           ) %>% 
@@ -1170,7 +1170,7 @@ playerRecordsSERVER <- function(id){
       })
       
       cupRecords <- reactive({
-        tbl(con, "Player_Game_Data") %>% 
+        tbl(con, "gameDataPlayer") %>% 
           filter(
             (Matchday %like% "%Cup%")
           ) %>% 
