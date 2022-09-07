@@ -43,7 +43,16 @@ abilityMatrix <-
 
 ## These are used when grouping the attributes in the player builder and update tool
 attributes <- 
-  dbGetQuery(con, "SELECT * from Attributes_And_Availability")
+  dbGetQuery(con, "SELECT * from Attributes_And_Availability") %>% 
+  mutate(
+    abbr = 
+      c(
+        "Acc", "Agi", "Bal", "Jum", "Nat", "Pac", "Sta", "Str",
+        "Cor", "Cro", "Dri", "Fin", "Fir", "Fre", "Hea", "Lon", "L Th", "Mar", "Pas" , "Pen", "Tck", "Tec",
+        "Agg", "Ant", "Bra", "Cmp", "Cnt", "Dec", "Det", "Fla", "Ldr", "OtB", "Pos", "Tea", "Vis", "Wor",
+        "Aer", "Cmd", "Com", "Ecc", "Han", "Kic", "1v1", "Pun", "Ref", "TRO", "Thr"
+      )
+  )
 
 
 #################################################################
