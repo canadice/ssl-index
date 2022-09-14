@@ -266,7 +266,7 @@ currentClaimThread <-
     (now() - started) < hours(2)
   ]
 
-if(length(new) > 0){
+if(length(currentClaimThread) > 0){
   posts <-
     read_html(
       currentClaimThread %>%
