@@ -28,6 +28,23 @@ require(DBI)
 require(dbplyr)
 require(RSQLite)
 
+teamInfo <- 
+  data.frame(
+    franchiseID = 0,
+    teamID = 0,
+    team = "FA",
+    established = 0,
+    abbreviation = "FA",
+    color_primary = "#000000",
+    color_secondary = "#ffffff"
+  )
+
+tpeCost <- 
+  data.frame(
+    value =  c(5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20),
+    cost = c(0,   2,   4,   8,  12,  16,  22,  28,  34,  46,  58,  70,  88, 106, 131, 156)
+  )
+
 
 conn_obj <- 
   create_discord_connection(
@@ -440,7 +457,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < hours(100)
   ]
 
 if(length(new) > 0){
@@ -454,12 +471,76 @@ if(length(new) > 0){
     html_elements("[title]") %>% 
     html_attr("href")
   
+  checks <- 
+    lapply(
+      link,
+      FUN = function(x){
+        scrape <- try(playerScraper(x), silent=TRUE)
+        
+        if( 
+          inherits(
+            scrape,  
+            "try-error")
+        ){
+          "The formatting of the player page is wrong."
+        } 
+        else if (scrape$Position == "Goalkeeper"){
+          attributes <- 
+            scrape %>% 
+            select(
+              Acceleration:Throwing
+            ) %>% 
+            pivot_longer(cols = everything()) %>% 
+            mutate(
+              value = value %>% as.numeric()
+            ) %>% 
+            left_join(
+              tpeCost,
+              by = "value"
+            )
+          
+          paste("The attributes sum up to:", sum(attributes$cost) - 2*156, "TPE")
+             
+        } else {
+          attributes <- 
+            scrape %>% 
+            select(
+              Acceleration:`Work Rate`
+            ) %>% 
+            pivot_longer(cols = everything()) %>% 
+            mutate(
+              value = value %>% as.numeric()
+            ) %>% 
+            left_join(
+              tpeCost,
+              by = "value"
+            )
+          
+          positional <- 
+            scrape %>% 
+            select(
+              Striker:`Defense [R]`
+            ) %>% 
+            pivot_longer(cols = everything()) %>% 
+            mutate(
+              value = value %>% as.numeric()
+            )
+          
+          paste(
+            paste("The attributes sum up to:", sum(attributes$cost) - 2*156, "TPE"),
+            paste("The positional XP sum up to:", sum(positional$value)),
+            sep = "\n"
+          )
+        }
+      }
+    )
+  
   send_webhook_message(
     paste(
       "-----------------------------------------------", "\n",
       "Someone has created:", "\n\n", 
       paste(
-        title, link, sep = " - ", collapse = "\n\n"
+        title, " - ", link, " ", "BUILD CHECKS", "\n", sep = "", checks, collapse = "\n\n"
       )
     )
   )
