@@ -457,7 +457,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(100)
+    (now() - started) < hours(2)
   ]
 
 if(length(new) > 0){
