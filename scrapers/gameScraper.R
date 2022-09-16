@@ -14,6 +14,8 @@ require(stringi)
 require(plyr)
 require(dplyr)
 require(tidyr)
+
+# remotes::install_github("TimTeaFan/dplyover")
 require(dplyover)
 require(DBI)
 require(dbplyr)
@@ -756,7 +758,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 5
 
-date <- "2022-03-18" %>% as.Date()
+date <- "2022-04-23" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
