@@ -73,7 +73,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < (hours(4) + minutes(30))
   ]
 
 if(length(new) > 0){
@@ -121,7 +121,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < (hours(4) + minutes(30))
   ]
 
 if(length(new) > 0){
@@ -181,7 +181,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < (hours(4) + minutes(30))
   ]
 
 if(length(new) > 0){
@@ -230,7 +230,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < (hours(4) + minutes(30))
   ]
 
 if(length(new) > 0){
@@ -280,7 +280,7 @@ started <-
 
 currentClaimThread <-
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < (hours(4) + minutes(30))
   ]
 
 if(length(currentClaimThread) > 0){
@@ -305,7 +305,7 @@ if(length(currentClaimThread) > 0){
 
   new <-
     posts[
-      (now() - posted) < hours(2)
+      (now() - posted) < (hours(4) + minutes(30))
     ]
 
   post <-
@@ -408,7 +408,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < (hours(4) + minutes(30))
   ]
 
 if(length(new) > 0){
@@ -457,7 +457,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < (hours(4) + minutes(30))
   ]
 
 if(length(new) > 0){
@@ -582,7 +582,7 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < hours(2)
+    (now() - started) < (hours(4) + minutes(30))
   ]
 
 if(length(new) > 0){
@@ -645,7 +645,7 @@ lastPost <-
   
 new <- 
   topics[
-    (now() - lastPost) < hours(2)
+    (now() - lastPost) < (hours(4) + minutes(30))
   ]
 
 if(length(new) > 0){
