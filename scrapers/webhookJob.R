@@ -158,7 +158,7 @@ print("Sent new job openings.")
 
 conn_obj <- 
   create_discord_connection(
-    webhook = Sys.getenv("TPE_SECRET"), 
+    webhook = Sys.getenv("TPE_OPPS"), 
     username = 'PT Watcher', 
     set_default = TRUE)
 
@@ -388,7 +388,7 @@ print("Sent new pt claim.")
 
 conn_obj <- 
   create_discord_connection(
-    webhook = Sys.getenv("CHECK_SECRET"), 
+    webhook = Sys.getenv("PLAYER_CHECKS"), 
     username = 'Captain Hook', 
     set_default = TRUE)
 
@@ -565,7 +565,7 @@ print("Sent new player created.")
 
 conn_obj <- 
   create_discord_connection(
-    webhook = Sys.getenv("WAIVER_SECRET"), 
+    webhook = Sys.getenv("WAIVER_WATCHER"), 
     username = 'Waiver Watcher', 
     set_default = TRUE)
 
@@ -627,7 +627,7 @@ print("Sent new waiver post.")
 
 conn_obj <- 
   create_discord_connection(
-    webhook = Sys.getenv("APPROVED_SECRET"), 
+    webhook = Sys.getenv("PLAYER_APPROVER"), 
     username = 'Player Approver', 
     set_default = TRUE)
 
