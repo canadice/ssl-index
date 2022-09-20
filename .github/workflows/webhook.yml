@@ -43,11 +43,6 @@ jobs:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      ANNOUNCEMENTS: ${{ secrets.ANNOUNCEMENTS }}
-      TPE_OPPS: ${{ secrets.TPE_OPPS }}
-      PLAYER_CHECKS: ${{ secrets.PLAYER_CHECKS }}
-      WAIVER_WATCHER: ${{ secrets.WAIVER_WATCHER }}
-      PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
 
     steps:
       - uses: actions/checkout@v3
@@ -97,7 +92,6 @@ jobs:
           PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
 
       - name: Generate data
-        
         run: |
           source("scrapers/webhookJob.R")
         shell: Rscript {0}
