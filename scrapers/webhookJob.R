@@ -48,7 +48,7 @@ tpeCost <-
 
 conn_obj <- 
   create_discord_connection(
-    webhook = 'https://discord.com/api/webhooks/1017071522197819402/Wt_qzKpds1Ujh6ss71ys9z_2RCT-_O3twnpNnGUoTRlnxFkf8USwj12cP6YJg13awEMQ', 
+    webhook = Sys.getenv('ANNOUNCE_SECRET'), 
     username = 'Forum Watcher', 
     set_default = TRUE)
 
@@ -156,7 +156,7 @@ if(length(new) > 0){
 
 conn_obj <- 
   create_discord_connection(
-    webhook = 'https://discord.com/api/webhooks/1017072285837971528/YFMW8m93hdj301BnAH9op-SCbBtT31Xpb-J0rOzjke2Ghx0fryExWLyFBNx2pqJuqIYV', 
+    webhook = Sys.getenv("TPE_SECRET"), 
     username = 'PT Watcher', 
     set_default = TRUE)
 
@@ -382,7 +382,7 @@ if(length(currentClaimThread) > 0){
 
 conn_obj <- 
   create_discord_connection(
-    webhook = 'https://discord.com/api/webhooks/1019616945076699176/KFhbLmGnv8VObhZJUhkdS45meaZOghmfzvOVXKEizRt5swSjWglS-nJiNaIdSbnUjr5p', 
+    webhook = Sys.getenv("CHECK_SECRET"), 
     username = 'Captain Hook', 
     set_default = TRUE)
 
@@ -556,7 +556,7 @@ if(length(new) > 0){
 
 conn_obj <- 
   create_discord_connection(
-    webhook = 'https://discord.com/api/webhooks/1019620701222744135/gnZHcnndQMJKJX1EaEb6CO9i2PxM_hz6ccWEZagbgv6g6nwdbkICGgEVfW0M6wBY9GsW', 
+    webhook = Sys.getenv("WAIVER_SECRET"), 
     username = 'Waiver Watcher', 
     set_default = TRUE)
 
@@ -617,7 +617,7 @@ if(length(new) > 0){
 
 conn_obj <- 
   create_discord_connection(
-    webhook = 'https://discord.com/api/webhooks/1019625782068392018/FsYG5LcldwdABJn8XpaxhZITA6GEUu3SZcgObRNSd5EiQenCAvv4X3nHHTz_KwnLE1rz', 
+    webhook = Sys.getenv("APPROVED_SECRET"), 
     username = 'Player Approver', 
     set_default = TRUE)
 

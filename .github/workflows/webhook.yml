@@ -43,6 +43,11 @@ jobs:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      ANNOUNCE_SECRET: ${{ secrets.ANNOUNCEMENTS }}
+      TPE_SECRET: ${{ secrets.TPE_OPPS }}
+      CHECK_SECRET: ${{ secrets.PLAYER_CHECKS }}
+      WAIVER_SECRET: ${{ secrets.WAIVER_WATCHER }}
+      APPROVED_SECRET: ${{ secrets.PLAYER_APPROVER }}
 
     steps:
       - uses: actions/checkout@v3
@@ -75,6 +80,15 @@ jobs:
           remotes::install_github("Canadice/sslrtools")
           remotes::install_github("EriqLaplus/discordr")
         shell: Rscript {0}
+        
+      - name: Create and populate .Renviron file
+        run: |
+          echo ANNOUNCE_SECRET ="$ANNOUNCEMENTS" >> ~/.Renviron
+          echo TPE_SECRET ="$TPE_OPPS" >> ~/.Renviron
+          echo CHECK_SECRET ="$PLAYER_CHECKS" >> ~/.Renviron
+          echo WAIVER_SECRET ="$WAIVER_WATCHER" >> ~/.Renviron
+          echo APPROVED_SECRET ="$PLAYER_APPROVER" >> ~/.Renviron
+          shell: bash
 
       - name: Generate data
         run: |
