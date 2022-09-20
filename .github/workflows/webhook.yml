@@ -88,7 +88,7 @@ jobs:
           echo CHECK_SECRET ="$PLAYER_CHECKS" >> ~/.Renviron
           echo WAIVER_SECRET ="$WAIVER_WATCHER" >> ~/.Renviron
           echo APPROVED_SECRET ="$PLAYER_APPROVER" >> ~/.Renviron
-          shell: bash
+        shell: bash
 
       - name: Generate data
         run: |
