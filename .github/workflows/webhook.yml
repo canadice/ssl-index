@@ -91,6 +91,12 @@ jobs:
         shell: bash
 
       - name: Generate data
+        env:
+          ANNOUNCE_SECRET: ${{ secrets.ANNOUNCEMENTS }}
+          TPE_SECRET: ${{ secrets.TPE_OPPS }}
+          CHECK_SECRET: ${{ secrets.PLAYER_CHECKS }}
+          WAIVER_SECRET: ${{ secrets.WAIVER_WATCHER }}
+          APPROVED_SECRET: ${{ secrets.PLAYER_APPROVER }}
         run: |
           source("scrapers/webhookJob.R")
         shell: Rscript {0}
