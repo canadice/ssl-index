@@ -100,6 +100,8 @@ if(length(new) > 0){
   #Do Nothing
 }
 
+print("Sent new announcements.")
+
 ##################################################################
 ##                         Job Openings                         ##
 ##################################################################
@@ -148,7 +150,7 @@ if(length(new) > 0){
   #Do Nothing
 }
 
-
+print("Sent new job openings.")
 
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
@@ -208,6 +210,7 @@ if(length(new) > 0){
   #Do Nothing
 }
 
+print("Sent new AC thread.")
 
 ##################################################################
 ##                         New Affiliate                        ##
@@ -256,6 +259,7 @@ if(length(new) > 0){
   #Do Nothing
 }
 
+print("Sent new affiliate thread.")
 
 ##################################################################
 ##                         New Claims                           ##
@@ -376,6 +380,8 @@ if(length(currentClaimThread) > 0){
   #Do Nothing
 }
 
+print("Sent new pt claim.")
+
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
 ##---------------------------------------------------------------
@@ -435,6 +441,8 @@ if(length(new) > 0){
 } else {
   #Do Nothing
 }
+
+print("Sent new retirement.")
 
 ##################################################################
 ##                      New player created                      ##
@@ -549,6 +557,7 @@ if(length(new) > 0){
   #Do Nothing
 }
 
+print("Sent new player created.")
 
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
@@ -610,6 +619,7 @@ if(length(new) > 0){
   #Do Nothing
 }
 
+print("Sent new waiver post.")
 
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
@@ -672,3 +682,5 @@ if(length(new) > 0){
 } else {
   #Do Nothing
 }
+
+print("Sent new new approved player.")
