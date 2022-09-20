@@ -48,7 +48,7 @@ tpeCost <-
 
 conn_obj <- 
   create_discord_connection(
-    webhook = Sys.getenv('ANNOUNCE_SECRET'), 
+    webhook = Sys.getenv('ANNOUNCEMENTS'), 
     username = 'Forum Watcher', 
     set_default = TRUE)
 

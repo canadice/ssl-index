@@ -43,11 +43,11 @@ jobs:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      ANNOUNCE_SECRET: ${{ secrets.ANNOUNCEMENTS }}
-      TPE_SECRET: ${{ secrets.TPE_OPPS }}
-      CHECK_SECRET: ${{ secrets.PLAYER_CHECKS }}
-      WAIVER_SECRET: ${{ secrets.WAIVER_WATCHER }}
-      APPROVED_SECRET: ${{ secrets.PLAYER_APPROVER }}
+      ANNOUNCEMENTS: ${{ secrets.ANNOUNCEMENTS }}
+      TPE_OPPS: ${{ secrets.TPE_OPPS }}
+      PLAYER_CHECKS: ${{ secrets.PLAYER_CHECKS }}
+      WAIVER_WATCHER: ${{ secrets.WAIVER_WATCHER }}
+      PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
 
     steps:
       - uses: actions/checkout@v3
@@ -83,20 +83,20 @@ jobs:
         
       - name: Create and populate .Renviron file
         run: |
-          echo ANNOUNCE_SECRET ="$ANNOUNCEMENTS" >> ~/.Renviron
-          echo TPE_SECRET ="$TPE_OPPS" >> ~/.Renviron
-          echo CHECK_SECRET ="$PLAYER_CHECKS" >> ~/.Renviron
-          echo WAIVER_SECRET ="$WAIVER_WATCHER" >> ~/.Renviron
-          echo APPROVED_SECRET ="$PLAYER_APPROVER" >> ~/.Renviron
+          echo ANNOUNCEMENTS ="$ANNOUNCEMENTS" >> ~/.Renviron
+          echo TPE_OPPS ="$TPE_OPPS" >> ~/.Renviron
+          echo PLAYER_CHECKS ="$PLAYER_CHECKS" >> ~/.Renviron
+          echo WAIVER_WATCHER ="$WAIVER_WATCHER" >> ~/.Renviron
+          echo PLAYER_APPROVER ="$PLAYER_APPROVER" >> ~/.Renviron
         shell: bash
 
       - name: Generate data
         env:
-          ANNOUNCE_SECRET: ${{ secrets.ANNOUNCEMENTS }}
-          TPE_SECRET: ${{ secrets.TPE_OPPS }}
-          CHECK_SECRET: ${{ secrets.PLAYER_CHECKS }}
-          WAIVER_SECRET: ${{ secrets.WAIVER_WATCHER }}
-          APPROVED_SECRET: ${{ secrets.PLAYER_APPROVER }}
+          ANNOUNCEMENTS: ${{ secrets.ANNOUNCEMENTS }}
+          TPE_OPPS: ${{ secrets.TPE_OPPS }}
+          PLAYER_CHECKS: ${{ secrets.PLAYER_CHECKS }}
+          WAIVER_WATCHER: ${{ secrets.WAIVER_WATCHER }}
+          PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
         run: |
           source("scrapers/webhookJob.R")
         shell: Rscript {0}
