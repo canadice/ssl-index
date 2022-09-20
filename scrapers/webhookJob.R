@@ -484,7 +484,7 @@ if(length(new) > 0){
         ){
           "The formatting of the player page is wrong."
         } 
-        else if (scrape$Position == "Goalkeeper"){
+        else if (scrape$`Preferred Position` == "Goalkeeper"){
           attributes <- 
             scrape %>% 
             select(
