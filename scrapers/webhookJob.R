@@ -45,6 +45,7 @@ tpeCost <-
     cost = c(0,   2,   4,   8,  12,  16,  22,  28,  34,  46,  58,  70,  88, 106, 131, 156)
   )
 
+print(Sys.getenv("ANNOUNCEMENTS") %>% str_sub(end = 20))
 
 conn_obj <- 
   create_discord_connection(
