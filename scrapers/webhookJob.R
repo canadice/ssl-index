@@ -279,7 +279,8 @@ started <-
   stringi::stri_remove_empty_na() %>%
   str_split(pattern = "\n", simplify = TRUE) %>%
   .[,1] %>%
-  stringr::str_remove_all(pattern = "th|rd|^[0-9]st") %>% 
+  stringr::str_remove_all(pattern = "th|rd") %>%
+  stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
   lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
   lubridate::with_tz(tzone = "Europe/Stockholm")
 
@@ -649,7 +650,8 @@ lastPost <-
   html_text2() %>%
   str_split(pattern = "\n", simplify = TRUE) %>%
   .[,1] %>%
-  stringr::str_remove_all(pattern = "th|rd|^[0-9]st") %>%
+  stringr::str_remove_all(pattern = "th|rd") %>%
+  stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
   lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
   lubridate::with_tz(tzone = "Europe/Stockholm") %>% 
   .[seq(2, length(.), by = 2)]
