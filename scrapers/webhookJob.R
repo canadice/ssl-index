@@ -45,7 +45,6 @@ tpeCost <-
     cost = c(0,   2,   4,   8,  12,  16,  22,  28,  34,  46,  58,  70,  88, 106, 131, 156)
   )
 
-print(Sys.getenv("ANNOUNCEMENTS") %>% str_sub(end = 20))
 
 conn_obj <- 
   create_discord_connection(
@@ -164,7 +163,55 @@ conn_obj <-
     set_default = TRUE)
 
 ##################################################################
-##                         New ACs                              ##
+##                         New Prediction                       ##
+##################################################################
+
+forum <- "https://simsoccer.jcink.net/index.php?showforum=10"
+
+topics <- 
+  read_html(forum) %>% 
+  html_elements(".topic-row")
+
+started <- 
+  topics %>% 
+  html_elements("[title]") %>% 
+  html_attr("title") %>% 
+  str_split(pattern = ": ", simplify = TRUE) %>% 
+  .[,2] %>% 
+  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
+  lubridate::with_tz(tzone = "Europe/Stockholm")
+
+new <- 
+  topics[
+    (now() - started) < (hours(4) + minutes(30))
+  ]
+
+if(length(new) > 0){
+  title <- 
+    new %>% 
+    html_elements("[title]") %>% 
+    html_text2()
+  
+  link <- 
+    new %>% 
+    html_elements("[title]") %>% 
+    html_attr("href")
+  
+  send_webhook_message(
+    paste(
+      "New Prediction PT has been posted!", "\n\n", 
+      paste(
+        title, link, sep = " - ", collapse = "\n\n"
+      )
+    )
+  )
+  
+} else {
+  #Do Nothing
+}
+
+##################################################################
+##                             New ACs                          ##
 ##################################################################
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=7"
