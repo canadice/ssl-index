@@ -4,6 +4,8 @@ require(DBI)
 require(dbplyr)
 require(RSQLite)
 require(stringr)
+require(tidyr)
+require(sslrtools)
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
@@ -159,29 +161,25 @@ pitch <-
 
 playerData <- 
   dbGetQuery(con, "SELECT * from Daily_Scrape") %>%
-  mutate(
+  dplyr::mutate(
     DEFENDING =
-      (Marking + Tackling + Positioning)/3,
+      sum(c(Marking,Tackling,Positioning) %>% replace_na(5))/3,
     PHYSICAL =
-      (Agility + Balance + Stamina + Strength)/4,
+      sum(c(Agility, Balance, Stamina, Strength) %>% replace_na(5))/4,
     SPEED =
-      (Acceleration + Pace)/2,
+      sum(c(Acceleration, Pace)%>% replace_na(5))/2,
     VISION =
-      (Passing + Flair + Vision)/3,
+      sum(c(Passing, Flair , Vision)%>% replace_na(5))/3,
     ATTACKING =
-      (Finishing + Composure + `Off the Ball`)/3,
+      sum(c(Finishing , Composure , `Off the Ball`)%>% replace_na(5))/3,
     TECHNICAL =
-      (Dribbling + `First Touch` + Technique)/3,
+      sum(c(Dribbling, `First Touch`, Technique)%>% replace_na(5))/3,
     AERIAL =
-      (Heading + `Jumping Reach`)/2,
+      sum(c(Heading , `Jumping Reach`)%>% replace_na(5))/2,
     MENTAL =
-      (Anticipation + Bravery + Concentration + Decisions + Determination + Teamwork)/6
-  ) %>%
+      sum(c(Anticipation, Bravery, Concentration, Decisions, Determination, Teamwork)%>% replace_na(5))/6
+  ) %>% 
   mutate(
-    across(
-      DEFENDING:MENTAL,
-      ~ floor(.x)
-    ),
     Created = as.Date(Created, origin = "1970-01-01"),
     lastPost = as.Date(lastPost, origin = "1970-01-01")
   )
