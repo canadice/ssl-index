@@ -72,6 +72,9 @@ colnames(FMAttributes) <-
 
 audit <- 
   playerData %>% 
+  filter(
+    !(Team %in% c("FA", "Retired", "Prospect"))
+  ) %>% 
   select(
     Name,
     Acceleration:Throwing
@@ -107,6 +110,9 @@ comparison <-
           ~ as.numeric(.x))
       ),
     playerData %>% 
+      filter(
+        !(Team %in% c("FA", "Retired", "Prospect"))
+      ) %>% 
       arrange(Name) %>% 
       select(
         Name,
