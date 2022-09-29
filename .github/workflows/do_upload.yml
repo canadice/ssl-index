@@ -45,17 +45,22 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Setup SSH Keys and known_hosts
+      - run: mkdir -p ~/.ssh
+      
+      - run: chmod 700 ~/.ssh
+      
+      - name: Setup SSH Passphrase and Directory
+        env: 
+            SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
+        run: echo 'echo \$SSH_PASSPHRASE' > ~/.ssh/tmp && chmod 700 ~/.ssh/tmp
+            
+      - name: Setup SSH Keys
         env:
-            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-            SSH_ASKPASS_REQUIRE: 'never'
-        run: |
-            ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-            ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+            SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: echo "$SSH_PRIVATE_KEY" | tr -d '\r' | DISPLAY=None SSH_ASKPASS=~/.ssh/tmp ssh-add -
 
       - name: Upload file to Digital Ocean
-        env:
-            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: rsync -avz /database/SSL_Database.db ${{ secrets.SSH_DO_USER }}@${{ secrets.SSH_DO_HOST }}:/var/plumber/database/
+        run: rsync -avz "ssh -p 1022 -i $HOME/.ssh/key -o StrictHostKeyChecking=no" /database/SSL_Database.db ${{ secrets.SSH_DO_USER }}@${{ secrets.SSH_DO_HOST }}:/var/plumber/database/
+       
  
 
