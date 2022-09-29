@@ -48,6 +48,7 @@ jobs:
       - name: Setup SSH Keys and known_hosts
         env:
             SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+            SSH_ASKPASS_REQUIRE: 'never'
         run: |
             ssh-agent -a $SSH_AUTH_SOCK > /dev/null
             ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
@@ -55,7 +56,6 @@ jobs:
       - name: Upload file to Digital Ocean
         env:
             SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-            SSH_ASKPASS_REQUIRE: 'never'
         run: rsync -avz /database/SSL_Database.db ${{ secrets.SSH_DO_USER }}@${{ secrets.SSH_DO_HOST }}:/var/plumber/database/
  
 
