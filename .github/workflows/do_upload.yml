@@ -55,6 +55,7 @@ jobs:
       - name: Upload file to Digital Ocean
         env:
             SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+            SSH_ASKPASS_REQUIRE: 'never'
         run: rsync -avz /database/SSL_Database.db ${{ secrets.SSH_DO_USER }}@${{ secrets.SSH_DO_HOST }}:/var/plumber/database/
  
 
