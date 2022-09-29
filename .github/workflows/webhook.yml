@@ -23,7 +23,7 @@ on:
 #        required: false
         #type: boolean
    schedule:
-         - cron: "0 0/4 * * *"
+         - cron: "0 0/3 * * *"
   
    workflow_dispatch:
 
@@ -94,5 +94,13 @@ jobs:
         run: |
           source("scrapers/webhookJob.R")
         shell: Rscript {0}
+        
+      - name: Commit the results of the scraper
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add --all
+          git commit -am "Hook Scraping"
+          git push 
 
 

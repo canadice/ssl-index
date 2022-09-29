@@ -46,6 +46,13 @@ tpeCost <-
   )
 
 
+## Opens the connection to the SQLite Database
+con <- RSQLite::dbConnect(RSQLite::SQLite(), "database/hookDatabase.db")
+
+
+postedThreads <- dbGetQuery(con, "SELECT * FROM postedThreads")
+
+
 conn_obj <- 
   create_discord_connection(
     webhook = Sys.getenv('ANNOUNCEMENTS'), 
@@ -73,15 +80,18 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]   
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -96,11 +106,19 @@ if(length(new) > 0){
     )
   )
   
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new announcements.")
+  
 } else {
   #Do Nothing
 }
-
-print("Sent new announcements.")
 
 ##################################################################
 ##                         Job Openings                         ##
@@ -123,15 +141,18 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]   
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -146,11 +167,19 @@ if(length(new) > 0){
     )
   )
   
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new job openings.")
+  
 } else {
   #Do Nothing
 }
-
-print("Sent new job openings.")
 
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
@@ -183,15 +212,18 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]   
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -205,6 +237,16 @@ if(length(new) > 0){
       )
     )
   )
+  
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new predictions")
   
 } else {
   #Do Nothing
@@ -231,15 +273,18 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]   
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -254,11 +299,19 @@ if(length(new) > 0){
     )
   )
   
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new AC thread.")
+  
 } else {
   #Do Nothing
 }
-
-print("Sent new AC thread.")
 
 ##################################################################
 ##                         New Affiliate                        ##
@@ -281,15 +334,18 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -303,11 +359,21 @@ if(length(new) > 0){
       )
     )
   )
+  
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new affiliate thread.")
+  
 } else {
   #Do Nothing
 }
 
-print("Sent new affiliate thread.")
 
 ##################################################################
 ##                         New Claims                           ##
@@ -333,7 +399,7 @@ started <-
 
 currentClaimThread <-
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
 if(length(currentClaimThread) > 0){
@@ -358,14 +424,14 @@ if(length(currentClaimThread) > 0){
 
   new <-
     posts[
-      (now() - posted) < (hours(4) + minutes(30))
+      (now() - posted) < (hours(8))
     ]
 
   post <-
     new %>%
     html_elements("div.postcolor") %>%
     html_text2()
-
+  
   task <-
     post %>%
     str_split(
@@ -373,63 +439,79 @@ if(length(currentClaimThread) > 0){
       simplify = TRUE) %>%
     .[,2] %>%
     str_squish()
-
-  claims <-
-    post %>%
-    str_split(
-      pattern = "ec1",
-      simplify = TRUE
-    ) %>%
-    .[,2] %>%
-    str_split(
-      pattern = "c2",
-      simplify = TRUE
-    ) %>%
-    .[,1]
-
-  link <-
-    new %>%
-    html_elements("a[title]") %>%
-    html_attr("onclick") %>% 
-    str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
-    unlist() %>% 
-    paste(
-      currentClaimThread %>%
-        html_elements("span.desc") %>%
-        html_elements("a") %>%
-        html_attr("href") %>%
-        nth(1) %>% 
-        str_remove_all("&view=getlastpost"),
-      "&st=0&#entry",
-      .,
-      sep = ""
-    )
-
   
-  for(i in 1:length(link)){
-    send_webhook_message(
+  new <- new[!(task %in% postedThreads$title) & (task != "")]
+  post <- post[!(task %in% postedThreads$title) & (task != "")]
+  task <- task[!(task %in% postedThreads$title) & (task != "")]
+
+  if(length(task) > 0){
+    claims <-
+      post %>%
+      str_split(
+        pattern = "ec1",
+        simplify = TRUE
+      ) %>%
+      .[,2] %>%
+      str_split(
+        pattern = "c2",
+        simplify = TRUE
+      ) %>%
+      .[,1]
+    
+    link <-
+      new %>%
+      html_elements("a[title]") %>%
+      html_attr("onclick") %>% 
+      str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
+      unlist() %>% 
       paste(
-        "A new TPE claim has been posted!", "\n\n",
+        currentClaimThread %>%
+          html_elements("span.desc") %>%
+          html_elements("a") %>%
+          html_attr("href") %>%
+          nth(1) %>% 
+          str_remove_all("&view=getlastpost"),
+        "&st=0&#entry",
+        .,
+        sep = ""
+      )
+    
+    
+    for(i in 1:length(link)){
+      send_webhook_message(
         paste(
-          task[i], link[i], 
+          "A new TPE claim has been posted!", "\n\n",
           paste(
-            "```", claims[i], "```",
-            sep = ""
-          ),
-          sep = " - "
+            task[i], link[i], 
+            paste(
+              "```", claims[i], "```",
+              sep = ""
+            ),
+            sep = " - "
+          )
         )
       )
-    )
+      
+      Sys.sleep(5)
+      
+    }
     
-    Sys.sleep(5)
+    postedThreads <- 
+      rbind(
+        postedThreads,
+        data.frame(
+          title = task, link = link
+        )
+      )
+    
+    print("Sent new pt claim.")
   }
   
-
 } else {
   #Do Nothing
 }
 
-print("Sent new pt claim.")
+
 
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
@@ -463,15 +545,18 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]   
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -487,11 +572,21 @@ if(length(new) > 0){
     )
   )
   
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new retirement.")
+  
 } else {
   #Do Nothing
 }
 
-print("Sent new retirement.")
+
 
 ##################################################################
 ##                      New player created                      ##
@@ -514,15 +609,18 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]   
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -602,11 +700,20 @@ if(length(new) > 0){
     )
   )
   
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new player created.")
+  
 } else {
   #Do Nothing
 }
 
-print("Sent new player created.")
 
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
@@ -640,15 +747,18 @@ started <-
 
 new <- 
   topics[
-    (now() - started) < (hours(4) + minutes(30))
+    (now() - started) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]   
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -664,11 +774,19 @@ if(length(new) > 0){
     )
   )
   
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new waiver post.")
+  
 } else {
   #Do Nothing
 }
-
-print("Sent new waiver post.")
 
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
@@ -679,7 +797,6 @@ conn_obj <-
     webhook = Sys.getenv("PLAYER_APPROVER"), 
     username = 'Player Approver', 
     set_default = TRUE)
-
 
 #################################################################
 ##                   New Approved Players                      ##
@@ -705,15 +822,18 @@ lastPost <-
   
 new <- 
   topics[
-    (now() - lastPost) < (hours(4) + minutes(30))
+    (now() - lastPost) < (hours(8))
   ]
 
+title <- 
+  new %>% 
+  html_elements("[title]") %>% 
+  html_text2()
+
+new <- new[!(title %in% postedThreads$title)]   
+title <- title[!(title %in% postedThreads$title)]
+
 if(length(new) > 0){
-  title <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_text2()
-  
   link <- 
     new %>% 
     html_elements("[title]") %>% 
@@ -729,8 +849,28 @@ if(length(new) > 0){
     )
   )
   
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link
+      )
+    )
+  
+  print("Sent new new approved player.")
 } else {
   #Do Nothing
 }
 
-print("Sent new new approved player.")
+##################################################################
+##              Storing posted threads in database              ##
+##################################################################
+
+RSQLite::dbWriteTable(con, "postedThreads", postedThreads, overwrite = TRUE)
+
+RSQLite::dbDisconnect(con)
+
+
+
+
+
