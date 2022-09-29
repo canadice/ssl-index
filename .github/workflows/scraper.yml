@@ -98,5 +98,5 @@ jobs:
           git push 
           
       - name: Upload file to Digital Ocean
-          run: rsync -avz /database/SSL_Database.db ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/plumber/database/SSL_Database.db
+        run: rsync -avz /database/SSL_Database.db ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/plumber/database/SSL_Database.db
 
