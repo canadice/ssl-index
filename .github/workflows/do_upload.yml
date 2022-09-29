@@ -45,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - run: eval $(ssh-agent -s)
+      - run: eval `ssh-agent`
       
       - run: mkdir -p ~/.ssh
       
