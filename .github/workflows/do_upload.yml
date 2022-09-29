@@ -45,17 +45,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - run: npm install
+      - run: npm run build
+
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
-          
+          known_hosts: unnecessary
+
       - name: Adding Known Hosts
-        run: ssh-keyscan -H ${{ secrets.SSH_DO_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_DO_PORT}} -H ${{ secrets.SSH_DO_HOST }}  >> ~/.ssh/known_hosts
 
       - name: Upload file to Digital Ocean
-        run: rsync -avz --progress /database/SSL_Database.db ${{ secrets.SSH_DO_USER }}@${{ secrets.SSH_DO_HOST }}:/var/plumber/database/
-       
+        run: rsync -avz -e "ssh -p ${{ secrets.SSH_DO_PORT }}" /database/SSL_Database.db ${{ secrets.SSH_DO_USER }}@${{ secrets.SSH_DO_HOST }}:/var/plumber/database/
+      
+
  
 
