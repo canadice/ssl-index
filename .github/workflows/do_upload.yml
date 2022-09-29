@@ -45,6 +45,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - run: eval `ssh-agent -s`
+      
       - run: mkdir -p ~/.ssh
       
       - run: chmod 700 ~/.ssh
@@ -60,7 +62,7 @@ jobs:
         run: echo "$SSH_PRIVATE_KEY" | tr -d '\r' | DISPLAY=None SSH_ASKPASS=~/.ssh/tmp ssh-add -
 
       - name: Upload file to Digital Ocean
-        run: rsync -avz "ssh -p 1022 -i $HOME/.ssh/key -o StrictHostKeyChecking=no" /database/SSL_Database.db ${{ secrets.SSH_DO_USER }}@${{ secrets.SSH_DO_HOST }}:/var/plumber/database/
+        run: rsync -avz "ssh -p 1022 -i ~/.ssh/tmp -o StrictHostKeyChecking=no" /database/SSL_Database.db ${{ secrets.SSH_DO_USER }}@${{ secrets.SSH_DO_HOST }}:/var/plumber/database/
        
  
 
