@@ -7,22 +7,23 @@
 #    https://www.rplumber.io/
 #
 
-require(plumber)
-require(ggplot2)
-require(geomtextpath)
-require(stringr)
-require(plotly)
-require(tidyr)
-require(tidyselect)
-require(sslrtools)
-require(dplyr)
-require(DBI)
-require(dbplyr)
-require(RSQLite)
+require(plumber, quietly = TRUE)
+require(ggplot2, quietly = TRUE)
+require(geomtextpath, quietly = TRUE)
+require(stringr, quietly = TRUE)
+require(plotly, quietly = TRUE)
+require(tidyr, quietly = TRUE)
+require(tidyselect, quietly = TRUE)
+require(sslrtools, quietly = TRUE)
+require(dplyr, quietly = TRUE)
+require(DBI, quietly = TRUE)
+require(dbplyr, quietly = TRUE)
+require(RSQLite, quietly = TRUE)
 # require(googlesheets4)
 
 # mydrop = Sys.getenv("DROPLET_ID")
-# plumberDeploy::do_deploy_api(mydrop, path = "ssl", localPath = ".api/", port = 8000, docs = TRUE, overwrite = TRUE)
+# ssh::ssh_connect(host = "root@IP", keyfile = ssh::ssh_home("id_rsa"))
+# plumberDeploy::do_deploy_api(analogsea::droplets()[1][[1]]$id, path = "ssl", localPath = ".api/", port = 8000, docs = TRUE, overwrite = TRUE)
 # rm(list = ls(envir = analogsea:::analogsea_sessions), envir = analogsea:::analogsea_sessions)
 
 #* @apiTitle Plumber Example API
@@ -30,7 +31,7 @@ require(RSQLite)
 
 #* @get /
 function() {
-  Sys.Date()
+  getwd()
 }
 
 #* Search for a player in the game log data
@@ -39,16 +40,10 @@ function() {
 #* @serializer print
 function(player = "") {
   ## Downloads a local file for the database
-  dbFile <- tempfile(fileext = ".db")
-  
-  dbUrl <- ("https://github.com/canadice/ssl-index/blob/main/database/SSL_Database.db?raw=true")
-  
-  download.file(dbUrl, destfile = dbFile, mode = "wb")
-  
   con <-
     dbConnect(
       SQLite(),
-      dbFile
+      "../database/SSL_Database.db"
     )
   
   player <- str_to_title(player)
@@ -87,8 +82,9 @@ function(player = "") {
       collect() %>% 
       slice_tail(n = 5)
     
+    dbDisconnect(con)
+    
     paste(
-      "Last 5 games played", "\n",
       paste(colnames(playerGameData), collapse = "\t"),
       paste(rep("----", times = 10), collapse = ""),
       paste(playerGameData[1,], collapse = "\t"),
@@ -110,17 +106,10 @@ function(player = "") {
 #* @get /playerStats
 #* @serializer json
 function(player = "", league = NULL, season = NULL, res) {
-  ## Downloads a local file for the database
-  dbFile <- tempfile(fileext = ".db")
-  
-  dbUrl <- ("https://github.com/canadice/ssl-index/blob/main/database/SSL_Database.db?raw=true")
-  
-  download.file(dbUrl, destfile = dbFile, mode = "wb")
-  
   con <-
     dbConnect(
       SQLite(),
-      dbFile
+      "../database/SSL_Database.db"
     )
   
   player <- str_to_title(player)
@@ -220,7 +209,6 @@ function(player = "", league = NULL, season = NULL, res) {
       ) %>% 
       collect()
     
-    
     keeperGameData <- 
       keeperGameData %>% 
       dplyr::summarize(
@@ -253,38 +241,40 @@ function(player = "", league = NULL, season = NULL, res) {
       ) %>% 
       collect()
     
+    dbDisconnect(con)
+    
     playerGameData %>% 
       left_join(
         keeperGameData,
         by = "Name"
       ) %>% 
-      mutate(
+      dplyr::mutate(
+        across(
+          Won:last_col(),
+          as.numeric
+        )
+      ) %>%
+      dplyr::mutate(
         across(
           Won:last_col(),
           ~ replace_na(.x, 0)
         )
-      )
+      ) 
   }
   
 }
 
-#* Search for a player in the game log data
+#* Visualize a players attributes using plotly
 #* @param player The player to search for
 #* @param season The season to visualize
 #* @get /playerGraph
 #* @serializer htmlwidget
 function(player = "", season = NULL) {
   ## Downloads a local file for the database
-  dbFile <- tempfile(fileext = ".db")
-  
-  dbUrl <- ("https://github.com/canadice/ssl-index/blob/main/database/SSL_Database.db?raw=true")
-  
-  download.file(dbUrl, destfile = dbFile, mode = "wb")
-  
   con <-
     dbConnect(
       SQLite(),
-      dbFile
+      "../database/SSL_Database.db"
     )
   
   player <- str_to_title(player)
@@ -356,6 +346,8 @@ function(player = "", season = NULL) {
       add_row(
         .[1,]
       )
+    
+    dbDisconnect(con)
     
     fig <- 
       plot_ly(
@@ -440,23 +432,17 @@ function(player = "", season = NULL) {
   
 }
 
-#* Search for a player in the game log data
+#* Visualize a players attributes using ggplot2
 #* @param player The player to search for
 #* @param season The season to visualize
 #* @get /playerGraphSimple
 #* @serializer png
 function(player = "", season = NULL) {
   ## Downloads a local file for the database
-  dbFile <- tempfile(fileext = ".db")
-  
-  dbUrl <- ("https://github.com/canadice/ssl-index/blob/main/database/SSL_Database.db?raw=true")
-  
-  download.file(dbUrl, destfile = dbFile, mode = "wb")
-  
   con <-
     dbConnect(
       SQLite(),
-      dbFile
+      "../database/SSL_Database.db"
     )
   
   player <- str_to_title(player)
@@ -548,12 +534,14 @@ function(player = "", season = NULL) {
         text = paste(attributeIndex, Rating, sep = ": ")
       ) 
     
+    dbDisconnect(con)
+    
     p <- 
       ggplot(visData) + aes(x = attributeIndex, y = Rating) +
       geom_col(aes(y = rep(20, times = 8)), width = 1, fill = "#008450") +
       geom_col(aes(y = rep(15, times = 8)), width = 1, fill = "#EFB700") +
       geom_col(aes(y = rep(10, times = 8)), width = 1, fill = "#B81D13") +
-      geom_col(width = 1, fill = "#E0E1E9", color = "grey70") +
+      geom_col(width = 1, fill = "#E0E1E9", color = "grey50") +
       # geom_line(aes(group = 1), size = 2, color = "black") + 
       theme_bw() +
       scale_y_continuous(limits = c(0, 20), breaks = NULL) +
@@ -566,9 +554,11 @@ function(player = "", season = NULL) {
                      )
            )+
       theme(
-        plot.title = element_text(size = 26, hjust = 0.5, face = "bold"),
-        plot.subtitle = element_text(size = 22, hjust = 0.5, face = "bold"),
-        axis.text.x = element_text(size = 20, vjust = 0.5, face = "bold", color = "black"), 
+        plot.background = element_rect(fill = "black"),
+        plot.title = element_text(size = 26, hjust = 0.5, face = "bold", color = "white"),
+        plot.subtitle = element_text(size = 22, hjust = 0.5, face = "bold", color = "white"),
+        axis.text.x = element_text(size = 20, vjust = 0.5, face = "bold", color = "white"),
+        panel.background = element_rect(fill = "black"),
         panel.border = element_blank(),
         panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank()
@@ -588,16 +578,10 @@ function(player = "", season = NULL) {
 #* @serializer json
 function(league = NULL, season = NULL) {
   ## Downloads a local file for the database
-  dbFile <- tempfile(fileext = ".db")
-  
-  dbUrl <- ("https://github.com/canadice/ssl-index/blob/main/database/SSL_Database.db?raw=true")
-  
-  download.file(dbUrl, destfile = dbFile, mode = "wb")
-  
   con <-
     dbConnect(
       SQLite(),
-      dbFile
+      "../database/SSL_Database.db"
     )
   
   playerGameData <- 
@@ -714,6 +698,8 @@ function(league = NULL, season = NULL) {
            (`Saves Parried` + `Saves Held` + `Saves Tipped` + Conceded)) %>% round(3)*100
     ) %>% 
     collect()
+  
+  dbDisconnect(con)
   
   filteredData %>% 
     left_join(
