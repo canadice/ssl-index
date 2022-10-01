@@ -46,6 +46,29 @@ tpeCost <-
   )
 
 
+#### Functions that are used multiple times
+newThreads <- function(forum){
+  topics <- 
+    read_html(forum) %>% 
+    html_elements(".topic-row")
+  
+  started <- 
+    topics %>% 
+    html_elements("[title]") %>% 
+    html_attr("title") %>% 
+    str_split(pattern = ": ", simplify = TRUE) %>% 
+    .[,2] %>% 
+    lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
+    lubridate::with_tz(tzone = "Europe/Stockholm")
+  
+  new <- 
+    topics[
+      (now() - started) < (hours(8))
+    ]
+  
+  return(new)
+}
+
 ## Opens the connection to the SQLite Database
 con <- RSQLite::dbConnect(RSQLite::SQLite(), "database/hookDatabase.db")
 
@@ -65,31 +88,17 @@ conn_obj <-
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=6"
 
-topics <- 
-  read_html(forum) %>% 
-  html_elements(".topic-row")
-  
-started <- 
-  topics %>% 
-  html_elements("[title]") %>% 
-  html_attr("title") %>% 
-  str_split(pattern = ": ", simplify = TRUE) %>% 
-  .[,2] %>% 
-  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
-  lubridate::with_tz(tzone = "Europe/Stockholm")
-
-new <- 
-  topics[
-    (now() - started) < (hours(8))
-  ]
+new <- newThreads(forum)
 
 title <- 
   new %>% 
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]   
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -110,7 +119,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
@@ -126,31 +135,17 @@ if(length(new) > 0){
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=25"
 
-topics <- 
-  read_html(forum) %>% 
-  html_elements(".topic-row")
-
-started <- 
-  topics %>% 
-  html_elements("[title]") %>% 
-  html_attr("title") %>% 
-  str_split(pattern = ": ", simplify = TRUE) %>% 
-  .[,2] %>% 
-  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
-  lubridate::with_tz(tzone = "Europe/Stockholm")
-
-new <- 
-  topics[
-    (now() - started) < (hours(8))
-  ]
+new <- newThreads(forum)
 
 title <- 
   new %>% 
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]   
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -171,7 +166,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
@@ -197,31 +192,17 @@ conn_obj <-
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=10"
 
-topics <- 
-  read_html(forum) %>% 
-  html_elements(".topic-row")
-
-started <- 
-  topics %>% 
-  html_elements("[title]") %>% 
-  html_attr("title") %>% 
-  str_split(pattern = ": ", simplify = TRUE) %>% 
-  .[,2] %>% 
-  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
-  lubridate::with_tz(tzone = "Europe/Stockholm")
-
-new <- 
-  topics[
-    (now() - started) < (hours(8))
-  ]
+new <- newThreads(forum)
 
 title <- 
   new %>% 
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]   
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -242,7 +223,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
@@ -258,31 +239,17 @@ if(length(new) > 0){
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=7"
 
-topics <- 
-  read_html(forum) %>% 
-  html_elements(".topic-row")
-
-started <- 
-  topics %>% 
-  html_elements("[title]") %>% 
-  html_attr("title") %>% 
-  str_split(pattern = ": ", simplify = TRUE) %>% 
-  .[,2] %>% 
-  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
-  lubridate::with_tz(tzone = "Europe/Stockholm")
-
-new <- 
-  topics[
-    (now() - started) < (hours(8))
-  ]
+new <- newThreads(forum)
 
 title <- 
   new %>% 
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]   
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -303,7 +270,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
@@ -319,31 +286,17 @@ if(length(new) > 0){
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=34"
 
-topics <- 
-  read_html(forum) %>% 
-  html_elements(".topic-row")
-
-started <- 
-  topics %>% 
-  html_elements("[title]") %>% 
-  html_attr("title") %>% 
-  str_split(pattern = ": ", simplify = TRUE) %>% 
-  .[,2] %>% 
-  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
-  lubridate::with_tz(tzone = "Europe/Stockholm")
-
-new <- 
-  topics[
-    (now() - started) < (hours(8))
-  ]
+new <- newThreads(forum)
 
 title <- 
   new %>% 
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -364,7 +317,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
@@ -500,7 +453,7 @@ if(length(currentClaimThread) > 0){
       rbind(
         postedThreads,
         data.frame(
-          title = task, link = link
+          title = task, link = link, forum = forum
         )
       )
     
@@ -530,31 +483,17 @@ conn_obj <-
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=83"
 
-topics <- 
-  read_html(forum) %>% 
-  html_elements(".topic-row")
-
-started <- 
-  topics %>% 
-  html_elements("[title]") %>% 
-  html_attr("title") %>% 
-  str_split(pattern = ": ", simplify = TRUE) %>% 
-  .[,2] %>% 
-  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
-  lubridate::with_tz(tzone = "Europe/Stockholm")
-
-new <- 
-  topics[
-    (now() - started) < (hours(8))
-  ]
+new <- newThreads(forum)
 
 title <- 
   new %>% 
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]   
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -576,7 +515,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
@@ -594,31 +533,17 @@ if(length(new) > 0){
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=42"
 
-topics <- 
-  read_html(forum) %>% 
-  html_elements(".topic-row")
-
-started <- 
-  topics %>% 
-  html_elements("[title]") %>% 
-  html_attr("title") %>% 
-  str_split(pattern = ": ", simplify = TRUE) %>% 
-  .[,2] %>% 
-  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
-  lubridate::with_tz(tzone = "Europe/Stockholm")
-
-new <- 
-  topics[
-    (now() - started) < (hours(8))
-  ]
+new <- newThreads(forum)
 
 title <- 
   new %>% 
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]   
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -704,7 +629,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
@@ -732,31 +657,17 @@ conn_obj <-
 
 forum <- "https://simsoccer.jcink.net/index.php?showforum=72"
 
-topics <- 
-  read_html(forum) %>% 
-  html_elements(".topic-row")
-
-started <- 
-  topics %>% 
-  html_elements("[title]") %>% 
-  html_attr("title") %>% 
-  str_split(pattern = ": ", simplify = TRUE) %>% 
-  .[,2] %>% 
-  lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
-  lubridate::with_tz(tzone = "Europe/Stockholm")
-
-new <- 
-  topics[
-    (now() - started) < (hours(8))
-  ]
+new <- newThreads(forum)
 
 title <- 
   new %>% 
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]   
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -778,7 +689,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
@@ -830,8 +741,10 @@ title <-
   html_elements("[title]") %>% 
   html_text2()
 
-new <- new[!(title %in% postedThreads$title)]   
-title <- title[!(title %in% postedThreads$title)]
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
 
 if(length(new) > 0){
   link <- 
@@ -853,7 +766,7 @@ if(length(new) > 0){
     rbind(
       postedThreads,
       data.frame(
-        title = title, link = link
+        title = title, link = link, forum = forum
       )
     )
   
