@@ -161,6 +161,7 @@ pitch <-
 
 playerData <- 
   dbGetQuery(con, "SELECT * from Daily_Scrape") %>%
+  group_by(Name) %>% 
   dplyr::mutate(
     DEFENDING =
       sum(c(Marking,Tackling,Positioning) %>% replace_na(5))/3,
@@ -179,6 +180,7 @@ playerData <-
     MENTAL =
       sum(c(Anticipation, Bravery, Concentration, Decisions, Determination, Teamwork)%>% replace_na(5))/6
   ) %>% 
+  ungroup() %>% 
   mutate(
     Created = as.Date(Created, origin = "1970-01-01"),
     lastPost = as.Date(lastPost, origin = "1970-01-01")

@@ -325,7 +325,7 @@ playerRecordsSERVER <- function(id){
           leagueRecords() %>% 
           select(
             Name, 
-            Stat = "`Key Passes`",
+            Stat = "Key Passes",
           ) %>% 
           arrange(
             desc(Stat)
@@ -361,7 +361,7 @@ playerRecordsSERVER <- function(id){
           leagueRecords() %>% 
           select(
             Name, 
-            Stat = "`Chances Created`",
+            Stat = "Chances Created",
           ) %>% 
           arrange(
             desc(Stat)
@@ -433,7 +433,7 @@ playerRecordsSERVER <- function(id){
           leagueRecords() %>% 
           select(
             Name, 
-            Stat = "`Player of the Match`",
+            Stat = "Player of the Match",
           ) %>% 
           arrange(
             desc(Stat)
@@ -469,7 +469,7 @@ playerRecordsSERVER <- function(id){
           leagueRecords() %>% 
           select(
             Name, 
-            Stat = "`Yellow Cards`",
+            Stat = "Yellow Cards",
           ) %>% 
           arrange(
             desc(Stat)
@@ -505,7 +505,7 @@ playerRecordsSERVER <- function(id){
           leagueRecords() %>% 
           select(
             Name, 
-            Stat = "`Red Cards`",
+            Stat = "Red Cards",
           ) %>% 
           arrange(
             desc(Stat)
@@ -541,7 +541,7 @@ playerRecordsSERVER <- function(id){
           leagueRecords() %>% 
           select(
             Name, 
-            Stat = "`Distance Run (km)`",
+            Stat = "Distance Run (km)",
           ) %>% 
           arrange(
             desc(Stat)
@@ -687,7 +687,7 @@ playerRecordsSERVER <- function(id){
           cupRecords() %>% 
           select(
             Name, 
-            Stat = "`Key Passes`",
+            Stat = "Key Passes",
           ) %>% 
           arrange(
             desc(Stat)
@@ -723,7 +723,7 @@ playerRecordsSERVER <- function(id){
           cupRecords() %>% 
           select(
             Name, 
-            Stat = "`Chances Created`",
+            Stat = "Chances Created",
           ) %>% 
           arrange(
             desc(Stat)
@@ -795,7 +795,7 @@ playerRecordsSERVER <- function(id){
           cupRecords() %>% 
           select(
             Name, 
-            Stat = "`Player of the Match`",
+            Stat = "Player of the Match",
           ) %>% 
           arrange(
             desc(Stat)
@@ -831,7 +831,7 @@ playerRecordsSERVER <- function(id){
           cupRecords() %>% 
           select(
             Name, 
-            Stat = "`Yellow Cards`",
+            Stat = "Yellow Cards",
           ) %>% 
           arrange(
             desc(Stat)
@@ -867,7 +867,7 @@ playerRecordsSERVER <- function(id){
           cupRecords() %>% 
           select(
             Name, 
-            Stat = "`Red Cards`",
+            Stat = "Red Cards",
           ) %>% 
           arrange(
             desc(Stat)
@@ -903,7 +903,7 @@ playerRecordsSERVER <- function(id){
           cupRecords() %>% 
           select(
             Name, 
-            Stat = "`Distance Run (km)`",
+            Stat = "Distance Run (km)",
           ) %>% 
           arrange(
             desc(Stat)
