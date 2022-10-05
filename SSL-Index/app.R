@@ -322,6 +322,10 @@ ui <- function(request){
           tabName = "playerPages"
         ),
         menuItem(
+          "Draft Class Tracker",
+          tabName = "trackerTPE"
+        ),
+        menuItem(
           "Player Build Tools",
           menuSubItem(
             "Build a new player",
@@ -422,6 +426,13 @@ ui <- function(request){
           playerRecordsUI(id = "playerRecords")
         ),
         tabItem(
+          "trackerTPE",
+          titlePanel(
+            h1("Draft Class Tracker", align = "center")
+          ),
+          trackerTPEUI(id = "trackerTPE")
+        ),
+        tabItem(
           "playerBuilder",
           titlePanel(
             h1("Player Builder", align = "center")
@@ -456,6 +467,7 @@ server <- function(input, output, session) {
   loadedModuleOverviewTeam <- reactiveVal(FALSE)
   loadedModulePlayerDatabase <- reactiveVal(FALSE)
   loadedModulePlayerRecords <- reactiveVal(FALSE)
+  loadedModuletrackerTPE <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
   
@@ -516,6 +528,12 @@ server <- function(input, output, session) {
       loadedModulePlayerRecords(TRUE)
       
       playerRecordsSERVER(id = "playerRecords")
+      
+    } else if(input$tabs == "trackerTPE" & !loadedModuletrackerTPE()){
+      
+      loadedModuletrackerTPE(TRUE)
+      
+      trackerTPESERVER(id = "trackerTPE")
       
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
