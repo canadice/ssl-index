@@ -46,6 +46,7 @@ vignettes/*.pdf
 
 # SQLiteStudio
 database/SQLiteStudio/*
+database/.gitignore
 
 # R Environment Variables
 .Renviron
