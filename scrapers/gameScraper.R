@@ -86,9 +86,17 @@ goalieFunction <- function(season){
   
   FMGoalie <- 
     {
-      read_html("D:/FootballManager2022/screenshots/goalieTemp.html", encoding = "UTF-8") %>% 
+      read_html("D:/FootballManager2022/screenshots/playerTemp.html", encoding = "UTF-8") %>% 
         html_table() %>% 
         .[[1]] %>% 
+        dplyr::select(
+          Name:Mins,
+          `Av Rat`:PoM,
+          Won:`xSv %`
+        ) %>% 
+        dplyr::filter(
+          Position == "GK"
+        ) %>% 
         dplyr::rename(
           Apps = Apps,
           `Minutes Played` = Mins,
@@ -105,7 +113,7 @@ goalieFunction <- function(season){
           `Clean Sheets` = Shutouts,
           `xSave%`= `xSv %`
         ) %>% 
-        mutate(
+        dplyr::mutate(
           across(
             c(
               `Minutes Played`:`xSave%`
@@ -121,7 +129,7 @@ goalieFunction <- function(season){
               TRUE ~ Club
             )
         ) %>% 
-        mutate(
+        dplyr::mutate(
           Nationality = 
             Name %>% 
             str_split(
@@ -142,7 +150,7 @@ goalieFunction <- function(season){
             .[,1] %>% 
             str_squish()
         ) %>% 
-        mutate(
+        dplyr::mutate(
           across(
             !contains(
               c("Name", "Information", "Nationality", "Position", "Club")
@@ -150,7 +158,7 @@ goalieFunction <- function(season){
             as.numeric
           )
         ) %>% 
-        mutate(
+        dplyr::mutate(
           `Save%` = ((`Saves Parried`+`Saves Held`+`Saves Tipped`)/(`Saves Parried`+`Saves Held`+`Saves Tipped`+Conceded)) %>% round(4) * 100
         ) %>% 
         relocate(
@@ -166,10 +174,6 @@ goalieFunction <- function(season){
             `Minutes Played`,
           ),
           .after = Name
-        ) %>% 
-        select(
-          -`Inf`,
-          -Rec
         ) %>% 
         arrange(
           `Average Rating` %>% desc()
@@ -337,6 +341,9 @@ outfieldFunction <- function(season){
       read_html("D:/FootballManager2022/screenshots/playerTemp.html", encoding = "UTF-8") %>% 
         html_table() %>% 
         .[[1]] %>% 
+        dplyr::select(
+          `Inf`:Wor
+        ) %>% 
         dplyr::rename(
           Apps = Apps,
           Goals = Gls,
@@ -756,9 +763,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 5
+season <- 6
 
-date <- "2022-05-18" %>% as.Date()
+date <- "2022-08-13" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
@@ -802,6 +809,7 @@ dbDisconnect(con)
 #   sheet = "PlayerGameData"
 # )
 # 
+
 
 
 
