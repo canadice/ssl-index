@@ -108,7 +108,7 @@ if(length(new) > 0){
   
   send_webhook_message(
     paste(
-      "New Announcement!", "\n\n", 
+      "<@957275417365057566> New Announcement!", "\n\n", 
       paste(
         title, link, sep = " - ", collapse = "\n\n"
       )
@@ -212,7 +212,7 @@ if(length(new) > 0){
   
   send_webhook_message(
     paste(
-      "New Prediction PT has been posted!", "\n\n", 
+      "<@1028578599965569026> New Prediction PT has been posted!", "\n\n", 
       paste(
         title, link, sep = " - ", collapse = "\n\n"
       )
@@ -259,7 +259,7 @@ if(length(new) > 0){
   
   send_webhook_message(
     paste(
-      "New Activity Check Thread!", "\n\n", 
+      "<@1028578599965569026> New Activity Check Thread!", "\n\n", 
       paste(
         title, link, sep = " - ", collapse = "\n\n"
       )
@@ -306,7 +306,7 @@ if(length(new) > 0){
   
   send_webhook_message(
     paste(
-      "New Affiliate Thread!", "\n\n", 
+      "<@1028578599965569026> New Affiliate Thread!", "\n\n", 
       paste(
         title, link, sep = " - ", collapse = "\n\n"
       )
@@ -388,7 +388,7 @@ if(length(currentClaimThread) > 0){
   task <-
     post %>%
     str_split(
-      pattern = "The following users may claim the specified TPE for|:\n",
+      pattern = "<@1028578599965569026> The following users may claim the specified TPE for|:\n",
       simplify = TRUE) %>%
     .[,2] %>%
     str_squish()
