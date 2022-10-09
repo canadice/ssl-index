@@ -765,7 +765,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 6
 
-date <- "2022-08-13" %>% as.Date()
+date <- "2022-08-20" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
@@ -792,23 +792,6 @@ dbAppendTable(con, "gameDataKeeper", matchGoalie)
 
 dbDisconnect(con)
 
-# ## Writing data to Google Sheet for easier distribution
-# googlesheets4::gs4_auth(path = ".secrets/client_secret.json")
-# 
-# ## Writes the current scrape data to the sheet
-# googlesheets4::sheet_append(
-#   data = matchGoalie,
-#   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-#   sheet = "KeeperGameData"
-# )
-# 
-# ## Writes the current scrape data to the sheet
-# googlesheets4::sheet_append(
-#   data = matchOutfield,
-#   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-#   sheet = "PlayerGameData"
-# )
-# 
 
 
 
