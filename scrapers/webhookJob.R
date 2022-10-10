@@ -63,7 +63,7 @@ newThreads <- function(forum){
   
   new <- 
     topics[
-      (now() - started) < (hours(8))
+      (now() - started) < (hours(24))
     ]
   
   return(new)
