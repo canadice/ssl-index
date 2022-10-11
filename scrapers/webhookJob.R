@@ -741,7 +741,7 @@ title <-
   html_elements("[title]") %>% 
   html_text2()
 
-index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+index <- !(forum %in% postedThreads$forum[postedThreads$title %in% title])
 
 new <- new[index]   
 title <- title[index]
