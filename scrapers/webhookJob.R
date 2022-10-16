@@ -393,9 +393,11 @@ if(length(currentClaimThread) > 0){
     .[,2] %>%
     str_squish()
   
-  new <- new[!(task %in% postedThreads$title) & (task != "")]
-  post <- post[!(task %in% postedThreads$title) & (task != "")]
-  task <- task[!(task %in% postedThreads$title) & (task != "")]
+  index <- !(task %in% postedThreads$title[forum %in% postedThreads$forum])
+  
+  new <- new[index & (task != "")]
+  post <- post[index & (task != "")]
+  task <- task[index & (task != "")]
 
   if(length(task) > 0){
     claims <-
@@ -741,7 +743,7 @@ title <-
   html_elements("[title]") %>% 
   html_text2()
 
-index <- !(forum %in% postedThreads$forum[postedThreads$title %in% title])
+index <- !(title %in% postedThreads$title[forum %in% postedThreads$forum])
 
 new <- new[index]   
 title <- title[index]
