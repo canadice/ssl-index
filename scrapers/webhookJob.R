@@ -507,7 +507,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
@@ -557,7 +558,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   checks <- 
     lapply(
@@ -681,7 +683,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
@@ -758,7 +761,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
