@@ -104,7 +104,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
@@ -151,7 +152,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
@@ -208,7 +210,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
@@ -255,7 +258,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
@@ -302,7 +306,8 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_attr("href")
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
@@ -377,7 +382,7 @@ if(length(currentClaimThread) > 0){
 
   new <-
     posts[
-      (now() - posted) < (hours(8))
+      (now() - posted) < (hours(48))
     ]
 
   post <-
@@ -393,7 +398,7 @@ if(length(currentClaimThread) > 0){
     .[,2] %>%
     str_squish()
   
-  index <- !(task %in% postedThreads$title[forum %in% postedThreads$forum])
+  index <- !(task %in% postedThreads$title[postedThreads$forum == forum])
   
   new <- new[index & (task != "")]
   post <- post[index & (task != "")]
@@ -429,7 +434,8 @@ if(length(currentClaimThread) > 0){
         "&st=0&#entry",
         .,
         sep = ""
-      )
+      ) %>% 
+      str_remove(pattern = "s=[0-9a-z]+&")
     
     
     for(i in 1:length(link)){
