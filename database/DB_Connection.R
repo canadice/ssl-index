@@ -331,6 +331,7 @@ KeeperSumRegular <-dbGetQuery(con,
 #   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
 #   sheet = "Team Information"
 # )
+# dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
 
 #################################################################
 ##             Insert Attributes and Availability              ##
