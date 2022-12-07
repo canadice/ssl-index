@@ -32,6 +32,7 @@ standingsUI <- function(id){
         column(
           width = 10,
           offset = 1,
+          h4("Division 1", align = "center"),
           reactableOutput(outputId = ns("standings1")),
           br(),
           uiOutput(
@@ -325,9 +326,11 @@ standingsSERVER <- function(id){
               style = function(value, index){
                 list(
                   background = 
-                    standings1()$color_primary[index],
-                  color = 
-                    standings1()$color_secondary[index]
+                    ifelse(index > 6 & input$season > 4, "#e58e73", "white"),
+                  # color = 
+                  #   ifelse(index > 6, "white", "black"),
+                  borderTop = 
+                    ifelse(index == 7 & input$season > 4, "solid", "none")
                   )
               }
             ),
@@ -357,9 +360,11 @@ standingsSERVER <- function(id){
                     function(value, index){
                       list(
                         background = 
-                          standings1()$color_primary[index],
-                        color = 
-                          standings1()$color_secondary[index],
+                          ifelse(index > 6 & input$season > 4, "#e58e73", "white"),
+                        # color = 
+                        #   ifelse(index > 6, "white", "black"),
+                        borderTop = 
+                          ifelse(index == 7 & input$season > 4, "solid", "none"),
                         fontWeight = "bold"
                       )
                     }
@@ -373,7 +378,10 @@ standingsSERVER <- function(id){
         if(is.null(standings2())){
           NULL
         } else {
-          reactableOutput(outputId = session$ns("standings2"))
+          tagList(
+            h4("Division 2", align = "center"),
+            reactableOutput(outputId = session$ns("standings2"))
+          )
         }
       })
       
@@ -392,9 +400,11 @@ standingsSERVER <- function(id){
               style = function(value, index){
                 list(
                   background = 
-                    standings2()$color_primary[index],
-                  color = 
-                    standings2()$color_secondary[index]
+                    ifelse(index < 3, "#73e58e", "white"),
+                  # color = 
+                  #   ifelse(index > 6, "white", "black"),
+                  borderTop = 
+                    ifelse(index == 3, "solid", "none")
                 )
               }
             ),
@@ -424,9 +434,11 @@ standingsSERVER <- function(id){
                     function(value, index){
                       list(
                         background = 
-                          standings2()$color_primary[index],
-                        color = 
-                          standings2()$color_secondary[index],
+                          ifelse(index < 3, "#73e58e", "white"),
+                        # color = 
+                        #   ifelse(index > 6, "white", "black"),
+                        borderTop = 
+                          ifelse(index == 3, "solid", "none"),
                         fontWeight = "bold"
                       )
                     }

@@ -331,22 +331,14 @@ teamOverviewSERVER <- function(id){
               image_write(tempfile(fileext = "png"), format = "png")
           } else {
             if(input$selectedTeam %in% c("FA", "Prospect", "Retired")){
-              visData <- 
-                teamInfo %>% 
-                filter(
-                  team == "FA"
-                ) 
+              team <- "FA" 
             } else {
-              visData <- 
-                teamInfo %>% 
-                filter(
-                  team == input$selectedTeam
-                )   
+              team <- input$selectedTeam  
             }
             
             tempImage <- 
               image_draw(
-                image_read(visData$logo),
+                image_read(paste("www/", team, ".png", sep = "")),
                 xlim = c(0,1),
                 ylim = c(0,1)
               ) %>%
