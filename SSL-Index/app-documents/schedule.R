@@ -23,7 +23,7 @@ scheduleUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              1:6 %>% 
+              1:7 %>% 
               sort(decreasing = TRUE)
           ),
           uiOutput(

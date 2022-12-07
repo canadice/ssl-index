@@ -48,6 +48,10 @@ playerStatsUI <- function(id){
             selected = "Player Stats",
             tabPanel(
               "Player Stats",
+              div(
+                id = ns("playerDownload"),
+                downloadButton(ns("downloadData"), "Download")
+              ),
               h4("Outfield", align = "center"),
               reactableOutput(
                 outputId = ns("playerStats")
@@ -780,6 +784,28 @@ playerStatsSERVER <- function(id){
               )
           )
       })
+      
+      output$downloadData <- downloadHandler(
+        filename = function() {
+          paste("SSL Player Statistics.zip", sep = "")
+        },
+        content = function(file) {
+          temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
+          dir.create(temp_directory)
+          
+          
+          write.csv(activePlayerData(), file.path(temp_directory, "players.csv"), row.names = FALSE, fileEncoding = "UTF-8")
+          write.csv(activeKeeperData(), file.path(temp_directory, "keepers.csv"), row.names = FALSE, fileEncoding = "UTF-8")
+          
+          zip::zip(
+            zipfile = file,
+            files = dir(temp_directory),
+            root = temp_directory
+          )
+          
+        },
+        contentType = "application/zip"
+      )
       
     }
   )
