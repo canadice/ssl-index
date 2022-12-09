@@ -816,7 +816,7 @@ started <-
   lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
   lubridate::with_tz(tzone = "Europe/Stockholm")
 
-currentClaimThread <-
+currentFileThread <-
   topics[
     (now() - started) < (hours(6))
   ]
@@ -825,7 +825,7 @@ currentClaimThread <-
 if(length(currentClaimThread) > 0){
   posts <-
     read_html(
-      currentClaimThread %>%
+      currentFileThread %>%
         html_elements("span.desc") %>%
         html_elements("a") %>%
         html_attr("href") %>%
@@ -847,16 +847,15 @@ if(length(currentClaimThread) > 0){
       (now() - posted) < (hours(6))
     ]
   
-  link <- 
-    new %>% 
-    html_elements("[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
-  
   post <-
     new %>%
     html_elements("div.postcolor") %>%
     html_text2()
+  
+  index <- !(post %in% postedThreads$title[postedThreads$forum == forum])
+  
+  new <- new[index & (post != "")]
+  post <- post[index & (post != "")]
   
   if(length(post) > 0){
     link <-
@@ -866,7 +865,7 @@ if(length(currentClaimThread) > 0){
       str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
       unlist() %>% 
       paste(
-        currentClaimThread %>%
+        currentFileThread %>%
           html_elements("span.desc") %>%
           html_elements("a") %>%
           html_attr("href") %>%
