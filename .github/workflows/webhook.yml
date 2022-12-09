@@ -48,6 +48,7 @@ jobs:
       PLAYER_CHECKS: ${{ secrets.PLAYER_CHECKS }}
       WAIVER_WATCHER: ${{ secrets.WAIVER_WATCHER }}
       PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
+      SIM_FILES: ${{ secrets.SIM_FILES }}
 
     steps:
       - uses: actions/checkout@v3
@@ -88,6 +89,7 @@ jobs:
           echo PLAYER_CHECKS ="$PLAYER_CHECKS" >> ~/.Renviron
           echo WAIVER_WATCHER ="$WAIVER_WATCHER" >> ~/.Renviron
           echo PLAYER_APPROVER ="$PLAYER_APPROVER" >> ~/.Renviron
+          echo SIM_FILES ="$SIM_FILES" >> ~/.Renviron
         shell: bash
 
       - name: Generate data

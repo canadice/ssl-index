@@ -818,7 +818,7 @@ started <-
 
 currentClaimThread <-
   topics[
-    (now() - started) < (hours(8))
+    (now() - started) < (hours(4))
   ]
 
 
@@ -844,7 +844,7 @@ if(length(currentClaimThread) > 0){
   
   new <-
     posts[
-      (now() - posted) < (hours(8))
+      (now() - posted) < (hours(4))
     ]
   
   link <- 
