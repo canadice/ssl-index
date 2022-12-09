@@ -787,6 +787,120 @@ if(length(new) > 0){
   #Do Nothing
 }
 
+
+#################################################################
+##                          SIM FILES                          ##
+#################################################################
+
+conn_obj <- 
+  create_discord_connection(
+    webhook = Sys.getenv('SIM_FILES'), 
+    username = 'FM File Scraper', 
+    set_default = TRUE)
+
+forum <- "https://simsoccer.jcink.net/index.php?showforum=77"
+
+topics <-
+  read_html(forum) %>%
+  html_elements(".topic-row")
+
+started <-
+  topics %>%
+  html_elements("span.desc") %>%
+  html_text2() %>%
+  stringi::stri_remove_empty_na() %>%
+  str_split(pattern = "\n", simplify = TRUE) %>%
+  .[,1] %>%
+  stringr::str_remove_all(pattern = "th|rd|nd") %>%
+  stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
+  lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
+  lubridate::with_tz(tzone = "Europe/Stockholm")
+
+currentClaimThread <-
+  topics[
+    (now() - started) < (hours(8))
+  ]
+
+
+if(length(currentClaimThread) > 0){
+  posts <-
+    read_html(
+      currentClaimThread %>%
+        html_elements("span.desc") %>%
+        html_elements("a") %>%
+        html_attr("href") %>%
+        nth(1)
+    ) %>%
+    html_elements("span.post-normal")
+  
+  posted <-
+    posts %>%
+    html_elements(".row4 span.postdetails") %>%
+    html_text2() %>%
+    str_split(pattern = ": ", simplify = TRUE) %>%
+    .[,2] %>%
+    lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>%
+    lubridate::with_tz(tzone = "Europe/Stockholm")
+  
+  new <-
+    posts[
+      (now() - posted) < (hours(8))
+    ]
+  
+  link <- 
+    new %>% 
+    html_elements("[title]") %>% 
+    html_attr("href")%>% 
+    str_remove(pattern = "s=[0-9a-z]+&")
+  
+  post <-
+    new %>%
+    html_elements("div.postcolor") %>%
+    html_text2()
+  
+  if(length(post) > 0){
+    link <-
+      new %>%
+      html_elements("a[title]") %>%
+      html_attr("onclick") %>% 
+      str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
+      unlist() %>% 
+      paste(
+        currentClaimThread %>%
+          html_elements("span.desc") %>%
+          html_elements("a") %>%
+          html_attr("href") %>%
+          nth(1) %>% 
+          str_remove_all("&view=getlastpost"),
+        "&st=0&#entry",
+        .,
+        sep = ""
+      ) %>% 
+      str_remove(pattern = "s=[0-9a-z]+&")
+    
+    
+    for(i in 1:length(link)){
+      send_webhook_message(
+        paste(
+          "<@&921299604291612702> <@&1029418339514191983> A new sim-file has been posted", "\n\n",
+          paste(
+            post[i], link[i],
+            sep = " - "
+          )
+        )
+      )
+      
+      Sys.sleep(5)
+      
+    }
+    
+    print("Sent new sim file.")
+  }
+  
+} else {
+  #Do Nothing
+}
+
 ##################################################################
 ##              Storing posted threads in database              ##
 ##################################################################
