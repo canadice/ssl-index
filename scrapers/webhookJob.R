@@ -818,7 +818,7 @@ started <-
 
 currentClaimThread <-
   topics[
-    (now() - started) < (hours(4))
+    (now() - started) < (hours(6))
   ]
 
 
@@ -844,7 +844,7 @@ if(length(currentClaimThread) > 0){
   
   new <-
     posts[
-      (now() - posted) < (hours(4))
+      (now() - posted) < (hours(6))
     ]
   
   link <- 
@@ -893,6 +893,14 @@ if(length(currentClaimThread) > 0){
       Sys.sleep(5)
       
     }
+    
+    postedThreads <- 
+      rbind(
+        postedThreads,
+        data.frame(
+          title = post, link = link, forum = forum
+        )
+      )
     
     print("Sent new sim file.")
   }
