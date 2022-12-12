@@ -822,7 +822,7 @@ currentFileThread <-
   ]
 
 
-if(length(currentClaimThread) > 0){
+if(length(currentFileThread) > 0){
   posts <-
     read_html(
       currentFileThread %>%
