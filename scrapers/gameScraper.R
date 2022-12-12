@@ -126,6 +126,7 @@ goalieFunction <- function(season){
             case_when(
               Club == "Accra FC" ~ "Adowa Accra FC",
               Club == "São Paulo" ~ "União São Paulo",
+              Club == "Red Star" ~ "Red Star Laos",
               TRUE ~ Club
             )
         ) %>% 
@@ -401,6 +402,7 @@ outfieldFunction <- function(season){
             case_when(
               Club == "Accra FC" ~ "Adowa Accra FC",
               Club == "São Paulo" ~ "União São Paulo",
+              Club == "Red Star" ~ "Red Star Laos",
               TRUE ~ Club
             )
         ) %>% 
@@ -436,22 +438,29 @@ outfieldFunction <- function(season){
           `Pass%` = (`Successful Passes` %>% as.numeric()/`Attempted Passes` %>% as.numeric()) %>% round(4)*100,
           `Header%` = (`Successful Headers` %>% as.numeric()/`Attempted Headers` %>% as.numeric()) %>% round(4)*100,
           # Position = NA,
-          Nationality = 
-            case_when(
-              str_detect(Name, "GFuel") ~ 
-                Name %>% 
-                str_split(
-                  pattern = " - ", 
-                  simplify = TRUE
-                ) %>% 
-                .[,3],
-              TRUE ~ Name %>% 
-                str_split(
-                  pattern = " - ", 
-                  simplify = TRUE
-                ) %>% 
-                .[,2]
-            ),
+          # Nationality =
+          #   case_when(
+          #     str_detect(Name, "GFuel") ~
+          #       Name %>%
+          #       str_split(
+          #         pattern = " - ",
+          #         simplify = TRUE
+          #       ) %>%
+          #       .[,3],
+          #     TRUE ~ Name %>%
+          #       str_split(
+          #         pattern = " - ",
+          #         simplify = TRUE
+          #       ) %>%
+          #       .[,2]
+          #   ),
+          Nationality =
+            Name %>%
+            str_split(
+              pattern = " - ",
+              simplify = TRUE
+            ) %>%
+            .[,2],
           Name =
             Name %>%
               str_split(
@@ -763,9 +772,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 6
+season <- 7
 
-date <- "2022-05-17" %>% as.Date()
+date <- "2022-08-10" %>% as.Date()
 
 ## Adding a deauthorization for reading of Google Sheets that are still being used. 
 googlesheets4::gs4_deauth()
