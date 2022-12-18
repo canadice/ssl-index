@@ -341,6 +341,10 @@ ui <- function(request){
           )
         ),
         menuItem(
+          "File Update Tool",
+          tabName = "fileUpdate"
+        ),
+        menuItem(
           "SSL Forum",
           icon = icon("external-link-alt"),
           href = "https://simsoccer.jcink.net/index.php"
@@ -433,6 +437,13 @@ ui <- function(request){
           trackerTPEUI(id = "trackerTPE")
         ),
         tabItem(
+          "fileUpdate",
+          titlePanel(
+            h1("File Update Tool", align = "center")
+          ),
+          fileUpdateToolUI(id = "fileUpdate")
+        ),
+        tabItem(
           "playerBuilder",
           titlePanel(
             h1("Player Builder", align = "center")
@@ -468,6 +479,7 @@ server <- function(input, output, session) {
   loadedModulePlayerDatabase <- reactiveVal(FALSE)
   loadedModulePlayerRecords <- reactiveVal(FALSE)
   loadedModuletrackerTPE <- reactiveVal(FALSE)
+  loadedModulefileUpdate <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
   
@@ -534,6 +546,12 @@ server <- function(input, output, session) {
       loadedModuletrackerTPE(TRUE)
       
       trackerTPESERVER(id = "trackerTPE")
+      
+    } else if(input$tabs == "fileUpdate" & !loadedModulefileUpdate()){
+      
+      loadedModulefileUpdate(TRUE)
+      
+      fileUpdateToolSERVER(id = "fileUpdate")
       
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)

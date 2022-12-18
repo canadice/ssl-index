@@ -258,13 +258,13 @@ playerDatabaseSERVER <- function(id){
               table <- 
                 table %>% 
                 filter(
-                  Matchday %like% "%Cup%"
+                  Division == 0
                 )
             } else {
               table <- 
                 table %>% 
                 filter(
-                  !(Matchday %like% "%Cup%")
+                  Division != 0
                 )
             }
             
@@ -331,13 +331,13 @@ playerDatabaseSERVER <- function(id){
               table <- 
                 table %>% 
                 filter(
-                  Matchday %like% "%Cup%"
+                  Division == 0
                 )
             } else {
               table <- 
                 table %>% 
                 filter(
-                  !(Matchday %like% "%Cup%")
+                  Division != 0
                 )
             }
             
@@ -454,13 +454,13 @@ playerDatabaseSERVER <- function(id){
               table <- 
                 table %>% 
                 filter(
-                  Matchday %like% "%Cup%"
+                  Division == 0 
                 )
             } else {
               table <- 
                 table %>% 
                 filter(
-                  !(Matchday %like% "%Cup%")
+                  Division != 0
                 )
             }
             
@@ -521,13 +521,13 @@ playerDatabaseSERVER <- function(id){
               table <- 
                 table %>% 
                 filter(
-                  Matchday %like% "%Cup%"
+                  Division == 0
                 )
             } else {
               table <- 
                 table %>% 
                 filter(
-                  !(Matchday %like% "%Cup%")
+                  Division != 0
                 )
             }
             
@@ -1079,13 +1079,13 @@ playerDatabaseSERVER <- function(id){
             data <- 
               data %>% 
               filter(
-                str_detect(Matchday, "Cup")
+                Division == 0
               )
           } else {
             data <- 
               data %>% 
               filter(
-                str_detect(Matchday, "Cup", negate = TRUE)
+                Division != 0
               )
           }
         }
@@ -1172,11 +1172,11 @@ playerDatabaseSERVER <- function(id){
                           " "
                         )
                       } else {
-                        values <- str_split(value, pattern = "-", simplify = TRUE)
+                        values <- str_split(value, pattern = "-", simplify = TRUE) 
                         
-                        if(any(str_detect(values, pattern = "p|e"))){
+                        if(any(str_detect(values, pattern = "a|p|e"))){
                           
-                          if(which(str_detect(values, pattern = "p|e")) == 1){
+                          if(which(str_detect(values, pattern = "a|p|e")) == 1){
                             color <- "#A4D1A2"
                           } else {
                             color <- "#CB8491"

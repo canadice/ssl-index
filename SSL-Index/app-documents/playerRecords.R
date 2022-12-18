@@ -957,7 +957,7 @@ playerRecordsSERVER <- function(id){
       observeEvent(
         input$topPotM, 
         {
-          currentStat$league <- "`Player of the Match`"
+          currentStat$league <- "Player of the Match"
         }
       )
       
@@ -971,28 +971,28 @@ playerRecordsSERVER <- function(id){
       observeEvent(
         input$topChancesCreated, 
         {
-          currentStat$league <- "`Chances Created`"
+          currentStat$league <- "Chances Created"
         }
       )
       
       observeEvent(
         input$topDistanceRun, 
         {
-          currentStat$league <- "`Distance Run (km)`"
+          currentStat$league <- "Distance Run (km)"
         }
       )
       
       observeEvent(
         input$topYellows, 
         {
-          currentStat$league <- "`Yellow Cards`"
+          currentStat$league <- "Yellow Cards"
         }
       )
       
       observeEvent(
         input$topReds, 
         {
-          currentStat$league <- "`Red Cards`"
+          currentStat$league <- "Red Cards"
         }
       )
       
@@ -1013,7 +1013,7 @@ playerRecordsSERVER <- function(id){
       observeEvent(
         input$topKeyPasses, 
         {
-          currentStat$league <- "`Key Passes`"
+          currentStat$league <- "Key Passes"
         }
       )
       
@@ -1031,7 +1031,7 @@ playerRecordsSERVER <- function(id){
       observeEvent(
         input$topPotMC, 
         {
-          currentStat$cup <- "`Player of the Match`"
+          currentStat$cup <- "Player of the Match"
         }
       )
       
@@ -1045,28 +1045,28 @@ playerRecordsSERVER <- function(id){
       observeEvent(
         input$topChancesCreatedC, 
         {
-          currentStat$cup <- "`Chances Created`"
+          currentStat$cup <- "Chances Created"
         }
       )
       
       observeEvent(
         input$topDistanceRunC, 
         {
-          currentStat$cup <- "`Distance Run (km)`"
+          currentStat$cup <- "Distance Run (km)"
         }
       )
       
       observeEvent(
         input$topYellowsC, 
         {
-          currentStat$cup <- "`Yellow Cards`"
+          currentStat$cup <- "Yellow Cards"
         }
       )
       
       observeEvent(
         input$topRedsC, 
         {
-          currentStat$cup <- "`Red Cards`"
+          currentStat$cup <- "Red Cards"
         }
       )
       
@@ -1087,7 +1087,7 @@ playerRecordsSERVER <- function(id){
       observeEvent(
         input$topKeyPassesC, 
         {
-          currentStat$cup <- "`Key Passes`"
+          currentStat$cup <- "Key Passes"
         }
       )
       
