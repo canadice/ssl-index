@@ -124,7 +124,10 @@ comparison <-
           ~ as.numeric(.x))
       ),
     by = "Name"
-  ) %>% 
+  ) 
+
+auditAttributes <- 
+  comparison %>% 
   summary() %>% 
   .$diffs.table %>% 
   arrange(Name) %>% 
@@ -132,18 +135,28 @@ comparison <-
     !is.na(values.y)
   )
 
-colnames(comparison) <- 
+colnames(auditAttributes) <- 
   str_replace(
-    colnames(comparison),
+    colnames(auditAttributes),
     ".x",
     ".FM"
-    )
+  )
 
-colnames(comparison) <- 
+colnames(auditAttributes) <- 
   str_replace(
-    colnames(comparison),
+    colnames(auditAttributes),
     ".y",
     ".Forum"
+  )
+
+
+auditPlayers <- 
+  comparison %>% 
+  summary() %>% 
+  .$obs.table %>% 
+  arrange(Name) %>% 
+  mutate(
+    version = if_else(version == "x", "FM", "Forum")
   )
 
 dbDisconnect(con)
