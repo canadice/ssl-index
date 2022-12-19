@@ -37,3 +37,4 @@ database/.gitignore
 # R Environment Variables
 .Renviron
 my.png
+*.xml
