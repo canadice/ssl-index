@@ -258,13 +258,13 @@ playerDatabaseSERVER <- function(id){
               table <- 
                 table %>% 
                 filter(
-                  Division == 0
+                  Division == 0 | Division %in% "Cup"
                 )
             } else {
               table <- 
                 table %>% 
                 filter(
-                  Division != 0
+                  !(Division == 0 | Division %in% "Cup")
                 )
             }
             
@@ -331,13 +331,13 @@ playerDatabaseSERVER <- function(id){
               table <- 
                 table %>% 
                 filter(
-                  Division == 0
+                  Division == 0 | Division %in% "Cup"
                 )
             } else {
               table <- 
                 table %>% 
                 filter(
-                  Division != 0
+                  !(Division == 0 | Division %in% "Cup")
                 )
             }
             
@@ -454,13 +454,13 @@ playerDatabaseSERVER <- function(id){
               table <- 
                 table %>% 
                 filter(
-                  Division == 0 
+                  Division == 0 | Division %in% "Cup"
                 )
             } else {
               table <- 
                 table %>% 
                 filter(
-                  Division != 0
+                  !(Division == 0 | Division %in% "Cup")
                 )
             }
             
@@ -521,13 +521,13 @@ playerDatabaseSERVER <- function(id){
               table <- 
                 table %>% 
                 filter(
-                  Division == 0
+                  Division == 0 | Division %in% "Cup"
                 )
             } else {
               table <- 
                 table %>% 
                 filter(
-                  Division != 0
+                  !(Division == 0 | Division %in% "Cup")
                 )
             }
             
