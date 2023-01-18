@@ -1,9 +1,4 @@
 
-# cd ssl-bot-env
-# source my_env/bin/activate
-# nohup python discordStatBot.py &
-# 8570
-
 import os
 import random
 import requests
