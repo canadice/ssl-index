@@ -59,7 +59,13 @@ standingsSERVER <- function(id){
             read_sheet(
               ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
               sheet = paste("Season", input$season)
-            ) 
+            ) %>% 
+            mutate(
+              across(
+                Division:Matchday,
+                unlist
+              )
+            )
           
           if(input$season > 4){
             sheet <- 
@@ -90,15 +96,15 @@ standingsSERVER <- function(id){
               HomePoints = 
                 case_when(
                   str_detect(HomeScore, "e|p") ~ 3,
-                  HomeScore > AwayScore ~ 3,
-                  HomeScore == AwayScore ~ 1,
+                  HomeScore %>% as.numeric() > AwayScore %>% as.numeric() ~ 3,
+                  HomeScore %>% as.numeric() == AwayScore %>% as.numeric() ~ 1,
                   TRUE ~ 0
                 ),
               AwayPoints = 
                 case_when(
                   str_detect(AwayScore, "e|p") ~ 3,
-                  HomeScore < AwayScore ~ 3,
-                  HomeScore == AwayScore ~ 1,
+                  HomeScore %>% as.numeric() < AwayScore %>% as.numeric() ~ 3,
+                  HomeScore %>% as.numeric() == AwayScore %>% as.numeric() ~ 1,
                   TRUE ~ 0
                 )
             ) %>% 
@@ -185,7 +191,13 @@ standingsSERVER <- function(id){
             read_sheet(
               ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
               sheet = paste("Season", input$season)
-            ) 
+            ) %>% 
+            mutate(
+              across(
+                Division:Matchday,
+                unlist
+              )
+            )
           
           if(input$season > 4){
             sheet <- 
@@ -218,15 +230,15 @@ standingsSERVER <- function(id){
                   HomePoints = 
                   case_when(
                     str_detect(HomeScore, "e|p") ~ 3,
-                    HomeScore > AwayScore ~ 3,
-                    HomeScore == AwayScore ~ 1,
+                    HomeScore %>% as.numeric() > AwayScore %>% as.numeric() ~ 3,
+                    HomeScore %>% as.numeric() == AwayScore %>% as.numeric() ~ 1,
                     TRUE ~ 0
                   ),
                   AwayPoints = 
                   case_when(
                     str_detect(AwayScore, "e|p") ~ 3,
-                    HomeScore < AwayScore ~ 3,
-                    HomeScore == AwayScore ~ 1,
+                    HomeScore %>% as.numeric() < AwayScore %>% as.numeric() ~ 3,
+                    HomeScore %>% as.numeric() == AwayScore %>% as.numeric() ~ 1,
                     TRUE ~ 0
                   )
                 ) %>% 
