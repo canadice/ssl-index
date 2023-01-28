@@ -40,6 +40,9 @@ fileUpdateToolUI <- function(id){
           div(
             id = ns("playerDownload"),
             downloadButton(ns("downloadData"), "Download")
+          ),
+          reactableOutput(
+            ns("playerBio")
           )
         )
       )
@@ -146,8 +149,36 @@ fileUpdateToolSERVER <- function(id){
         },
         contentType = "json"
       )
-          
-      }
+      
+      output$playerBio <- renderReactable({
+        filterName <- input$player
+        
+        temp <- 
+          tbl(con, "Daily_Scrape") %>% 
+          filter(
+            Name == filterName
+          ) %>% 
+          collect()
+        
+        temp %>% 
+          select(
+            Class,
+            Birthplace,
+            Height,
+            Weight,
+            `Preferred Foot`,
+            `Hair Color`,
+            `Hair Length`,
+            `Skin Tone`,
+            `All Traits`
+          ) %>% 
+          t() %>% 
+          as.data.frame() %>% 
+          tibble::rownames_to_column() %>% 
+          reactable()
+      })      
+       
+    }   
   )
 }
 
