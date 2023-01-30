@@ -53,7 +53,7 @@ forumData <-
       if( 
         inherits(
           scrape,  
-          "try-error")
+          "error")
       ){
         print(scrape)
       } 
