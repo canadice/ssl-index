@@ -48,14 +48,14 @@ forumData <-
   lapply(
     playerLinks,
     FUN = function(x){
-      scrape <- try(playerScraper(x), silent=TRUE)
+      scrape <- tryCatch(playerScraper(x), error = function(e) paste(x, "produces this error: ", e))
       
       if( 
         inherits(
           scrape,  
           "try-error")
       ){
-        print(x)
+        print(scrape)
       } 
       else {
         scrape
