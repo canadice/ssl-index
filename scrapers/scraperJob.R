@@ -58,6 +58,7 @@ forumData <-
         print(scrape)
       } else {
         print("OK")
+        print(scrape)
         return(scrape)
       }
     }
