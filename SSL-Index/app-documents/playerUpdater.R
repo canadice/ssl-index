@@ -23,27 +23,27 @@ playerDatabaseUI <- function(id){
             label = "Select a player",
             choices = 
               playerData %>% 
-                select(Name) %>% 
-                arrange(Name)
-            # select(Team, Name) %>% 
-            # group_by(Team) %>% 
-            # arrange(Name) %>% 
-            # group_split(.keep = FALSE) %>% 
-            # setNames(playerData$Team %>% unique() %>% sort()) %>% 
-            # lapply(
-            #   X = .,
-            #   FUN = function(x){
-            #     c(x) %>% 
-            #       unname() %>% 
-            #       lapply(
-            #         X = .,
-            #         FUN = function(x){
-            #           as.list(x)
-            #         }
-            #       ) %>% 
-            #       unlist(recursive = FALSE)
-            #   }
-            # )
+                # select(Name) %>% 
+                # arrange(Name)
+                select(Team, Name) %>%
+                group_by(Team) %>%
+                arrange(Name) %>%
+                group_split(.keep = FALSE) %>%
+                setNames(playerData$Team %>% unique() %>% sort()) %>%
+                lapply(
+                  X = .,
+                  FUN = function(x){
+                    c(x) %>%
+                      unname() %>%
+                      lapply(
+                        X = .,
+                        FUN = function(x){
+                          as.list(x)
+                        }
+                      ) %>%
+                      unlist(recursive = FALSE)
+                  }
+                )
           )
         ),
         column(
