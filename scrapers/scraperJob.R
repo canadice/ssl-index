@@ -46,7 +46,7 @@ playerLinks <-
 
 forumData <- 
   lapply(
-    playerLinks[1:10],
+    playerLinks,
     FUN = function(x){
       scrape <- tryCatch(playerScraper(x), error = function(e) paste(x, "produces this error: ", e))
       
