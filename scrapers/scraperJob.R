@@ -56,8 +56,7 @@ forumData <-
           "error")
       ){
         print(scrape)
-      } 
-      else {
+      } else {
         scrape
       }
     }
