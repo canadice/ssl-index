@@ -51,14 +51,12 @@ forumData <-
       scrape <- tryCatch(playerScraper(x), error = function(e) paste(x, "produces this error: ", e))
       
       if( 
-        inherits(
-          scrape,  
-          "error")
+        !is.data.frame(scrape)
       ){
         print(scrape)
       } else {
         print("OK")
-        print(scrape)
+        # print(scrape)
         return(scrape)
       }
     }
