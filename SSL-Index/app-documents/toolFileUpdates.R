@@ -83,7 +83,8 @@ fileUpdateToolSERVER <- function(id){
           ) %>% 
             paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
             str_replace_all(pattern = " ", replacement = "") %>% 
-            str_replace(pattern = "TendencyToRush", replacement = "RushingOut"),
+            str_replace(pattern = "TendencyToRush", replacement = "RushingOut") %>% 
+            str_replace(pattern = "AerialReach", replacement = "AerialAbility"),
           '},"MentalAttributes":{',
           sapply(
             temp %>% 
