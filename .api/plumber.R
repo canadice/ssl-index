@@ -21,17 +21,42 @@ require(dbplyr, quietly = TRUE)
 require(RSQLite, quietly = TRUE)
 # require(googlesheets4)
 
-# mydrop = Sys.getenv("DROPLET_ID")
-# ssh::ssh_connect(host = "root@IP", keyfile = ssh::ssh_home("id_rsa"))
-# plumberDeploy::do_deploy_api(analogsea::droplets()[1][[1]]$id, path = "ssl", localPath = ".api/", port = 8000, docs = TRUE, overwrite = TRUE)
-# rm(list = ls(envir = analogsea:::analogsea_sessions), envir = analogsea:::analogsea_sessions)
+#* Allows acces from cross domain places
+# Enable CORS Filtering
+#' @filter cors
+cors <- function(req, res) {
+  safe_domains <- c("https://api.simulationsoccer.com", 
+                    "https://simsoccer.jcink.net",
+                    "http://sslforums.com")
+  
+  if (any(grepl(pattern = paste0(safe_domains,collapse="|"), req$HTTP_REFERER,ignore.case=T))) {
+    res$setHeader("Access-Control-Allow-Origin", sub("/$","",req$HTTP_REFERER)) #Have to remove last slash, for some reason
+    
+    if (req$REQUEST_METHOD == "OPTIONS") {
+      res$setHeader("Access-Control-Allow-Methods","GET,HEAD,PUT,PATCH,POST,DELETE") #This is how node.js does it
+      res$setHeader("Access-Control-Allow-Headers", req$HTTP_ACCESS_CONTROL_REQUEST_HEADERS)
+      res$status <- 200
+      return(list())
+    } else {
+      plumber::forward()
+    }
+  } else {
+    plumber::forward()
+  }
+}
+
 
 #* @apiTitle Plumber Example API
 #* @apiDescription Plumber example description.
 
-#* @get /
+#* Checks the R and package versions
+#* @get /status
 function() {
-  getwd()
+  list(
+    getwd(),
+    R.Version(),
+    installed.packages()
+  )
 }
 
 #* Search for a player in the game log data
@@ -570,7 +595,6 @@ function(player = "", season = NULL) {
   
 }
 
-
 #* Shows league leaders in different statistics
 #* @param league The specific league or competition to search for
 #* @param season The specific season to get the stats from
@@ -715,12 +739,82 @@ function(league = NULL, season = NULL) {
   
 }
 
-#* Plot a histogram
-#* @serializer png
-#* @get /plot
-function() {
-    rand <- rnorm(100)
-    hist(rand)
+#* Gather the latest AC and Affiliate Task for a given player
+#* @param player The player to search for
+#* @get /cappedPT
+function(player = NULL){
+  tryCatch({
+    con <-
+      dbConnect(
+        SQLite(),
+        "../database/SSL_Database.db"
+      )
+    
+    username <- 
+      tbl(con, "Daily_Scrape") %>% 
+      filter(
+        Name == player
+      ) %>% 
+      select(
+        Username
+      ) %>% 
+      collect() %>% 
+      c()
+    
+    recentAC <- activityCheckLinks()
+    recentAffiliate <- affiliateLinks()
+    
+    postAC <- lapply(X = recentAC, activityCheckPosts) %>% 
+      do.call(rbind, args = .)
+    
+    postAffiliate <- lapply(X = recentAffiliate, affiliatePosts) %>% 
+      do.call(rbind, args = .)
+    
+    output <- NA
+    
+    if(username %in% postAC$User){
+      output[1] <- 
+        paste(
+          "You have posted in the most recent AC! Here is the link to your post:", 
+          postAC %>% 
+            filter(User == username) %>% 
+            select(Link)
+        )
+    } else {
+      output[1] <- 
+        paste(
+          "You have not posted in the recent thread! Here is the link to it:", 
+          postAC$Link[1] %>% 
+            stringr::str_extract(pattern = ".+&showtopic=[0-9]+")
+          
+        )
+    }
+    
+    
+    if(username %in% postAffiliate$User){
+      output[2] <- 
+        paste(
+          "You have posted in the most recent AC! Here is the link to your post", 
+          postAffiliate %>% 
+            filter(User == username) %>% 
+            select(Link)
+        )
+    } else {
+      output[2] <- 
+        paste(
+          "You have not posted in the recent thread! Here is the link to it:", 
+          postAffiliate$Link[1] %>% 
+            stringr::str_extract(pattern = ".+&showtopic=[0-9]+")
+        )
+    }
+    
+    dbDisconnect(con)
+    
+    output
+  }, error = function(e) {
+    res$status = 400  # the response object that is always available in plumber functions
+    return(list(error = e, traceback = ...))
+  })
 }
 
 #* Return interactive plot using plotly
@@ -739,6 +833,36 @@ function() {
   })
 }
 
+#* Return the player data for a given user
+#* @serializer json
+#* @get /getPlayer
+function(username = NULL) {
+  if(is.null(username)){
+    res$status = 400  # the response object that is always available in plumber functions
+    return("You have not sent in a username.")
+  }
+  
+  con <-
+    dbConnect(
+      SQLite(),
+      "../database/SSL_Database.db"
+    )
+  
+  player <- 
+    tbl(con, "Daily_Scrape") %>% 
+    filter(
+      Username == username
+    ) %>% 
+    filter(
+      # Finds the latest player created for the username
+      Created == max(Created, na.rm = TRUE)
+    ) %>% 
+    collect()
+  
+  dbDisconnect(con)
+  
+  return(player)
+}
 
 # Programmatically alter your API
 #* @plumber

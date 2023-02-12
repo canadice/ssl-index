@@ -549,7 +549,7 @@ async def capped(ctx, *, name: typing.Optional[str] = None):
     if name is None:  
       await ctx.send("You have no name associated with this account, use !claim to associate one!")
     else:
-      data = requests.get('http://143.198.159.1/ssl/cappedPT?player=' + name.replace(" ", "%20"))
+      data = requests.get('https://api.simulationsoccer.com/ssl/cappedPT?player=' + name.replace(" ", "%20"))
       
       data = pd.DataFrame(eval(data.content))
       
