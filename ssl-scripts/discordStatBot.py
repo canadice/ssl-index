@@ -26,6 +26,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 SERVER = os.getenv('SERVER_NAME')
 BANK_SHEET = os.getenv('BANK_SHEET')
 PLAYER_RANGE = os.getenv('PLAYER_SHEET')
+LOG_PLAYER_RANGE = os.getenv('LOG_SHEET')
 
 intents = discord.Intents.all()
 
@@ -37,12 +38,30 @@ def get_data(search_string):
     return_value = []
     if search_string.lower() not in values["Player Name"].to_string().lower():
         print('No data found.')
+        return_value = pd.DataFrame(columns = ["Username", "Player Name", "Balance"])
     else:
         row = values[values["Player Name"].str.lower() == search_string.lower()]
         
         return_value = row[["Username", "Player Name", "Balance"]]
 
     return (return_value, values)
+  
+def get_bank_log_data(search_string):
+    values = pd.read_csv("https://docs.google.com/spreadsheets/export?id={}&exportFormat=csv&gid={}".format(BANK_SHEET, LOG_PLAYER_RANGE))
+    values.columns = values.iloc[1]
+    values = values.iloc[2:14113,]
+    values = values[values["Username"].notna()]
+    return_value = []
+    
+    if search_string.lower() not in values["Username"].to_string().lower():
+        print('No data found.')
+        return_value = pd.DataFrame(columns = ['Date', 'Username', 'Net','Source'])
+    else:
+        row = values[values["Username"].str.lower() == search_string.lower()]
+        
+        return_value = row[["Date", "Username", "Net", "Source"]].iloc[::-1].iloc[0:5,]
+
+    return (return_value)
   
 def get_team_data(search_string):
     values = pd.read_csv("https://docs.google.com/spreadsheets/export?id={}&exportFormat=csv&gid={}".format(BANK_SHEET, PLAYER_RANGE))
@@ -496,18 +515,50 @@ async def get_balance(ctx, *, name: typing.Optional[str] = None):
     
     data, all_rows = get_data(name)
     
-    player = data['Player Name'].to_string(index = False)
+    if data.empty:
+      await ctx.send("Your player name does not exist in the bank. Please check the spelling with !whoami.")
+    else:
+      player = data['Player Name'].to_string(index = False)
+      
+      balance = data["Balance"].to_string(index = False)
+      
+      recent = get_bank_log_data(data["Username"].to_string(index = False))
+      
+      if recent.empty:
+        recent_transactions = "No recent transactions exist."
+      else: 
+        recent_transactions = recent.to_csv(index = False, header = False, sep = "\t")
+      
+        new_embed = discord.Embed(title=f"Balance for {player}",color = discord.Color.from_str("#BD9523"))
+        rank, percent = calculate_balance_rank(data["Username"], all_rows)
+        new_embed.add_field(name=f"Total Balance", value=balance, inline=False)
+        new_embed.add_field(name=f"Rank", value=rank, inline=False)
+        new_embed.add_field(name=f"Percentile", value=f"{percent}", inline=False)
+        new_embed.add_field(name= "Recent 5 transactions", value = f'{recent_transactions}', inline = False)
     
-    balance = data["Balance"].to_string(index = False)
+        # await message.channel.send(f"{print_string}")
+        await ctx.send(embed=new_embed)
     
-    new_embed = discord.Embed(title=f"Balance for {player}",color = discord.Color.from_str("#BD9523"))
-    rank, percent = calculate_balance_rank(data["Username"], all_rows)
-    new_embed.add_field(name=f"Total Balance", value=balance, inline=False)
-    new_embed.add_field(name=f"Rank", value=rank, inline=False)
-    new_embed.add_field(name=f"Percentile", value=f"{percent}", inline=False)
-
-    # await message.channel.send(f"{print_string}")
-    await ctx.send(embed=new_embed)
+@bot.command(name='weekly', help='Checks if you have posted in the weekly capped PTs.', aliases = ["w", "cappedPT"])   
+async def capped(ctx, *, name: typing.Optional[str] = None):
+    if name is None:
+      discord_id = ctx.author.id
+      
+      name = get_name(discord_id)
+    
+    if name is None:  
+      await ctx.send("You have no name associated with this account, use !claim to associate one!")
+    else:
+      data = requests.get('http://143.198.159.1/ssl/cappedPT?player=' + name.replace(" ", "%20"))
+      
+      data = pd.DataFrame(eval(data.content))
+      
+      new_embed = discord.Embed(title=f"This week's AC and Affiliate for {name}",color = discord.Color.from_str("#BD9523"))
+      new_embed.add_field(name=f"Activity Check", value=data.iloc[0][0], inline=False)
+      new_embed.add_field(name=f"Affiliate Thread", value=data.iloc[1][0], inline=False)
+  
+      # await message.channel.send(f"{print_string}")
+      await ctx.send(embed=new_embed)
     
 @bot.command(name='bankTeam', help='Shows bank balance for the entire team.', aliases = ["bt"])   
 async def get_balance(ctx, *, name: typing.Optional[str] = None):
