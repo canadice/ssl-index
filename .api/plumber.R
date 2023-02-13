@@ -864,6 +864,28 @@ function(username = NULL) {
   return(player)
 }
 
+#* Return a list of players in the SSL
+#* @serializer json
+#* @get /listPlayers
+function() {
+  con <-
+    dbConnect(
+      SQLite(),
+      "../database/SSL_Database.db"
+    )
+  
+  players <- 
+    tbl(con, "Daily_Scrape") %>% 
+    select(Name) %>% 
+    collect() %>% 
+    unlist()
+    
+  
+  dbDisconnect(con)
+  
+  return(players)
+}
+
 # Programmatically alter your API
 #* @plumber
 function(pr) {
