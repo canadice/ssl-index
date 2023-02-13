@@ -875,10 +875,14 @@ function() {
     )
   
   players <- 
-    tbl(con, "Daily_Scrape") %>% 
+    tbl(con, "Daily_Scrape") %>%
+    filter(
+      Team != "Retired"
+    ) %>% 
     select(Name) %>% 
     collect() %>% 
-    unlist()
+    unlist() %>% 
+    sort()
     
   
   dbDisconnect(con)
