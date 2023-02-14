@@ -19,6 +19,7 @@ require(dplyr, quietly = TRUE)
 require(DBI, quietly = TRUE)
 require(dbplyr, quietly = TRUE)
 require(RSQLite, quietly = TRUE)
+require(jsonlite, quietly = TRUE)
 # require(googlesheets4)
 
 #* Allows acces from cross domain places
@@ -879,15 +880,17 @@ function() {
     filter(
       Team != "Retired"
     ) %>% 
-    select(Name) %>% 
-    collect() %>% 
-    unlist() %>% 
-    sort()
-    
+    select(Username, Name) %>% 
+    arrange(Name) %>% 
+    collect() 
   
   dbDisconnect(con)
   
-  return(players)
+  playerNames <- as.list(players$Name)
+  
+  names(playerNames) <- players$Username
+    
+  return(playerNames %>% toJSON(named = TRUE))
 }
 
 # Programmatically alter your API
