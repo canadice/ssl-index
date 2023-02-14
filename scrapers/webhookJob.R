@@ -733,29 +733,34 @@ topics <-
 lastPost <-
   topics %>%
   html_elements("span.desc") %>%
-  html_text2() %>%
-  str_split(pattern = "\n", simplify = TRUE) %>%
-  .[,1] %>%
-  stringr::str_remove_all(pattern = "th|rd|nd") %>%
-  stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
-  lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
-  lubridate::with_tz(tzone = "Europe/Stockholm") %>% 
-  .[seq(2, length(.), by = 2)]
-  
-new <- 
-  topics[
-    (now() - lastPost) < (hours(8))
-  ]
-
-title <- 
-  new %>% 
-  html_elements("[title]") %>% 
   html_text2()
 
-index <- !(title %in% postedThreads$title[postedThreads$forum == forum])
-
-new <- new[index]   
-title <- title[index]
+if(lastPost %>% length() > 0) {
+  lastPost <- 
+    lastPost %>% 
+    str_split(pattern = "\n", simplify = TRUE) %>%
+    .[,1] %>%
+    stringr::str_remove_all(pattern = "th|rd|nd") %>%
+    stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
+    lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
+    lubridate::with_tz(tzone = "Europe/Stockholm") %>% 
+    .[seq(2, length(.), by = 2)]
+  
+  new <- 
+    topics[
+      (now() - lastPost) < (hours(8))
+    ]
+  
+  title <- 
+    new %>% 
+    html_elements("[title]") %>% 
+    html_text2()
+  
+  index <- !(title %in% postedThreads$title[postedThreads$forum == forum])
+  
+  new <- new[index]   
+  title <- title[index]
+}
 
 if(length(new) > 0){
   link <- 
