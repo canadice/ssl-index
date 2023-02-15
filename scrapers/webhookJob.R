@@ -57,9 +57,11 @@ newThreads <- function(forum){
     html_elements("[title]") %>% 
     html_attr("title") %>% 
     str_split(pattern = ": ", simplify = TRUE) %>% 
-    .[,2] %>% 
+    .[,2] %>%
+    stringi::stri_remove_empty_na() %>% 
     lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
     lubridate::with_tz(tzone = "Europe/Stockholm")
+    
   
   new <- 
     topics[
