@@ -674,7 +674,8 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()
+  html_text2() %>% 
+  .[seq(2, length(.), by = 2)]
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -686,7 +687,8 @@ if(length(new) > 0){
     new %>% 
     html_elements("[title]") %>% 
     html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    str_remove(pattern = "s=[0-9a-z]+&") %>% 
+    .[seq(2, length(.), by = 2)]
   
   send_webhook_message(
     paste(
@@ -750,13 +752,14 @@ if(lastPost %>% length() > 0) {
   
   new <- 
     topics[
-      (now() - lastPost) < (hours(8))
+      (now() - lastPost) < (hours(24))
     ]
   
   title <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_text2()
+    html_text2() %>% 
+    .[seq(2, length(.), by = 2)]
   
   index <- !(title %in% postedThreads$title[postedThreads$forum == forum])
   
@@ -769,7 +772,8 @@ if(length(new) > 0){
     new %>% 
     html_elements("[title]") %>% 
     html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    str_remove(pattern = "s=[0-9a-z]+&") %>% 
+    .[seq(2, length(.), by = 2)]
   
   send_webhook_message(
     paste(
@@ -825,7 +829,7 @@ started <-
 
 currentFileThread <-
   topics[
-    (now() - started) < (hours(6))
+    (now() - started) < (hours(24))
   ]
 
 
@@ -851,7 +855,7 @@ if(length(currentFileThread) > 0){
   
   new <-
     posts[
-      (now() - posted) < (hours(6))
+      (now() - posted) < (hours(24))
     ]
   
   post <-
