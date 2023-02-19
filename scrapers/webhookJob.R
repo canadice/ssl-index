@@ -95,8 +95,11 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2() %>% 
-  .[seq(2, length(.), by = 2)]
+  html_text2() 
+ 
+if(length(new)>0){
+  title <- title %>% .[seq(2, length(.), by =2)]
+}
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -144,8 +147,11 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2() %>% 
-  .[seq(2, length(.), by = 2)]
+  html_text2()  
+ 
+if(length(new)>0){
+  title <- title %>% .[seq(2, length(.), by =2)]
+}
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -203,8 +209,11 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()  %>% 
-  .[seq(2, length(.), by = 2)]
+  html_text2()
+ 
+if(length(new)>0){
+  title <- title %>% .[seq(2, length(.), by =2)]
+}
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -252,8 +261,11 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2() %>% 
-  .[seq(2, length(.), by = 2)]
+  html_text2() 
+
+ if(length(new)>0){
+   title <- title %>% .[seq(2, length(.), by =2)]
+ }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -301,8 +313,11 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2() %>% 
-  .[seq(2, length(.), by = 2)]
+  html_text2()
+
+if(length(new)>0){
+ title <- title %>% .[seq(2, length(.), by =2)]
+}
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -503,8 +518,11 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2() %>% 
-  .[seq(2, length(.), by = 2)]
+  html_text2() 
+ 
+if(length(new)>0){
+  title <- title %>% .[seq(2, length(.), by =2)]
+}
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -555,8 +573,11 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2() %>% 
-  .[seq(2, length(.), by = 2)]
+  html_text2() 
+ 
+if(length(new)>0){
+  title <- title %>% .[seq(2, length(.), by =2)]
+}
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -681,8 +702,11 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2() %>% 
-  .[seq(2, length(.), by = 2)]
+  html_text2() 
+
+ if(length(new)>0){
+   title <- title %>% .[seq(2, length(.), by =2)]
+ }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -765,8 +789,11 @@ if(lastPost %>% length() > 0) {
   title <- 
     new %>% 
     html_elements("[title]") %>% 
-    html_text2() %>% 
-    .[seq(2, length(.), by = 2)]
+    html_text2()
+   
+  if(length(new)>0){
+    title <- title %>% .[seq(2, length(.), by =2)]
+  }
   
   index <- !(title %in% postedThreads$title[postedThreads$forum == forum])
   
@@ -780,7 +807,7 @@ if(length(new) > 0){
     html_elements("[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&") %>% 
-    .[seq(2, length(.), by = 2)]
+    .[seq(2, length(.), by =2)]
   
   send_webhook_message(
     paste(
