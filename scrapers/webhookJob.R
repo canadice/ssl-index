@@ -95,7 +95,8 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()
+  html_text2() %>% 
+  .[seq(2, length(.), by = 2)]
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -143,7 +144,8 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()
+  html_text2() %>% 
+  .[seq(2, length(.), by = 2)]
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -201,7 +203,8 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()
+  html_text2()  %>% 
+  .[seq(2, length(.), by = 2)]
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -249,7 +252,8 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()
+  html_text2() %>% 
+  .[seq(2, length(.), by = 2)]
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -297,7 +301,8 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()
+  html_text2() %>% 
+  .[seq(2, length(.), by = 2)]
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -498,7 +503,8 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()
+  html_text2() %>% 
+  .[seq(2, length(.), by = 2)]
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -549,7 +555,8 @@ new <- newThreads(forum)
 title <- 
   new %>% 
   html_elements("[title]") %>% 
-  html_text2()
+  html_text2() %>% 
+  .[seq(2, length(.), by = 2)]
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
