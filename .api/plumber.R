@@ -935,7 +935,7 @@ function(division = 1, season = NULL){
   if(file.exists(paste(division, season, "standingsData.RData"))){
     load(file = paste(division, season, "standingsData.RData"))
     
-    if(Sys.time() - now < 600){
+    if(difftime(Sys.time(), now, units = "secs") < 600){
       # DO NOTHING
     } else {
       sheet <-
