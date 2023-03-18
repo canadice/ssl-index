@@ -757,7 +757,7 @@ function(league = NULL, season = NULL) {
 #* Gather the latest AC and Affiliate Task for a given player
 #* @param player The player to search for
 #* @get /cappedPT
-function(player = NULL){
+function(player = NULL, res){
   tryCatch({
     con <-
       dbConnect(
@@ -931,18 +931,138 @@ function(division = 1, season = NULL){
   }
   
   
+  createStandings <- function(sheet) {
+    sheet <- 
+      sheet %>%
+      mutate(
+        across(
+          Division:Matchday,
+          unlist
+        )
+      ) %>%
+      filter(
+        Division == division,
+        !(Result %>% is.na())
+      ) %>%
+      mutate(
+        ## Do not convert them to numeric here as there are letters that sometimes indicates a win
+        HomeScore =
+          stringr::str_split(
+            Result,
+            pattern = "-",
+            simplify = TRUE
+          )[,1],
+        AwayScore =
+          stringr::str_split(
+            Result,
+            pattern = "-",
+            simplify = TRUE
+          )[,2]
+      ) %>%
+      mutate(
+        HomePoints =
+          case_when(
+            str_detect(HomeScore, "e|p") ~ 3,
+            HomeScore %>% as.numeric() > AwayScore %>% as.numeric() ~ 3,
+            HomeScore %>% as.numeric() == AwayScore %>% as.numeric() ~ 1,
+            TRUE ~ 0
+          ),
+        AwayPoints =
+          case_when(
+            str_detect(AwayScore, "e|p") ~ 3,
+            HomeScore %>% as.numeric() < AwayScore %>% as.numeric() ~ 3,
+            HomeScore %>% as.numeric() == AwayScore %>% as.numeric() ~ 1,
+            TRUE ~ 0
+          )
+      ) %>%
+      select(
+        -`IRL Date`,
+        -`In-game Date`,
+        -Result
+      ) %>%
+      pivot_longer(
+        c(HomePoints, AwayPoints),
+        names_to = c("set", ".value"),
+        names_pattern = "(....)(.*)$"
+      ) %>%
+      mutate(
+        Team =
+          case_when(
+            set == "Home" ~ Home,
+            TRUE ~ Away
+          ),
+        GF =
+          case_when(
+            set == "Home" ~ HomeScore,
+            TRUE ~ AwayScore
+          ),
+        GA =
+          case_when(
+            set == "Home" ~ AwayScore,
+            TRUE ~ HomeScore
+          ),
+        Matchday = unlist(Matchday)
+      ) %>%
+      select(
+        -contains("Home"),
+        -contains("Away"),
+        -set
+      ) %>%
+      group_by(
+        Team
+      ) %>%
+      summarize(
+        GP = n(),
+        W = sum(Points == 3),
+        D = sum(Points == 1),
+        L = sum(Points == 0),
+        GF = sum(as.numeric(GF)),
+        GA = sum(as.numeric(GA)),
+        GD = GF-GA,
+        Points = sum(Points)
+      ) %>%
+      arrange(
+        desc(Points),
+        desc(GD)
+      ) %>%
+      ungroup() %>%
+      mutate(
+        Pos = 1:n()
+      ) %>%
+      left_join(
+        tbl(con, "Team_Information") %>%
+          select(
+            team,
+            logo
+          ) %>%
+          collect(),
+        by = c("Team" = "team")
+      ) %>%
+      relocate(
+        c(Pos, logo),
+        .before = Team
+      ) %>%
+      dplyr::rename(
+        ` ` = logo,
+        Pts = Points
+      )
+  }
+  
+  
   ## Downloads the shedule data only if 
   if(file.exists(paste(division, season, "standingsData.RData"))){
     load(file = paste(division, season, "standingsData.RData"))
     
-    if(difftime(Sys.time(), now, units = "secs") < 600){
+    # Only updates after three hours
+    if(difftime(Sys.time(), now, units = "secs") < 10800){
       # DO NOTHING
     } else {
       sheet <-
         read_sheet(
           ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing",
           sheet = paste("Season", season)
-        ) 
+        ) %>% 
+        createStandings()
       
       now <- Sys.time()
       
@@ -953,127 +1073,13 @@ function(division = 1, season = NULL){
       read_sheet(
         ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing",
         sheet = paste("Season", season)
-      ) 
+      ) %>% 
+      createStandings()
     
     now <- Sys.time()
     
     save("sheet", "now", file = paste(division, season, "standingsData.RData"))
   }
-  
-  sheet <- 
-    sheet %>%
-    mutate(
-      across(
-        Division:Matchday,
-        unlist
-      )
-    ) %>%
-    filter(
-      Division == division,
-      !(Result %>% is.na())
-    ) %>%
-    mutate(
-      ## Do not convert them to numeric here as there are letters that sometimes indicates a win
-      HomeScore =
-        stringr::str_split(
-          Result,
-          pattern = "-",
-          simplify = TRUE
-        )[,1],
-      AwayScore =
-        stringr::str_split(
-          Result,
-          pattern = "-",
-          simplify = TRUE
-        )[,2]
-    ) %>%
-    mutate(
-      HomePoints =
-        case_when(
-          str_detect(HomeScore, "e|p") ~ 3,
-          HomeScore %>% as.numeric() > AwayScore %>% as.numeric() ~ 3,
-          HomeScore %>% as.numeric() == AwayScore %>% as.numeric() ~ 1,
-          TRUE ~ 0
-        ),
-      AwayPoints =
-        case_when(
-          str_detect(AwayScore, "e|p") ~ 3,
-          HomeScore %>% as.numeric() < AwayScore %>% as.numeric() ~ 3,
-          HomeScore %>% as.numeric() == AwayScore %>% as.numeric() ~ 1,
-          TRUE ~ 0
-        )
-    ) %>%
-    select(
-      -`IRL Date`,
-      -`In-game Date`,
-      -Result
-    ) %>%
-    pivot_longer(
-      c(HomePoints, AwayPoints),
-      names_to = c("set", ".value"),
-      names_pattern = "(....)(.*)$"
-    ) %>%
-    mutate(
-      Team =
-        case_when(
-          set == "Home" ~ Home,
-          TRUE ~ Away
-        ),
-      GF =
-        case_when(
-          set == "Home" ~ HomeScore,
-          TRUE ~ AwayScore
-        ),
-      GA =
-        case_when(
-          set == "Home" ~ AwayScore,
-          TRUE ~ HomeScore
-        ),
-      Matchday = unlist(Matchday)
-    ) %>%
-    select(
-      -contains("Home"),
-      -contains("Away"),
-      -set
-    ) %>%
-    group_by(
-      Team
-    ) %>%
-    summarize(
-      GP = n(),
-      W = sum(Points == 3),
-      D = sum(Points == 1),
-      L = sum(Points == 0),
-      GF = sum(as.numeric(GF)),
-      GA = sum(as.numeric(GA)),
-      GD = GF-GA,
-      Points = sum(Points)
-    ) %>%
-    arrange(
-      desc(Points),
-      desc(GD)
-    ) %>%
-    ungroup() %>%
-    mutate(
-      Pos = 1:n()
-    ) %>%
-    left_join(
-      tbl(con, "Team_Information") %>%
-        select(
-          team,
-          logo
-        ) %>%
-        collect(),
-      by = c("Team" = "team")
-    ) %>%
-    relocate(
-      c(Pos, logo),
-      .before = Team
-    ) %>%
-    dplyr::rename(
-      ` ` = logo,
-      Pts = Points
-    )
   
   dbDisconnect(con)
   
@@ -1159,6 +1165,62 @@ document.getElementsByTagName( "head" )[0].appendChild( link );
                         document.querySelector("body").style.background = null
                         document.querySelector("#htmlwidget_container").style.margin = "0 auto"
                         }')
+}
+
+#* Get the bank balance of a given user/player
+#* @param user The username of the user to search for
+#* @serializer json
+#* @get /getBankBalance
+function(user = "") {
+  
+  if(user == ""){
+    return(0)
+  } 
+  
+  ## Downloads the bank data only if 
+  if(file.exists(paste("bankBuffer.RData"))){
+    load(file = paste("bankBuffer.RData"))
+    
+    # Only updates after six hours
+    if(difftime(Sys.time(), now, units = "hours") < 6){
+      # DO NOTHING
+    } else {
+      sheet <- 
+        googlesheets4::read_sheet(
+          ss = "https://docs.google.com/spreadsheets/d/1hY1ArnfTICZx0lZF3PTGA922u49avs6X5hKNyldbAn0/edit?usp=sharing", 
+          sheet = "Shorrax Import Player Pool"
+        )
+      
+      now <- Sys.time()
+      
+      save("sheet", "now", file = paste("bankBuffer.RData"))
+    }
+  } else {
+    sheet <- 
+      googlesheets4::read_sheet(
+        ss = "https://docs.google.com/spreadsheets/d/1hY1ArnfTICZx0lZF3PTGA922u49avs6X5hKNyldbAn0/edit?usp=sharing", 
+        sheet = "Shorrax Import Player Pool"
+      )
+    
+    now <- Sys.time()
+    
+    save("sheet", "now", file = paste("bankBuffer.RData"))
+  }
+  
+  balance <- 
+    sheet %>% 
+    filter(
+      Username == user
+    ) %>% 
+    select(Balance)
+  
+  if(balance %>% nrow() != 1){
+    return(0)
+  } else {
+    return(balance)
+  }
+  
+  
 }
 
 # Programmatically alter your API
