@@ -28,6 +28,9 @@ playerDatabaseUI <- function(id){
                 select(Team, Name) %>%
                 group_by(Team) %>%
                 arrange(Name) %>%
+                mutate(
+                  Name = if_else(Name == "Kuai Liang", "Liang Kuai", Name)
+                ) %>% 
                 group_split(.keep = FALSE) %>%
                 setNames(playerData$Team %>% unique() %>% sort()) %>%
                 lapply(
