@@ -111,7 +111,8 @@ forumData <-
         TPE <= 1550 ~ 5*10^6,
         TPE <= 1750 ~ 5.5*10^6,
         TRUE ~ 6*10^6
-      )
+      ),
+    `All Traits` = `All Traits` %>% str_to_title()
   ) %>% 
   relocate(
     Goalkeeper,
