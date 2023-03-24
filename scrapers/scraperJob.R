@@ -88,6 +88,7 @@ forumData <-
     c(lastPost, Active),
     .after = `All Traits`
   ) %>% 
+  dplyr::relocate(Username:Team) %>% 
   dplyr::mutate(
     across(
       .cols = `TPE Available`:`Throwing`,
