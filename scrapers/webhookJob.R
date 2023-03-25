@@ -54,7 +54,7 @@ newThreads <- function(forum){
   
   started <- 
     topics %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("title") %>% 
     str_split(pattern = ": ", simplify = TRUE) %>% 
     .[,2] %>%
@@ -94,7 +94,7 @@ new <- newThreads(forum)
 
 title <- 
   new %>% 
-  html_elements("[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2() 
  
 if(length(new)>0){
@@ -109,7 +109,7 @@ title <- title[index]
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&")
   
@@ -146,7 +146,7 @@ new <- newThreads(forum)
 
 title <- 
   new %>% 
-  html_elements("[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2()  
  
 if(length(new)>0){
@@ -161,7 +161,7 @@ title <- title[index]
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&")
   
@@ -208,7 +208,7 @@ new <- newThreads(forum)
 
 title <- 
   new %>% 
-  html_elements("[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2()
  
 if(length(new)>0){
@@ -223,7 +223,7 @@ title <- title[index]
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&")
   
@@ -260,7 +260,7 @@ new <- newThreads(forum)
 
 title <- 
   new %>% 
-  html_elements("[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2() 
 
  if(length(new)>0){
@@ -275,7 +275,7 @@ title <- title[index]
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&")
   
@@ -312,7 +312,7 @@ new <- newThreads(forum)
 
 title <- 
   new %>% 
-  html_elements("[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2()
 
 if(length(new)>0){
@@ -327,7 +327,7 @@ title <- title[index]
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&")
   
@@ -517,7 +517,7 @@ new <- newThreads(forum)
 
 title <- 
   new %>% 
-  html_elements("[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2() 
  
 if(length(new)>0){
@@ -532,7 +532,7 @@ title <- title[index]
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&")
   
@@ -572,7 +572,7 @@ new <- newThreads(forum)
 
 title <- 
   new %>% 
-  html_elements("[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2() 
  
 if(length(new)>0){
@@ -587,7 +587,7 @@ title <- title[index]
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&")
   
@@ -701,7 +701,7 @@ new <- newThreads(forum)
 
 title <- 
   new %>% 
-  html_elements("[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2() 
 
  if(length(new)>0){
@@ -716,7 +716,7 @@ title <- title[index]
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&") %>% 
     .[seq(2, length(.), by = 2)]
@@ -788,7 +788,7 @@ if(lastPost %>% length() > 0) {
   
   title <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_text2()
    
   if(length(new)>0){
@@ -804,7 +804,7 @@ if(lastPost %>% length() > 0) {
 if(length(new) > 0){
   link <- 
     new %>% 
-    html_elements("[title]") %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&") %>% 
     .[seq(2, length(.), by =2)]
