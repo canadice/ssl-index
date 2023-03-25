@@ -883,7 +883,7 @@ function(username = NULL) {
 #* Return a list of players in the SSL
 #* @serializer json
 #* @get /listPlayers
-function() {
+function(retired = FALSE) {
   con <-
     dbConnect(
       SQLite(),
@@ -891,10 +891,20 @@ function() {
     )
   
   players <- 
-    tbl(con, "Daily_Scrape") %>%
-    filter(
-      Team != "Retired"
-    ) %>% 
+    tbl(con, "Daily_Scrape")
+  
+  if(retired){
+    # DO NOTHING
+  } else {
+    players <- 
+      players %>% 
+      filter(
+        Team != "Retired"
+      )
+  }
+  
+  players <- 
+    players %>% 
     select(Username, Name) %>% 
     arrange(Name) %>% 
     collect() 
