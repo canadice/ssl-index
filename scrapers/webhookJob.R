@@ -54,7 +54,7 @@ newThreads <- function(forum){
   
   started <- 
     topics %>% 
-    html_elements("a[title]") %>% 
+    html_elements("[title]") %>% 
     html_attr("title") %>% 
     str_split(pattern = ": ", simplify = TRUE) %>% 
     .[,2] %>%
@@ -791,9 +791,9 @@ if(lastPost %>% length() > 0) {
     html_elements("a[title]") %>% 
     html_text2()
    
-  if(length(new)>0){
-    title <- title %>% .[seq(2, length(.), by =2)]
-  }
+  # if(length(new)>0){
+  #   title <- title %>% .[seq(2, length(.), by =2)]
+  # }
   
   index <- !(title %in% postedThreads$title[postedThreads$forum == forum])
   
@@ -806,8 +806,7 @@ if(length(new) > 0){
     new %>% 
     html_elements("a[title]") %>% 
     html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&") %>% 
-    .[seq(2, length(.), by =2)]
+    str_remove(pattern = "s=[0-9a-z]+&")
   
   send_webhook_message(
     paste(
