@@ -97,9 +97,9 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
  
-if(length(new)>0){
-  title <- title %>% .[seq(2, length(.), by =2)]
-}
+# if(length(new)>0){
+#   title <- title %>% .[seq(2, length(.), by =2)]
+# }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -149,9 +149,9 @@ title <-
   html_elements("a[title]") %>% 
   html_text2()  
  
-if(length(new)>0){
-  title <- title %>% .[seq(2, length(.), by =2)]
-}
+# if(length(new)>0){
+#   title <- title %>% .[seq(2, length(.), by =2)]
+# }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -211,9 +211,9 @@ title <-
   html_elements("a[title]") %>% 
   html_text2()
  
-if(length(new)>0){
-  title <- title %>% .[seq(2, length(.), by =2)]
-}
+# if(length(new)>0){
+#   title <- title %>% .[seq(2, length(.), by =2)]
+# }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -263,9 +263,9 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
- if(length(new)>0){
-   title <- title %>% .[seq(2, length(.), by =2)]
- }
+ # if(length(new)>0){
+ #   title <- title %>% .[seq(2, length(.), by =2)]
+ # }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -315,9 +315,9 @@ title <-
   html_elements("a[title]") %>% 
   html_text2()
 
-if(length(new)>0){
- title <- title %>% .[seq(2, length(.), by =2)]
-}
+# if(length(new)>0){
+#  title <- title %>% .[seq(2, length(.), by =2)]
+# }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -520,9 +520,9 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
  
-if(length(new)>0){
-  title <- title %>% .[seq(2, length(.), by =2)]
-}
+# if(length(new)>0){
+#   title <- title %>% .[seq(2, length(.), by =2)]
+# }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -575,9 +575,9 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
  
-if(length(new)>0){
-  title <- title %>% .[seq(2, length(.), by =2)]
-}
+# if(length(new)>0){
+#   title <- title %>% .[seq(2, length(.), by =2)]
+# }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
@@ -704,9 +704,9 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
- if(length(new)>0){
-   title <- title %>% .[seq(2, length(.), by =2)]
- }
+ # if(length(new)>0){
+ #   title <- title %>% .[seq(2, length(.), by =2)]
+ # }
 
 index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
 
