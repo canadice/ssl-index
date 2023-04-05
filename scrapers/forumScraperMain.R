@@ -103,7 +103,13 @@ teamForums <-
     "https://simsoccer.jcink.net/index.php?showforum=101",
     "https://simsoccer.jcink.net/index.php?showforum=98",
     "https://simsoccer.jcink.net/index.php?showforum=117",
-    "https://simsoccer.jcink.net/index.php?showforum=120"
+    "https://simsoccer.jcink.net/index.php?showforum=120",
+    
+    ## Academy
+    "https://simsoccer.jcink.net/index.php?showforum=143",
+    "https://simsoccer.jcink.net/index.php?showforum=144",
+    "https://simsoccer.jcink.net/index.php?showforum=145",
+    "https://simsoccer.jcink.net/index.php?showforum=146"
   ) %>% 
   c(
     .,
@@ -219,7 +225,8 @@ playerData <-
     across(
       .cols = Striker:Goalkeeper,
       as.numeric
-    )
+    ),
+    Team = ifelse(Team == "Prospect" & Class != max(Class), "FA", Team)
   ) %>% 
   arrange(
     Created
