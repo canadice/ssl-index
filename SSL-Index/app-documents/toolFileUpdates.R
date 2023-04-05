@@ -103,7 +103,30 @@ fileUpdateToolSERVER <- function(id){
             paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
             str_replace_all(pattern = " ", replacement = "") %>% 
             str_replace(pattern = "JumpingReach", replacement = "Jumping"),
-          '},"TechnicalAttributes":{',
+          ',"LeftFoot":', 
+          if_else(temp$`Preferred Foot` %>% str_detect("\\|"), 
+                  temp$`Preferred Foot` %>% 
+                    str_split(" | ", simplify = TRUE) %>% 
+                    .[1],
+                  if_else(
+                    temp$`Preferred Foot` == "Left", 
+                    "20", 
+                    "10"
+                  )
+          ),
+          ',"RightFoot":', 
+          if_else(temp$`Preferred Foot` %>% str_detect("\\|"), 
+                  temp$`Preferred Foot` %>% 
+                    str_split(" | ", simplify = TRUE) %>% 
+                    .[2],
+                  if_else(
+                    temp$`Preferred Foot` == "Left", 
+                    "10", 
+                    "20"
+                  )
+          ),
+          '}', 
+          ',"TechnicalAttributes":{',
           sapply(
             temp %>% 
               select(`Corners`:`Technique`),
@@ -128,7 +151,25 @@ fileUpdateToolSERVER <- function(id){
             str_replace_all(pattern = "\\[R\\]", replacement = "Right") %>% 
             str_replace(pattern = "DefensiveMidfielderCentral", replacement = "DefensiveMidfielder") %>% 
             str_replace_all(pattern = "Wingback", replacement = "WingBack"),
-          '},"DocumentType":"Player"}',
+          '}',
+          ',"HairColour":"', temp$`Hair Color` %>% str_replace_all(pattern = " ", replacement = ""), 
+          '","HairLength":"', temp$`Hair Length`, 
+          '","SkinColour":', temp$`Skin Tone` %>% str_extract(pattern = "[0-9]+"), 
+          ',"Height":', 
+          if_else(
+            !is.na(temp$Height %>% as.numeric()), 
+            (temp$Height %>% as.numeric()*2.54) %>% as.character(), 
+            temp$Height
+          ),
+          ',"Weight":', 
+          if_else(
+            !is.na(temp$Weight %>% as.numeric()), 
+            (temp$Weight %>% as.numeric()*0.453592) %>% as.character(), 
+            temp$Weight
+          ),
+          ',"Born":"', 
+          "2004-07-01" %>% as_date() - years(9 - (temp$Class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
+          '","DocumentType":"Player"}',
           sep = ""
         )
       })
