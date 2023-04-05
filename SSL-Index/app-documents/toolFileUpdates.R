@@ -106,7 +106,7 @@ fileUpdateToolSERVER <- function(id){
           ',"LeftFoot":', 
           if_else(temp$`Preferred Foot` %>% str_detect("\\|"), 
                   temp$`Preferred Foot` %>% 
-                    str_split(" | ", simplify = TRUE) %>% 
+                    str_split(" \\| ", simplify = TRUE) %>% 
                     .[1],
                   if_else(
                     temp$`Preferred Foot` == "Left", 
@@ -117,7 +117,7 @@ fileUpdateToolSERVER <- function(id){
           ',"RightFoot":', 
           if_else(temp$`Preferred Foot` %>% str_detect("\\|"), 
                   temp$`Preferred Foot` %>% 
-                    str_split(" | ", simplify = TRUE) %>% 
+                    str_split(" \\| ", simplify = TRUE) %>% 
                     .[2],
                   if_else(
                     temp$`Preferred Foot` == "Left", 

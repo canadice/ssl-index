@@ -326,11 +326,11 @@ ui <- function(request){
           tabName = "trackerTPE"
         ),
         menuItem(
-          "Player Build Tools",
-          menuSubItem(
-            "Build a new player",
-            tabName = "playerBuilder"
-          ),
+          "Player Tools",
+          # menuSubItem(
+          #   "Build a new player",
+          #   tabName = "playerBuilder"
+          # ),
           menuSubItem(
             "Player Comparisons",
             tabName = "playerComparison"  
@@ -442,21 +442,21 @@ ui <- function(request){
             h1("File Update Tool", align = "center")
           ),
           fileUpdateToolUI(id = "fileUpdate")
-        ),
-        tabItem(
-          "playerBuilder",
-          titlePanel(
-            h1("Player Builder", align = "center")
-          ),
-          hr(),
-          p(
-            paste("The Player Builder allows you to build your player",
-              "using your earned TPE as a bank. The resulting build",
-              "can then be exported to the Forum using the Export button.")
-          ),
-          hr(),
-          playerBuilderUI(id = "playerBuilder")
-        )
+        )#,
+        # tabItem(
+        #   "playerBuilder",
+        #   titlePanel(
+        #     h1("Player Builder", align = "center")
+        #   ),
+        #   hr(),
+        #   p(
+        #     paste("The Player Builder allows you to build your player",
+        #       "using your earned TPE as a bank. The resulting build",
+        #       "can then be exported to the Forum using the Export button.")
+        #   ),
+        #   hr(),
+        #   playerBuilderUI(id = "playerBuilder")
+        # )
       )
     )
     ##----------------------------------------------------------------
