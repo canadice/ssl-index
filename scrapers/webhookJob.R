@@ -393,102 +393,105 @@ if(length(currentClaimThread) > 0){
       ) %>%
     html_elements("span.post-normal")
 
-  posted <-
-    posts %>%
-    html_elements(".row4 span.postdetails") %>%
-    html_text2() %>%
-    str_split(pattern = ": ", simplify = TRUE) %>%
-    .[,2] %>%
-    lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>%
-    lubridate::with_tz(tzone = "Europe/Stockholm")
-
-  new <-
-    posts[
-      (now() - posted) < (hours(48))
-    ]
-
-  post <-
-    new %>%
-    html_elements("div.postcolor") %>%
-    html_text2()
-  
-  task <-
-    post %>%
-    str_split(
-      pattern = "The following users may claim the specified TPE for|:\n",
-      simplify = TRUE) %>%
-    .[,2] %>%
-    str_squish()
-  
-  index <- !(task %in% postedThreads$title[postedThreads$forum == forum])
-  
-  new <- new[index & (task != "")]
-  post <- post[index & (task != "")]
-  task <- task[index & (task != "")]
-
-  if(length(task) > 0){
-    claims <-
+  if(posts %>% length() > 1){
+    posted <-
+      posts %>%
+      html_elements(".row4 span.postdetails") %>%
+      html_text2() %>%
+      str_split(pattern = ": ", simplify = TRUE) %>%
+      .[,2] %>%
+      lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>%
+      lubridate::with_tz(tzone = "Europe/Stockholm")
+    
+    new <-
+      posts[
+        (now() - posted) < (hours(48))
+      ]
+    
+    post <-
+      new %>%
+      html_elements("div.postcolor") %>%
+      html_text2()
+    
+    task <-
       post %>%
       str_split(
-        pattern = "ec1",
-        simplify = TRUE
-      ) %>%
+        pattern = "The following users may claim the specified TPE for|:\n",
+        simplify = TRUE) %>%
       .[,2] %>%
-      str_split(
-        pattern = "c2",
-        simplify = TRUE
-      ) %>%
-      .[,1]
+      str_squish()
     
-    link <-
-      new %>%
-      html_elements("a[title]") %>%
-      html_attr("onclick") %>% 
-      str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
-      unlist() %>% 
-      paste(
-        currentClaimThread %>%
-          html_elements("span.desc") %>%
-          html_elements("a") %>%
-          html_attr("href") %>%
-          nth(1) %>% 
-          str_remove_all("&view=getlastpost"),
-        "&st=0&#entry",
-        .,
-        sep = ""
-      ) %>% 
-      str_remove(pattern = "s=[0-9a-z]+&")
+    index <- !(task %in% postedThreads$title[postedThreads$forum == forum])
     
+    new <- new[index & (task != "")]
+    post <- post[index & (task != "")]
+    task <- task[index & (task != "")]
     
-    for(i in 1:length(link)){
-      send_webhook_message(
+    if(length(task) > 0){
+      claims <-
+        post %>%
+        str_split(
+          pattern = "ec1",
+          simplify = TRUE
+        ) %>%
+        .[,2] %>%
+        str_split(
+          pattern = "c2",
+          simplify = TRUE
+        ) %>%
+        .[,1]
+      
+      link <-
+        new %>%
+        html_elements("a[title]") %>%
+        html_attr("onclick") %>% 
+        str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
+        unlist() %>% 
         paste(
-          "<@&1028578599965569026> A new TPE claim has been posted!", "\n\n",
+          currentClaimThread %>%
+            html_elements("span.desc") %>%
+            html_elements("a") %>%
+            html_attr("href") %>%
+            nth(1) %>% 
+            str_remove_all("&view=getlastpost"),
+          "&st=0&#entry",
+          .,
+          sep = ""
+        ) %>% 
+        str_remove(pattern = "s=[0-9a-z]+&")
+      
+      
+      for(i in 1:length(link)){
+        send_webhook_message(
           paste(
-            task[i], link[i], 
+            "<@&1028578599965569026> A new TPE claim has been posted!", "\n\n",
             paste(
-              "```", claims[i], "```",
-              sep = ""
-            ),
-            sep = " - "
+              task[i], link[i], 
+              paste(
+                "```", claims[i], "```",
+                sep = ""
+              ),
+              sep = " - "
+            )
           )
         )
-      )
+        
+        Sys.sleep(5)
+        
+      }
       
-      Sys.sleep(5)
-      
-    }
-    
-    postedThreads <- 
-      rbind(
-        postedThreads,
-        data.frame(
-          title = task, link = link, forum = forum
+      postedThreads <- 
+        rbind(
+          postedThreads,
+          data.frame(
+            title = task, link = link, forum = forum
+          )
         )
-      )
-    
-    print("Sent new pt claim.")
+      
+      print("Sent new pt claim.")
+    }
   }
+  
   
 } else {
   #Do Nothing
