@@ -86,7 +86,7 @@ goalieFunction <- function(season){
   
   FMGoalie <- 
     {
-      read_html("D:/FootballManager2022/screenshots/playerTemp.html", encoding = "UTF-8") %>% 
+      read_html("D:/Football Manager 2022/screenshots/playerTemp.html", encoding = "UTF-8") %>% 
         html_table() %>% 
         .[[1]] %>% 
         dplyr::select(
@@ -339,7 +339,7 @@ outfieldFunction <- function(season){
   
   FMOutfield <- 
     {
-      read_html("D:/FootballManager2022/screenshots/playerTemp.html", encoding = "UTF-8") %>% 
+      read_html("D:/Football Manager 2022/screenshots/playerTemp.html", encoding = "UTF-8") %>% 
         html_table() %>% 
         .[[1]] %>% 
         dplyr::select(
@@ -772,9 +772,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 8
+season <- 9
 
-date <- "2022-05-12" %>% as.Date()
+date <- "2023-09-26" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
