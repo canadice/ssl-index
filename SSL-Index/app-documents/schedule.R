@@ -23,7 +23,16 @@ scheduleUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              1:8 %>% 
+              1:(playerData %>% 
+                select(Class) %>% 
+                mutate(
+                  Class = str_extract(Class, pattern = "[0-9]+") %>% as.numeric()
+                ) %>% 
+                filter(
+                  Class == max(Class)
+                ) %>% 
+                unique() %>% 
+                unlist() - 1) %>% 
               sort(decreasing = TRUE)
           ),
           uiOutput(
@@ -32,7 +41,7 @@ scheduleUI <- function(id){
         ),
         column(
           width = 10,
-          DTOutput(outputId = ns("schedule"))
+          DTOutput(outputId = ns("schedule")) %>% withSpinner()
         )
       )
     )
@@ -72,13 +81,17 @@ scheduleSERVER <- function(id){
             `IRL Date` = `IRL Date` %>% as_date() %>% format(format = "%m/%d")
           )
         
-        if(input$season > 4 & input$divisionFilter != "All"){
-          schedule %>% 
-            filter(
-              Division %in% c(input$divisionFilter, "Pre", "Cup", "Shield")
-            )  
-        } else {
+        if(input$season < 5){
           schedule
+        } else {
+          if(input$divisionFilter != "All"){
+            schedule %>% 
+              filter(
+                Division %in% c(input$divisionFilter, "Pre", "Cup", "Shield")
+              )  
+          } else {
+            schedule
+          }
         }
         
       })

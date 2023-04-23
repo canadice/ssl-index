@@ -338,6 +338,10 @@ ui <- function(request){
           menuSubItem(
             "Position Tracker",
             tabName = "trackerPosition"
+          ),
+          menuSubItem(
+            "Regression",
+            tabName = "regression"
           )
         ),
         menuItem(
@@ -437,6 +441,10 @@ ui <- function(request){
           trackerTPEUI(id = "trackerTPE")
         ),
         tabItem(
+          "regression",
+          regressionUI(id = "regression")
+        ),
+        tabItem(
           "fileUpdate",
           titlePanel(
             h1("File Update Tool", align = "center")
@@ -480,6 +488,7 @@ server <- function(input, output, session) {
   loadedModulePlayerRecords <- reactiveVal(FALSE)
   loadedModuletrackerTPE <- reactiveVal(FALSE)
   loadedModulefileUpdate <- reactiveVal(FALSE)
+  loadedModuleregression <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
   
@@ -553,7 +562,11 @@ server <- function(input, output, session) {
       
       fileUpdateToolSERVER(id = "fileUpdate")
       
-    }
+    } else if(input$tabs == "regression" & !loadedModuleregression()){
+      loadedModuleregression(TRUE)
+      regressionServer(id = "regression")
+      
+    } 
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
   
   ### Sets the url for each tab
