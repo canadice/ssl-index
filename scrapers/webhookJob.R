@@ -868,6 +868,14 @@ currentFileThread <-
     (now() - started) < (hours(24))
   ]
 
+currentFileThread <- 
+  currentFileThread[
+    !(currentFileThread %>% 
+      html_elements(".row4 a") %>% 
+      html_text2() %>% 
+      str_detect("Academy")
+    )
+  ]
 
 if(length(currentFileThread) > 0){
   posts <-
