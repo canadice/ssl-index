@@ -35,6 +35,7 @@ require(formattable)
 # require(gt)
 # require(gtExtras) #Github package
 require(reactable)
+require(reactablefmtr)
 
 
 ## Package for handling date and time
@@ -56,6 +57,10 @@ require(markdown)
 require(DBI)
 require(dbplyr)
 require(RSQLite)
+
+## Loading jsonlite and httr for API calls
+require(jsonlite)
+require(httr)
 
 ## Loading Shiny packages
 require(shiny)
@@ -309,6 +314,10 @@ ui <- function(request){
             tabName = "playerStats"
           ),
           menuSubItem(
+            "Advanced Statistics",
+            tabName = "advancedStats"
+          ),
+          menuSubItem(
             "Player Records",
             tabName = "playerRecords"
           )
@@ -445,6 +454,10 @@ ui <- function(request){
           regressionUI(id = "regression")
         ),
         tabItem(
+          "advancedStats",
+          advancedStatsUI(id = "advancedStats")
+        ),
+        tabItem(
           "fileUpdate",
           titlePanel(
             h1("File Update Tool", align = "center")
@@ -489,6 +502,8 @@ server <- function(input, output, session) {
   loadedModuletrackerTPE <- reactiveVal(FALSE)
   loadedModulefileUpdate <- reactiveVal(FALSE)
   loadedModuleregression <- reactiveVal(FALSE)
+  loadedModuleadvancedStats <- reactiveVal(FALSE)
+  
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
   
@@ -566,7 +581,11 @@ server <- function(input, output, session) {
       loadedModuleregression(TRUE)
       regressionServer(id = "regression")
       
-    } 
+    } else if(input$tabs == "advancedStats" & !loadedModuleadvancedStats()){
+      loadedModuleadvancedStats(TRUE)
+      advancedStatsServer(id = "advancedStats")
+      
+    }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
   
   ### Sets the url for each tab
