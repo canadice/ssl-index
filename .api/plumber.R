@@ -1177,6 +1177,112 @@ document.getElementsByTagName( "head" )[0].appendChild( link );
                         }')
 }
 
+
+#* Return the luck advanced stats data for either teams or players
+#* @param category Either player or club
+#* @serializer json
+#* @get /advancedStatsLuck
+function(category = "Name", penaltyAdjust = FALSE) {
+  con <- 
+    dbConnect(
+      SQLite(), 
+      "../database/SSL_Database.db"
+    )
+  
+  dataType <- as.name(category)
+  
+  summary <- 
+    tbl(con, "gameDataPlayer") %>% 
+    group_by(
+      Season,
+      Matchday,
+      dataType
+    ) %>% 
+    summarize(
+      xG = if_else(penaltyAdjust, sum(xG - 0.75*`Penalties Taken`), sum(xG)),
+      aG = if_else(penaltyAdjust, sum(Goals - `Penalties Scored`), sum(Goals)),
+      Club = Club,
+      Opponent = Opponent
+    ) %>% 
+    collect()
+  
+  dbDisconnect(con)
+  
+  if(category == "Club"){
+    summary <- 
+      summary %>% 
+      left_join(
+        y = summary %>% 
+          select(-Opponent),
+        by = c("Opponent" = "Club", "Season", "Matchday"),
+        suffix = c(" Offensive", " Defensive")
+      ) %>% 
+      relocate(
+        Opponent,
+        .after = Club
+      ) %>% 
+      group_by(
+        Club, 
+        Season
+      ) %>% 
+      summarize(
+        across(
+          `xG Offensive`:`aG Defensive`,
+          ~ sum(.x, na.rm = TRUE) / n()
+        )
+      )
+  } else {
+    summary <- 
+      summary %>% 
+      left_join(
+        y = 
+          summary %>% 
+          select(-Opponent) %>% 
+          group_by(
+            Season,
+            Matchday,
+            Club
+          ) %>% 
+          summarize(
+            across(
+              xG:aG,
+              ~ sum(.x, na.rm = TRUE)
+            )
+          ),
+        by = c("Opponent" = "Club", "Season", "Matchday"),
+        suffix = c(" Offensive", " Defensive")
+      ) %>% 
+      relocate(
+        c(Club, Opponent),
+        .after = Name
+      ) %>% 
+      group_by(
+        Name, 
+        Season
+      ) %>% 
+      summarize(
+        across(
+          `xG Offensive`:`aG Defensive`,
+          ~ sum(.x, na.rm = TRUE) / n()
+        ),
+        Club = unique(Club) %>% paste(collapse = " & ")
+      ) %>% 
+      relocate(
+        Club,
+        .after = Name
+      )
+  }
+  
+  summary <- 
+    summary %>% 
+    mutate(
+      `Luck Offensive` = `aG Offensive` - `xG Offensive`,
+      `Luck Defensive` = `xG Defensive` - `aG Defensive`
+    )
+  
+  return(summary)
+}
+
 #* Get the bank balance of a given user/player
 #* @param user The username of the user to search for
 #* @serializer json
