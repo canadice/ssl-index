@@ -31,7 +31,7 @@ playerData <-
 
 
 FMAttributes <- 
-  read_html("D:/FootballManager2022/screenshots/attributes.html", encoding = "UTF-8") %>% 
+  read_html("D:/Football Manager 2022/screenshots/attributes.html", encoding = "UTF-8") %>% 
   html_elements("table") %>% 
   html_table() %>% 
   .[[1]] %>% 
@@ -55,7 +55,7 @@ FMAttributes <-
         str_detect(Name, "Liang") ~ "Kuai Liang",
         str_detect(Name, "Princess") ~ "Princess Changshan",
         TRUE ~ Name)
-  ) 
+  )
 
 colnames(FMAttributes) <- 
   c(
@@ -74,7 +74,7 @@ colnames(FMAttributes) <-
 audit <- 
   playerData %>% 
   filter(
-    !(Team %in% c("FA", "Retired", "Prospect"))
+    !(Team %in% c("FA", "Retired"))
   ) %>% 
   select(
     Name,
@@ -112,7 +112,7 @@ comparison <-
       ),
     playerData %>% 
       filter(
-        !(Team %in% c("FA", "Retired", "Prospect"))
+        !(Team %in% c("FA", "Retired"))
       ) %>% 
       arrange(Name) %>% 
       select(
