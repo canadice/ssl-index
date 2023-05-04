@@ -71,7 +71,8 @@ require(kableExtra)
 require(shinycssloaders)
 require(shinyjs)
 require(shinydashboard)
-require(dashboardthemes)
+
+require(fresh)
 require(shiny.router)
 
 ##################################################################
@@ -83,121 +84,37 @@ sslBlueD <- "#070B51"
 sslBlueL <- "#141204"
 sslGold <- "#BD9523"
 
-# customLogo <- 
-#   shinyDashboardLogoDIY(
-#     boldText = "",
-#     mainText = tags$a(
-#       href='https://simulationhockey.com/',
-#       target="_blank",
-#       tags$img(src='shl_analytics_logo.png', height = "70"),
-#     ),
-#     badgeText = version,
-#     badgeTextColor = "white",
-#     badgeBackColor = sslRed
-#   )
-
 customTheme <- 
-  shinyDashboardThemeDIY(
-    
-    ### general
-    appFontFamily = "Arial"
-    ,appFontColor = "#2D2D2D"
-    ,primaryFontColor = "#FFFFFF"
-    ,infoFontColor = "#0F0F0F"
-    ,successFontColor = "#FFFFFF"
-    ,warningFontColor = "#0F0F0F"
-    ,dangerFontColor = "#0F0F0F"
-    ,bodyBackColor = "#F5F5F5"
-    
-    ### header
-    ,logoBackColor = sslBlueD
-    
-    ,headerButtonBackColor = sslBlueD
-    ,headerButtonIconColor = sslGold
-    ,headerButtonBackColorHover = "#FFFFFF"
-    ,headerButtonIconColorHover = "#000000"
-    
-    ,headerBackColor = sslBlueD
-    ,headerBoxShadowColor = ""
-    ,headerBoxShadowSize = "0px 0px 0px"
-    
-    ### sidebar
-    ,sidebarBackColor = sslBlueD
-    ,sidebarPadding = "0"
-    
-    ,sidebarMenuBackColor = "transparent"
-    ,sidebarMenuPadding = "10"
-    ,sidebarMenuBorderRadius = 0
-    
-    ,sidebarShadowRadius = ""
-    ,sidebarShadowColor = "0px 0px 0px"
-    
-    ,sidebarUserTextColor = sslGold
-    
-    ,sidebarSearchBackColor = sslGold
-    ,sidebarSearchIconColor = "#FFFFFF"
-    ,sidebarSearchBorderColor = "#FFFFFF"
-    
-    ,sidebarTabTextColor = "#FFFFFF"
-    ,sidebarTabTextSize = "14"
-    ,sidebarTabBorderStyle = "none"
-    ,sidebarTabBorderColor = "none"
-    ,sidebarTabBorderWidth = "0"
-    
-    ,sidebarTabBackColorSelected = sslGold
-    ,sidebarTabTextColorSelected = "#FFFFFF"
-    ,sidebarTabRadiusSelected = "0px"
-    
-    ,sidebarTabBackColorHover = "#FFFFFF"
-    ,sidebarTabTextColorHover = "#000000"
-    ,sidebarTabBorderStyleHover = "none solid none none"
-    ,sidebarTabBorderColorHover = "#FFFFFF"
-    ,sidebarTabBorderWidthHover = "10"
-    ,sidebarTabRadiusHover = "0px"
-    
-    ### boxes
-    ,boxBackColor = "#F8F8F8"
-    ,boxBorderRadius = "5"
-    ,boxShadowSize = "none"
-    ,boxShadowColor = ""
-    ,boxTitleSize = "18"
-    ,boxDefaultColor = "#E1E1E1"
-    ,boxPrimaryColor = sslGold
-    ,boxInfoColor = "#B4B4B4"
-    ,boxSuccessColor = sslBlueL
-    ,boxWarningColor = "#ED7D31"
-    ,boxDangerColor = "#E84C22"
-    
-    ,tabBoxTabColor = "#F8F8F8"
-    ,tabBoxTabTextSize = "14"
-    ,tabBoxTabTextColor = "#646464"
-    ,tabBoxTabTextColorSelected = "#2D2D2D"
-    ,tabBoxBackColor = "#F8F8F8"
-    ,tabBoxHighlightColor = sslBlueL
-    ,tabBoxBorderRadius = "5"
-    
-    ### inputs
-    ,buttonBackColor = "#D7D7D7"
-    ,buttonTextColor = "#2D2D2D"
-    ,buttonBorderColor = "#969696"
-    ,buttonBorderRadius = "5"
-    
-    ,buttonBackColorHover = "#BEBEBE"
-    ,buttonTextColorHover = "#000000"
-    ,buttonBorderColorHover = "#969696"
-    
-    ,textboxBackColor = "#FFFFFF"
-    ,textboxBorderColor = "#767676"
-    ,textboxBorderRadius = "5"
-    ,textboxBackColorSelect = "#F5F5F5"
-    ,textboxBorderColorSelect = "#6C6C6C"
-    
-    ### tables
-    ,tableBackColor = "#F8F8F8"
-    ,tableBorderColor = "#EEEEEE"
-    ,tableBorderTopSize = "1"
-    ,tableBorderRowSize = "1"
+  create_theme(
+    adminlte_color(
+      light_blue = sslBlueD,
+      navy = sslBlueD,
+      blue = sslBlueD,
+      # Danger
+      red = "#0F0F0F",
+      # Success
+      green = "#FFFFFF",
+      # Warning
+      yellow = "#0F0F0F",
+      # Aqua
+      aqua = "#0F0F0F"
+    ),
+    adminlte_sidebar(
+      # width = "400px",
+      dark_bg = sslBlueD,
+      dark_hover_bg = sslGold,
+      dark_color = "#fff",
+      dark_submenu_bg = sslBlueD,
+      dark_submenu_hover_color = sslGold,
+      dark_submenu_color = "#fff"
+    ),
+    adminlte_global(
+      content_bg = "#FFF",
+      box_bg = "#D8DEE9", 
+      info_box_bg = "#D8DEE9"
+    )
   )
+  
 
 
 #################################################################
@@ -323,6 +240,13 @@ ui <- function(request){
           )
         ),
         menuItem(
+          "SSL Academy",
+          menuSubItem(
+            "Academy Statistics",
+            tabName = "academyStats"
+          )
+        ),
+        menuItem(
           "Teams",
           tabName = "teamOverview"
         ),
@@ -377,7 +301,7 @@ ui <- function(request){
     ##----------------------------------------------------------------
     
     dashboardBody(
-      customTheme,
+      customTheme %>% use_theme(),
       useShinyjs(),
       ### Specifies a custom color for value and info boxes
       tags$style(".small-box.bg-orange { background-color: #e08b46 !important; color: #000000 !important; }"),
@@ -458,6 +382,10 @@ ui <- function(request){
           advancedStatsUI(id = "advancedStats")
         ),
         tabItem(
+          "academyStats",
+          academyStatsUI(id = "academyStats")
+        ),
+        tabItem(
           "fileUpdate",
           titlePanel(
             h1("File Update Tool", align = "center")
@@ -503,6 +431,7 @@ server <- function(input, output, session) {
   loadedModulefileUpdate <- reactiveVal(FALSE)
   loadedModuleregression <- reactiveVal(FALSE)
   loadedModuleadvancedStats <- reactiveVal(FALSE)
+  loadedModuleacademyStats <- reactiveVal(FALSE)
   
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
@@ -584,6 +513,10 @@ server <- function(input, output, session) {
     } else if(input$tabs == "advancedStats" & !loadedModuleadvancedStats()){
       loadedModuleadvancedStats(TRUE)
       advancedStatsServer(id = "advancedStats")
+      
+    } else if(input$tabs == "academyStats" & !loadedModuleacademyStats()){
+      loadedModuleacademyStats(TRUE)
+      academyStatsServer(id = "academyStats")
       
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
