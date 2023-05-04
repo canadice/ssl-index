@@ -1177,9 +1177,8 @@ document.getElementsByTagName( "head" )[0].appendChild( link );
                         }')
 }
 
-
 #* Return the luck advanced stats data for either teams or players
-#* @param category Either player or club
+#* @param category Either "Name" for player or "Club"
 #* @serializer json
 #* @get /advancedStatsLuck
 function(category = "Name", penaltyAdjust = FALSE) {
@@ -1281,6 +1280,45 @@ function(category = "Name", penaltyAdjust = FALSE) {
     )
   
   return(summary)
+}
+
+
+#* Return advanced stats data for either teams or players
+#* @param category Either "Name" for player or "Club"
+#* @serializer json
+#* @get /advancedStats
+function(category = "Name"){
+  con <- 
+    dbConnect(
+      SQLite(), 
+      "../database/SSL_Database.db"
+    )
+  
+  dataType <- as.name(category)
+  
+  data <- 
+    tbl(con, "gameDataPlayer") %>% 
+    select(
+      Season,
+      Matchday,
+      dataType,
+      !contains("%")
+    ) %>% 
+    group_by(
+      Season,
+      Matchday,
+      dataType
+    ) %>% 
+    summarize(
+      across(
+        `Minutes Played`:Offsides,
+        ~ sum(.x, na.rm = TRUE)
+      )
+    ) %>% 
+    collect()
+  
+  
+  dbDisconnect(con)
 }
 
 #* Get the bank balance of a given user/player
