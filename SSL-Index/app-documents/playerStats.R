@@ -167,6 +167,53 @@ playerStatsSERVER <- function(id){
           dbFile
         )
       
+      goalLeadersColDef <- 
+        colDef(
+          minWidth = 250,
+          maxWidth = 250,
+          class = "cell",
+          cell = 
+            function(value, index){
+              Club <- activeKeeperData() %>% 
+                filter(
+                  Name == value
+                ) %>% 
+                .$Club
+              
+              image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)
+              
+              tagList(
+                div(style = "display: inline-block; width: 25px; float: left;", image),
+                div(style = "display: inline-block; width: 10px;"),
+                div(style = "display: inline-block; width: 200px;", value)
+              )
+            }
+        )
+        
+        
+      outLeadersColDef <- 
+        colDef(
+          minWidth = 250,
+          maxWidth = 250,
+          class = "cell",
+          cell = 
+            function(value, index){
+              Club <- activePlayerData() %>% 
+                filter(
+                  Name == value
+                ) %>% 
+                .$Club
+              
+              image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)
+              
+              tagList(
+                div(style = "display: inline-block; width: 25px; float: left;", image),
+                div(style = "display: inline-block; width: 10px;"),
+                div(style = "display: inline-block; width: 200px;", value)
+              )
+            }
+        )
+      
       ##----------------------------------------------------------------
       ##                        Loading the data                       -
       ##----------------------------------------------------------------
@@ -389,7 +436,6 @@ playerStatsSERVER <- function(id){
         activePlayerData() %>% 
           select(
             Name, 
-            Club,
             Goals
           ) %>% 
           arrange(
@@ -402,22 +448,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = outLeadersColDef
               )
           )
       })
@@ -426,7 +457,6 @@ playerStatsSERVER <- function(id){
         activePlayerData() %>% 
           select(
             Name, 
-            Club,
             Assists
           ) %>% 
           arrange(
@@ -439,22 +469,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = outLeadersColDef
               )
           )
       })
@@ -463,7 +478,6 @@ playerStatsSERVER <- function(id){
         activePlayerData() %>% 
           select(
             Name, 
-            Club,
             `Shots on Target`
           ) %>% 
           arrange(
@@ -476,22 +490,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = outLeadersColDef
               )
           )
       })
@@ -500,7 +499,6 @@ playerStatsSERVER <- function(id){
         activePlayerData() %>% 
           select(
             Name, 
-            Club,
             Interceptions
           ) %>% 
           arrange(
@@ -513,22 +511,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = outLeadersColDef
               )
           )
       })
@@ -537,7 +520,6 @@ playerStatsSERVER <- function(id){
         activePlayerData() %>% 
           select(
             Name, 
-            Club,
             `Player of the Match`
           ) %>% 
           arrange(
@@ -550,22 +532,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = outLeadersColDef
               )
           )
       })
@@ -574,7 +541,6 @@ playerStatsSERVER <- function(id){
         activePlayerData() %>% 
           select(
             Name, 
-            Club,
             Fouls
           ) %>% 
           arrange(
@@ -587,22 +553,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = outLeadersColDef
               )
           )
       })
@@ -611,7 +562,6 @@ playerStatsSERVER <- function(id){
         activeKeeperData() %>% 
           select(
             Name, 
-            Club,
             `Save%`
           ) %>% 
           arrange(
@@ -624,22 +574,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = goalLeadersColDef
               )
           )
       })
@@ -648,7 +583,6 @@ playerStatsSERVER <- function(id){
         activeKeeperData() %>% 
           select(
             Name, 
-            Club,
             Won
           ) %>% 
           arrange(
@@ -661,22 +595,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = goalLeadersColDef
               )
           )
       })
@@ -685,7 +604,6 @@ playerStatsSERVER <- function(id){
         activeKeeperData() %>% 
           select(
             Name, 
-            Club,
             `Clean Sheets`
           ) %>% 
           arrange(
@@ -698,22 +616,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = goalLeadersColDef
               )
           )
       })
@@ -722,7 +625,6 @@ playerStatsSERVER <- function(id){
         activeKeeperData() %>% 
           select(
             Name, 
-            Club,
             Conceded
           ) %>% 
           arrange(
@@ -735,22 +637,7 @@ playerStatsSERVER <- function(id){
             theme = pff(font_color = "#000"),
             columns = 
               list(
-                Name = colDef(
-                  minWidth = 200,
-                  maxWidth = 200
-                ),
-                Club = 
-                  colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
-                      tagList(
-                        div(style = "display: inline-block; width: 25px;", image)
-                      )
-                    }
-                  )
+                Name = goalLeadersColDef
               )
           )
       })

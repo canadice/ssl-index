@@ -1148,9 +1148,7 @@ playerRecordsSERVER <- function(id){
           ) %>% 
           reactable(
             pagination = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             defaultColDef = 
               colDef(
                 maxWidth = 150
@@ -1221,9 +1219,7 @@ playerRecordsSERVER <- function(id){
           ) %>% 
           reactable(
             pagination = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             defaultColDef = 
               colDef(
                 maxWidth = 150
@@ -1241,8 +1237,6 @@ playerRecordsSERVER <- function(id){
               )
           )
       })
-      
-      
      
     }
   )
