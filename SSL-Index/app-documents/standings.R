@@ -33,7 +33,10 @@ standingsUI <- function(id){
           width = 10,
           offset = 1,
           h4("Division 1", align = "center"),
-          reactableOutput(outputId = ns("standings1")),
+          reactableOutput(
+            outputId = ns("standings1")
+            ) %>% 
+            withSpinner(),
           br(),
           uiOutput(
             outputId = ns("standings2UI")
@@ -149,6 +152,7 @@ standingsSERVER <- function(id){
               Team
             ) %>% 
             summarize(
+              GP = n(),
               W = sum(Points == 3),
               D = sum(Points == 1),
               L = sum(Points == 0),
@@ -283,6 +287,7 @@ standingsSERVER <- function(id){
                   Team
                 ) %>% 
                 summarize(
+                  GP = n(),
                   W = sum(Points == 3),
                   D = sum(Points == 1),
                   L = sum(Points == 0),
@@ -329,6 +334,7 @@ standingsSERVER <- function(id){
             select(
               -contains("color")
             ), 
+          theme = pff(font_color = "#000"),
           pagination = FALSE,
           fullWidth = FALSE,
           defaultColDef = 
@@ -353,12 +359,15 @@ standingsSERVER <- function(id){
                   width = 50,
                   align = "center",
                   class = "cell",
-                  cell = function(value){
+                  cell = function(value, index){
+                    team <- standings1()$Team[index]
+                    
                     logo <- 
                       img(
                         class = "logo",
-                        src = value,
-                        height = 30
+                        src = sprintf("%s.png", team),
+                        style = "height: 30px;", 
+                        alt = team
                       )
                     
                     div(class = "club", logo)
@@ -392,7 +401,10 @@ standingsSERVER <- function(id){
         } else {
           tagList(
             h4("Division 2", align = "center"),
-            reactableOutput(outputId = session$ns("standings2"))
+            reactableOutput(
+              outputId = session$ns("standings2")
+              ) %>% 
+              withSpinner()
           )
         }
       })
@@ -402,7 +414,8 @@ standingsSERVER <- function(id){
           standings2() %>% 
             select(
               -contains("color")
-            ),
+            ), 
+          theme = pff(font_color = "#000"),
           pagination = FALSE,
           fullWidth = FALSE,
           defaultColDef = 
@@ -427,12 +440,15 @@ standingsSERVER <- function(id){
                   width = 50,
                   align = "center",
                   class = "cell",
-                  cell = function(value){
+                  cell = function(value, index){
+                    team <- standings2()$Team[index]
+                    
                     logo <- 
                       img(
                         class = "logo",
-                        src = value,
-                        height = 30
+                        src = sprintf("%s.png", team),
+                        style = "height: 30px;", 
+                        alt = team
                       )
                     
                     div(class = "club", logo)

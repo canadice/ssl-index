@@ -55,11 +55,11 @@ playerStatsUI <- function(id){
               h4("Outfield", align = "center"),
               reactableOutput(
                 outputId = ns("playerStats")
-              ),
+              ) %>% withSpinner(),
               h4("Goalkeeper", align = "center"),
               reactableOutput(
                 outputId = ns("goalieStats")
-              )
+              ) %>% withSpinner()
             ),
             tabPanel(
               "Outfield Leaders",
@@ -272,34 +272,54 @@ playerStatsSERVER <- function(id){
             pagination = TRUE,
             defaultPageSize = 10,
             paginationType = "numbers",
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             searchable = TRUE,
             columns = 
               list(
                 Name = colDef(
                   minWidth = 250,
                   style = list(position = "sticky", left = 0, background = "#F8F8F8", zIndex = 1),
-                  headerStyle = list(position = "sticky", left = 0, background = "#F8F8F8", zIndex = 1)
+                  headerStyle = list(position = "sticky", left = 0, zIndex = 1),
+                  cell = 
+                    function(value, index){
+                      Nation <- activePlayerData() %>% 
+                        arrange(
+                          `Average Rating` %>% desc()
+                        ) %>%  
+                        .$Nationality %>% 
+                        .[index]
+                      
+                      Club <- activePlayerData() %>% 
+                        arrange(
+                          `Average Rating` %>% desc()
+                        ) %>%  
+                        .$Club %>% 
+                        .[index]
+                      
+                      image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)
+                      
+                      tagList(
+                        div(style = "display: inline-block; width: 200px;", value),
+                        div(style = "display: inline-block; width: 25px; float: right;", image),
+                        div(style = "font-size: 1rem", Nation)
+                      )
+                    }
                 ),
                 Club = 
                   colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
-                    }
-                  )
+                    # maxWidth = 50,
+                    # align = "center",
+                    # class = "cell",
+                    # cell = function(value){
+                    #   image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                    #   tagList(
+                    #     div(style = "display: inline-block; width: 25px;", image)
+                    #   )
+                    # }
+                    show = FALSE,
+                    searchable = TRUE
+                  ),
+                Nationality = colDef(show = FALSE)
               )
           )
       })
@@ -313,34 +333,54 @@ playerStatsSERVER <- function(id){
             pagination = TRUE,
             defaultPageSize = 10,
             paginationType = "numbers",
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             searchable = TRUE,
             columns = 
               list(
                 Name = colDef(
                   minWidth = 250,
-                  style = list(position = "sticky", left = 0, background = "#F8F8F8",zIndex = 1),
-                  headerStyle = list(position = "sticky", left = 0, background = "#F8F8F8", zIndex = 1)
+                  style = list(position = "sticky", left = 0, background = "#F8F8F8", zIndex = 1),
+                  headerStyle = list(position = "sticky", left = 0, zIndex = 1),
+                  cell = 
+                    function(value, index){
+                      Nation <- activeKeeperData() %>% 
+                        arrange(
+                          `Average Rating` %>% desc()
+                        ) %>%  
+                        .$Nationality %>% 
+                        .[index]
+                      
+                      Club <- activeKeeperData() %>% 
+                        arrange(
+                          `Average Rating` %>% desc()
+                        ) %>%  
+                        .$Club %>% 
+                        .[index]
+                      
+                      image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)
+                      
+                      tagList(
+                        div(style = "display: inline-block; width: 200px;", value),
+                        div(style = "display: inline-block; width: 25px; float: right;", image),
+                        div(style = "font-size: 1rem", Nation)
+                      )
+                    }
                 ),
                 Club = 
                   colDef(
-                    maxWidth = 50,
-                    align = "center",
-                    class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
-                    }
-                  )
+                    # maxWidth = 50,
+                    # align = "center",
+                    # class = "cell",
+                    # cell = function(value){
+                    #   image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                    #   tagList(
+                    #     div(style = "display: inline-block; width: 25px;", image)
+                    #   )
+                    # }
+                    show = FALSE,
+                    searchable = TRUE
+                  ),
+                Nationality = colDef(show = FALSE)
               )
           )
       })
@@ -359,9 +399,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -373,16 +411,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -403,9 +436,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -417,16 +448,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -447,9 +473,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -461,16 +485,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -491,9 +510,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -505,16 +522,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -535,9 +547,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -549,16 +559,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -579,9 +584,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -593,16 +596,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -623,9 +621,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -637,16 +633,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -667,9 +658,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -681,16 +670,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -711,9 +695,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -725,16 +707,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )
@@ -755,9 +732,7 @@ playerStatsSERVER <- function(id){
           reactable(
             pagination = FALSE,
             sortable = FALSE,
-            theme = reactableTheme(
-              backgroundColor = "#F8F8F8"
-            ),
+            theme = pff(font_color = "#000"),
             columns = 
               list(
                 Name = colDef(
@@ -769,16 +744,11 @@ playerStatsSERVER <- function(id){
                     maxWidth = 50,
                     align = "center",
                     class = "cell",
-                    cell = function(value, index){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
-                      
-                      div(class = "club", logo)
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                      tagList(
+                        div(style = "display: inline-block; width: 25px;", image)
+                      )
                     }
                   )
               )

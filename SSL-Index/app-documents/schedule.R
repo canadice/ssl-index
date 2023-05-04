@@ -41,7 +41,10 @@ scheduleUI <- function(id){
         ),
         column(
           width = 10,
-          DTOutput(outputId = ns("schedule")) %>% withSpinner()
+          reactableOutput(
+            outputId = ns("schedule")
+          ) %>% 
+            withSpinner()
         )
       )
     )
@@ -96,48 +99,44 @@ scheduleSERVER <- function(id){
         
       })
       
-      output$schedule <- renderDT({
+      output$schedule <- renderReactable({
         if(length(schedule()) == 0){
           stop("The current schedule file is empty. Please notify the owners.")
           # NULL
         } else {
-          datatable(
-            schedule(),
-            style = "bootstrap",
-            class = 'compact cell-border stripe',
-            rownames = FALSE,
-            escape = FALSE,
-            options = 
-              list(
-                ordering = FALSE, 
-                ## Sets a scroller for the rows
-                scrollY = '80%',
-                sScrollX = "100%",
-                ## Sets size of rows shown
-                scrollCollapse = TRUE,
-                pageLength = 999,
-                dom = 'Rt',
-                ## Sets color of table background
-                initComplete = JS(
-                  "function(settings, json) {",
-                  "$(this.api().table().header()).css({'background-color': '#00044d', 'color': '#fff'});",
-                  "}")
-              )
-          ) %>% 
-            formatStyle(
-              columns = c("Home", "Away"),
-              # backgroundColor = 
-              #   styleEqual(
-              #     levels = teamInfo$team,
-              #     values = teamInfo$color.primary  
-              #   ),
-              color = 
-                styleEqual(
-                  levels = teamInfo$team,
-                  values = teamInfo$color_primary 
+          schedule() %>% 
+            reactable(
+              theme = pff(font_color = "#000"),
+              pagination = FALSE,
+              columns = 
+                list(
+                  `IRL Date` = colDef(width = 75),
+                  Division = colDef(width = 75),
+                  Matchday = colDef(width = 150),
+                  Home = 
+                    colDef(
+                      cell = function(value){
+                        image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                        
+                        tagList(
+                          div(style = "display: inline-block; width: 25px;", image),
+                          div(style = "font-size: 1rem", value)
+                        )
+                      }
+                    ),
+                  Away = 
+                    colDef(
+                      cell = function(value){
+                        image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)
+                        
+                        tagList(
+                          div(style = "display: inline-block; width: 25px;", image),
+                          div(style = "font-size: 1rem", value)
+                        )
+                      }
+                    )
                 )
-            ) 
-            
+            )
         }
       })
        
