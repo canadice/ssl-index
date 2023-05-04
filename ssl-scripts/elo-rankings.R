@@ -6,6 +6,8 @@ require(ggplot2)
 require(stringr)
 require(plotly)
 
+load("ELO.RData")
+
 
 seasonELO <- function(season, old_elo = NULL){
   schedule <- 
@@ -78,6 +80,39 @@ seasonELO <- function(season, old_elo = NULL){
         ELO = ifelse(established == season & time == max(time), 1500, ELO)
       )
   }
+  
+  elo <- 
+    elo %>% 
+    mutate(
+      ELO = 
+        case_when(
+          team == "Seoul MFC" & established == season ~ 
+            elo %>% 
+            filter(
+              team == "FC Rio"
+            ) %>% 
+            filter(
+              time == max(time)
+            ) %>% 
+            select(
+              ELO
+            ) %>% 
+            unlist(),
+          team == "Reykjavik United" & established == season ~ 
+            elo %>% 
+            filter(
+              team == "Sydney City"
+            ) %>% 
+            filter(
+              time == max(time)
+            ) %>% 
+            select(
+              ELO
+            ) %>% 
+            unlist(),
+          TRUE ~ ELO
+        )
+    )
   
   cur_schedule <- 
     schedule %>% 
@@ -175,7 +210,7 @@ seasonELO <- function(season, old_elo = NULL){
 }
 
 current_elo <- seasonELO(1)
-current_elo <- seasonELO(6, current_elo)
+current_elo <- seasonELO(8, current_elo)
 
 p <- 
   ggplot(data = current_elo) + aes(x = time, y = ELO, color = team) + 
@@ -188,7 +223,7 @@ p <-
         team != "FA"
       ) %>% 
       arrange(
-        team
+        tolower(team)
       ) %>% 
       select(
         color_primary
@@ -200,7 +235,7 @@ p <-
     x = "Time"
   ) + 
   geom_vline(
-    xintercept = c(59, 15, 34, 88, 110)
+    xintercept = c(59, 15, 34, 88, 110, 130, 161)
   ) + 
   scale_x_continuous(
     breaks = NULL
@@ -215,7 +250,7 @@ p %>%
 
 current_elo %>% 
   group_by(team) %>% 
-  filter(time == max(time), team != "FC Rio") %>% 
+  filter(time == max(time), !(team %in% c("FC Rio", "Sydney City"))) %>% 
   ungroup() %>% 
   arrange(desc(ELO)) %>% 
   select(-time, -established) %>% 
@@ -235,6 +270,6 @@ current_elo %>%
       )
     )
   
-
+save(current_elo, file = "ELO.RData")
 
 
