@@ -29,7 +29,11 @@ trackerTPEUI <- function(id){
               label = "Select Draft Class",
               choices = c(
                 "ALL",
-                unique(playerData$Class) %>% sort(decreasing = TRUE))
+                unique(playerData$Class) %>% 
+                  factor(levels = paste("S", length(.):1, sep = "")) %>% 
+                  sort() %>% 
+                  as.character()
+                )
             )
           )
         ),
@@ -40,9 +44,9 @@ trackerTPEUI <- function(id){
             status = "primary",
             solidHeader = TRUE,
             width = NULL,
-            DT::DTOutput(
+            reactableOutput(
               outputId = ns("tableTPE")
-            )
+            ) %>% withSpinner()
           )
         )
       )
@@ -59,14 +63,6 @@ trackerTPESERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
       
-      ## js function for automatic reranking
-      js <- c(
-        "table.on('draw.dt', function(){",
-        "  var PageInfo = table.page.info();",
-        "  table.column(0, {page: 'current'}).nodes().each(function(cell,i){", 
-        "    cell.innerHTML = i + 1 + PageInfo.start;",
-        "  });",
-        "})")
       
       ## Loads selected data for TPE Tracker
       currentTPEData <- reactive({
@@ -102,52 +98,79 @@ trackerTPESERVER <- function(id){
       })
       
       ## TPE Tracker for different classes
-      output$tableTPE <- renderDT({
-        datatable(
+      output$tableTPE <- renderReactable({
+        data <- 
           currentTPEData() %>% 
-            arrange(
-              -TPE
-            ), 
-          callback = JS(js),
-          style = "bootstrap",
-          class = 'compact cell-border stripe',
-          rownames = TRUE,
-          escape = FALSE,
-          options = 
-            list(
-              ordering = TRUE, 
-              ## Sets a scroller for the rows
-              scrollX = '800px',
-              scrollY = '550px',
-              ## Sets size of rows shown
-              scrollCollapse = TRUE,
-              paging = FALSE,
-              dom = 'ft',
-              columnDefs = 
-                list(
-                  list(
-                    targets = 8:9,
-                    visible = FALSE
-                  )
-                )
-            )
-        ) %>% 
-          formatStyle(
-            columns = 0:7,
-            valueColumns = "color_primary",
-            backgroundColor = 
-              styleEqual(
-                sort(unique(teamInfo$color_primary)), 
-                sort(unique(teamInfo$color_primary))
-              )
+          arrange(
+            -TPE
           ) %>% 
-          formatStyle(
-            columns = 0:7,
-            valueColumns = "color_secondary",
-            color = 
-              styleEqual(
-                sort(unique(teamInfo$color_secondary)), 
-                sort(unique(teamInfo$color_secondary))
+          mutate(
+            Rank = 1:n()
+          ) %>% 
+          relocate(Rank)
+        
+        data %>% 
+          reactable(
+            theme = pff(font_color = "#000"),
+            pagination = FALSE,
+            height = 800,
+            rownames = FALSE,
+            defaultColDef = 
+              colDef(
+                style = function(value, index){
+                  list(background = data$color_primary[index], color = data$color_secondary[index])
+                }
+              ),
+            columns = 
+              list(
+                Rank = 
+                  colDef(
+                    name = "",
+                    width = 45
+                  ),
+                Name = 
+                  colDef(
+                    width = 200,
+                    cell = function(value, index){
+                      class <- data %>% 
+                        .$Class %>% 
+                        .[index]
+                      
+                      tagList(
+                        div(value),
+                        div(style = "font-size: 1.2rem", class)
+                      )
+                    }
+                  ),
+                Username = 
+                  colDef(
+                    width = 200
+                  ),
+                Class = 
+                  colDef(
+                    show = FALSE
+                  ),
+                Team = 
+                  colDef(
+                    width = 100,
+                    cell = function(value){
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
+                      
+                      list <- 
+                        tagList(
+                          div(style = "display: inline-block; width: 25px;", image),
+                          div(style = "font-size: 1.2rem", value)
+                        )
+                    }
+                  ),
+                color_primary = 
+                  colDef(
+                    show = FALSE
+                  ),
+                color_secondary = 
+                  colDef(
+                    show = FALSE
+                  )
               )
           )
       })

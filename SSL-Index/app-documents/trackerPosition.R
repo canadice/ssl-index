@@ -21,20 +21,17 @@ trackerPositionUI <- function(id){
           width = 4,
           "Information" %>% h4(),
           paste("The pitch on the right shows", "the number of players" %>% strong(),
-          "that have at least the threshold value of XP in a given position.",
-          "The scale goes from 1 to 20 with anything more than 15 being", "accomplished" %>% em(),
-          "in the position.") %>% HTML(),
-          paste("The positions within each border are common for teams to use interchangeably, so there is a lesser
-                need for players at both positions."),
+          "that have the given position as their primary or secondary position selection."
+          ) %>% HTML(),
+          paste("The positions within each striped border are common for teams to use 
+          interchangeably, so there is a lesser need for players at both positions."),
           br(),
           br(),
-          sliderInput(
+          radioButtons(
             inputId = ns("xpThreshold"),
-            label = "Select lowest experience threshold<br>(15 shows accomplished players)" %>% HTML(),
-            min = 0,
-            max = 20,
-            value = 15,
-            step = 1
+            label = "Select the type of position" %>% HTML(),
+            choices = c("Primary", "Secondary"),
+            selected = "Primary"
           ),
           radioButtons(
             inputId = ns("activeStatus"),
@@ -80,7 +77,8 @@ trackerPositionSERVER <- function(id){
           ) %>% 
           mutate(
             across(
-              .fns = function(x) x >= input$xpThreshold
+              .cols = everything(),
+              .fns = function(x) x == if_else(input$xpThreshold == "Primary", 20, 15)
             )    
           ) %>% 
           summarize(

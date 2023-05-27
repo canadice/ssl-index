@@ -79,8 +79,9 @@ teamOverviewUI <- function(id){
                         tabPanel(
                           title = "Current Roster",
                           id = ns("roster"),
-                          DTOutput(outputId = ns("dataTableRoster")),
-                          
+                          reactableOutput(
+                            outputId = ns("dataTableRoster")
+                            ),
                         ),
                         tabPanel(
                           title = "TPE Visualizer",
@@ -270,16 +271,18 @@ teamOverviewSERVER <- function(id){
               "
               #teamOverview-teamTabBox .nav-tabs-custom,
               #teamOverview-teamTabBox .nav-tabs-custom>.tab-content, 
-              #teamOverview-teamTabBox .nav-tabs-custom>.nav-tabs
+              #teamOverview-teamTabBox .nav-tabs-custom>.nav-tabs,
+              #teamOverview-teamTabBox .reactable-wweita,
+              #teamOverview-teamTabBox .Reactable
               {background: #FFFFFF00;}
               ",
               ## The use of !important is important to overwrite site default css values for dataTables
               ## #id of the datatable only changes it for this module and not the entire datatable format
-              paste0("#teamOverview-teamTabBox tbody tr.odd, 
-                    #teamOverview-teamTabBox tbody tr.odd 
+              paste0("#teamOverview-teamTabBox .rt-tbody .rt-tr-group:nth-of-type(even), 
+                    #teamOverview-teamTabBox .rt-tbody .rt-tr-group:nth-of-type(even) 
                     {background-color:", paste0(teamColor(), 25), "!important}
                     "),
-              paste0("#teamOverview-teamTabBox tbody tr
+              paste0("#teamOverview-teamTabBox .rt-tbody .rt-tr-group:nth-of-type(odd)
                      {background-color:", paste0("#FFFFFF", 10), "!important}")
             )
           )
@@ -289,7 +292,7 @@ teamOverviewSERVER <- function(id){
       ##                      Datatable Outputs                       -
       ##---------------------------------------------------------------
       
-      output$dataTableRoster <- DT::renderDT({
+      output$dataTableRoster <- renderReactable({
         if(teamData() %>% is.null()){
           NULL
         } else{
@@ -308,11 +311,23 @@ teamOverviewSERVER <- function(id){
               Active,
               -TPE
             ) %>% 
-            datatable(
+            reactable(
               rownames = FALSE,
-              escape = FALSE,
-              selection = "none",
-              options = teamTableOptions
+              searchable = TRUE,
+              pagination = TRUE,
+              defaultPageSize = 18,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = 
+                    colDef(
+                      width = 200
+                    ),
+                  Username = 
+                    colDef(
+                      width = 200
+                    )
+                )
             )
         }
       }
@@ -422,7 +437,7 @@ teamOverviewSERVER <- function(id){
         p %>% 
           ggplotly(tooltip = "text") %>% 
           layout(hoverlabel=list(bgcolor="white")) %>% 
-          config(
+          plotly::config(
             displayModeBar = FALSE
           )
           
@@ -441,6 +456,7 @@ teamOverviewSERVER <- function(id){
         ) %>% 
         dplyr::mutate(
           across(
+            .cols = everything(),
             .fns = ~ replace_na(., 0) %>% as.numeric()
           )
         ) %>% 
@@ -454,6 +470,7 @@ teamOverviewSERVER <- function(id){
         rowwise() %>% 
         dplyr::mutate(
           across(
+            .cols = everything(),
             .fns = ~ .x/rowSum
           )
         ) %>% 
@@ -693,7 +710,7 @@ teamOverviewSERVER <- function(id){
             margin = list(r = 0, l = 0, t = 0, b = 0, pad = 0),
             hoverlabel=list(bgcolor="white")
           ) %>% 
-          config(
+          plotly::config(
             displayModeBar = FALSE
           )
           

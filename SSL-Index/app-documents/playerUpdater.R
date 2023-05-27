@@ -99,7 +99,7 @@ playerDatabaseUI <- function(id){
                 width = 12,
                 reactableOutput(
                   outputId = ns("GameData")
-                )
+                ) %>% withSpinner()
               )
             )
           ),
@@ -131,7 +131,7 @@ playerDatabaseUI <- function(id){
                 width = 12,
                 reactableOutput(
                   outputId = ns("CareerData")
-                )
+                ) %>% withSpinner()
               )
             )
           ),
@@ -227,10 +227,10 @@ playerDatabaseSERVER <- function(id){
             
             table %>%  
               group_by(
-                Season
+                Season,
+                Club
               ) %>% 
               summarize(
-                Club = Club,
                 Apps = 
                   sum(`Apps`, na.rm = TRUE),
                 `Minutes Played` = 
@@ -265,7 +265,8 @@ playerDatabaseSERVER <- function(id){
                   mean(`xSave%`, na.rm = TRUE) %>% round(2)
               ) %>% 
               group_by(
-                Season
+                Season, 
+                Club
               ) %>% 
               mutate(
                 `Save%` = 
@@ -300,10 +301,10 @@ playerDatabaseSERVER <- function(id){
             
             table %>%  
               group_by(
-                Season
+                Season, 
+                Club
               ) %>% 
               summarize(
-                Club = Club,
                 Apps = sum(Apps),
                 `Minutes Played` = 
                   sum(`Minutes Played`),
@@ -379,7 +380,8 @@ playerDatabaseSERVER <- function(id){
                   sum(`Offsides`)
               ) %>%
               group_by(
-                Season
+                Season, 
+                Club
               ) %>% 
               mutate(
                 `Pass%` = 
@@ -709,6 +711,7 @@ playerDatabaseSERVER <- function(id){
           ) %>% 
           reactable(
             pagination = FALSE,
+            theme = pff(font_color = "#000"),
             rowStyle = function(index) {
               if (data$Season[index] %% 2 == 0) list(background = "rgba(0, 0, 0, 0.05)")
               else list(background = "rgba(0, 0, 0, 0.0)")
@@ -721,15 +724,9 @@ playerDatabaseSERVER <- function(id){
                     align = "center",
                     class = "cell",
                     cell = function(value){
-                      logo <- 
-                        img(
-                          class = "logo",
-                          src = teamInfo$logo[teamInfo$team == value],
-                          alt = value,
-                          height = 30
-                        )
+                      image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
                       
-                      div(class = "club", logo)
+                      div(style = "display: inline-block; width: 25px;", image)
                     }
                   ),
                 Opponent = 
@@ -744,14 +741,9 @@ playerDatabaseSERVER <- function(id){
                         div(class = "club", " ")
                         
                       } else {
-                        logo <- 
-                          img(
-                            class = "logo",
-                            src = teamInfo$logo[teamInfo$team == value],
-                            alt = value,
-                            height = 30
-                          )
-                        div(class = "club", logo)
+                        image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
+                        
+                        div(style = "display: inline-block; width: 25px;", image)
                       }
                     }
                   ),
@@ -814,13 +806,14 @@ playerDatabaseSERVER <- function(id){
             data %>% 
               reactable(
                 pagination = FALSE,
+                theme = pff(font_color = "#000"),
                 columns = 
                   list(
                     Season = colDef(
                       footer = "Totals",
                       maxWidth = 80,
                       style = list(position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1),
-                      headerStyle = list(position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1),
+                      headerStyle = list(position = "sticky", left = 0, zIndex = 1),
                       footerStyle = list(fontWeight = "bold", position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1)
                     ),
                     Club = 
@@ -828,16 +821,10 @@ playerDatabaseSERVER <- function(id){
                         maxWidth = 50,
                         align = "center",
                         class = "cell",
-                        cell = function(value, index){
-                          logo <- 
-                            img(
-                              class = "logo",
-                              src = teamInfo$logo[teamInfo$team == value],
-                              alt = value,
-                              height = 30
-                            )
+                        cell = function(value){
+                          image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
                           
-                          div(class = "club", logo)
+                          div(style = "display: inline-block; width: 25px;", image)
                         }
                       ),
                     `Minutes Played` = colDef(footer = dataSum$`Minutes Played`),
@@ -865,13 +852,14 @@ playerDatabaseSERVER <- function(id){
             data %>% 
               reactable(
                 pagination = FALSE,
+                theme = pff(font_color = "#000"),
                 columns = 
                   list(
                     Season = colDef(
                       footer = "Totals",
                       maxWidth = 80,
                       style = list(position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1),
-                      headerStyle = list(position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1),
+                      headerStyle = list(position = "sticky", left = 0, zIndex = 1),
                       footerStyle = list(fontWeight = "bold", position = "sticky", left = 0, background = "#FFFFFF", zIndex = 1)
                     ),
                     Club = 
@@ -879,16 +867,10 @@ playerDatabaseSERVER <- function(id){
                         maxWidth = 50,
                         align = "center",
                         class = "cell",
-                        cell = function(value, index){
-                          logo <- 
-                            img(
-                              class = "logo",
-                              src = teamInfo$logo[teamInfo$team == value],
-                              alt = value,
-                              height = 30
-                            )
+                        cell = function(value){
+                          image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
                           
-                          div(class = "club", logo)
+                          div(style = "display: inline-block; width: 25px;", image)
                         }
                       ),
                     `Minutes Played` = colDef(footer = dataSum$`Minutes Played`),
@@ -936,103 +918,6 @@ playerDatabaseSERVER <- function(id){
         }
       })
       
-      # Using DT
-      # output$GameData <- renderDT({
-      #   if(any(reactives$currentBuild$Group == "Goalkeeper")){
-      #     data <- 
-      #       keeperGameData %>% 
-      #       filter(
-      #         Name == input$player
-      #       )
-      #   } else {
-      #     data <- 
-      #       playerGameData %>% 
-      #       filter(
-      #         Name == input$player
-      #       ) 
-      #   }
-      #   
-      #   if(!is.null(input$gameSeason)){
-      #     data <- 
-      #       data %>% 
-      #       filter(
-      #         Season %in% input$gameSeason
-      #       )
-      #   }
-      #   
-      #   if(!is.null(input$gameFilter)){
-      #     if("Cup" %in% input$gameFilter){
-      #       data <- 
-      #         data %>% 
-      #         filter(
-      #           str_detect(Matchday, "Cup")
-      #         )
-      #     } else {
-      #       data <- 
-      #         data %>% 
-      #         filter(
-      #           str_detect(Matchday, "Cup", negate = TRUE)
-      #         )
-      #     }
-      #   }
-      #   
-      #   data %>% 
-      #     select(
-      #       -Name,
-      #       -Nationality,
-      #       -Position,
-      #       -Apps
-      #     ) %>% 
-      #     relocate(
-      #       Season,
-      #       .before = "Minutes Played"
-      #     ) %>% 
-      #     relocate(
-      #       Matchday,
-      #       .after = "Season"
-      #     ) %>% 
-      #     relocate(
-      #       c(
-      #         Club,
-      #         Opponent,
-      #         Result
-      #       ),
-      #       .after = "Matchday"
-      #     ) %>% 
-      #     mutate(
-      #       `Average Rating` = `Average Rating` %>% round(2),
-      #       xG = xG %>% round(2)
-      #     ) %>% 
-      #     rename(
-      #       S = Season,
-      #       MD = Matchday
-      #     )
-      # },
-      # rownames = FALSE,
-      # escape = FALSE,
-      # style = "bootstrap",
-      # class = 'compact cell-border stripe',
-      # selection = "none",
-      # extensions = "FixedColumns",
-      # options = 
-      #   list(
-      #     orderClasses = FALSE, 
-      #     # order = list(list(0, 'asc')),
-      #     ## Sets a scroller for the rows
-      #     scrollY = '500px',
-      #     ## Sets size of rows shown
-      #     scrollCollapse = TRUE,
-      #     ## Removes pages in the table
-      #     paging = FALSE,
-      #     ## Adds scrollable horizontal
-      #     scrollX = TRUE,
-      #     dom = 't',
-      #     bInfo = FALSE,
-      #     fixedColumns = 
-      #       list(
-      #         leftColumns = 4
-      #       )
-      #   ))
       
       ##----------------------------------------------------------------
       ##                        Visualizations                         -
