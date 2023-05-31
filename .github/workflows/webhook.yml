@@ -1,108 +1,108 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-#
-# See https://github.com/r-lib/actions/tree/main/examples#readme for
-# additional example workflows available for the R community.
-
-on:
-#   workflow_dispatch:
-    #inputs:
-    #  logLevel:
-    #    description: 'Log level'
-    #    required: true
-    #    default: 'warning'
-    #    type: choice
-    #    options:
-    #    - info
-    #    - warning
-    #    - debug
-    #  tags:
-  #      description: 'Test scenario tags'
-#        required: false
-        #type: boolean
-   schedule:
-         - cron: "0 0/3 * * *"
-  
-   workflow_dispatch:
-
-jobs:
-  generate-data:
-    runs-on: ${{ matrix.config.os }}
-
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
-
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - {os: windows-latest,   r: 'release'}
-
-    env:
-      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      RSPM: ${{ matrix.config.rspm }}
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      ANNOUNCEMENTS: ${{ secrets.ANNOUNCEMENTS }}
-      TPE_OPPS: ${{ secrets.TPE_OPPS }}
-      PLAYER_CHECKS: ${{ secrets.PLAYER_CHECKS }}
-      WAIVER_WATCHER: ${{ secrets.WAIVER_WATCHER }}
-      PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
-      SIM_FILES: ${{ secrets.SIM_FILES }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: ${{ matrix.config.r }}
-          http-user-agent: ${{ matrix.config.http-user-agent }}
-
-      - uses: r-lib/actions/setup-pandoc@v2
-
-      - name: Query dependencies
-        run: |
-          install.packages('remotes')
-          install.packages('sessioninfo')
-          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
-          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
-        shell: Rscript {0}
-
-      - name: Cache R packages
-        uses: actions/cache@v1
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
-
-      - name: Install dependencies
-        run: |
-          remotes::install_deps(dependencies = TRUE)
-          remotes::install_github("Canadice/sslrtools")
-          remotes::install_github("EriqLaplus/discordr")
-        shell: Rscript {0}
-        
-      - name: Create and populate .Renviron file
-        run: |
-          echo ANNOUNCEMENTS ="$ANNOUNCEMENTS" >> ~/.Renviron
-          echo TPE_OPPS ="$TPE_OPPS" >> ~/.Renviron
-          echo PLAYER_CHECKS ="$PLAYER_CHECKS" >> ~/.Renviron
-          echo WAIVER_WATCHER ="$WAIVER_WATCHER" >> ~/.Renviron
-          echo PLAYER_APPROVER ="$PLAYER_APPROVER" >> ~/.Renviron
-          echo SIM_FILES ="$SIM_FILES" >> ~/.Renviron
-        shell: bash
-
-      - name: Generate data
-        run: |
-          source("scrapers/webhookJob.R")
-        shell: Rscript {0}
-        
-      - name: Commit the results of the scraper
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
-          git add --all
-          git commit -am "Hook Scraping"
-          git push 
-
-
+# # This workflow uses actions that are not certified by GitHub.
+# # They are provided by a third-party and are governed by
+# # separate terms of service, privacy policy, and support
+# # documentation.
+# #
+# # See https://github.com/r-lib/actions/tree/main/examples#readme for
+# # additional example workflows available for the R community.
+# 
+# on:
+# #   workflow_dispatch:
+#     #inputs:
+#     #  logLevel:
+#     #    description: 'Log level'
+#     #    required: true
+#     #    default: 'warning'
+#     #    type: choice
+#     #    options:
+#     #    - info
+#     #    - warning
+#     #    - debug
+#     #  tags:
+#   #      description: 'Test scenario tags'
+# #        required: false
+#         #type: boolean
+#    schedule:
+#          - cron: "0 0/3 * * *"
+#   
+#    workflow_dispatch:
+# 
+# jobs:
+#   generate-data:
+#     runs-on: ${{ matrix.config.os }}
+# 
+#     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+# 
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         config:
+#           - {os: windows-latest,   r: 'release'}
+# 
+    # env:
+    #   R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+    #   RSPM: ${{ matrix.config.rspm }}
+    #   GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    #   ANNOUNCEMENTS: ${{ secrets.ANNOUNCEMENTS }}
+    #   TPE_OPPS: ${{ secrets.TPE_OPPS }}
+    #   PLAYER_CHECKS: ${{ secrets.PLAYER_CHECKS }}
+    #   WAIVER_WATCHER: ${{ secrets.WAIVER_WATCHER }}
+    #   PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
+    #   SIM_FILES: ${{ secrets.SIM_FILES }}
+# 
+#     steps:
+#       - uses: actions/checkout@v3
+# 
+#       - uses: r-lib/actions/setup-r@v2
+#         with:
+#           r-version: ${{ matrix.config.r }}
+#           http-user-agent: ${{ matrix.config.http-user-agent }}
+# 
+#       - uses: r-lib/actions/setup-pandoc@v2
+# 
+#       - name: Query dependencies
+#         run: |
+#           install.packages('remotes')
+#           install.packages('sessioninfo')
+#           saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+#           writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
+#         shell: Rscript {0}
+# 
+#       - name: Cache R packages
+#         uses: actions/cache@v1
+#         with:
+#           path: ${{ env.R_LIBS_USER }}
+#           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
+#           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
+# 
+#       - name: Install dependencies
+#         run: |
+#           remotes::install_deps(dependencies = TRUE)
+          # remotes::install_github("Canadice/sslrtools")
+          # remotes::install_github("EriqLaplus/discordr")
+#         shell: Rscript {0}
+#         
+      # - name: Create and populate .Renviron file
+      #   run: |
+      #     echo ANNOUNCEMENTS ="$ANNOUNCEMENTS" >> ~/.Renviron
+      #     echo TPE_OPPS ="$TPE_OPPS" >> ~/.Renviron
+      #     echo PLAYER_CHECKS ="$PLAYER_CHECKS" >> ~/.Renviron
+      #     echo WAIVER_WATCHER ="$WAIVER_WATCHER" >> ~/.Renviron
+      #     echo PLAYER_APPROVER ="$PLAYER_APPROVER" >> ~/.Renviron
+      #     echo SIM_FILES ="$SIM_FILES" >> ~/.Renviron
+      #   shell: bash
+# 
+#       - name: Generate data
+#         run: |
+#           source("scrapers/webhookJob.R")
+#         shell: Rscript {0}
+#         
+#       - name: Commit the results of the scraper
+#         run: |
+#           git config --local user.email "actions@github.com"
+#           git config --local user.name "GitHub Actions"
+#           git add --all
+#           git commit -am "Hook Scraping"
+#           git push 
+# 
+# 

@@ -43,6 +43,12 @@ jobs:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      ANNOUNCEMENTS: ${{ secrets.ANNOUNCEMENTS }}
+      TPE_OPPS: ${{ secrets.TPE_OPPS }}
+      PLAYER_CHECKS: ${{ secrets.PLAYER_CHECKS }}
+      WAIVER_WATCHER: ${{ secrets.WAIVER_WATCHER }}
+      PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
+      SIM_FILES: ${{ secrets.SIM_FILES }}
 
     steps:
       - uses: actions/checkout@v3
@@ -72,8 +78,19 @@ jobs:
       - name: Install dependencies
         run: |
           remotes::install_github("Canadice/sslrtools")
+          remotes::install_github("EriqLaplus/discordr")
           remotes::install_deps(dependencies = TRUE, quiet = TRUE)
         shell: Rscript {0}
+
+      - name: Create and populate .Renviron file
+        run: |
+          echo ANNOUNCEMENTS ="$ANNOUNCEMENTS" >> ~/.Renviron
+          echo TPE_OPPS ="$TPE_OPPS" >> ~/.Renviron
+          echo PLAYER_CHECKS ="$PLAYER_CHECKS" >> ~/.Renviron
+          echo WAIVER_WATCHER ="$WAIVER_WATCHER" >> ~/.Renviron
+          echo PLAYER_APPROVER ="$PLAYER_APPROVER" >> ~/.Renviron
+          echo SIM_FILES ="$SIM_FILES" >> ~/.Renviron
+        shell: bash
 
       - name: Generate data
         run: |
