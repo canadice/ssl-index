@@ -23,7 +23,7 @@ on:
 #        required: false
         #type: boolean
    schedule:
-         - cron: "0 0/8 * * *"
+         - cron: "0 0/3 * * *"
   
    workflow_dispatch:
 
@@ -78,6 +78,7 @@ jobs:
       - name: Generate data
         run: |
           source("scrapers/scraperJob.R")
+          source("scrapers/webhookJob.R")
         shell: Rscript {0}
 
       - name: Commit the results of the scraper
