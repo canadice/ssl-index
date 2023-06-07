@@ -698,55 +698,55 @@ conn_obj <-
 ##                      New Waiver Claims                      ##
 #################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=72"
-
-new <- newThreads(forum)
-
-title <- 
-  new %>% 
-  html_elements("a[title]") %>% 
-  html_text2() 
-
- # if(length(new)>0){
- #   title <- title %>% .[seq(2, length(.), by =2)]
- # }
-
-index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
-
-new <- new[index]   
-title <- title[index]
-
-if(length(new) > 0){
-  link <- 
-    new %>% 
-    html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&") %>% 
-    .[seq(2, length(.), by = 2)]
-  
-  send_webhook_message(
-    paste(
-      "-----------------------------------------------", "\n",
-      "A new waiver claim has started:", "\n\n", 
-      paste(
-        title, link, sep = " - ", collapse = "\n\n"
-      )
-    )
-  )
-  
-  postedThreads <- 
-    rbind(
-      postedThreads,
-      data.frame(
-        title = title, link = link, forum = forum
-      )
-    )
-  
-  print("Sent new waiver post.")
-  
-} else {
-  #Do Nothing
-}
+# forum <- "https://simsoccer.jcink.net/index.php?showforum=72"
+# 
+# new <- newThreads(forum)
+# 
+# title <- 
+#   new %>% 
+#   html_elements("a[title]") %>% 
+#   html_text2() 
+# 
+#  # if(length(new)>0){
+#  #   title <- title %>% .[seq(2, length(.), by =2)]
+#  # }
+# 
+# index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+# 
+# new <- new[index]   
+# title <- title[index]
+# 
+# if(length(new) > 0){
+#   link <- 
+#     new %>% 
+#     html_elements("a[title]") %>% 
+#     html_attr("href")%>% 
+#     str_remove(pattern = "s=[0-9a-z]+&") %>% 
+#     .[seq(2, length(.), by = 2)]
+#   
+#   send_webhook_message(
+#     paste(
+#       "-----------------------------------------------", "\n",
+#       "A new waiver claim has started:", "\n\n", 
+#       paste(
+#         title, link, sep = " - ", collapse = "\n\n"
+#       )
+#     )
+#   )
+#   
+#   postedThreads <- 
+#     rbind(
+#       postedThreads,
+#       data.frame(
+#         title = title, link = link, forum = forum
+#       )
+#     )
+#   
+#   print("Sent new waiver post.")
+#   
+# } else {
+#   #Do Nothing
+# }
 
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
