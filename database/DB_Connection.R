@@ -328,7 +328,7 @@ KeeperSumRegular <-dbGetQuery(con,
 #################################################################
 
 # teamInfo <- googlesheets4::read_sheet(
-#   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
+#   ss = "https://docs.google.com/spreadsheets/d/1dCOGjnLrtgYjO43Zz1dYkuQ5ZQRpION3LQiRrooMZaQ/edit#gid=731383221",
 #   sheet = "Team Information"
 # )
 # dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
