@@ -209,8 +209,8 @@ seasonELO <- function(season, old_elo = NULL){
   return(elo)
 }
 
-current_elo <- seasonELO(1)
-current_elo <- seasonELO(8, current_elo)
+# current_elo <- seasonELO(1)
+current_elo <- seasonELO(9, current_elo)
 
 p <- 
   ggplot(data = current_elo) + aes(x = time, y = ELO, color = team) + 
@@ -220,7 +220,8 @@ p <-
     values = 
       teamInfo %>% 
       filter(
-        team != "FA"
+        team != "FA",
+        team %in% current_elo$team
       ) %>% 
       arrange(
         tolower(team)
@@ -235,7 +236,7 @@ p <-
     x = "Time"
   ) + 
   geom_vline(
-    xintercept = c(59, 15, 34, 88, 110, 130, 161)
+    xintercept = c(59, 15, 34, 88, 110, 130, 161, 192)
   ) + 
   scale_x_continuous(
     breaks = NULL
