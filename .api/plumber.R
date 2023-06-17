@@ -1282,7 +1282,6 @@ function(category = "Name", penaltyAdjust = FALSE) {
   return(summary)
 }
 
-
 #* Return advanced stats data for either teams or players
 #* @param category Either "Name" for player or "Club"
 #* @serializer json
@@ -1374,6 +1373,335 @@ function(user = "") {
     return(balance)
   }
   
+  
+}
+
+
+#* Get the current available PTs for a user
+#* @param user The username of the user to search for
+#* @serializer json
+#* @get /currentPTs
+function(user = "") {
+  
+  ## Downloads the AC data data only if file doesn't exist or is not updated
+  if(file.exists(paste("currentACs.RData"))){
+    load(file = paste("currentACs.RData"))
+    
+    # Only updates after three hours
+    if(difftime(Sys.time(), now, units = "secs") < 10800){
+      # DO NOTHING
+    } else {
+      currentAC <- activityCheckLinks()
+      
+      AC <-
+        currentAC %>%
+        lapply(
+          X = .,
+          FUN = readPosts
+        ) %>%
+        do.call(
+          what = plyr::rbind.fill,
+          args = .
+        ) 
+      
+      AC[1,c("User", "Post", "Time")] <- NA
+      
+      now <- Sys.time()
+      
+      save("AC", "now", file = paste("currentACs.RData"))
+    }
+  } else {
+    currentAC <- activityCheckLinks()
+    
+    AC <-
+      currentAC %>%
+      lapply(
+        X = .,
+        FUN = readPosts
+      ) %>%
+      do.call(
+        what = plyr::rbind.fill,
+        args = .
+      ) 
+    
+    AC[1,c("User", "Post", "Time")] <- NA
+    
+    now <- Sys.time()
+    
+    save("AC", "now", file = paste("currentACs.RData"))
+  }
+  
+  ## Downloads the AF data data only if file doesn't exist or is not updated
+  if(file.exists(paste("currentAFs.RData"))){
+    load(file = paste("currentAFs.RData"))
+    
+    # Only updates after three hours
+    if(difftime(Sys.time(), now, units = "secs") < 10800){
+      # DO NOTHING
+    } else {
+      currentAF <- affiliateLinks()
+      
+      AF <-
+        currentAF %>%
+        lapply(
+          X = .,
+          FUN = readPosts
+        ) %>%
+        do.call(
+          what = plyr::rbind.fill,
+          args = .
+        ) 
+      
+      AF[1,c("User", "Post", "Time")] <- NA
+      
+      now <- Sys.time()
+      
+      save("AF", "now", file = paste("currentAFs.RData"))
+    }
+  } else {
+    currentAF <- affiliateLinks()
+    
+    AF <-
+      currentAF %>%
+      lapply(
+        X = .,
+        FUN = readPosts
+      ) %>%
+      do.call(
+        what = plyr::rbind.fill,
+        args = .
+      )
+    
+    AF[1,c("User", "Post", "Time")] <- NA
+    
+    now <- Sys.time()
+    
+    save("AF", "now", file = paste("currentAFs.RData"))
+  }
+  
+  ## Downloads the capped PT data data only if file doesn't exist or is not updated
+  if(file.exists(paste("currentCAPs.RData"))){
+    load(file = paste("currentCAPs.RData"))
+    
+    # Only updates after three hours
+    if(difftime(Sys.time(), now, units = "secs") < 10800){
+      # DO NOTHING
+    } else {
+      currentCAPs <- 
+        list(
+          articleLinks(),
+          graphicsLinks(),
+          podcastLinks()
+        ) %>% 
+        do.call(
+          what = plyr::rbind.fill,
+          args = .
+        )
+      
+      now <- Sys.time()
+      
+      save("currentCAPs", "now", file = paste("currentCAPs.RData"))
+    }
+  } else {
+    currentCAPs <- 
+      list(
+        articleLinks(),
+        graphicsLinks(),
+        podcastLinks()
+      ) %>% 
+      do.call(
+        what = plyr::rbind.fill,
+        args = .
+      )
+    
+    now <- Sys.time()
+    
+    save("currentCAPs", "now", file = paste("currentCAPs.RData"))
+  }
+  
+  ## Downloads the training camp data only if the file doesn't exist or is not up to date
+  if(file.exists(paste("currentTCs.RData"))){
+    load(file = paste("currentTCs.RData"))
+    
+    # Only updates after three hours
+    if(difftime(Sys.time(), now, units = "secs") < 10800){
+      # DO NOTHING
+    } else {
+      currentTC <- trainingCampLinks()
+      
+      TC <-
+        currentTC %>%
+        lapply(
+          X = .,
+          FUN = readPosts
+        ) %>%
+        do.call(
+          what = plyr::rbind.fill,
+          args = .
+        )  
+      
+      if(!is.null(TC)){
+        TC[1,c("User", "Post", "Time")] <- NA
+      }
+      
+      now <- Sys.time()
+      
+      save("TC", "now", file = paste("currentTCs.RData"))
+    }
+  } else {
+    currentTC <- trainingCampLinks()
+    
+    TC <-
+      currentTC %>%
+      lapply(
+        X = .,
+        FUN = readPosts
+      ) %>%
+      do.call(
+        what = plyr::rbind.fill,
+        args = .
+      ) 
+    
+    if(!is.null(TC)){
+      TC[1,c("User", "Post", "Time")] <- NA
+    }
+            
+    now <- Sys.time()
+    
+    save("TC", "now", file = paste("currentTCs.RData"))
+  }
+  
+  ## Reads the prediction data
+  if(file.exists(paste("currentPTs.RData"))){
+    load(file = paste("currentPTs.RData"))
+    
+    # Only updates after three hours
+    if(difftime(Sys.time(), now, units = "secs") < 10800){
+      # DO NOTHING
+    } else {
+      currentPT <- predictionLinks() %>% 
+        .[!stringr::str_detect(string = ., pattern = "st=0")]
+      
+      PT <-
+        currentPT %>%
+        lapply(
+          X = .,
+          FUN = function(x){
+            if(stringr::str_detect(x, pattern = "st=")){
+                readPosts(x)
+              } else {
+                posts <- readPosts(x) 
+                
+                posts[1,c("User", "Post", "Time")] <- NA
+                
+                return(posts)
+              }
+            }
+          ) %>%
+        do.call(
+          what = plyr::rbind.fill,
+          args = .
+        ) 
+      
+      now <- Sys.time()
+      
+      save("PT", "now", file = paste("currentPTs.RData"))
+    }
+  } else {
+    currentPT <- predictionLinks() %>% 
+      .[!stringr::str_detect(string = ., pattern = "st=0")]
+    
+    PT <-
+      currentPT %>%
+      lapply(
+        X = .,
+        FUN = function(x){
+          if(stringr::str_detect(x, pattern = "st=")){
+            readPosts(x)
+          } else {
+            posts <- readPosts(x) 
+            
+            posts[1,c("User", "Post", "Time")] <- NA
+            
+            return(posts)
+          }
+        }
+      ) %>%
+      do.call(
+        what = plyr::rbind.fill,
+        args = .
+      )
+    
+    now <- Sys.time()
+    
+    save("PT", "now", file = paste("currentPTs.RData"))
+  }
+  
+  
+  filterData <- 
+    function(data){
+      if(is.null(data)){
+        return(NULL)
+      }
+      
+      data %>% 
+        dplyr::group_by(Thread) %>% 
+        mutate(
+          Posted = 
+            dplyr::if_else(any(User == user), TRUE, FALSE) %>% 
+            tidyr::replace_na(replace = FALSE)
+        ) %>% 
+        filter(
+          if(any(Posted)) User == user else is.na(User)
+        ) %>% 
+        select(-Posted)
+  }
+  
+  filterDataCapped <- 
+    function(data){
+      if(is.null(data)){
+        return(NULL)
+      }
+      
+      if(
+        data %>% 
+        filter(User == user) %>% 
+        nrow() == 0
+      ) {
+        data.frame(
+          Thread = c("Articles", "Podcasts", "Graphics"),
+          Link = 
+            c(
+              "https://simsoccer.jcink.net/index.php?showforum=31",
+              "https://simsoccer.jcink.net/index.php?showforum=32",
+              "https://simsoccer.jcink.net/index.php?showforum=33"
+            )
+        )
+      } else {
+        data %>% 
+          filter(User == user) %>% 
+          plyr::rbind.fill(
+            .,
+            .,
+            .
+          ) %>% 
+          mutate(
+            Thread = c("Articles", "Podcasts", "Graphics")
+          ) %>% 
+          unique()
+      }
+    }
+  
+  allData <- 
+    plyr::rbind.fill(
+      AC %>% filterData(), 
+      AF %>% filterData(), 
+      currentCAPs %>% filterDataCapped(),
+      TC %>% filterData(),
+      PT %>% filterData()
+    ) 
+  
+  return(allData)
   
 }
 
