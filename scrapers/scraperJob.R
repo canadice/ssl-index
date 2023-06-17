@@ -194,6 +194,10 @@ forumData <-
     `Minimum Wage`,
     .after = `All Traits`
   ) %>% 
+  relocate(
+    Nationality, 
+    .after = `Active`
+  ) %>% 
   select(
     Username:Nationality
   )
