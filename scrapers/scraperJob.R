@@ -62,7 +62,8 @@ countries <- c(
   "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
   "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan",
   "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe",
-  "England", "Scotland", "Wales", "Northern Ireland", "USA", "Czech Republic"
+  "England", "Scotland", "Wales", "Northern Ireland", "USA", "Czech Republic", "Côte d'Ivoire",
+  "Faroe Islands", "Gibraltar"
 )
 
 #################################################################
