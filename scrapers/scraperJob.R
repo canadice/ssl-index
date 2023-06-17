@@ -195,7 +195,7 @@ forumData <-
     .after = `All Traits`
   ) %>% 
   select(
-    Username:Active
+    Username:Nationality
   )
 
 write.csv(forumData, file = "data/forumData.csv", row.names = FALSE)
