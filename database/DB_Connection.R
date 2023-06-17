@@ -353,19 +353,26 @@ KeeperSumRegular <-dbGetQuery(con,
 ##                    Insert TPE Cost table                    ##
 #################################################################
 
-## Updating a table
-# dbExecute(con, "UPDATE gameDataPlayer SET Name = 'Liang Kuai' WHERE Name = 'Kuai Liang'")
-# dbExecute(con, "DELETE gameDataPlayer SET Season = '4' WHERE Name = 'Liang Kuai'")
-# 
-# gameData <-
-# tbl(con, "Keeper_Game_Data") %>%
-#   collect()
-# 
-# keeperGameData <-
-#   tbl(con, "gameDataPlayer") %>%
-#   collect()
-# 
-# dbWriteTable(con, "gameDataPlayer", gameData, overwrite = TRUE)
-# dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
+#################################################################
+##                    Updating a table                    ##
+#################################################################
+
+dbExecute(con, 
+          paste('UPDATE gameDataPlayer SET Name = "Princess Changshan" WHERE Name = "Changshan Princess"', 
+                sep = "")
+          )
+
+dbExecute(con, "DELETE gameDataPlayer SET Season = '4' WHERE Name = 'Liang Kuai'")
+
+gameData <-
+  tbl(con, "gameDataPlayer") %>%
+    collect()
+
+keeperGameData <-
+  tbl(con, "gameDataPlayer") %>%
+  collect()
+
+dbWriteTable(con, "gameDataPlayer", gameData, overwrite = TRUE)
+dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
 
 dbDisconnect(con)
