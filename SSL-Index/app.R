@@ -8,7 +8,7 @@
 ###########################################################################
 
 ## Data handling from HTML format
-# remotes::install_github("Canadice/sslrtools")
+# remotes::install_github("Canadice/sslrtools", force = TRUE)
 require(sslrtools)
 
 require(rvest)

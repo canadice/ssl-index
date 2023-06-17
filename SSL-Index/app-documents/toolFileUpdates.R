@@ -168,7 +168,7 @@ fileUpdateToolSERVER <- function(id){
             temp$Weight
           ),
           ',"Born":"', 
-          "2004-07-01" %>% as_date() - years(9 - (temp$Class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
+          "2004-07-01" %>% as_date() - years(10 - (temp$Class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
           '","DocumentType":"Player"}',
           sep = ""
         )
