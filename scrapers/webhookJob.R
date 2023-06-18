@@ -686,12 +686,12 @@ if(length(new) > 0){
 ##---------------------------------------------------------------
 ##                      New Discord Channel                     -
 ##---------------------------------------------------------------
-
-conn_obj <- 
-  create_discord_connection(
-    webhook = Sys.getenv("WAIVER_WATCHER"), 
-    username = 'Waiver Watcher', 
-    set_default = TRUE)
+# 
+# conn_obj <- 
+#   create_discord_connection(
+#     webhook = Sys.getenv("WAIVER_WATCHER"), 
+#     username = 'Waiver Watcher', 
+#     set_default = TRUE)
 
 
 #################################################################
@@ -772,6 +772,8 @@ lastPost <-
   topics %>%
   html_elements("span.desc") %>%
   html_text2()
+
+new <- NULL
 
 if(lastPost %>% length() > 0) {
   lastPost <- 
