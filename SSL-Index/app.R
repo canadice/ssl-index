@@ -75,6 +75,8 @@ require(shinydashboard)
 require(fresh)
 require(shiny.router)
 
+require(vembedr)
+
 ##################################################################
 ##                      SSL Logo and Theme                      ##
 ##################################################################
