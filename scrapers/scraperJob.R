@@ -27,7 +27,7 @@ require(RSQLite)
 ## Opens the connection to the SQLite Database
 con <- RSQLite::dbConnect(RSQLite::SQLite(), "database/SSL_Database.db")
 
-teamInfo <- 
+teamData <- 
   dbGetQuery(con, "SELECT * FROM Team_Information")
 
 countries <- c(
