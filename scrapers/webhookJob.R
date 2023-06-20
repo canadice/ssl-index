@@ -598,54 +598,69 @@ if(length(new) > 0){
     lapply(
       link,
       FUN = function(x){
-        scrape <- try(playerScraper(x), silent=TRUE)
+        topic <- xml2::read_html(x)
         
-        if( 
-          inherits(
-            scrape,  
-            "try-error")
-        ){
-          "The formatting of the player page is wrong."
-        } 
-        else if (scrape$`Preferred Position` == "Goalkeeper"){
+        postData <- 
+          topic %>%
+          rvest::html_elements(".post2") %>%
+          .[2] %>%
+          # ## Changes to dplyr 1.1.0 removes this functionality.
+          # dplyr::nth(2) %>%
+          rvest::html_elements(".postcolor") %>%
+          rvest::html_text2() %>%
+          stringr::str_split(pattern = "\\n") %>%
+          unlist() %>%
+          .[stringr::str_detect(string = ., pattern = ":")] %>%
+          .[!stringr::str_detect(string = ., pattern = "edited by")] %>%
+          stringr::str_split(pattern = ":", simplify = TRUE) %>%
+          matrix(ncol = 2) %>%
+          data.frame() %>%
+          dplyr::mutate(
+            X2 = stringr::str_squish(X2)
+          ) %>%
+          tidyr::pivot_wider(
+            names_from = X1,
+            values_from = X2
+          )
+        
+        if(postData$`Preferred Position` == "GK"){
           attributes <- 
-            scrape %>% 
-            select(
+            postData %>% 
+            dplyr::select(
               Acceleration:Throwing
             ) %>% 
-            pivot_longer(cols = everything()) %>% 
-            mutate(
+            tidyr::pivot_longer(cols = everything()) %>% 
+            dplyr::mutate(
               value = value %>% as.numeric()
             ) %>% 
-            left_join(
+            dplyr::left_join(
               tpeCost,
               by = "value"
             )
           
           paste("The attributes sum up to:", sum(attributes$cost) - 2*156, "TPE")
-             
         } else {
           attributes <- 
-            scrape %>% 
-            select(
-              Acceleration:`Work Rate`
+            postData %>% 
+            dplyr::select(
+              Acceleration:Technique
             ) %>% 
-            pivot_longer(cols = everything()) %>% 
-            mutate(
+            tidyr::pivot_longer(cols = everything()) %>% 
+            dplyr::mutate(
               value = value %>% as.numeric()
             ) %>% 
-            left_join(
+            dplyr::left_join(
               tpeCost,
               by = "value"
             )
           
           positional <- 
-            scrape %>% 
-            select(
+            postData %>% 
+            dplyr::select(
               Striker:`Defense [R]`
             ) %>% 
-            pivot_longer(cols = everything()) %>% 
-            mutate(
+            tidyr::pivot_longer(cols = everything()) %>% 
+            dplyr::mutate(
               value = value %>% as.numeric()
             )
           
