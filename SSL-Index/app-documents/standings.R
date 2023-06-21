@@ -70,7 +70,7 @@ standingsSERVER <- function(id){
               )
             )
           
-          if(input$season > 4){
+          if(input$season %>% as.numeric() > 4){
             sheet <- 
               sheet %>% 
               filter(
@@ -203,7 +203,7 @@ standingsSERVER <- function(id){
               )
             )
           
-          if(input$season > 4){
+          if(input$season %>% as.numeric() > 4){
             sheet <- 
               sheet %>% 
               filter(
@@ -344,11 +344,11 @@ standingsSERVER <- function(id){
               style = function(value, index){
                 list(
                   background = 
-                    ifelse(index > 6 & input$season > 4, "#e58e73", "white"),
+                    ifelse(index > 6 & input$season %>% as.numeric() > 4, "#e58e73", "white"),
                   # color = 
                   #   ifelse(index > 6, "white", "black"),
                   borderTop = 
-                    ifelse(index == 7 & input$season > 4, "solid", "none")
+                    ifelse(index == 7 & input$season %>% as.numeric() > 4, "solid", "none")
                   )
               }
             ),
@@ -381,11 +381,11 @@ standingsSERVER <- function(id){
                     function(value, index){
                       list(
                         background = 
-                          ifelse(index > 6 & input$season > 4, "#e58e73", "white"),
+                          ifelse(index > 6 & input$season %>% as.numeric() > 4, "#e58e73", "white"),
                         # color = 
                         #   ifelse(index > 6, "white", "black"),
                         borderTop = 
-                          ifelse(index == 7 & input$season > 4, "solid", "none"),
+                          ifelse(index == 7 & input$season %>% as.numeric() > 4, "solid", "none"),
                         fontWeight = "bold"
                       )
                     }
