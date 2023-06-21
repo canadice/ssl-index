@@ -55,6 +55,10 @@ FMAttributes <-
         str_detect(Name, "Liang") ~ "Kuai Liang",
         str_detect(Name, "Princess") ~ "Princess Changshan",
         TRUE ~ Name)
+  ) %>% 
+  relocate(
+    c(Pun, Ref, TRO),
+    .after = `1v1`
   )
 
 colnames(FMAttributes) <- 
