@@ -358,7 +358,7 @@ KeeperSumRegular <-dbGetQuery(con,
 #################################################################
 
 dbExecute(con, 
-          paste('UPDATE gameDataPlayer SET Name = "Princess Changshan" WHERE Name = "Changshan Princess"', 
+          paste('UPDATE gameDataKeeper SET Division = 0 WHERE Division = "Cup"', 
                 sep = "")
           )
 
