@@ -754,84 +754,6 @@ function(league = NULL, season = NULL) {
   
 }
 
-#* Gather the latest AC and Affiliate Task for a given player
-#* @param player The player to search for
-#* @get /cappedPT
-function(player = NULL, res){
-  tryCatch({
-    con <-
-      dbConnect(
-        SQLite(),
-        "../database/SSL_Database.db"
-      )
-    
-    username <- 
-      tbl(con, "Daily_Scrape") %>% 
-      filter(
-        Name == player
-      ) %>% 
-      select(
-        Username
-      ) %>% 
-      collect() %>% 
-      c()
-    
-    recentAC <- activityCheckLinks()
-    recentAffiliate <- affiliateLinks()
-    
-    postAC <- lapply(X = recentAC, activityCheckPosts) %>% 
-      do.call(rbind, args = .)
-    
-    postAffiliate <- lapply(X = recentAffiliate, affiliatePosts) %>% 
-      do.call(rbind, args = .)
-    
-    output <- NA
-    
-    if(username %in% postAC$User){
-      output[1] <- 
-        paste(
-          "You have posted in the most recent AC! Here is the link to your post:", 
-          postAC %>% 
-            filter(User == username) %>% 
-            select(Link)
-        )
-    } else {
-      output[1] <- 
-        paste(
-          "You have not posted in the recent thread! Here is the link to it:", 
-          postAC$Link[1] %>% 
-            stringr::str_extract(pattern = ".+&showtopic=[0-9]+")
-          
-        )
-    }
-    
-    
-    if(username %in% postAffiliate$User){
-      output[2] <- 
-        paste(
-          "You have posted in the most recent AC! Here is the link to your post", 
-          postAffiliate %>% 
-            filter(User == username) %>% 
-            select(Link)
-        )
-    } else {
-      output[2] <- 
-        paste(
-          "You have not posted in the recent thread! Here is the link to it:", 
-          postAffiliate$Link[1] %>% 
-            stringr::str_extract(pattern = ".+&showtopic=[0-9]+")
-        )
-    }
-    
-    dbDisconnect(con)
-    
-    output
-  }, error = function(e) {
-    res$status = 400  # the response object that is always available in plumber functions
-    return(list(error = e, traceback = ...))
-  })
-}
-
 #* Return interactive plot using plotly
 #* @serializer htmlwidget
 #* @get /plotly
@@ -847,6 +769,8 @@ function() {
     return(list(error = e, traceback = ...))
   })
 }
+
+#### List Player Functions ####
 
 #* Return the player data for a given user
 #* @param username The username of the user
@@ -918,6 +842,7 @@ function(retired = FALSE) {
   return(playerNames %>% toJSON(named = TRUE))
 }
 
+#### Standings Functions ####
 #* Return the standings of the given division and season
 #* @param division The division to get the standings from
 #* @param season The season to pull
@@ -1177,6 +1102,281 @@ document.getElementsByTagName( "head" )[0].appendChild( link );
                         }')
 }
 
+#### Bank Functions ####
+
+#* Get the bank balance of a given user/player
+#* @param user The username of the user to search for
+#* @serializer json
+#* @get /getBankBalance
+function(user = "") {
+  
+  if(user == ""){
+    return(0)
+  } 
+  
+  ## Downloads the bank data only if 
+  if(file.exists(paste("bankBuffer.RData"))){
+    load(file = paste("bankBuffer.RData"))
+    
+    # Only updates after six hours
+    if(difftime(Sys.time(), now, units = "hours") < 6){
+      # DO NOTHING
+    } else {
+      sheet <- 
+        googlesheets4::read_sheet(
+          ss = "https://docs.google.com/spreadsheets/d/1hY1ArnfTICZx0lZF3PTGA922u49avs6X5hKNyldbAn0/edit?usp=sharing", 
+          sheet = "Shorrax Import Player Pool"
+        )
+      
+      now <- Sys.time()
+      
+      save("sheet", "now", file = paste("bankBuffer.RData"))
+    }
+  } else {
+    sheet <- 
+      googlesheets4::read_sheet(
+        ss = "https://docs.google.com/spreadsheets/d/1hY1ArnfTICZx0lZF3PTGA922u49avs6X5hKNyldbAn0/edit?usp=sharing", 
+        sheet = "Shorrax Import Player Pool"
+      )
+    
+    now <- Sys.time()
+    
+    save("sheet", "now", file = paste("bankBuffer.RData"))
+  }
+  
+  balance <- 
+    sheet %>% 
+    filter(
+      Username == user
+    ) %>% 
+    select(Balance)
+  
+  if(balance %>% nrow() != 1){
+    return(0)
+  } else {
+    return(balance)
+  }
+  
+  
+}
+
+#### Basic Statistics Functions ####
+
+#* Returns statistics for a given player with filterable options
+#* @param player       The player name
+#* @param gameType     Filters league or cup games
+#* @param season       Filters a specific season
+#* @param seasonTotal  If seasonal totals should be returned
+#* @param careerTotal  If career totals should be returned  
+#* @param clubTotal    If club totals should be returned 
+#* @serializer json
+#* @get /getPlayerStatistics
+#* 
+function(player = "", gameType = NULL, season = NULL, 
+         seasonTotal = FALSE, 
+         careerTotal = FALSE, 
+         clubTotal = FALSE){
+  con <- 
+    dbConnect(
+      SQLite(), 
+      "../database/SSL_Database.db"
+    )
+  
+  ## Gets player's position
+  position <- 
+    tbl(con, "Daily_Scrape") %>% 
+    filter(
+      Name == player
+    ) %>% 
+    select(
+      `Preferred Position`
+    ) %>% 
+    collect()
+  
+  ## Gets game by game data filtered on player, gameType and season
+  if(position %in% c("GK", "Goalkeeper")){
+    data <- 
+      tbl(con, "gameDataKeeper") %>% 
+      filter(
+        Name == player
+      ) %>% 
+      ## Filters data on selected gameType (0 is Cup, 1 and 2 are Divisions)
+      {
+        if(!is.null(gameType)){
+          filter(
+            ., 
+            Division == gameType
+          ) 
+        } else {
+          .
+        }
+      } %>% 
+      ## Filters data on season
+      {
+        if(!is.null(season)){
+          filter(
+            .,
+            Season == season
+          )
+        } else {
+          .
+        }
+      }
+  } else {
+    data <- 
+      tbl(con, "gameDataPlayer") %>% 
+      filter(
+        Name == player
+      ) %>% 
+      ## Filters data on selected gameType (0 is Cup, 1 and 2 are Divisions)
+      {
+        if(!is.null(gameType)){
+          filter(
+            ., 
+            Division == gameType
+          ) 
+        } else {
+          .
+        }
+      } %>% 
+      ## Filters data on season
+      {
+        if(!is.null(season)){
+          filter(
+            .,
+            Season == season
+          )
+        } else {
+          .
+        }
+      } 
+  }
+  
+  finalData <- 
+    data %>% 
+    {
+      if(seasonTotal){
+        group_by(
+            .,
+            Season
+          ) %>% 
+          summarize(
+            Club = Club %>% paste(sep = " & "),
+            `Average Rating` = 
+              mean(`Average Rating`, na.rm = TRUE) %>% round(2),
+            across(
+              !c(Name:Position, `Average Rating`, Result:Wor),
+              ~ sum(.x, na.rm = TRUE)
+            )
+          ) %>% 
+          {
+            if(position %in% c("GK", "Goalkeeper")){
+              mutate(
+                ., 
+                `Save%` = 
+                  ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
+                     (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
+                  round(4)*100
+              )
+            } else {
+              mutate(
+                .,
+                `Pass%` = 
+                  round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
+                `Cross%` = 
+                  round(sum(`Successful Crosses`)/sum(`Attempted Crosses`), 4)*100,
+                `Header%` = 
+                  round(sum(`Successful Headers`)/sum(`Attempted Headers`), 4)*100,
+                `Tackle%` =
+                  round(sum(`Tackles Won`)/sum(`Attempted Tackles`), 4)*100
+              )
+            }
+          }
+      } else if(careerTotal){
+          summarize(
+            .,
+            Season = Season %>% paste(sep = " - "),
+            Club = Club %>% paste(sep = " & "),
+            `Average Rating` = 
+              mean(`Average Rating`, na.rm = TRUE) %>% round(2),
+            across(
+              !c(Name:Position, `Average Rating`, Result:Wor),
+              ~ sum(.x, na.rm = TRUE)
+            )
+          ) %>% 
+          {
+            if(position %in% c("GK", "Goalkeeper")){
+              mutate(
+                ., 
+                `Save%` = 
+                  ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
+                     (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
+                  round(4)*100
+              )
+            } else {
+              mutate(
+                .,
+                `Pass%` = 
+                  round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
+                `Cross%` = 
+                  round(sum(`Successful Crosses`)/sum(`Attempted Crosses`), 4)*100,
+                `Header%` = 
+                  round(sum(`Successful Headers`)/sum(`Attempted Headers`), 4)*100,
+                `Tackle%` =
+                  round(sum(`Tackles Won`)/sum(`Attempted Tackles`), 4)*100
+              )
+            }
+          }
+      } else if(clubTotal){
+        group_by(
+            .,
+            Club
+          ) %>% 
+          summarize(
+            `Average Rating` = 
+              mean(`Average Rating`, na.rm = TRUE) %>% round(2),
+            across(
+              !c(Name:Position, `Average Rating`, Result:Wor),
+              ~ sum(.x, na.rm = TRUE)
+            )
+          ) %>% 
+          {
+            if(position %in% c("GK", "Goalkeeper")){
+              mutate(
+                ., 
+                `Save%` = 
+                  ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
+                     (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
+                  round(4)*100
+              )
+            } else {
+              mutate(
+                .,
+                `Pass%` = 
+                  round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
+                `Cross%` = 
+                  round(sum(`Successful Crosses`)/sum(`Attempted Crosses`), 4)*100,
+                `Header%` = 
+                  round(sum(`Successful Headers`)/sum(`Attempted Headers`), 4)*100,
+                `Tackle%` =
+                  round(sum(`Tackles Won`)/sum(`Attempted Tackles`), 4)*100
+              )
+            }
+          }
+      } else {
+        .
+      }
+    } %>% 
+    collect()
+  
+  dbDisconnect(con)
+  
+  return(finalData)
+  
+}
+
+#### Advanced Statistics Functions ####
+
 #* Return the luck advanced stats data for either teams or players
 #* @param category Either "Name" for player or "Club"
 #* @serializer json
@@ -1320,62 +1520,7 @@ function(category = "Name"){
   dbDisconnect(con)
 }
 
-#* Get the bank balance of a given user/player
-#* @param user The username of the user to search for
-#* @serializer json
-#* @get /getBankBalance
-function(user = "") {
-  
-  if(user == ""){
-    return(0)
-  } 
-  
-  ## Downloads the bank data only if 
-  if(file.exists(paste("bankBuffer.RData"))){
-    load(file = paste("bankBuffer.RData"))
-    
-    # Only updates after six hours
-    if(difftime(Sys.time(), now, units = "hours") < 6){
-      # DO NOTHING
-    } else {
-      sheet <- 
-        googlesheets4::read_sheet(
-          ss = "https://docs.google.com/spreadsheets/d/1hY1ArnfTICZx0lZF3PTGA922u49avs6X5hKNyldbAn0/edit?usp=sharing", 
-          sheet = "Shorrax Import Player Pool"
-        )
-      
-      now <- Sys.time()
-      
-      save("sheet", "now", file = paste("bankBuffer.RData"))
-    }
-  } else {
-    sheet <- 
-      googlesheets4::read_sheet(
-        ss = "https://docs.google.com/spreadsheets/d/1hY1ArnfTICZx0lZF3PTGA922u49avs6X5hKNyldbAn0/edit?usp=sharing", 
-        sheet = "Shorrax Import Player Pool"
-      )
-    
-    now <- Sys.time()
-    
-    save("sheet", "now", file = paste("bankBuffer.RData"))
-  }
-  
-  balance <- 
-    sheet %>% 
-    filter(
-      Username == user
-    ) %>% 
-    select(Balance)
-  
-  if(balance %>% nrow() != 1){
-    return(0)
-  } else {
-    return(balance)
-  }
-  
-  
-}
-
+#### Point Task Functions ####
 
 #* Get the current available PTs for a user
 #* @param user The username of the user to search for
@@ -1703,6 +1848,84 @@ function(user = "") {
   
   return(allData)
   
+}
+
+#* Gather the latest AC and Affiliate Task for a given player
+#* @param player The player to search for
+#* @get /cappedPT
+function(player = NULL, res){
+  tryCatch({
+    con <-
+      dbConnect(
+        SQLite(),
+        "../database/SSL_Database.db"
+      )
+    
+    username <- 
+      tbl(con, "Daily_Scrape") %>% 
+      filter(
+        Name == player
+      ) %>% 
+      select(
+        Username
+      ) %>% 
+      collect() %>% 
+      c()
+    
+    recentAC <- activityCheckLinks()
+    recentAffiliate <- affiliateLinks()
+    
+    postAC <- lapply(X = recentAC, activityCheckPosts) %>% 
+      do.call(rbind, args = .)
+    
+    postAffiliate <- lapply(X = recentAffiliate, affiliatePosts) %>% 
+      do.call(rbind, args = .)
+    
+    output <- NA
+    
+    if(username %in% postAC$User){
+      output[1] <- 
+        paste(
+          "You have posted in the most recent AC! Here is the link to your post:", 
+          postAC %>% 
+            filter(User == username) %>% 
+            select(Link)
+        )
+    } else {
+      output[1] <- 
+        paste(
+          "You have not posted in the recent thread! Here is the link to it:", 
+          postAC$Link[1] %>% 
+            stringr::str_extract(pattern = ".+&showtopic=[0-9]+")
+          
+        )
+    }
+    
+    
+    if(username %in% postAffiliate$User){
+      output[2] <- 
+        paste(
+          "You have posted in the most recent AC! Here is the link to your post", 
+          postAffiliate %>% 
+            filter(User == username) %>% 
+            select(Link)
+        )
+    } else {
+      output[2] <- 
+        paste(
+          "You have not posted in the recent thread! Here is the link to it:", 
+          postAffiliate$Link[1] %>% 
+            stringr::str_extract(pattern = ".+&showtopic=[0-9]+")
+        )
+    }
+    
+    dbDisconnect(con)
+    
+    output
+  }, error = function(e) {
+    res$status = 400  # the response object that is always available in plumber functions
+    return(list(error = e, traceback = ...))
+  })
 }
 
 # Programmatically alter your API
