@@ -627,7 +627,7 @@ if(length(new) > 0){
           attributes <- 
             postData %>% 
             dplyr::select(
-              Acceleration:Throwing
+              Acceleration:Technique
             ) %>% 
             tidyr::pivot_longer(cols = everything()) %>% 
             dplyr::mutate(
