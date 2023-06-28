@@ -1,0 +1,119 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+#
+# See https://github.com/r-lib/actions/tree/master/examples#readme for
+# additional example workflows available for the R community.
+
+on:
+#   workflow_dispatch:
+    #inputs:
+    #  logLevel:
+    #    description: 'Log level'
+    #    required: true
+    #    default: 'warning'
+    #    type: choice
+    #    options:
+    #    - info
+    #    - warning
+    #    - debug
+    #  tags:
+  #      description: 'Test scenario tags'
+#        required: false
+        #type: boolean
+   schedule:
+         - cron: "5 15 * * 1,4"
+
+   workflow_dispatch:
+
+jobs:
+  generate-data:
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: windows-latest,   r: 'release'}
+
+    env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      RSPM: ${{ matrix.config.rspm }}
+      TACTICSACR: ${{ secrets.TACTICSACR }}
+      TACTICSATH: ${{ secrets.TACTICSATH }}
+      TACTICSCABA: ${{ secrets.TACTICSCABA }}
+      TACTICSCAT: ${{ secrets.TACTICSCAT }}
+      TACTICSCAI: ${{ secrets.TACTICSCAI }}
+      TACTICSFCK: ${{ secrets.TACTICSFCK }}
+      TACTICSHOL: ${{ secrets.TACTICSHOL }}
+      TACTICSLAO: ${{ secrets.TACTICSLAO }}
+      TACTICSLON: ${{ secrets.TACTICSLON }}
+      TACTICSMTL: ${{ secrets.TACTICSMTL }}
+      TACTICSPAR: ${{ secrets.TACTICSPAR }}
+      TACTICSREY: ${{ secrets.TACTICSREY }}
+      TACTICSSEO: ${{ secrets.TACTICSSEO }}
+      TACTICSSFV: ${{ secrets.TACTICSSFV }}
+      TACTICSTOK: ${{ secrets.TACTICSTOK }}
+      TACTICSUSP: ${{ secrets.TACTICSUSP }}
+      
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - name: Query dependencies
+        run: |
+          install.packages('remotes')
+          install.packages('sessioninfo')
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
+        shell: Rscript {0}
+
+      - name: Cache R packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
+
+      - name: Install dependencies
+        run: |
+          remotes::install_github("Canadice/sslrtools")
+          remotes::install_github("EriqLaplus/discordr")
+          remotes::install_deps(dependencies = TRUE, quiet = TRUE)
+        shell: Rscript {0}
+
+      - name: Create and populate .Renviron file
+        run: |
+          echo TACTICSACR ="TACTICSACR" >> ~/.Renviron
+          echo TACTICSATH ="TACTICSATH" >> ~/.Renviron
+          echo TACTICSCABA ="TACTICSCABA" >> ~/.Renviron
+          echo TACTICSCAT ="TACTICSCAT" >> ~/.Renviron
+          echo TACTICSCAI ="TACTICSCAI" >> ~/.Renviron
+          echo TACTICSFCK ="TACTICSFCK" >> ~/.Renviron
+          echo TACTICSHOL ="TACTICSHOL" >> ~/.Renviron
+          echo TACTICSLAO ="TACTICSLAO" >> ~/.Renviron
+          echo TACTICSLON ="TACTICSLON" >> ~/.Renviron
+          echo TACTICSMTL ="TACTICSMTL" >> ~/.Renviron
+          echo TACTICSPAR ="TACTICSPAR" >> ~/.Renviron
+          echo TACTICSREY ="TACTICSREY" >> ~/.Renviron
+          echo TACTICSSEO ="TACTICSSEO" >> ~/.Renviron
+          echo TACTICSSFV ="TACTICSSFV" >> ~/.Renviron
+          echo TACTICSTOK ="TACTICSTOK" >> ~/.Renviron
+          echo TACTICSUSP ="TACTICSUSP" >> ~/.Renviron
+        shell: bash
+
+      - name: Generate data
+        run: |
+          source("scrapers/tacticsJob.R")
+        shell: Rscript {0}
+
