@@ -1261,11 +1261,11 @@ function(player = "", gameType = NULL, season = NULL,
             Season
           ) %>% 
           summarize(
-            Club = Club %>% paste(sep = " & "),
+            Club = Club %>% DISTINCT() %>%  GROUP_CONCAT(),
             `Average Rating` = 
               mean(`Average Rating`, na.rm = TRUE) %>% round(2),
             across(
-              !c(Name:Position, `Average Rating`, Result:Wor),
+              !c(Name:Position, `Average Rating`),
               ~ sum(.x, na.rm = TRUE)
             )
           ) %>% 
@@ -1279,8 +1279,11 @@ function(player = "", gameType = NULL, season = NULL,
                   round(4)*100
               )
             } else {
-              mutate(
+              select(
                 .,
+                -(Result:Wor)
+              ) %>% 
+              mutate(
                 `Pass%` = 
                   round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
                 `Cross%` = 
@@ -1295,12 +1298,12 @@ function(player = "", gameType = NULL, season = NULL,
       } else if(careerTotal){
           summarize(
             .,
-            Season = Season %>% paste(sep = " - "),
-            Club = Club %>% paste(sep = " & "),
+            Season = Season %>% DISTINCT() %>%  GROUP_CONCAT(),
+            Club = Club %>% DISTINCT() %>%  GROUP_CONCAT(),
             `Average Rating` = 
               mean(`Average Rating`, na.rm = TRUE) %>% round(2),
             across(
-              !c(Name:Position, `Average Rating`, Result:Wor),
+              !c(Name:Position, `Average Rating`, Season),
               ~ sum(.x, na.rm = TRUE)
             )
           ) %>% 
@@ -1314,8 +1317,11 @@ function(player = "", gameType = NULL, season = NULL,
                   round(4)*100
               )
             } else {
-              mutate(
+              select(
                 .,
+                -(Result:Wor)
+              ) %>% 
+              mutate(
                 `Pass%` = 
                   round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
                 `Cross%` = 
@@ -1336,7 +1342,7 @@ function(player = "", gameType = NULL, season = NULL,
             `Average Rating` = 
               mean(`Average Rating`, na.rm = TRUE) %>% round(2),
             across(
-              !c(Name:Position, `Average Rating`, Result:Wor),
+              !c(Name:Position, `Average Rating`),
               ~ sum(.x, na.rm = TRUE)
             )
           ) %>% 
@@ -1350,8 +1356,11 @@ function(player = "", gameType = NULL, season = NULL,
                   round(4)*100
               )
             } else {
-              mutate(
+              select(
                 .,
+                -(Result:Wor)
+              ) %>% 
+              mutate(
                 `Pass%` = 
                   round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
                 `Cross%` = 
@@ -1365,6 +1374,107 @@ function(player = "", gameType = NULL, season = NULL,
           }
       } else {
         .
+      }
+    } %>% 
+    collect()
+  
+  dbDisconnect(con)
+  
+  return(finalData)
+  
+}
+
+#* Returns career statistics for all players based on the filters
+#* @param playerType   Filters player or keeper statistics
+#* @param gameType     Filters league or cup games
+#* @param clubTotal    If club totals should be returned 
+#* @serializer json
+#* @get /getCareerStatistics
+#* 
+function(playerType = "player", gameType = NULL, clubTotal = FALSE){
+  con <- 
+    dbConnect(
+      SQLite(), 
+      "../database/SSL_Database.db"
+    )
+  
+  ## Gets game by game data filtered on playerType, gameType and season
+  if(playerType != "player"){
+    data <- 
+      tbl(con, "gameDataKeeper") %>% 
+      ## Filters data on selected gameType (0 is Cup, 1 and 2 are Divisions)
+      {
+        if(!is.null(gameType)){
+          filter(
+            ., 
+            Division == gameType
+          ) 
+        } else {
+          .
+        }
+      } 
+  } else {
+    data <- 
+      tbl(con, "gameDataPlayer") %>% 
+      ## Filters data on selected gameType (0 is Cup, 1 and 2 are Divisions)
+      {
+        if(!is.null(gameType)){
+          filter(
+            ., 
+            Division == gameType
+          ) 
+        } else {
+          .
+        }
+      }
+  }
+  
+  finalData <- 
+    data %>% 
+    group_by(
+      Name
+    ) %>% 
+    summarize(
+      Season = Season %>% DISTINCT() %>% GROUP_CONCAT(),
+      Club = Club %>% DISTINCT() %>%  GROUP_CONCAT(),
+      Nationality = max(Nationality),
+      `Average Rating` = 
+        mean(`Average Rating`, na.rm = TRUE) %>% round(2),
+      across(
+        !c(Nationality:Position, `Average Rating`, Season),
+        ~ sum(.x, na.rm = TRUE)
+      )
+    ) %>% 
+    {
+      if(playerType != "player"){
+        group_by(
+          .,
+          Name
+        ) %>% 
+        mutate(
+          `Save%` = 
+            ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
+               (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
+            round(4)*100
+        )
+      } else {
+        select(
+          .,
+          -(Result:Wor)
+        ) %>% 
+        group_by(
+          Name
+        ) %>% 
+        mutate(
+          `Pass%` = 
+            round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
+          `Cross%` = 
+            round(sum(`Successful Crosses`)/sum(`Attempted Crosses`), 4)*100,
+          `Header%` = 
+            round(sum(`Successful Headers`)/sum(`Attempted Headers`), 4)*100,
+          `Tackle%` =
+            round(sum(`Tackles Won`)/sum(`Attempted Tackles`), 4)*100
+        )
       }
     } %>% 
     collect()

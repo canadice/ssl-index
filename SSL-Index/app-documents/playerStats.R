@@ -23,15 +23,19 @@ playerStatsUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              1:max(playerGameData$Season) %>% 
-              sort(decreasing = TRUE)
+              c(
+                1:max(playerGameData$Season) %>% 
+                  sort(decreasing = TRUE),
+                "ALL"
+              )
+              
           ),
           selectInput(
             inputId = ns("division"),
             label = "Select division",
             choices = 
               c(
-                "ALL",
+                "ALL" = 'NULL',
                 "Cup" = 0,
                 1,
                 2
@@ -180,10 +184,33 @@ playerStatsSERVER <- function(id){
                 ) %>% 
                 .$Club
               
-              image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)
+              if(Club %>% str_detect(",")){
+                clubs <- str_split(value, pattern = ",", simplify = TRUE) %>% c()
+                
+                list <- 
+                  tagList(
+                    lapply(
+                      clubs,
+                      function(X){
+                        div(
+                          style = "display: inline-block; width: 25px; float:right;", 
+                          img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
+                        )
+                      }
+                    )
+                  )
+                
+              } else {
+                image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
+                
+                list <- 
+                  tagList(
+                    div(style = "display: inline-block; width: 25px; float:right;", image)
+                  )
+              }
               
               tagList(
-                div(style = "display: inline-block; width: 25px; float: left;", image),
+                list,
                 div(style = "display: inline-block; width: 10px;"),
                 div(style = "display: inline-block; width: 200px;", value)
               )
@@ -204,15 +231,49 @@ playerStatsSERVER <- function(id){
                 ) %>% 
                 .$Club
               
-              image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)
+              if(Club %>% str_detect(",")){
+                clubs <- str_split(value, pattern = ",", simplify = TRUE) %>% c()
+                
+                list <- 
+                  tagList(
+                    lapply(
+                      clubs,
+                      function(X){
+                        div(
+                          style = "display: inline-block; width: 25px; float:right;", 
+                          img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
+                        )
+                      }
+                    )
+                  )
+                
+              } else {
+                image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
+                
+                list <- 
+                  tagList(
+                    div(style = "display: inline-block; width: 25px; float:right;", image)
+                  )
+              }
               
-              tagList(
-                div(style = "display: inline-block; width: 25px; float: left;", image),
+             tagList(
+                list,
                 div(style = "display: inline-block; width: 10px;"),
                 div(style = "display: inline-block; width: 200px;", value)
               )
             }
         )
+      
+      ## Bypassing that select does not allow a NULL option
+      careerFilter <- 
+        reactive({
+          if(input$division == 'NULL'){
+            NULL
+          } else {
+            input$division
+          }
+        })
+      
       
       ##----------------------------------------------------------------
       ##                        Loading the data                       -
@@ -221,93 +282,192 @@ playerStatsSERVER <- function(id){
       ## Creating the data from the chosen season
       
       activePlayerData <- reactive({
-        data <- 
-          playerGameData %>% 
-          filter(
-            Season == input$season
-          )
-        
-        if(input$division == "ALL"){
-          # Do nothing
+        if(input$season == "ALL"){
+          res <-  
+            GET(
+              url = "https://api.simulationsoccer.com/ssl/getCareerStatistics",
+              query = 
+                list(
+                  gameType = careerFilter())
+            )
+          
+          fromJSON(res$content %>% rawToChar()) %>% 
+            mutate(
+              Season = 
+                case_when(
+                  str_detect(Season, ",") ~ 
+                    str_split(
+                      Season, 
+                      pattern = ",", 
+                      simplify = TRUE
+                    ) %>% 
+                    apply(
+                      X = ., 
+                      MARGIN = 1, 
+                      FUN = 
+                        function(x) {
+                          x[c(1, max(min(which(x == "")-1, 10)))]
+                        }, 
+                      simplify = TRUE
+                    ) %>% 
+                    t() %>% 
+                    apply(
+                      X = ., 
+                      MARGIN = 1, 
+                      FUN = 
+                        function(x) {
+                          x %>% 
+                            as.numeric() %>% 
+                            paste0(collapse = " - ")
+                          }
+                      ),
+                  TRUE ~ Season %>% as.integer() %>% as.character()
+                )
+            ) %>% 
+            filter(
+              !str_detect(Name, pattern = "BOT")
+            )
         } else {
           data <- 
-            data %>% 
+            playerGameData %>% 
             filter(
-              Division == input$division
+              Season == input$season
+            )
+          
+          if((careerFilter() %>% is.null())){
+            # Do nothing
+          } else {
+            data <- 
+              data %>% 
+              filter(
+                Division == input$division
+              )
+          }
+          
+          # temp <- 
+          data %>% 
+            select(
+              -(Result:Wor)
+            ) %>% 
+            group_by(
+              Name
+            ) %>% 
+            dplyr::summarize(
+              Nationality = last(Nationality),
+              Club = last(Club),
+              `Average Rating` = mean(`Average Rating`, na.rm = TRUE),
+              across(
+                where(is.numeric),
+                ~ sum(.x, na.rm = TRUE)
+              )
+            ) %>% 
+            dplyr::mutate(
+              `Pass%` = (`Successful Passes` / `Attempted Passes`) %>% round(3)*100,
+              `Cross%` = (`Successful Crosses` / `Attempted Crosses`) %>% round(3)*100,
+              `Header%` = (`Successful Headers` / `Attempted Headers`) %>% round(3)*100,
+              `Tackle%` = (`Tackles Won` / `Attempted Tackles`) %>% round(3)*100,
+              `Average Rating` = `Average Rating` %>% round(2)
             )
         }
         
-        # temp <- 
-        data %>% 
-          select(
-            -(Result:Wor)
-          ) %>% 
-          group_by(
-            Name
-          ) %>% 
-          dplyr::summarize(
-            Nationality = last(Nationality),
-            Club = last(Club),
-            `Average Rating` = mean(`Average Rating`, na.rm = TRUE),
-            across(
-              where(is.numeric),
-              ~ sum(.x, na.rm = TRUE)
-            )
-          ) %>% 
-          dplyr::mutate(
-            `Pass%` = (`Successful Passes` / `Attempted Passes`) %>% round(3)*100,
-            `Cross%` = (`Successful Crosses` / `Attempted Crosses`) %>% round(3)*100,
-            `Header%` = (`Successful Headers` / `Attempted Headers`) %>% round(3)*100,
-            `Tackle%` = (`Tackles Won` / `Attempted Tackles`) %>% round(3)*100,
-            `Average Rating` = `Average Rating` %>% round(2)
-          )
+        
       })
       
       activeKeeperData <- reactive({
-        data <- 
-          keeperGameData %>% 
-          filter(
-            Season == input$season
-          )
         
-        if(input$division == "ALL"){
-          # Do nothing
-        } else {
-          data <- 
-            data %>% 
+        if(input$season == "ALL"){
+          res <-  
+            GET(
+              url = "https://api.simulationsoccer.com/ssl/getCareerStatistics",
+              query = 
+                list(
+                  playerType = "keeper",
+                  gameType = careerFilter())
+            )
+          
+          fromJSON(res$content %>% rawToChar()) %>% 
+            mutate(
+              Season = 
+                case_when(
+                  str_detect(Season, ",") ~ 
+                    str_split(
+                      Season, 
+                      pattern = ",", 
+                      simplify = TRUE
+                    ) %>% 
+                    apply(
+                      X = ., 
+                      MARGIN = 1, 
+                      FUN = 
+                        function(x) {
+                          x[c(1, max(min(which(x == "")-1, 10)))]
+                        }, 
+                      simplify = TRUE
+                    ) %>% 
+                    t() %>% 
+                    apply(
+                      X = ., 
+                      MARGIN = 1, 
+                      FUN = 
+                        function(x) {
+                          x %>% 
+                            as.numeric() %>% 
+                            paste0(collapse = " - ")
+                        }
+                    ),
+                  TRUE ~ Season %>% as.integer() %>% as.character()
+                )
+           ) %>% 
             filter(
-              Division == input$division
+              !str_detect(Name, pattern = "BOT")
+            )
+        } else {
+          
+          data <- 
+            keeperGameData %>% 
+            filter(
+              Season == input$season
+            )
+          
+          if(careerFilter() %>% is.null()){
+            # Do nothing
+          } else {
+            data <- 
+              data %>% 
+              filter(
+                Division == input$division
+              )
+          }
+          
+          # temp <- 
+          data %>% 
+            select(
+              -(Result:Division)
+            ) %>% 
+            group_by(
+              Name
+            ) %>% 
+            dplyr::summarize(
+              Nationality = last(Nationality),
+              Club = last(Club),
+              `Average Rating` = mean(`Average Rating`, na.rm = TRUE),
+              `xSave%` = mean(`xSave%`, na.rm = TRUE) %>% round(2),
+              across(
+                where(is.numeric),
+                ~ sum(.x, na.rm = TRUE)
+              )
+            ) %>% 
+            dplyr::mutate(
+              `Save%` = 
+                ((`Saves Parried` + `Saves Held` + `Saves Tipped`) / 
+                (`Saves Parried` + `Saves Held` + `Saves Tipped` + Conceded)) %>% round(3)*100,
+              `Average Rating` = `Average Rating` %>% round(2)
+            ) %>% 
+            relocate(
+              `xSave%`,
+              .after = `Penalties Saved`
             )
         }
-        
-        # temp <- 
-        data %>% 
-          select(
-            -(Result:Division)
-          ) %>% 
-          group_by(
-            Name
-          ) %>% 
-          dplyr::summarize(
-            Nationality = last(Nationality),
-            Club = last(Club),
-            `Average Rating` = mean(`Average Rating`, na.rm = TRUE),
-            `xSave%` = mean(`xSave%`, na.rm = TRUE) %>% round(2),
-            across(
-              where(is.numeric),
-              ~ sum(.x, na.rm = TRUE)
-            )
-          ) %>% 
-          dplyr::mutate(
-            `Save%` = 
-              ((`Saves Parried` + `Saves Held` + `Saves Tipped`) / 
-              (`Saves Parried` + `Saves Held` + `Saves Tipped` + Conceded)) %>% round(3)*100,
-            `Average Rating` = `Average Rating` %>% round(2)
-          ) %>% 
-          relocate(
-            `xSave%`,
-            .after = `Penalties Saved`
-          )
       })
       
       output$playerStats <- renderReactable({
@@ -343,11 +503,34 @@ playerStatsSERVER <- function(id){
                         .$Club %>% 
                         .[index]
                       
-                      image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)
+                      if(Club %>% str_detect(",")){
+                        clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
+                        
+                        list <- 
+                          tagList(
+                            lapply(
+                              clubs,
+                              function(X){
+                                div(
+                                  style = "display: inline-block; width: 25px; float:right;", 
+                                  img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
+                                )
+                              }
+                            )
+                          )
+                        
+                      } else {
+                        image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
+                        
+                        list <- 
+                          tagList(
+                            div(style = "display: inline-block; width: 25px; float:right;", image)
+                          )
+                      }
                       
                       tagList(
-                        div(style = "display: inline-block; width: 200px;", value),
-                        div(style = "display: inline-block; width: 25px; float: right;", image),
+                        div(style = "display: inline-block; width: 250px;", value),
+                        list,
                         div(style = "font-size: 1rem", Nation)
                       )
                     }
@@ -404,11 +587,34 @@ playerStatsSERVER <- function(id){
                         .$Club %>% 
                         .[index]
                       
-                      image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)
+                      if(Club %>% str_detect(",")){
+                        clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
+                        
+                        list <- 
+                          tagList(
+                            lapply(
+                              clubs,
+                              function(X){
+                                div(
+                                  style = "display: inline-block; width: 25px; float:right;", 
+                                  img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
+                                )
+                              }
+                            )
+                          )
+                        
+                      } else {
+                        image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
+                        
+                        list <- 
+                          tagList(
+                            div(style = "display: inline-block; width: 25px; float:right;", image)
+                          )
+                      }
                       
                       tagList(
-                        div(style = "display: inline-block; width: 200px;", value),
-                        div(style = "display: inline-block; width: 25px; float: right;", image),
+                        div(style = "display: inline-block; width: 250px;", value),
+                        list,
                         div(style = "font-size: 1rem", Nation)
                       )
                     }
@@ -432,216 +638,220 @@ playerStatsSERVER <- function(id){
           )
       })
       
-      output$leaderGoals <- renderReactable({
-        activePlayerData() %>% 
-          select(
-            Name, 
-            Goals
-          ) %>% 
-          arrange(
-            desc(Goals)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = outLeadersColDef
-              )
-          )
-      })
+      ### Leaders
+      {
+        output$leaderGoals <- renderReactable({
+          activePlayerData() %>% 
+            select(
+              Name, 
+              Goals
+            ) %>% 
+            arrange(
+              desc(Goals)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = outLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderAssists <- renderReactable({
+          activePlayerData() %>% 
+            select(
+              Name, 
+              Assists
+            ) %>% 
+            arrange(
+              desc(Assists)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = outLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderSoT <- renderReactable({
+          activePlayerData() %>% 
+            select(
+              Name, 
+              `Shots on Target`
+            ) %>% 
+            arrange(
+              desc(`Shots on Target`)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = outLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderInterceptions <- renderReactable({
+          activePlayerData() %>% 
+            select(
+              Name, 
+              Interceptions
+            ) %>% 
+            arrange(
+              desc(Interceptions)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = outLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderPoM <- renderReactable({
+          activePlayerData() %>% 
+            select(
+              Name, 
+              `Player of the Match`
+            ) %>% 
+            arrange(
+              desc(`Player of the Match`)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = outLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderFouls <- renderReactable({
+          activePlayerData() %>% 
+            select(
+              Name, 
+              Fouls
+            ) %>% 
+            arrange(
+              desc(Fouls)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = outLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderSavePerc <- renderReactable({
+          activeKeeperData() %>% 
+            select(
+              Name, 
+              `Save%`
+            ) %>% 
+            arrange(
+              desc(`Save%`)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = goalLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderWins <- renderReactable({
+          activeKeeperData() %>% 
+            select(
+              Name, 
+              Won
+            ) %>% 
+            arrange(
+              desc(Won)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = goalLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderCleanSheets <- renderReactable({
+          activeKeeperData() %>% 
+            select(
+              Name, 
+              `Clean Sheets`
+            ) %>% 
+            arrange(
+              desc(`Clean Sheets`)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = goalLeadersColDef
+                )
+            )
+        })
+        
+        output$leaderConceded <- renderReactable({
+          activeKeeperData() %>% 
+            select(
+              Name, 
+              Conceded
+            ) %>% 
+            arrange(
+              desc(Conceded)
+            ) %>% 
+            slice_head(n = 10) %>% 
+            reactable(
+              pagination = FALSE,
+              sortable = FALSE,
+              theme = pff(font_color = "#000"),
+              columns = 
+                list(
+                  Name = goalLeadersColDef
+                )
+            )
+        })
+      }
       
-      output$leaderAssists <- renderReactable({
-        activePlayerData() %>% 
-          select(
-            Name, 
-            Assists
-          ) %>% 
-          arrange(
-            desc(Assists)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = outLeadersColDef
-              )
-          )
-      })
-      
-      output$leaderSoT <- renderReactable({
-        activePlayerData() %>% 
-          select(
-            Name, 
-            `Shots on Target`
-          ) %>% 
-          arrange(
-            desc(`Shots on Target`)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = outLeadersColDef
-              )
-          )
-      })
-      
-      output$leaderInterceptions <- renderReactable({
-        activePlayerData() %>% 
-          select(
-            Name, 
-            Interceptions
-          ) %>% 
-          arrange(
-            desc(Interceptions)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = outLeadersColDef
-              )
-          )
-      })
-      
-      output$leaderPoM <- renderReactable({
-        activePlayerData() %>% 
-          select(
-            Name, 
-            `Player of the Match`
-          ) %>% 
-          arrange(
-            desc(`Player of the Match`)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = outLeadersColDef
-              )
-          )
-      })
-      
-      output$leaderFouls <- renderReactable({
-        activePlayerData() %>% 
-          select(
-            Name, 
-            Fouls
-          ) %>% 
-          arrange(
-            desc(Fouls)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = outLeadersColDef
-              )
-          )
-      })
-      
-      output$leaderSavePerc <- renderReactable({
-        activeKeeperData() %>% 
-          select(
-            Name, 
-            `Save%`
-          ) %>% 
-          arrange(
-            desc(`Save%`)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = goalLeadersColDef
-              )
-          )
-      })
-      
-      output$leaderWins <- renderReactable({
-        activeKeeperData() %>% 
-          select(
-            Name, 
-            Won
-          ) %>% 
-          arrange(
-            desc(Won)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = goalLeadersColDef
-              )
-          )
-      })
-      
-      output$leaderCleanSheets <- renderReactable({
-        activeKeeperData() %>% 
-          select(
-            Name, 
-            `Clean Sheets`
-          ) %>% 
-          arrange(
-            desc(`Clean Sheets`)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = goalLeadersColDef
-              )
-          )
-      })
-      
-      output$leaderConceded <- renderReactable({
-        activeKeeperData() %>% 
-          select(
-            Name, 
-            Conceded
-          ) %>% 
-          arrange(
-            desc(Conceded)
-          ) %>% 
-          slice_head(n = 10) %>% 
-          reactable(
-            pagination = FALSE,
-            sortable = FALSE,
-            theme = pff(font_color = "#000"),
-            columns = 
-              list(
-                Name = goalLeadersColDef
-              )
-          )
-      })
-      
+      ### Download data button
       output$downloadData <- downloadHandler(
         filename = function() {
           paste("SSL Player Statistics.zip", sep = "")
