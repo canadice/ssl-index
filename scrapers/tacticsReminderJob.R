@@ -44,7 +44,7 @@ hooks <-
     Sys.getenv('TACTICSUSP')
   )
 
-sendDeadline <- function(x){
+sendReminder <- function(x){
   conn_obj <- 
     create_discord_connection(
       webhook = x, 
@@ -53,9 +53,9 @@ sendDeadline <- function(x){
   
   send_webhook_message(
     paste(
-      "=======================================\n",
-      "## Tactics deadline has passed!\n", 
-      "=======================================",
+      "######\n",
+      "Tactics deadline is in less than three hours!\n", 
+      "######",
       sep = ""
     )
   )
@@ -64,7 +64,7 @@ sendDeadline <- function(x){
 
 lapply(
   X = hooks, 
-  FUN = sendDeadline
+  FUN = sendReminder
 )
 
 
