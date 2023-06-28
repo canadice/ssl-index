@@ -185,7 +185,7 @@ playerStatsSERVER <- function(id){
                 .$Club
               
               if(Club %>% str_detect(",")){
-                clubs <- str_split(value, pattern = ",", simplify = TRUE) %>% c()
+                clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
                 
                 list <- 
                   tagList(
@@ -201,7 +201,7 @@ playerStatsSERVER <- function(id){
                   )
                 
               } else {
-                image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
+                image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
                 
                 list <- 
                   tagList(
@@ -232,7 +232,7 @@ playerStatsSERVER <- function(id){
                 .$Club
               
               if(Club %>% str_detect(",")){
-                clubs <- str_split(value, pattern = ",", simplify = TRUE) %>% c()
+                clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
                 
                 list <- 
                   tagList(
@@ -248,7 +248,7 @@ playerStatsSERVER <- function(id){
                   )
                 
               } else {
-                image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
+                image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
                 
                 list <- 
                   tagList(
