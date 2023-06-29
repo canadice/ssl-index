@@ -710,7 +710,11 @@ goalieOutput <- function(season, matchday){
           !contains(".x") & !contains(".y"),
           -Away,
           -Home
-        ) 
+        ) %>% 
+        mutate(
+          Division = case_when(Division == "Cup" ~ "0",
+                               TRUE ~ Division)
+        )
     }
   
   return(matchGoalie)
@@ -781,6 +785,10 @@ outfieldOutput <- function(season, matchday){
         relocate(
           Acc:Wor,
           .after = Division
+        ) %>% 
+        mutate(
+          Division = case_when(Division == "Cup" ~ "0",
+                               TRUE ~ Division)
         )
     }
   
@@ -791,7 +799,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 10
 
-date <- "2023-10-17" %>% as.Date()
+date <- "2023-11-14" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
