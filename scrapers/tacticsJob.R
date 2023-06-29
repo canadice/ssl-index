@@ -10,17 +10,8 @@
 #remotes::install_github("Canadice/sslrtools")
 # remotes::install_github("EriqLaplus/discordr")
 require(discordr)
-require(sslrtools)
-
-require(rvest)
-
-require(plyr)
 
 require(dplyr)
-
-require(tidyr)
-
-require(stringr)
 
 require(lubridate)
 
