@@ -45,12 +45,16 @@ sendReminder <- function(x){
   send_webhook_message(
     paste(
       "######\n",
-      "Tactics deadline is in less than three hours!\n", 
+      "The tactics deadline is <t:", 
+      (lubridate::today() + lubridate::hours(19)) %>% as.numeric(),
+      ":R>!\n", 
       "######",
       sep = ""
     )
   )
 }
+
+
 
 
 lapply(
