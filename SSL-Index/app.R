@@ -16,6 +16,7 @@ require(rvest)
 ## Data handling
 require(dplyr)
 require(tidyr)
+require(purrr)
 
 ## Visualizations
 require(ggplot2)
@@ -229,6 +230,10 @@ ui <- function(request){
             tabName = "standings"
           ),
           menuSubItem(
+            "Cup",
+            tabName = "standingsCup"
+          ),
+          menuSubItem(
             "Individual Statistics",
             tabName = "playerStats"
           ),
@@ -304,9 +309,8 @@ ui <- function(request){
     
     dashboardBody(
       customTheme %>% use_theme(),
+      includeCSS('style.css'),
       useShinyjs(),
-      ### Specifies a custom color for value and info boxes
-      tags$style(".small-box.bg-orange { background-color: #e08b46 !important; color: #000000 !important; }"),
       tabItems(
         tabItem(
           "welcome",
@@ -325,6 +329,13 @@ ui <- function(request){
             h1("Standings", align = "center")
           ),
           standingsUI(id = "standings")
+        ),
+        tabItem(
+          "standingsCup",
+          titlePanel(
+            h1("Simulation Soccer Cup", align = "center")
+          ),
+          standingsCupUI(id = "standingsCup")
         ),
         tabItem(
           "teamOverview",
@@ -434,6 +445,7 @@ server <- function(input, output, session) {
   loadedModuleregression <- reactiveVal(FALSE)
   loadedModuleadvancedStats <- reactiveVal(FALSE)
   loadedModuleacademyStats <- reactiveVal(FALSE)
+  loadedModulestandingsCup <- reactiveVal(FALSE)
   
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
@@ -519,6 +531,10 @@ server <- function(input, output, session) {
     } else if(input$tabs == "academyStats" & !loadedModuleacademyStats()){
       loadedModuleacademyStats(TRUE)
       academyStatsServer(id = "academyStats")
+      
+    } else if(input$tabs == "standingsCup" & !loadedModulestandingsCup()){
+      loadedModulestandingsCup(TRUE)
+      standingsCupServer(id = "standingsCup")
       
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
