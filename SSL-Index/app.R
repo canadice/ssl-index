@@ -285,8 +285,15 @@ ui <- function(request){
           )
         ),
         menuItem(
-          "File Update Tool",
-          tabName = "fileUpdate"
+          "Fileworker Tools",
+          menuSubItem(
+            "Export Builds",
+            tabName = "fileUpdate"
+          ),
+          menuSubItem(
+            "Check FM Builds",
+            tabName = "fileCheck"
+          )
         ),
         menuItem(
           "SSL Forum",
@@ -404,6 +411,13 @@ ui <- function(request){
             h1("File Update Tool", align = "center")
           ),
           fileUpdateToolUI(id = "fileUpdate")
+        ),
+        tabItem(
+          "fileCheck",
+          titlePanel(
+            h1("File Check Tool", align = "center")
+          ),
+          fileCheckUI(id = "fileCheck")
         )#,
         # tabItem(
         #   "playerBuilder",
@@ -446,7 +460,7 @@ server <- function(input, output, session) {
   loadedModuleadvancedStats <- reactiveVal(FALSE)
   loadedModuleacademyStats <- reactiveVal(FALSE)
   loadedModulestandingsCup <- reactiveVal(FALSE)
-  
+  loadedModulefileCheck <- reactiveVal(FALSE)
   # loadedModuleIIHF <- reactiveVal(FALSE)
   
   
@@ -535,6 +549,10 @@ server <- function(input, output, session) {
     } else if(input$tabs == "standingsCup" & !loadedModulestandingsCup()){
       loadedModulestandingsCup(TRUE)
       standingsCupServer(id = "standingsCup")
+      
+    } else if(input$tabs == "fileCheck" & !loadedModulefileCheck()){
+      loadedModulefileCheck(TRUE)
+      fileCheckServer(id = "fileCheck")
       
     }
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
