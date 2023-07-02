@@ -20,10 +20,23 @@ require(RSQLite)
 
 # source("D:/GitHubs/ssl-index/SSL-Index/app-documents/dataLoader.R")
 
+# con <- 
+#   dbConnect(
+#     SQLite(), 
+#     "database/SSL_Database.db"
+#   )
+
+## Downloads a local file for the database
+dbFile <- tempfile(fileext = ".db")
+
+dbUrl <- ("https://github.com/canadice/ssl-index/blob/main/database/SSL_Database.db?raw=true")
+
+download.file(dbUrl, destfile = dbFile, mode = "wb")
+
 con <- 
   dbConnect(
     SQLite(), 
-    "database/SSL_Database.db"
+    dbFile
   )
 
 playerData <- 
