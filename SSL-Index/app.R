@@ -17,6 +17,7 @@ require(rvest)
 require(dplyr)
 require(tidyr)
 require(purrr)
+require(arsenal)
 
 ## Visualizations
 require(ggplot2)
