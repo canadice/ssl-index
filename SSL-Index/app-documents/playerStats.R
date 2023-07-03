@@ -210,9 +210,8 @@ playerStatsSERVER <- function(id){
               }
               
               tagList(
-                list,
-                div(style = "display: inline-block; width: 10px;"),
-                div(style = "display: inline-block; width: 200px;", value)
+                div(style = "display: inline-block; width: 250px;", value),
+                list
               )
             }
         )
@@ -257,9 +256,8 @@ playerStatsSERVER <- function(id){
               }
               
              tagList(
-                list,
-                div(style = "display: inline-block; width: 10px;"),
-                div(style = "display: inline-block; width: 200px;", value)
+                div(style = "display: inline-block; width: 250px;", value),
+                list
               )
             }
         )
