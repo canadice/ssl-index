@@ -17,20 +17,23 @@ require(lubridate)
 
 hooks <- 
   c(
-    Sys.getenv('ACADEMYREM')
+    Sys.getenv('MATCHDAYREM')
   )
 
 sendReminder <- function(x){
   conn_obj <- 
     create_discord_connection(
       webhook = x, 
-      username = 'Academy Reminder', 
+      username = 'Matchday Reminder', 
       set_default = TRUE)
   
   send_webhook_message(
     paste(
       "######\n",
-      "<@435275669589721101>, this is your gentle reminder to sim the Academy.", 
+      "<&957275484385861672>, the next matchday will premiere in <t:", 
+      (lubridate::today() + lubridate::hours(19)) %>% as.numeric(),
+      ":R>!\n",
+      "Join the fun via https://bit.ly/sslYoutube \n",
       "######",
       sep = ""
     )
