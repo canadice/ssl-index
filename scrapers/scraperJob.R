@@ -31,6 +31,7 @@ teamData <-
   dbGetQuery(con, "SELECT * FROM Team_Information")
 
 countries <- c(
+  "United States", "USA",
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
   "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain",
   "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
@@ -60,9 +61,9 @@ countries <- c(
   "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan",
   "Tajikistan", "Tanzania", "Thailand", "Togo", "Tonga", "Trinidad and Tobago",
   "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
-  "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan",
+  "United Arab Emirates", "United Kingdom", "Uruguay", "Uzbekistan",
   "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe",
-  "England", "Scotland", "Wales", "Northern Ireland", "USA", "Czech Republic", "Côte d'Ivoire",
+  "England", "Scotland", "Wales", "Northern Ireland", "Czech Republic", "Côte d'Ivoire",
   "Faroe Islands", "Gibraltar", "Catalonia"
 )
 
