@@ -157,9 +157,13 @@ forumData <-
         pattern = 
           paste0(
             countries %>% 
-              stringr::str_trim(), 
+              stringr::str_trim() %>% 
+              paste(
+                "$",
+                sep = ""
+              ), 
             collapse = "|"
-          ) 
+          )
       ) %>% 
       dplyr::if_else(
         . == "USA", "United States", .
