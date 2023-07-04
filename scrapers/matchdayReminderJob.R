@@ -30,7 +30,7 @@ sendReminder <- function(x){
   send_webhook_message(
     paste(
       "######\n",
-      "<&957275484385861672>, the next matchday will premiere in <t:", 
+      "<@&957275484385861672>>, the next matchday will premiere in <t:", 
       (lubridate::today() + lubridate::hours(19)) %>% as.numeric(),
       ":R>!\n",
       "Join the fun via https://bit.ly/sslYoutube \n",
