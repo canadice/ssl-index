@@ -40,7 +40,8 @@ if(Sys.info()["sysname"] == "Linux"){
 cors <- function(req, res) {
   safe_domains <- c("https://api.simulationsoccer.com", 
                     "https://simsoccer.jcink.net",
-                    "http://sslforums.com")
+                    "http://sslforums.com",
+                    "https://index.simulationsoccer.com")
   
   if (any(grepl(pattern = paste0(safe_domains,collapse="|"), req$HTTP_REFERER,ignore.case=T))) {
     res$setHeader("Access-Control-Allow-Origin", sub("/$","",req$HTTP_REFERER)) #Have to remove last slash, for some reason
@@ -1375,6 +1376,198 @@ function(player = "", gameType = NULL, season = NULL,
       } else {
         .
       }
+    } %>% 
+    collect()
+  
+  dbDisconnect(con)
+  
+  return(finalData)
+  
+}
+
+#* Returns statistics for a given club with filterable options
+#* @param club         The club name
+#* @param gameType     Filters league or cup games
+#* @param season       Filters a specific season
+#* @param players      TRUE for players, FALSE for goalkeepers
+#* @param seasonTotal  TRUE for seasonal totals otherwise career totals for team
+#* @serializer json
+#* @get /getTeamStatistics
+#* 
+function(club = "", gameType = NULL, season = NULL, players = TRUE, seasonTotal = FALSE){
+  con <- 
+    dbConnect(
+      SQLite(), 
+      "../database/SSL_Database.db"
+    )
+  
+  players <- dplyr::if_else(players == "true", TRUE, FALSE)
+  
+  ## Gets game by game data filtered on player, gameType and season
+  if(!players){
+    data <- 
+      tbl(con, "gameDataKeeper") %>% 
+      filter(
+        Club == club
+      ) %>% 
+      ## Filters data on selected gameType (0 is Cup, 1 and 2 are Divisions)
+      {
+        if(!is.null(gameType)){
+          filter(
+            ., 
+            Division == gameType
+          ) 
+        } else {
+          .
+        }
+      } %>% 
+      ## Filters data on season
+      {
+        if(!is.null(season)){
+          filter(
+            .,
+            Season == season
+          )
+        } else {
+          .
+        }
+      }
+  } else {
+    data <- 
+      tbl(con, "gameDataPlayer") %>% 
+      filter(
+        Club == club
+      ) %>% 
+      ## Filters data on selected gameType (0 is Cup, 1 and 2 are Divisions)
+      {
+        if(!is.null(gameType)){
+          filter(
+            ., 
+            Division == gameType
+          ) 
+        } else {
+          .
+        }
+      } %>% 
+      ## Filters data on season
+      {
+        if(!is.null(season)){
+          filter(
+            .,
+            Season == season
+          )
+        } else {
+          .
+        }
+      } 
+  }
+  
+  finalData <- 
+    data %>% 
+    {
+      if(seasonTotal){
+        group_by(
+          .,
+          Name,
+          Season
+        ) %>% 
+          summarize(
+            `Average Rating` = 
+              mean(`Average Rating`, na.rm = TRUE) %>% round(2),
+            across(
+              !c(Nationality:Position, `Average Rating`),
+              ~ sum(.x, na.rm = TRUE)
+            )
+          ) %>% 
+          {
+            if(!players){
+              select(
+                .,
+                -(Result:Division)
+              ) %>% 
+              group_by(
+                Name,
+                Season
+              ) %>% 
+              mutate(
+                `Save%` = 
+                  ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
+                     (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
+                  round(4)*100,
+                `xSave%` = `xSave%`/Apps
+              )
+            } else {
+              select(
+                .,
+                -(Result:Wor)
+              ) %>% 
+                group_by(
+                  Name,
+                  Season
+                ) %>% 
+                mutate(
+                  `Pass%` = 
+                    round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
+                  `Cross%` = 
+                    round(sum(`Successful Crosses`)/sum(`Attempted Crosses`), 4)*100,
+                  `Header%` = 
+                    round(sum(`Successful Headers`)/sum(`Attempted Headers`), 4)*100,
+                  `Tackle%` =
+                    round(sum(`Tackles Won`)/sum(`Attempted Tackles`), 4)*100
+                )
+            }
+          }
+      } else {
+        group_by(
+          .,
+          Name
+        ) %>% 
+        summarize(
+          Season = Season %>% DISTINCT() %>%  GROUP_CONCAT(),
+          `Average Rating` = 
+            mean(`Average Rating`, na.rm = TRUE) %>% round(2),
+          across(
+            !c(Nationality:Position, `Average Rating`, Season),
+            ~ sum(.x, na.rm = TRUE)
+          )
+        ) %>% 
+          {
+            if(!players){
+              select(
+                .,
+                -(Result:Division)
+              ) %>% 
+                group_by(
+                  Name,
+                ) %>% 
+                mutate(
+                  `Save%` = 
+                    ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
+                       (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
+                    round(4)*100,
+                  `xSave%` = `xSave%`/Apps
+                )
+            } else {
+              select(
+                .,
+                -(Result:Wor)
+              ) %>% 
+                group_by(
+                  Name
+                ) %>% 
+                mutate(
+                  `Pass%` = 
+                    round(sum(`Successful Passes`)/sum(`Attempted Passes`), 4)*100,
+                  `Cross%` = 
+                    round(sum(`Successful Crosses`)/sum(`Attempted Crosses`), 4)*100,
+                  `Header%` = 
+                    round(sum(`Successful Headers`)/sum(`Attempted Headers`), 4)*100,
+                  `Tackle%` =
+                    round(sum(`Tackles Won`)/sum(`Attempted Tackles`), 4)*100
+                )
+            }
+          }
+      } 
     } %>% 
     collect()
   
