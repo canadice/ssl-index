@@ -88,7 +88,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          remotes::install_github("EriqLaplus/discordr")
+          remotes::install_github("jljsio/discordr")
           remotes::install_deps(dependencies = TRUE, quiet = TRUE)
         shell: Rscript {0}
 
