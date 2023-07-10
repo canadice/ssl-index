@@ -79,7 +79,7 @@
 #         run: |
 #           remotes::install_deps(dependencies = TRUE)
           # remotes::install_github("Canadice/sslrtools")
-          # remotes::install_github("EriqLaplus/discordr")
+          # remotes::install_github("jljsio/discordr")
 #         shell: Rscript {0}
 #         
       # - name: Create and populate .Renviron file
