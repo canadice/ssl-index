@@ -7,6 +7,8 @@
 #    https://www.rplumber.io/
 #
 
+# pr(".api/plumber.R") %>%  pr_run(port=8000)
+
 require(plumber, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(googlesheets4, quietly = TRUE)
@@ -25,6 +27,7 @@ require(reactable, quietly = TRUE)
 require(htmltools, quietly = TRUE)
 require(knitr, quietly = TRUE)
 require(rmarkdown, quietly = TRUE)
+require(reactR, quietly = TRUE)
 # require(googlesheets4)
 
 googlesheets4::gs4_deauth()
@@ -41,7 +44,8 @@ cors <- function(req, res) {
   safe_domains <- c("https://api.simulationsoccer.com", 
                     "https://simsoccer.jcink.net",
                     "http://sslforums.com",
-                    "https://index.simulationsoccer.com")
+                    "https://index.simulationsoccer.com", 
+                    "http://localhost:3006")
   
   if (any(grepl(pattern = paste0(safe_domains,collapse="|"), req$HTTP_REFERER,ignore.case=T))) {
     res$setHeader("Access-Control-Allow-Origin", sub("/$","",req$HTTP_REFERER)) #Have to remove last slash, for some reason
@@ -309,7 +313,7 @@ function(player = "", league = NULL, season = NULL, res) {
 #* @param player The player to search for
 #* @param season The season to visualize
 #* @get /playerGraph
-#* @serializer htmlwidget
+#* @serializer json
 function(player = "", season = NULL) {
   ## Downloads a local file for the database
   con <-
@@ -390,85 +394,87 @@ function(player = "", season = NULL) {
     
     dbDisconnect(con)
     
-    fig <- 
-      plot_ly(
-        data = visData,
-        r = 0,
-        theta = ~attributeIndex,
-        width = 400,
-        height = 250
-      ) %>% 
-      add_trace(
-        type = 'scatterpolar',
-        mode = 'lines',
-        r = ~Rating,
-        theta = ~attributeIndex,
-        text = ~text,
-        fill = 'none',
-        hoverinfo = "text",
-        line = 
-          list(
-            color = "#ffffff",
-            width = 3
-          ),
-        data = visData
-      ) %>% 
-      add_trace(
-        type = 'barpolar',
-        width = 360,
-        hoverinfo = "none",
-        r = 10,
-        marker = 
-          list(
-            color = "#B81D13"
-          )
-      ) %>% 
-      add_trace(
-        type = 'barpolar',
-        width = 360,
-        hoverinfo = "none",
-        r = 5,
-        marker = 
-          list(
-            color = "#EFB700"
-          )
-      ) %>% 
-      add_trace(
-        type = 'barpolar',
-        width = 360,
-        hoverinfo = "none",
-        r = 5,
-        marker = 
-          list(
-            color = "#008450"
-          )
-      ) 
-    
-    
-    fig %>%
-      plotly::config(
-        modeBarButtonsToRemove =
-          c("zoom", "pan2d", "zoomIn2d", "zoomOut2d", "autoScale2d",
-            "resetScale2d", "hoverClosestCartesian",
-            "hoverCompareCartesian", "toggleSpikelines"
-          )
-      ) %>%
-      layout(
-        autosize = TRUE,
-        dragmode= FALSE,
-        polar =
-          list(
-            radialaxis =
-              list(
-                visible = FALSE,
-                range = c(0,20)
-              )
-          ),
-        ## Legend is put to false so the plot is the same size
-        showlegend = FALSE,
-        paper_bgcolor='#ffffff00',
-        plot_bgcolor='#ffffff00'
-      )
+    return(visData)
+    # 
+    # fig <- 
+    #   plot_ly(
+    #     data = visData,
+    #     r = 0,
+    #     theta = ~attributeIndex,
+    #     width = 400,
+    #     height = 250
+    #   ) %>% 
+    #   add_trace(
+    #     type = 'scatterpolar',
+    #     mode = 'lines',
+    #     r = ~Rating,
+    #     theta = ~attributeIndex,
+    #     text = ~text,
+    #     fill = 'none',
+    #     hoverinfo = "text",
+    #     line = 
+    #       list(
+    #         color = "#ffffff",
+    #         width = 3
+    #       ),
+    #     data = visData
+    #   ) %>% 
+    #   add_trace(
+    #     type = 'barpolar',
+    #     width = 360,
+    #     hoverinfo = "none",
+    #     r = 10,
+    #     marker = 
+    #       list(
+    #         color = "#B81D13"
+    #       )
+    #   ) %>% 
+    #   add_trace(
+    #     type = 'barpolar',
+    #     width = 360,
+    #     hoverinfo = "none",
+    #     r = 5,
+    #     marker = 
+    #       list(
+    #         color = "#EFB700"
+    #       )
+    #   ) %>% 
+    #   add_trace(
+    #     type = 'barpolar',
+    #     width = 360,
+    #     hoverinfo = "none",
+    #     r = 5,
+    #     marker = 
+    #       list(
+    #         color = "#008450"
+    #       )
+    #   ) 
+    # 
+    # 
+    # fig %>%
+    #   plotly::config(
+    #     modeBarButtonsToRemove =
+    #       c("zoom", "pan2d", "zoomIn2d", "zoomOut2d", "autoScale2d",
+    #         "resetScale2d", "hoverClosestCartesian",
+    #         "hoverCompareCartesian", "toggleSpikelines"
+    #       )
+    #   ) %>%
+    #   layout(
+    #     autosize = TRUE,
+    #     dragmode= FALSE,
+    #     polar =
+    #       list(
+    #         radialaxis =
+    #           list(
+    #             visible = FALSE,
+    #             range = c(0,20)
+    #           )
+    #       ),
+    #     ## Legend is put to false so the plot is the same size
+    #     showlegend = FALSE,
+    #     paper_bgcolor='#ffffff00',
+    #     plot_bgcolor='#ffffff00'
+    #   )
   }
   
 }
