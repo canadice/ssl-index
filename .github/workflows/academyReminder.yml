@@ -73,6 +73,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          remotes::install_github("yonicd/texPreview")
           remotes::install_github("jljsio/discordr")
           remotes::install_deps(dependencies = TRUE, quiet = TRUE)
         shell: Rscript {0}
