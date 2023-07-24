@@ -799,7 +799,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 10
 
-date <- "2023-03-13" %>% as.Date()
+date <- "2023-04-10" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
@@ -811,7 +811,7 @@ date <- "2023-03-13" %>% as.Date()
   matchOutfield <- outfieldOutput(season, date) %>% 
     unique()
   
-  table(matchOutfield$Club) %>% print()
+  table(matchOutfield$Result) %>% print()
   
   table(matchOutfield$Opponent) %>% print()
   
