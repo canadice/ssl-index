@@ -45,7 +45,8 @@ cors <- function(req, res) {
                     "https://simsoccer.jcink.net",
                     "http://sslforums.com",
                     "https://index.simulationsoccer.com", 
-                    "http://localhost:3006")
+                    "http://localhost:3006",
+                    "http://localhost:3000")
   
   if (any(grepl(pattern = paste0(safe_domains,collapse="|"), req$HTTP_REFERER,ignore.case=T))) {
     res$setHeader("Access-Control-Allow-Origin", sub("/$","",req$HTTP_REFERER)) #Have to remove last slash, for some reason
@@ -349,7 +350,30 @@ function(player = "", season = NULL) {
   }
   
   if(playerGameData %>% select(Name) %>% collect() %>% nrow() == 0){
-    stop("The chosen player does not exist in the league for that season. Please check the spelling.")
+    # stop("The chosen player does not exist in the league for that season. Please check the spelling.")
+    
+    visData <- 
+      data.frame(
+        attributeIndex = 
+          c(
+            "DEFENDING",
+            "PHYSICAL",
+            "SPEED",
+            "VISION",
+            "ATTACKING",
+            "TECHNICAL",
+            "AERIAL",
+            "MENTAL"
+          ),
+        Rating = rep(0, 8)
+      ) %>% 
+      mutate(
+        text = paste(attributeIndex, Rating, sep = ": ")
+      ) %>% 
+      ## Adds a duplicated first observation to allow the lines to connect
+      add_row(
+        .[1,]
+      )
   } else {
     visData <- 
       playerGameData %>% 
@@ -385,6 +409,7 @@ function(player = "", season = NULL) {
         values_to = "Rating"
       ) %>% 
       mutate(
+        Rating = round(Rating, 2),
         text = paste(attributeIndex, Rating, sep = ": ")
       ) %>% 
       ## Adds a duplicated first observation to allow the lines to connect
@@ -780,13 +805,14 @@ function() {
 #### List Player Functions ####
 
 #* Return the player data for a given user
-#* @param username The username of the user
+#* @param username  The username of the user
+#* @param player    The player name
 #* @serializer json
 #* @get /getPlayer
-function(username = NULL) {
-  if(is.null(username)){
+function(username = "", player = "") {
+  if(username == "" & player == ""){
     res$status = 400  # the response object that is always available in plumber functions
-    return("You have not sent in a username.")
+    return("You have not sent in a username or player name.")
   }
   
   con <-
@@ -798,13 +824,15 @@ function(username = NULL) {
   player <- 
     tbl(con, "Daily_Scrape") %>% 
     filter(
-      Username == username
+      Username == username | Name == player
     ) %>% 
     filter(
-      # Finds the latest player created for the username
       Created == max(Created, na.rm = TRUE)
     ) %>% 
-    collect()
+    collect() %>% 
+    mutate(
+      Created = lubridate::as_date(Created)
+    )
   
   dbDisconnect(con)
   
@@ -847,6 +875,47 @@ function(retired = FALSE) {
   names(playerNames) <- players$Username
     
   return(playerNames %>% toJSON(named = TRUE))
+}
+
+#* Return player data of a given draft class
+#* @param draftClass    The draft class
+#* @serializer json
+#* @get /getPlayers
+function(draftClass = "ALL"){
+  con <-
+    dbConnect(
+      SQLite(),
+      "../database/SSL_Database.db"
+    )
+  
+  players <- 
+    tbl(con, "Daily_Scrape")
+  
+  if(draftClass != "ALL"){
+    players <- 
+      players %>% 
+      filter(
+        Class == draftClass
+      )  
+  }
+  
+  players <- 
+    players %>% 
+    select(
+      Name,
+      Username,
+      Class,
+      Team,
+      `Preferred Position`,
+      TPE,
+      # `Applied TPE` = TPE - `TPE Available`,
+      Active
+    ) %>% 
+    collect() 
+  
+  dbDisconnect(con)
+  
+  return(players)
 }
 
 #### Standings Functions ####
@@ -1278,17 +1347,24 @@ function(player = "", gameType = NULL, season = NULL,
           ) %>% 
           {
             if(position %in% c("GK", "Goalkeeper")){
+              group_by(
+                .,
+                Season
+              ) %>% 
               mutate(
-                ., 
                 `Save%` = 
                   ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
                      (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
-                  round(4)*100
+                  round(4)*100,
+                `xSave%` = (`xSave%`/Apps) %>% round(2)
               )
             } else {
               select(
                 .,
                 -(Result:Wor)
+              ) %>% 
+              group_by(
+                Season
               ) %>% 
               mutate(
                 `Pass%` = 
@@ -1321,7 +1397,8 @@ function(player = "", gameType = NULL, season = NULL,
                 `Save%` = 
                   ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
                      (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
-                  round(4)*100
+                  round(4)*100,
+                `xSave%` = (`xSave%`/Apps) %>% round(2)
               )
             } else {
               select(
@@ -1360,7 +1437,8 @@ function(player = "", gameType = NULL, season = NULL,
                 `Save%` = 
                   ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
                      (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
-                  round(4)*100
+                  round(4)*100,
+                `xSave%` = (`xSave%`/Apps) %>% round(2)
               )
             } else {
               select(
@@ -1500,7 +1578,7 @@ function(club = "", gameType = NULL, season = NULL, players = TRUE, seasonTotal 
                   ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
                      (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
                   round(4)*100,
-                `xSave%` = `xSave%`/Apps
+                `xSave%` = (`xSave%`/Apps) %>% round(2)
               )
             } else {
               select(
@@ -1551,7 +1629,7 @@ function(club = "", gameType = NULL, season = NULL, players = TRUE, seasonTotal 
                     ((sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE))/
                        (sum(`Saves Parried`, na.rm = TRUE)+ sum(`Saves Held`, na.rm = TRUE) + sum(`Saves Tipped`, na.rm = TRUE) + sum(`Conceded`, na.rm = TRUE))) %>% 
                     round(4)*100,
-                  `xSave%` = `xSave%`/Apps
+                  `xSave%` = (`xSave%`/Apps) %>% round(2)
                 )
             } else {
               select(
