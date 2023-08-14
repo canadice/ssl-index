@@ -22,8 +22,8 @@ on:
   #      description: 'Test scenario tags'
 #        required: false
         #type: boolean
-#   schedule:
-#         - cron: "5 19 * * 1,4"
+  schedule:
+        - cron: "5 19 * * 1,4"
 
    workflow_dispatch:
 
