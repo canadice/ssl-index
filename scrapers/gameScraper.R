@@ -315,21 +315,21 @@ outfieldFunction <- function(season){
   aggregateOutfield <-
     dbGetQuery(con, getQuery) 
   
-  # aggregateOutfield %>% 
-  #   filter(Name == "Tam Kove") %>% 
-  #   write.csv2(file = "Kove Reset.csv", row.names = FALSE)
-  
-  
-  ### Tam Kove had a reset in the loan deal in S10 making their stats reset after MD2
-  kove <- read.csv2("Kove Reset.csv")
-  
-  aggregateOutfield[aggregateOutfield$Name == "Tam Kove",
-                    sapply(X = aggregateOutfield, 
-                           FUN =  is.numeric)] <- 
-    aggregateOutfield[aggregateOutfield$Name == "Tam Kove", 
-                      sapply(X = aggregateOutfield, 
-                             FUN =  is.numeric)] - 
-    kove[,sapply(kove, is.numeric)]
+  # # aggregateOutfield %>% 
+  # #   filter(Name == "Tam Kove") %>% 
+  # #   write.csv2(file = "Kove Reset.csv", row.names = FALSE)
+  # 
+  # 
+  # ### Tam Kove had a reset in the loan deal in S10 making their stats reset after MD2
+  # kove <- read.csv2("Kove Reset.csv")
+  # 
+  # aggregateOutfield[aggregateOutfield$Name == "Tam Kove",
+  #                   sapply(X = aggregateOutfield, 
+  #                          FUN =  is.numeric)] <- 
+  #   aggregateOutfield[aggregateOutfield$Name == "Tam Kove", 
+  #                     sapply(X = aggregateOutfield, 
+  #                            FUN =  is.numeric)] - 
+  #   kove[,sapply(kove, is.numeric)]
   
   #   
     # 
@@ -797,9 +797,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 10
+season <- 11
 
-date <- "2023-05-11" %>% as.Date()
+date <- "2023-08-14" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
