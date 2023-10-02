@@ -818,7 +818,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- 11
 
-date <- "2023-04-30" %>% as.Date()
+date <- "2023-05-10" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
