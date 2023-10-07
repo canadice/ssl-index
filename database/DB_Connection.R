@@ -373,7 +373,7 @@ dbExecute(con,
                 sep = "")
           )
 
-dbExecute(con, "UPDATE gameDataPlayer 
+dbExecute(con, "UPDATE gameDataKeeper
                 SET Division = '2', Matchday = '7', Opponent = 'Montréal United', Result = '1-2' 
                 WHERE Club = 'Cairo City' AND Season = '11' AND Matchday IS NULL")
 
