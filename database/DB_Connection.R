@@ -11,8 +11,19 @@ require(DBI)
 require(dbplyr)
 require(RSQLite)
 require(stringr)
+require(RMySQL)
 
 con <- dbConnect(SQLite(), "database/SSL_Database.db")
+
+sqlcon <- 
+  dbConnect(
+    MySQL(),
+    dbname = "portaldb",
+    host = "localhost",
+    port = 3306,
+    user = Sys.getenv("SQL_USER"),
+    password = Sys.getenv("SQL_PASS")
+  )
  
 dbConnect(SQLite(), "database/SSL_Database.db")
 
@@ -362,7 +373,9 @@ dbExecute(con,
                 sep = "")
           )
 
-dbExecute(con, "DELETE gameDataPlayer SET Season = '4' WHERE Name = 'Liang Kuai'")
+dbExecute(con, "UPDATE gameDataPlayer 
+                SET Division = '2', Matchday = '7', Opponent = 'Montréal United', Result = '1-2' 
+                WHERE Club = 'Cairo City' AND Season = '11' AND Matchday IS NULL")
 
 gameData <-
   tbl(con, "gameDataPlayer") %>%
@@ -372,7 +385,19 @@ keeperGameData <-
   tbl(con, "gameDataPlayer") %>%
   collect()
 
-dbWriteTable(con, "gameDataPlayer", gameData, overwrite = TRUE)
+dbRemoveTable(
+  sqlcon, 
+  name = "gamedataplayer"
+)
+
+dbWriteTable(
+  sqlcon, 
+  name = "player_data", 
+  value = data, 
+  row.names = FALSE,
+  overwrite = TRUE
+)
+
 dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
 
 dbDisconnect(con)
