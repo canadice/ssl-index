@@ -133,7 +133,7 @@ forumData <-
     ),
     `Natural Fitness` = 20,
     Stamina = 20,
-    Goalkeeper = if_else(Position == "Goalkeeper", 20, NaN),
+    Goalkeeper = if_else(Position %in% c("Goalkeeper", "GK"), 20, NaN),
     Name = paste(`First Name`, `Last Name`) %>% str_squish(),
     
     `Minimum Wage` = 
@@ -188,13 +188,7 @@ forumData <-
     .after = `Preferred Position`
   ) %>% 
   dplyr::mutate(
-    Position = ifelse(is.na(Position), "Undefined", Position),
-    Position = 
-      factor(Position, levels = c("Goalkeeper", "Defender", "Midfielder", "Forward", "Undefined")),
-    across(
-      .cols = Striker:Goalkeeper,
-      as.numeric
-    )
+    Position = ifelse(is.na(Position), "Undefined", Position)
   ) %>% 
   arrange(
     Created
