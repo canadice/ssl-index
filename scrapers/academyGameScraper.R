@@ -374,8 +374,8 @@ outfieldFunction <- function(season){
 
 
 ### Start here
-goalieFunction(season = 11)
-outfieldFunction(season = 11)
+goalieFunction(season = 12)
+outfieldFunction(season = 12)
 
 dbDisconnect(con)
 
