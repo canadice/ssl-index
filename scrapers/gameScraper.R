@@ -321,33 +321,33 @@ outfieldFunction <- function(season){
 
   ### Tam Kove had a reset in the loan deal in S10 making their stats reset after MD2
   
-  loanReset <- function(name){
-    data <- read.csv2(paste(name,"Reset.csv"))
-    
-      (aggregateOutfield[aggregateOutfield$Name == name,
-                        sapply(X = aggregateOutfield,
-                               FUN =  is.numeric)] -
-      { data %>% select(Apps:Offsides) }) %>% 
-        return()
-  }
-  
-  aggregateOutfield[aggregateOutfield$Name == "Budget Busquets",
-                    sapply(X = aggregateOutfield,
-                           FUN =  is.numeric)] <- 
-    loanReset("Budget Busquets")
-  
-  aggregateOutfield[aggregateOutfield$Name == "Rafael Ramos",
-                    sapply(X = aggregateOutfield,
-                           FUN =  is.numeric)] <- 
-    loanReset("Rafael Ramos")
-  aggregateOutfield[aggregateOutfield$Name == "Caleb Hayden",
-                    sapply(X = aggregateOutfield,
-                           FUN =  is.numeric)] <- 
-    loanReset("Caleb Hayden")
-  aggregateOutfield[aggregateOutfield$Name == "Mike Rup",
-                    sapply(X = aggregateOutfield,
-                           FUN =  is.numeric)] <- 
-    loanReset("Mike Rup")
+  # loanReset <- function(name){
+  #   data <- read.csv2(paste(name,"Reset.csv"))
+  #   
+  #     (aggregateOutfield[aggregateOutfield$Name == name,
+  #                       sapply(X = aggregateOutfield,
+  #                              FUN =  is.numeric)] -
+  #     { data %>% select(Apps:Offsides) }) %>% 
+  #       return()
+  # }
+  # 
+  # aggregateOutfield[aggregateOutfield$Name == "Budget Busquets",
+  #                   sapply(X = aggregateOutfield,
+  #                          FUN =  is.numeric)] <- 
+  #   loanReset("Budget Busquets")
+  # 
+  # aggregateOutfield[aggregateOutfield$Name == "Rafael Ramos",
+  #                   sapply(X = aggregateOutfield,
+  #                          FUN =  is.numeric)] <- 
+  #   loanReset("Rafael Ramos")
+  # aggregateOutfield[aggregateOutfield$Name == "Caleb Hayden",
+  #                   sapply(X = aggregateOutfield,
+  #                          FUN =  is.numeric)] <- 
+  #   loanReset("Caleb Hayden")
+  # aggregateOutfield[aggregateOutfield$Name == "Mike Rup",
+  #                   sapply(X = aggregateOutfield,
+  #                          FUN =  is.numeric)] <- 
+  #   loanReset("Mike Rup")
 
 
   #   
@@ -816,9 +816,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 11
+season <- 12
 
-date <- "2023-05-10" %>% as.Date()
+date <- "2023-08-08" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
