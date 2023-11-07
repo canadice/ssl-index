@@ -46,7 +46,7 @@ sendReminder <- function(x){
     paste(
       "######\n",
       "The tactics deadline is <t:", 
-      (lubridate::today() + lubridate::hours(19)) %>% as.numeric(),
+      (lubridate::today() + lubridate::hours(20)) %>% as.numeric(),
       ":R>!\n", 
       "######",
       sep = ""

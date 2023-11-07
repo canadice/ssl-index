@@ -31,7 +31,7 @@ sendReminder <- function(x){
     paste(
       "========================\n",
       "<@&957275484385861672>, the next matchday will premiere in <t:", 
-      (lubridate::today() + lubridate::hours(19)) %>% as.numeric(),
+      (lubridate::today() + lubridate::hours(20)) %>% as.numeric(),
       ":R>!\n\n",
       "Join the fun via https://bit.ly/sslYoutube \n",
       "========================",
