@@ -374,8 +374,8 @@ dbExecute(con,
           )
 
 dbExecute(con, "UPDATE gameDataKeeper
-                SET Division = '2', Matchday = '7', Opponent = 'Montréal United', Result = '1-2' 
-                WHERE Club = 'Cairo City' AND Season = '11' AND Matchday IS NULL")
+                SET Result = '2-3' 
+                WHERE Club = 'CA Buenos Aires' AND Season = '12' AND Division = '0' AND Matchday = 'Semi Final Leg 2'")
 
 gameData <-
   tbl(con, "gameDataPlayer") %>%
