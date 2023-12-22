@@ -54,7 +54,7 @@ goalieFunction <- function(season){
         sum(`Penalties Saved`) as `Penalties Saved` ,
         avg(`xSave%`) as `xSave%` 
       FROM gameDataKeeper
-      WHERE Season = ", season, 
+      WHERE Season = '", season, "'",
       " GROUP BY Name, Club",
       sep = ""
     )
@@ -127,6 +127,8 @@ goalieFunction <- function(season){
               Club == "Accra FC" ~ "Adowa Accra FC",
               Club == "São Paulo" ~ "União São Paulo",
               Club == "Red Star" ~ "Red Star Laos",
+              Club == "E. Europe" ~ "Eastern Europe",
+              Club == "Walland" ~ "Cymru",
               TRUE ~ Club
             )
         ) %>% 
@@ -307,7 +309,7 @@ outfieldFunction <- function(season){
         sum(`Fouls Against`) as `Fouls Against` ,
         sum(`Offsides`) as Offsides
       FROM gameDataPlayer
-      WHERE Season = ", season, 
+      WHERE Season = '", season, "'",
       " GROUP BY Name, Club",
       sep = ""
     )
@@ -439,6 +441,8 @@ outfieldFunction <- function(season){
               Club == "Accra FC" ~ "Adowa Accra FC",
               Club == "São Paulo" ~ "União São Paulo",
               Club == "Red Star" ~ "Red Star Laos",
+              Club == "Walland" ~ "Cymru",
+              Club == "E. Europe" ~ "Eastern Europe",
               TRUE ~ Club
             )
         ) %>% 
@@ -816,9 +820,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- 12
+season <- "WSFC 12"
 
-date <- "2023-05-08" %>% as.Date()
+date <- "2023-03-10" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
