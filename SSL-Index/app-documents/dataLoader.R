@@ -154,7 +154,8 @@ teamInfo <-
 pitch <- 
   try(
     image_read_svg(
-      path = "https://raw.githubusercontent.com/canadice/ssl-index/main/graphics/pitch.svg"
+      path = "https://raw.githubusercontent.com/canadice/ssl-index/main/graphics/pitch.svg",
+      width = 750
     ),
     silent = TRUE
   )
