@@ -426,6 +426,9 @@ if(length(currentClaimThread) > 0){
       posts %>%
       html_elements(".post_date") %>%
       html_text2() %>%
+      ## Removes "edited by" text
+      stringr::str_split("\\(This post was last", simplify = TRUE) %>%
+      .[,1] %>% 
       lubridate::ymd_hm(tz = "America/Los_Angeles") %>% 
       lubridate::with_tz(tzone = "Europe/Stockholm")
     
@@ -434,78 +437,80 @@ if(length(currentClaimThread) > 0){
         (now() - posted) < (hours(48))
       ]
     
-    post <-
-      new %>%
-      html_elements(".post_body") %>%
-      html_text2()
-    
-    task <-
-      post %>%
-      str_split(
-        pattern = "The following users may claim the specified TPE for|:\n",
-        simplify = TRUE) %>%
-      .[,2] %>%
-      str_squish()
-    
-    index <- !(task %in% postedThreads$title[postedThreads$forum == forum])
-    
-    new <- new[index & (task != "")]
-    post <- post[index & (task != "")]
-    task <- task[index & (task != "")]
-    
-    if(length(task) > 0){
-      claims <-
+    if(new %>% length() > 0){
+      post <-
+        new %>%
+        html_elements(".post_body") %>%
+        html_text2()
+      
+      task <-
         post %>%
         str_split(
-          pattern = "ec1",
-          simplify = TRUE
-        ) %>%
+          pattern = "The following users may claim the specified TPE for|:\n",
+          simplify = TRUE) %>%
         .[,2] %>%
-        str_split(
-          pattern = "c2",
-          simplify = TRUE
-        ) %>%
-        .[,1]
+        str_squish()
       
-      link <-
-        new %>%
-        html_elements("a") %>%
-        html_attr("href") %>% 
-        .[stringr::str_detect(., pattern= "#pid")] %>% 
-        paste(
-          "https://forum.simulationsoccer.com/",
-          .,
-          sep = ""
-        )
+      index <- !(task %in% postedThreads$title[postedThreads$forum == forum])
       
-      for(i in 1:length(link)){
-        send_webhook_message(
+      new <- new[index & (task != "")]
+      post <- post[index & (task != "")]
+      task <- task[index & (task != "")]
+      
+      if(length(task) > 0){
+        claims <-
+          post %>%
+          str_split(
+            pattern = "ec1",
+            simplify = TRUE
+          ) %>%
+          .[,2] %>%
+          str_split(
+            pattern = "c2",
+            simplify = TRUE
+          ) %>%
+          .[,1]
+        
+        link <-
+          new %>%
+          html_elements("a") %>%
+          html_attr("href") %>% 
+          .[stringr::str_detect(., pattern= "#pid")] %>% 
           paste(
-            "## New TPE Claim!", "\n\n", 
-            paste(
-              paste("[",task[i],"](", link[i], ")", sep = ""), collapse = "\n\n"
-            ),
-            paste(
-              "```", claims[i], "```",
-              sep = ""
-            ),
-            "\n\n||<@&1028578599965569026>||"
+            "https://forum.simulationsoccer.com/",
+            .,
+            sep = ""
           )
-        )
         
-        Sys.sleep(5)
+        for(i in 1:length(link)){
+          send_webhook_message(
+            paste(
+              "## New TPE Claim!", "\n\n", 
+              paste(
+                paste("[",task[i],"](", link[i], ")", sep = ""), collapse = "\n\n"
+              ),
+              paste(
+                "```", claims[i], "```",
+                sep = ""
+              ),
+              "\n\n||<@&1028578599965569026>||"
+            )
+          )
+          
+          Sys.sleep(5)
+          
+        }
         
+        postedThreads <- 
+          rbind(
+            postedThreads,
+            data.frame(
+              title = task, link = link, forum = forum
+            )
+          )
+        
+        print("Sent new pt claim.")
       }
-      
-      postedThreads <- 
-        rbind(
-          postedThreads,
-          data.frame(
-            title = task, link = link, forum = forum
-          )
-        )
-      
-      print("Sent new pt claim.")
     }
   }
   
