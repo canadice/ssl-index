@@ -85,7 +85,7 @@ forumData <-
   lapply(
     playerLinks,
     FUN = function(x){
-      scrape <- tryCatch(playerScraper(x), error = function(e) paste(x, "produces this error: ", e))
+      scrape <- tryCatch(sslrtools::playerScraper(x), error = function(e) paste(x, "produces this error: ", e))
       
       if( 
         !is.data.frame(scrape)
@@ -97,7 +97,7 @@ forumData <-
         return(scrape)
       }
     }
-  )%>% 
+  ) %>% 
   do.call(
     what = plyr::rbind.fill,
     args = .
@@ -202,7 +202,9 @@ forumData <-
     .after = `Active`
   ) %>% 
   select(
-    Username:Nationality
+    Username:Nationality,
+    Userlink,
+    Playerlink
   )
 
 write.csv(forumData, file = "data/forumData.csv", row.names = FALSE)
