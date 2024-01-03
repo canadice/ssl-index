@@ -26,6 +26,7 @@ playerStatsUI <- function(id){
               c(
                 1:max(playerGameData$Season) %>% 
                   sort(decreasing = TRUE),
+                "WSFC 12" = 0,
                 "ALL"
               )
               
@@ -304,7 +305,7 @@ playerStatsSERVER <- function(id){
                       MARGIN = 1, 
                       FUN = 
                         function(x) {
-                          x[c(1, max(min(which(x == "")-1, 10)))]
+                          x[c(1, max(min(which(x == "")-1, 100)))]
                         }, 
                       simplify = TRUE
                     ) %>% 
@@ -398,7 +399,7 @@ playerStatsSERVER <- function(id){
                       MARGIN = 1, 
                       FUN = 
                         function(x) {
-                          x[c(1, max(min(which(x == "")-1, 10)))]
+                          x[c(1, max(min(which(x == "")-1, 100)))]
                         }, 
                       simplify = TRUE
                     ) %>% 

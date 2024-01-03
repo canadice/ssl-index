@@ -1099,7 +1099,7 @@ playerRecordsSERVER <- function(id){
       leagueRecords <- reactive({
         tbl(con, "gameDataPlayer") %>% 
           filter(
-            !(Matchday %like% "%Cup%")
+            (Division != "0")
           ) %>% 
           group_by(Name) %>% 
           summarize(
@@ -1170,7 +1170,7 @@ playerRecordsSERVER <- function(id){
       cupRecords <- reactive({
         tbl(con, "gameDataPlayer") %>% 
           filter(
-            (Matchday %like% "%Cup%")
+            (Division == "0")
           ) %>% 
           group_by(Name) %>% 
           summarize(

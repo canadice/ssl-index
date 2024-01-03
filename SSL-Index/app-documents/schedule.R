@@ -23,17 +23,20 @@ scheduleUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              1:(playerData %>% 
-                select(Class) %>% 
-                mutate(
-                  Class = str_extract(Class, pattern = "[0-9]+") %>% as.numeric()
-                ) %>% 
-                filter(
-                  Class == max(Class)
-                ) %>% 
-                unique() %>% 
-                unlist() - 1) %>% 
-              sort(decreasing = TRUE)
+              c(
+                1:(playerData %>% 
+                  select(Class) %>% 
+                  mutate(
+                    Class = str_extract(Class, pattern = "[0-9]+") %>% as.numeric()
+                  ) %>% 
+                  filter(
+                    Class == max(Class)
+                  ) %>% 
+                  unique() %>% 
+                  unlist() - 1) %>% 
+                  sort(decreasing = TRUE),
+                "WSFC 12"
+              )
           ),
           uiOutput(
             outputId = ns("divisionFilter")
@@ -61,7 +64,9 @@ scheduleSERVER <- function(id){
     function(input, output, session){
       
       output$divisionFilter <- renderUI({
-        if(input$season < 5){
+        if(input$season %>% as.numeric() %>% is.na()){
+          NULL
+        } else if(input$season %>% as.numeric() < 5){
           NULL
         } else {
           selectInput(
@@ -84,7 +89,9 @@ scheduleSERVER <- function(id){
             `IRL Date` = `IRL Date` %>% as_date() %>% format(format = "%m/%d")
           )
         
-        if(input$season < 5){
+        if(input$season %>% as.numeric() %>% is.na()){
+          schedule
+        } else if(input$season %>% as.numeric() < 5){
           schedule
         } else {
           if(input$divisionFilter != "All"){
