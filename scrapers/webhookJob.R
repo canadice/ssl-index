@@ -28,6 +28,8 @@ require(DBI)
 require(dbplyr)
 require(RSQLite)
 
+print("Starting work for webhooks!")
+
 teamInfo <- 
   data.frame(
     franchiseID = 0,
@@ -50,19 +52,16 @@ tpeCost <-
 newThreads <- function(forum){
   topics <- 
     read_html(forum) %>% 
-    html_elements(".topic-row")
+    html_elements(".inline_row")
   
   started <- 
     topics %>% 
-    html_elements("[title]") %>% 
+    html_elements(".subject_new a") %>% 
     html_attr("title") %>% 
-    str_split(pattern = ": ", simplify = TRUE) %>% 
-    .[,2] %>%
-    stringi::stri_remove_empty_na() %>% 
-    lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>% 
+    as.numeric() %>% 
+    lubridate::as_datetime(origin = lubridate::origin) %>% 
     lubridate::with_tz(tzone = "Europe/Stockholm")
     
-  
   new <- 
     topics[
       (now() - started) < (hours(24))
@@ -77,6 +76,9 @@ con <- RSQLite::dbConnect(RSQLite::SQLite(), "database/hookDatabase.db")
 
 postedThreads <- dbGetQuery(con, "SELECT * FROM postedThreads")
 
+##---------------------------------------------------------------
+##                      New Discord Channel                     -
+##---------------------------------------------------------------
 
 conn_obj <- 
   create_discord_connection(
@@ -88,7 +90,7 @@ conn_obj <-
 ##                        Announcements                        ##
 #################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=6"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=21"
 
 new <- newThreads(forum)
 
@@ -110,15 +112,20 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
   
   send_webhook_message(
     paste(
-      "<@&957275417365057566> New Announcement!", "\n\n", 
+      "## New Announcement!", "\n\n", 
       paste(
-        title, link, sep = " - ", collapse = "\n\n"
-      )
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n||<@&957275417365057566>||"
     )
   )
   
@@ -140,7 +147,7 @@ if(length(new) > 0){
 ##                         Job Openings                         ##
 ##################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=25"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=40"
 
 new <- newThreads(forum)
 
@@ -162,15 +169,20 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
   
   send_webhook_message(
     paste(
-      "New Job Opening!", "\n\n", 
+      "## New Job Opening!", "\n\n", 
       paste(
-        title, link, sep = " - ", collapse = "\n\n"
-      )
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n||<@&957275417365057566>||"
     )
   )
   
@@ -202,7 +214,7 @@ conn_obj <-
 ##                         New Prediction                       ##
 ##################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=10"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=25"
 
 new <- newThreads(forum)
 
@@ -224,15 +236,20 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
   
   send_webhook_message(
     paste(
-      "<@&1028578599965569026> New Prediction PT has been posted!", "\n\n", 
+      "## New Prediction Task!", "\n\n", 
       paste(
-        title, link, sep = " - ", collapse = "\n\n"
-      )
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n||<@&1028578599965569026>||"
     )
   )
   
@@ -254,7 +271,7 @@ if(length(new) > 0){
 ##                             New ACs                          ##
 ##################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=7"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=22"
 
 new <- newThreads(forum)
 
@@ -276,15 +293,20 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
   
   send_webhook_message(
     paste(
-      "<@&1028578599965569026> New Activity Check Thread!", "\n\n", 
+      "## New Activity Check!", "\n\n", 
       paste(
-        title, link, sep = " - ", collapse = "\n\n"
-      )
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n||<@&1028578599965569026>||"
     )
   )
   
@@ -306,7 +328,7 @@ if(length(new) > 0){
 ##                         New Affiliate                        ##
 ##################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=34"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=49"
 
 new <- newThreads(forum)
 
@@ -328,15 +350,20 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
   
   send_webhook_message(
     paste(
-      "<@&1028578599965569026> New Affiliate Thread!", "\n\n", 
+      "## New Affiliate Thread!", "\n\n", 
       paste(
-        title, link, sep = " - ", collapse = "\n\n"
-      )
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n||<@&1028578599965569026>||"
     )
   )
   
@@ -359,48 +386,47 @@ if(length(new) > 0){
 ##                         New Claims                           ##
 ##################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=82"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=97"
 
 topics <-
   read_html(forum) %>%
-  html_elements(".topic-row")
+  html_elements(".inline_row")
 
-started <-
-  topics %>%
-  html_elements("span.desc") %>%
-  html_text2() %>%
-  stringi::stri_remove_empty_na() %>%
-  str_split(pattern = "\n", simplify = TRUE) %>%
-  .[,1] %>%
-  stringr::str_remove_all(pattern = "th|rd|nd") %>%
-  stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
-  lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
-  lubridate::with_tz(tzone = "Europe/Stockholm")
+# started <-
+#   topics %>%
+#   html_elements("span.desc") %>%
+#   html_text2() %>%
+#   stringi::stri_remove_empty_na() %>%
+#   str_split(pattern = "\n", simplify = TRUE) %>%
+#   .[,1] %>%
+#   stringr::str_remove_all(pattern = "th|rd|nd") %>%
+#   stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
+#   lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
+#   lubridate::with_tz(tzone = "Europe/Stockholm")
 
 currentClaimThread <-
-  topics[
-    (now() - started) < (hours(8))
-  ]
+  topics[1]
 
 if(length(currentClaimThread) > 0){
   posts <-
     read_html(
       currentClaimThread %>%
-        html_elements("span.desc") %>%
-        html_elements("a") %>%
+        html_elements("a[title]") %>%
         html_attr("href") %>%
-        nth(1)
+        paste(
+          "https://forum.simulationsoccer.com/",
+          .,
+          sep = ""
+        )
       ) %>%
-    html_elements("span.post-normal")
+    html_elements(".post")
 
   if(posts %>% length() > 1){
     posted <-
       posts %>%
-      html_elements(".row4 span.postdetails") %>%
+      html_elements(".post_date") %>%
       html_text2() %>%
-      str_split(pattern = ": ", simplify = TRUE) %>%
-      .[,2] %>%
-      lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>%
+      lubridate::ymd_hm(tz = "America/Los_Angeles") %>% 
       lubridate::with_tz(tzone = "Europe/Stockholm")
     
     new <-
@@ -410,7 +436,7 @@ if(length(currentClaimThread) > 0){
     
     post <-
       new %>%
-      html_elements("div.postcolor") %>%
+      html_elements(".post_body") %>%
       html_text2()
     
     task <-
@@ -443,36 +469,27 @@ if(length(currentClaimThread) > 0){
       
       link <-
         new %>%
-        html_elements("a[title]") %>%
-        html_attr("onclick") %>% 
-        str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
-        unlist() %>% 
+        html_elements("a") %>%
+        html_attr("href") %>% 
+        .[stringr::str_detect(., pattern= "#pid")] %>% 
         paste(
-          currentClaimThread %>%
-            html_elements("span.desc") %>%
-            html_elements("a") %>%
-            html_attr("href") %>%
-            nth(1) %>% 
-            str_remove_all("&view=getlastpost"),
-          "&st=0&#entry",
+          "https://forum.simulationsoccer.com/",
           .,
           sep = ""
-        ) %>% 
-        str_remove(pattern = "s=[0-9a-z]+&")
-      
+        )
       
       for(i in 1:length(link)){
         send_webhook_message(
           paste(
-            "<@&1028578599965569026> A new TPE claim has been posted!", "\n\n",
+            "## New TPE Claim!", "\n\n", 
             paste(
-              task[i], link[i], 
-              paste(
-                "```", claims[i], "```",
-                sep = ""
-              ),
-              sep = " - "
-            )
+              paste("[",task[i],"](", link[i], ")", sep = ""), collapse = "\n\n"
+            ),
+            paste(
+              "```", claims[i], "```",
+              sep = ""
+            ),
+            "\n\n||<@&1028578599965569026>||"
           )
         )
         
@@ -514,7 +531,7 @@ conn_obj <-
 ##                       Retirement posts                       ##
 ##################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=83"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=98"
 
 new <- newThreads(forum)
 
@@ -536,15 +553,18 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
   
   send_webhook_message(
     paste(
-      "-----------------------------------------------", "\n",
-      "Someone has announced their retirement:", "\n\n", 
+      "## Someone has retired!", "\n\n", 
       paste(
-        title, link, sep = " - ", collapse = "\n\n"
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
       )
     )
   )
@@ -569,7 +589,7 @@ if(length(new) > 0){
 ##                      New player created                      ##
 ##################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=42"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=57"
 
 new <- newThreads(forum)
 
@@ -591,6 +611,28 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("a[title]") %>% 
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
+  
+  send_webhook_message(
+    paste(
+      "## New Announcement!", "\n\n", 
+      paste(
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n||<@&957275417365057566>||"
+    )
+  )
+  
+  
+  
+  link <- 
+    new %>% 
+    html_elements("a[title]") %>% 
     html_attr("href")%>% 
     str_remove(pattern = "s=[0-9a-z]+&")
   
@@ -602,11 +644,10 @@ if(length(new) > 0){
         
         postData <- 
           topic %>%
-          rvest::html_elements(".post2") %>%
-          .[2] %>%
+          rvest::html_elements(".post_body") %>%
+          .[1] %>%
           # ## Changes to dplyr 1.1.0 removes this functionality.
           # dplyr::nth(2) %>%
-          rvest::html_elements(".postcolor") %>%
           rvest::html_text2() %>%
           stringr::str_split(pattern = "\\n") %>%
           unlist() %>%
@@ -675,10 +716,9 @@ if(length(new) > 0){
   
   send_webhook_message(
     paste(
-      "-----------------------------------------------", "\n",
-      "Someone has created:", "\n\n", 
+      "## Someone has created!", "\n\n", 
       paste(
-        title, " - ", link, " ", "BUILD CHECKS", "\n", sep = "", checks, collapse = "\n\n"
+        paste("[",title,"](", link, ")", " ", "BUILD CHECKS", "\n", checks, sep = ""), collapse = "\n\n"
       )
     )
   )
@@ -777,16 +817,24 @@ conn_obj <-
 ##                   New Approved Players                      ##
 #################################################################
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=61"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=76"
 
 topics <- 
   read_html(forum) %>% 
-  html_elements(".topic-row")
+  html_elements(".inline_row")
 
 lastPost <-
   topics %>%
-  html_elements("span.desc") %>%
+  html_elements(".lastpost") %>%
   html_text2()
+
+## Checks last post that is not a date and replaces it
+correction <- which(!stringr::str_detect(lastPost, "AM|PM"))
+
+lastPost[correction] <- 
+  topics[correction] %>%
+  html_elements(".lastpost span") %>%
+  html_attr("title")
 
 new <- NULL
 
@@ -796,10 +844,9 @@ if(lastPost %>% length() > 0) {
     str_split(pattern = "\n", simplify = TRUE) %>%
     .[,1] %>%
     stringr::str_remove_all(pattern = "th|rd|nd") %>%
-    stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
-    lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
-    lubridate::with_tz(tzone = "Europe/Stockholm") %>% 
-    .[seq(2, length(.), by = 2)]
+    stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>%  
+    lubridate::ymd_hm(tz = "America/Los_Angeles") %>% 
+    lubridate::with_tz(tzone = "Europe/Stockholm")
   
   new <- 
     topics[
@@ -825,15 +872,18 @@ if(length(new) > 0){
   link <- 
     new %>% 
     html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
   
   send_webhook_message(
     paste(
-      "-----------------------------------------------", "\n",
-      "A new player has been approved:", "\n\n", 
+      "## New Player Approved!", "\n\n", 
       paste(
-        title, link, sep = " - ", collapse = "\n\n"
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
       )
     )
   )
@@ -862,118 +912,117 @@ conn_obj <-
     username = 'FM File Scraper', 
     set_default = TRUE)
 
-forum <- "https://simsoccer.jcink.net/index.php?showforum=77"
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=92"
 
 topics <-
   read_html(forum) %>%
-  html_elements(".topic-row")
+  html_elements(".inline_row .forumdisplay_regular .subject_new")
 
-started <-
-  topics %>%
-  html_elements("span.desc") %>%
-  html_text2() %>%
-  stringi::stri_remove_empty_na() %>%
-  str_split(pattern = "\n", simplify = TRUE) %>%
-  .[,1] %>%
-  stringr::str_remove_all(pattern = "th|rd|nd") %>%
-  stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
-  lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
-  lubridate::with_tz(tzone = "Europe/Stockholm")
+# started <-
+#   topics %>%
+#   html_elements("span.desc") %>%
+#   html_text2() %>%
+#   stringi::stri_remove_empty_na() %>%
+#   str_split(pattern = "\n", simplify = TRUE) %>%
+#   .[,1] %>%
+#   stringr::str_remove_all(pattern = "th|rd|nd") %>%
+#   stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
+#   lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
+#   lubridate::with_tz(tzone = "Europe/Stockholm")
+# 
+# currentFileThread <-
+#   topics[
+#     (now() - started) < (hours(24))
+#   ]
 
 currentFileThread <-
-  topics[
-    (now() - started) < (hours(24))
-  ]
+  topics[1]
 
-currentFileThread <- 
-  currentFileThread[
-    !(currentFileThread %>% 
-      html_elements(".row4 a") %>% 
-      html_text2() %>% 
-      str_detect("Academy")
-    )
-  ]
+# currentFileThread <- 
+#   currentFileThread[
+#     !(currentFileThread %>% 
+#       html_elements(".row4 a") %>% 
+#       html_text2() %>% 
+#       str_detect("Academy")
+#     )
+#   ]
 
 if(length(currentFileThread) > 0){
   posts <-
     read_html(
-      currentFileThread %>%
-        html_elements("span.desc") %>%
-        html_elements("a") %>%
+      currentFileThread %>% 
+        html_elements("a[title]") %>%
         html_attr("href") %>%
-        nth(1)
-    ) %>%
-    html_elements("span.post-normal")
-  
-  posted <-
-    posts %>%
-    html_elements(".row4 span.postdetails") %>%
-    html_text2() %>%
-    str_split(pattern = ": ", simplify = TRUE) %>%
-    .[,2] %>%
-    lubridate::as_datetime(format = "%b %d %Y, %I:%M %p", tz = "America/Los_Angeles") %>%
-    lubridate::with_tz(tzone = "Europe/Stockholm")
-  
-  new <-
-    posts[
-      (now() - posted) < (hours(24))
-    ]
-  
-  post <-
-    new %>%
-    html_elements("div.postcolor") %>%
-    html_text2()
-  
-  index <- !(post %in% postedThreads$title[postedThreads$forum == forum])
-  
-  new <- new[index & (post != "")]
-  post <- post[index & (post != "")]
-  
-  if(length(post) > 0){
-    link <-
-      new %>%
-      html_elements("a[title]") %>%
-      html_attr("onclick") %>% 
-      str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
-      unlist() %>% 
-      paste(
-        currentFileThread %>%
-          html_elements("span.desc") %>%
-          html_elements("a") %>%
-          html_attr("href") %>%
-          nth(1) %>% 
-          str_remove_all("&view=getlastpost"),
-        "&st=0&#entry",
-        .,
-        sep = ""
-      ) %>% 
-      str_remove(pattern = "s=[0-9a-z]+&")
-    
-    
-    for(i in 1:length(link)){
-      send_webhook_message(
         paste(
-          "<@&921299604291612702> <@&1029418339514191983> A new sim-file has been posted", "\n\n",
+          "https://forum.simulationsoccer.com/",
+          .,
+          sep = ""
+        )
+      ) %>%
+    html_elements(".post")
+  
+  if(posts %>% length() > 1){
+    posted <-
+      posts %>%
+      html_elements(".post_date") %>%
+      html_text2() %>%
+      lubridate::ymd_hm(tz = "America/Los_Angeles") %>% 
+      lubridate::with_tz(tzone = "Europe/Stockholm")
+    
+    new <-
+      posts[
+        (now() - posted) < (hours(48))
+      ]
+    
+    post <-
+      new %>%
+      html_elements(".post_body") %>%
+      html_text2() %>% 
+      stringr::str_remove_all(pattern = "\r") %>% 
+      stringr::str_squish()
+  
+    index <- !(post %in% postedThreads$title[postedThreads$forum == forum])
+    
+    new <- new[index & (post != "")]
+    post <- post[index & (post != "")]
+  
+    if(length(post) > 0){
+      link <-
+        new %>%
+        html_elements("a") %>%
+        html_attr("href") %>% 
+        .[stringr::str_detect(., pattern= "#pid")] %>% 
+        paste(
+          "https://forum.simulationsoccer.com/",
+          .,
+          sep = ""
+        )
+      
+      
+      for(i in 1:length(link)){
+        send_webhook_message(
           paste(
-            post[i], link[i],
-            sep = " - "
+            "<@&921299604291612702> <@&1029418339514191983> A new sim-file has been posted", "\n\n",
+            paste(
+              paste("[",post[i],"](", link[i], ")", sep = ""), collapse = "\n\n"
+            )
           )
         )
-      )
+        
+        Sys.sleep(5)
+        
+      }
       
-      Sys.sleep(5)
-      
-    }
-    
-    postedThreads <- 
-      rbind(
-        postedThreads,
-        data.frame(
-          title = post, link = link, forum = forum
+      postedThreads <- 
+        rbind(
+          postedThreads,
+          data.frame(
+            title = post, link = link, forum = forum
+          )
         )
-      )
-    
-    print("Sent new sim file.")
+      
+      print("Sent new sim file.")
+    }
   }
   
 } else {
