@@ -25,11 +25,30 @@ fileUpdateToolUI <- function(id){
         selectInput(
           inputId = ns("player"),
           label = "Select a player",
-          choices = 
+          choices =
             playerData %>% 
-            filter(!(Team %in% c("Retired"))) %>% 
-            select(Name) %>% 
-            arrange(Name)
+            # select(Name) %>% 
+            # arrange(Name)
+            # filter(!(Team %in% c("Retired"))) %>% 
+            select(Class, Name) %>%
+            group_by(Class) %>%
+            arrange(Name) %>%
+            group_split(.keep = FALSE) %>%
+            setNames(playerData$Class %>% unique() %>% sort()) %>%
+            lapply(
+              X = .,
+              FUN = function(x){
+                c(x) %>%
+                  unname() %>%
+                  lapply(
+                    X = .,
+                    FUN = function(x){
+                      as.list(x)
+                    }
+                  ) %>%
+                  unlist(recursive = FALSE)
+              }
+            )
         ) %>% 
           column(width = 4),
         column(
@@ -140,7 +159,7 @@ fileUpdateToolSERVER <- function(id){
           sapply(
             temp %>% 
               select(`Striker`:`Goalkeeper`),
-            FUN = function(x) {if_else(is.na(x)|x == 0, 1, x)}
+            FUN = function(x) {if_else(is.na(x)|x == 0, 1, as.numeric(x))}
           ) %>% 
             paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
             str_replace_all(pattern = " ", replacement = "") %>% 
@@ -153,7 +172,7 @@ fileUpdateToolSERVER <- function(id){
             str_replace_all(pattern = "Wingback", replacement = "WingBack"),
           '}',
           ',"HairColour":"', temp$`Hair Color` %>% str_replace_all(pattern = " ", replacement = ""), 
-          '","HairLength":"', temp$`Hair Length`, 
+          '","HairLength":"', temp$`Hair Length` %>% str_to_title(), 
           '","SkinColour":', temp$`Skin Tone` %>% str_extract(pattern = "[0-9]+"), 
           ',"Height":', 
           if_else(
@@ -168,7 +187,7 @@ fileUpdateToolSERVER <- function(id){
             temp$Weight
           ),
           ',"Born":"', 
-          "2004-07-01" %>% as_date() - years(10 - (temp$Class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
+          "2004-07-01" %>% as_date() - years(12 - (temp$Class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
           '","DocumentType":"Player"}',
           sep = ""
         )

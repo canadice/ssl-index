@@ -149,6 +149,15 @@ teamOverviewSERVER <- function(id){
         yy <- center[2] + r * sin(tt)
         return(data.frame(x = xx, y = yy))
       }
+      ##------------------------------------------------------------------------
+      ##  Initialize reactiveValues that will be used as interactive options   -
+      ##------------------------------------------------------------------------
+      teamData <- reactiveVal(NULL)
+      
+      teamColor <- reactiveVal(NULL)
+      
+      position <- reactiveVal(NULL)
+      
       
       ##---------------------------------------------------------------
       ##                    Settings for datatables                   -
@@ -478,7 +487,7 @@ teamOverviewSERVER <- function(id){
         t() 
       
       currentAbility <- 
-        playerAttributesMatrix%*%abilityMatrixFixed %>% 
+        playerAttributesMatrix %*% abilityMatrixFixed %>% 
         as.data.frame()
       
       colnames(currentAbility) <- paste("Ability", abilityMatrix$Attribute)
@@ -503,55 +512,55 @@ teamOverviewSERVER <- function(id){
           ),
           across(
             contains("Ability Defender L"),
-            ~ .x * (playerData$`Defense [L]`/20)
+            ~ .x * (playerData$`Defense [L]` %>% as.numeric() /20)
           ),
           across(
             contains("Ability Defender R"),
-            ~ .x * (playerData$`Defense [R]`/20)
+            ~ .x * (playerData$`Defense [R]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Defender C"),
-            ~ .x * (playerData$`Defense [C]`/20)
+            ~ .x * (playerData$`Defense [C]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Wingback L"),
-            ~ .x * (playerData$`Wingback [L]`/20)
+            ~ .x * (playerData$`Wingback [L]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Wingback R"),
-            ~ .x * (playerData$`Wingback [R]`/20)
+            ~ .x * (playerData$`Wingback [R]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Defensive Midfielder"),
-            ~ .x * (playerData$`Defensive Midfielder [C]`/20)
+            ~ .x * (playerData$`Defensive Midfielder [C]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Midfielder L"), 
-            ~ .x * (playerData$`Midfielder [L]`/20)
+            ~ .x * (playerData$`Midfielder [L]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Midfielder R"),
-            ~ .x * (playerData$`Midfielder [R]`/20)
+            ~ .x * (playerData$`Midfielder [R]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Midfielder C"),
-            ~ .x * (playerData$`Midfielder [C]`/20)
+            ~ .x * (playerData$`Midfielder [C]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Attacking Midfielder L"),
-            ~ .x * (playerData$`Attacking Midfielder [L]`/20)
+            ~ .x * (playerData$`Attacking Midfielder [L]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Attacking Midfielder R"),
-            ~ .x * (playerData$`Attacking Midfielder [R]`/20)
+            ~ .x * (playerData$`Attacking Midfielder [R]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Attacking Midfielder C"),
-            ~ .x * (playerData$`Attacking Midfielder [C]`/20)
+            ~ .x * (playerData$`Attacking Midfielder [C]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Striker"),
-            ~ .x * (playerData$Striker/20)
+            ~ .x * (playerData$Striker %>% as.numeric()/20)
           ),
           across(
             contains("Ability"),
@@ -596,59 +605,59 @@ teamOverviewSERVER <- function(id){
         dplyr::mutate(
           across(
             contains("Ability Goalkeeper"),
-            ~ .x * (playerData$Goalkeeper/20)
+            ~ .x * (playerData$Goalkeeper %>% as.numeric()/20)
           ),
           across(
             contains("Ability Defender L"),
-            ~ .x * (playerData$`Defense [L]`/20)
+            ~ .x * (playerData$`Defense [L]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Defender R"),
-            ~ .x * (playerData$`Defense [R]`/20)
+            ~ .x * (playerData$`Defense [R]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Defender C"),
-            ~ .x * (playerData$`Defense [C]`/20)
+            ~ .x * (playerData$`Defense [C]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Wingback L"),
-            ~ .x * (playerData$`Wingback [L]`/20)
+            ~ .x * (playerData$`Wingback [L]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Wingback R"),
-            ~ .x * (playerData$`Wingback [R]`/20)
+            ~ .x * (playerData$`Wingback [R]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Defensive Midfielder"),
-            ~ .x * (playerData$`Defensive Midfielder [C]`/20)
+            ~ .x * (playerData$`Defensive Midfielder [C]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Midfielder L"), 
-            ~ .x * (playerData$`Midfielder [L]`/20)
+            ~ .x * (playerData$`Midfielder [L]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Midfielder R"),
-            ~ .x * (playerData$`Midfielder [R]`/20)
+            ~ .x * (playerData$`Midfielder [R]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Midfielder C"),
-            ~ .x * (playerData$`Midfielder [C]`/20)
+            ~ .x * (playerData$`Midfielder [C]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Attacking Midfielder L"),
-            ~ .x * (playerData$`Attacking Midfielder [L]`/20)
+            ~ .x * (playerData$`Attacking Midfielder [L]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Attacking Midfielder R"),
-            ~ .x * (playerData$`Attacking Midfielder [R]`/20)
+            ~ .x * (playerData$`Attacking Midfielder [R]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Attacking Midfielder C"),
-            ~ .x * (playerData$`Attacking Midfielder [C]`/20)
+            ~ .x * (playerData$`Attacking Midfielder [C]` %>% as.numeric()/20)
           ),
           across(
             contains("Ability Striker"),
-            ~ .x * (playerData$Striker/20)
+            ~ .x * (playerData$Striker %>% as.numeric()/20)
           ),
           across(
             contains("Ability"),
@@ -848,14 +857,6 @@ teamOverviewSERVER <- function(id){
         }
       })
       
-      ##------------------------------------------------------------------------
-      ##  Initialize reactiveValues that will be used as interactive options   -
-      ##------------------------------------------------------------------------
-      teamData <- reactiveVal(NULL)
-      
-      teamColor <- reactiveVal(NULL)
-      
-      position <- reactiveVal(NULL)
     }
   )
 }

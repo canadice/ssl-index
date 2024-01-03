@@ -83,8 +83,8 @@ trackerPositionSERVER <- function(id){
           ) %>% 
           summarize(
             across(
-              .fns = sum,
-              na.rm = TRUE
+              .cols = everything(),
+              .fns = function(x) sum(x, na.rm = TRUE)
             )
           ) %>% 
           pivot_longer(
