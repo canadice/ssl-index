@@ -461,7 +461,7 @@ if(length(currentClaimThread) > 0){
         claims <-
           post %>%
           str_split(
-            pattern = "ec1",
+            pattern = "Code:",
             simplify = TRUE
           ) %>%
           .[,2] %>%
