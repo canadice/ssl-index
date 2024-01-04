@@ -489,10 +489,10 @@ if(length(currentClaimThread) > 0){
               paste(
                 paste("[",task[i],"](", link[i], ")", sep = ""), collapse = "\n\n"
               ),
-              paste(
-                "```", claims[i], "```",
-                sep = ""
-              ),
+              # paste(
+              #   "```", claims[i], "```",
+              #   sep = ""
+              # ),
               "\n\n||<@&1028578599965569026>||"
             )
           )
@@ -623,24 +623,6 @@ if(length(new) > 0){
       sep = ""
     )
   
-  send_webhook_message(
-    paste(
-      "## New Announcement!", "\n\n", 
-      paste(
-        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
-      ),
-      "\n\n||<@&957275417365057566>||"
-    )
-  )
-  
-  
-  
-  link <- 
-    new %>% 
-    html_elements("a[title]") %>% 
-    html_attr("href")%>% 
-    str_remove(pattern = "s=[0-9a-z]+&")
-  
   checks <- 
     lapply(
       link,
@@ -723,7 +705,7 @@ if(length(new) > 0){
     paste(
       "## Someone has created!", "\n\n", 
       paste(
-        paste("[",title,"](", link, ")", " ", "BUILD CHECKS", "\n", checks, sep = ""), collapse = "\n\n"
+        paste("[",title,"](", link, ")", " ", "\nBUILD CHECKS", "\n", checks, sep = ""), collapse = "\n\n"
       )
     )
   )
