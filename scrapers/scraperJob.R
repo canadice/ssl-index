@@ -91,6 +91,7 @@ forumData <-
         !is.data.frame(scrape)
       ){
         print(scrape)
+        return(data.frame(Playerlink = x)) 
       } else {
         # print("OK")
         # print(scrape)
