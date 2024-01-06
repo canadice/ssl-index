@@ -163,6 +163,7 @@ pitch <-
 playerData <- 
   dbGetQuery(con, "SELECT * from Daily_Scrape") %>%
   group_by(Name) %>% 
+  filter(!is.na(Class)) %>% 
   dplyr::mutate(
     DEFENDING =
       sum(c(Marking,Tackling,Positioning) %>% replace_na(5))/3,

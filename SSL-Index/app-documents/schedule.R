@@ -26,6 +26,7 @@ scheduleUI <- function(id){
               c(
                 1:(playerData %>% 
                   select(Class) %>% 
+                    filter(!is.na(Class)) %>% 
                   mutate(
                     Class = str_extract(Class, pattern = "[0-9]+") %>% as.numeric()
                   ) %>% 
