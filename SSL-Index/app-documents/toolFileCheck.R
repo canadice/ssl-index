@@ -44,7 +44,8 @@ fileCheckServer <- function(id) {
           ) %>% 
           select(
             -"Inf",
-            -"Rec"
+            ## FM24 does not have Rec as an automatic column
+            # -"Rec"
           ) %>% 
           mutate(
             Name = 
@@ -62,12 +63,10 @@ fileCheckServer <- function(id) {
         colnames(FMAttributes) <- 
           c(
             "Name",
-            # Attributes
-            playerData %>% 
-              select(
-                Acceleration:Throwing
-              ) %>% 
-              colnames(),
+            sapply(
+              colnames(FMAttributes), 
+              FUN = function(x) attributes$Attribute[attributes$abbr == x]
+            ) %>% unlist() %>% stringi::stri_remove_empty_na(),
             # Hidden traits
             "Versatility", "Temperament", "Sportmanship", "Important Matches", "Proffessionalism", "Pressure", "Loyalty", "Injury Proneness", 
             "Dirtiness", "Controversy", "Consistency", "Adaptability", "Ambition" 
