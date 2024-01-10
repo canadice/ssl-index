@@ -140,7 +140,7 @@ if(length(new) > 0){
   print("Sent new announcements.")
   
 } else {
-  #Do Nothing
+  print("No new announcements!")
 }
 
 ##################################################################
@@ -197,7 +197,7 @@ if(length(new) > 0){
   print("Sent new job openings.")
   
 } else {
-  #Do Nothing
+  print("No new job openings!")
 }
 
 ##---------------------------------------------------------------
@@ -264,7 +264,7 @@ if(length(new) > 0){
   print("Sent new predictions")
   
 } else {
-  #Do Nothing
+  print("No new predictions!")
 }
 
 ##################################################################
@@ -321,7 +321,7 @@ if(length(new) > 0){
   print("Sent new AC thread.")
   
 } else {
-  #Do Nothing
+  print("No new AC!")
 }
 
 ##################################################################
@@ -378,7 +378,7 @@ if(length(new) > 0){
   print("Sent new affiliate thread.")
   
 } else {
-  #Do Nothing
+  print("No new affiliate!")
 }
 
 
@@ -516,7 +516,7 @@ if(length(currentClaimThread) > 0){
   
   
 } else {
-  #Do Nothing
+  print("No new claims!")
 }
 
 
@@ -585,7 +585,7 @@ if(length(new) > 0){
   print("Sent new retirement.")
   
 } else {
-  #Do Nothing
+  print("No new retirements!")
 }
 
 
@@ -721,7 +721,7 @@ if(length(new) > 0){
   print("Sent new player created.")
   
 } else {
-  #Do Nothing
+  print("No new players!")
 }
 
 
@@ -885,7 +885,7 @@ if(length(new) > 0){
   
   print("Sent new new approved player.")
 } else {
-  #Do Nothing
+  print("No new players approved!")
 }
 
 
@@ -1013,7 +1013,7 @@ if(length(currentFileThread) > 0){
   }
   
 } else {
-  #Do Nothing
+  print("No new sim file!")
 }
 
 ##################################################################
