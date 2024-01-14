@@ -34,7 +34,7 @@ goalieFunction <- function(season){
   
   FMGoalie <- 
     {
-      read_html("D:/Football Manager 2022/screenshots/academy.html", encoding = "UTF-8") %>% 
+      read_html("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/academy.html", encoding = "UTF-8") %>% 
         html_table() %>% 
         .[[1]] %>% 
         dplyr::select(
@@ -146,7 +146,7 @@ outfieldFunction <- function(season){
   
   FMOutfield <- 
     {
-      read_html("D:/Football Manager 2022/screenshots/academy.html", encoding = "UTF-8") %>% 
+      read_html("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/academy.html", encoding = "UTF-8") %>% 
         html_table() %>% 
         .[[1]] %>% 
         dplyr::select(
@@ -163,7 +163,7 @@ outfieldFunction <- function(season){
           `Successful Crosses` = `Cr C`,
           `Attempted Crosses` = `Cr A`,
           `Chances Created` = CCC,
-          `Tackles Won` = `Tck W`,
+          `Tackles Won` = `Tck C`,
           `Tackle%` = `Tck R`,
           `Key Tackles` = `K Tck`,
           `Successful Headers` = Hdrs,
@@ -351,7 +351,7 @@ outfieldFunction <- function(season){
         select(
           -`Inf`,
           # -`Tck A`,
-          -Rec
+          # -Rec
         ) %>% 
         arrange(
           `Average Rating` %>% desc()
