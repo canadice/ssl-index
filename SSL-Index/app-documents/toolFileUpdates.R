@@ -171,7 +171,7 @@ fileUpdateToolSERVER <- function(id){
             str_replace(pattern = "DefensiveMidfielderCentral", replacement = "DefensiveMidfielder") %>% 
             str_replace_all(pattern = "Wingback", replacement = "WingBack"),
           '}',
-          ',"HairColour":"', temp$`Hair Color` %>% str_replace_all(pattern = " ", replacement = ""), 
+          ',"HairColour":"', temp$`Hair Color` %>% str_replace_all(pattern = " |\\(|\\)", replacement = ""), 
           '","HairLength":"', temp$`Hair Length` %>% str_to_title(), 
           '","SkinColour":', temp$`Skin Tone` %>% str_extract(pattern = "[0-9]+"), 
           ',"Height":', 
