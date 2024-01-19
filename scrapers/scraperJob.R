@@ -174,7 +174,8 @@ forumData <-
       ) %>% 
       dplyr::if_else(
         . == "Catalonia", "Spain", .
-      )
+      ),
+    Team = if_else(Team == "Sydney City", "Prospect", Team)
   ) %>% 
   relocate(
     Goalkeeper,
@@ -206,6 +207,9 @@ forumData <-
     Username:Nationality,
     Userlink,
     Playerlink
+  ) %>% 
+  filter(
+    !is.na(Team)
   )
 
 write.csv(forumData, file = "data/forumData.csv", row.names = FALSE)
