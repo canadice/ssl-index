@@ -190,7 +190,9 @@ forumData <-
     .after = `Preferred Position`
   ) %>% 
   dplyr::mutate(
-    Position = ifelse(is.na(Position), "Undefined", Position)
+    Position = ifelse(is.na(Position), "Undefined", Position),
+    ## Change order of Chinese names to last name first name
+    Name = if_else(Nationality == "China", paste(`Last Name`, `First Name`), Name)
   ) %>% 
   arrange(
     Created
@@ -253,6 +255,9 @@ budget <-
   googlesheets4::read_sheet(
     ss = "https://docs.google.com/spreadsheets/d/1qjHSYloQL2h7Cbgz1g0woRnfvgrChbHJP2tmvaeJCgU/edit#gid=1311763493",
     sheet = "ALL_PLAYERS"
+  ) %>% 
+  rename(
+    Current = 12
   )
 
 rosterPages <-
@@ -345,7 +350,7 @@ rosterAudit <-
         team.roster
       ) %>% 
       mutate(
-        cap = sum(S13, na.rm = TRUE),
+        cap = sum(Current, na.rm = TRUE),
         assigned = n(),
         player = player.x,
         contractStatus = if_else(stringr::str_detect(Notes, "IA"), "IA", "Active")
@@ -353,7 +358,7 @@ rosterAudit <-
       relocate(
         cap,
         assigned,
-        S13
+        Current
       ) %>% 
       filter(
         !is.na(authors)
