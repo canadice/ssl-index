@@ -344,16 +344,22 @@ rosterAudit <-
         team.roster
       ) %>% 
       mutate(
-        salary = sum(S13, na.rm = TRUE),
-        players = n()
+        cap = sum(S13, na.rm = TRUE),
+        assigned = n(),
+        player = paste(player.x, player.y)
       ) %>% 
       relocate(
-        salary,
-        players,
+        cap,
+        assigned,
         S13
       ) %>% 
       filter(
         !is.na(authors)
+      ) %>% 
+      select(
+        cap:team.budget,
+        authors,
+        player
       )
   })
 
