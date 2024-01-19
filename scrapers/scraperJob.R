@@ -192,7 +192,13 @@ forumData <-
   dplyr::mutate(
     Position = ifelse(is.na(Position), "Undefined", Position),
     ## Change order of Chinese names to last name first name
-    Name = if_else(Nationality == "China", paste(`Last Name`, `First Name`), Name)
+    Name = 
+      if_else(
+        Nationality == "China", 
+        true = paste(`Last Name`, `First Name`), 
+        false = Name, 
+        missing = Name
+      )
   ) %>% 
   arrange(
     Created
