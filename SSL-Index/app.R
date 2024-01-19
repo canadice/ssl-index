@@ -299,7 +299,7 @@ ui <- function(request){
         menuItem(
           "SSL Forum",
           icon = icon("external-link-alt"),
-          href = "https://simsoccer.jcink.net/index.php"
+          href = "https://forum.simulationsoccer.com/"
         ),
         menuItem(
           "Github", 

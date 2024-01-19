@@ -208,7 +208,9 @@ teamOverviewSERVER <- function(id){
           ### Updates the player data to the active team
           SSLData %>% 
             filter(
-              Team == input$selectedTeam
+              team.roster == input$selectedTeam |
+                team.update == input$selectedTeam |
+                team.budget == input$selectedTeam
             ) %>% 
             teamData()
           
@@ -239,7 +241,29 @@ teamOverviewSERVER <- function(id){
       ##----------------------------------------------------------------
       
       SSLData <- 
-        playerData %>% 
+        rosterAudit %>% 
+        mutate(
+          player = 
+            player %>% 
+            str_remove_all(pattern = "\\(S[0-9]+\\)|- [A-z]+") %>% 
+            str_squish()
+        ) %>% 
+        left_join(
+          playerData %>% 
+            select(
+              Name,
+              Class,
+              TPE,
+              Playerlink,
+              Userlink,
+              Position,
+              `Preferred Foot`,
+              Active,
+              Striker:Goalkeeper,
+              Acceleration:Throwing
+            ),
+          by = c("player" = "Name")
+        ) %>% 
         mutate(
           TPEbins = 
             cut(
@@ -255,6 +279,46 @@ teamOverviewSERVER <- function(id){
                   "1800+"),
               right = FALSE
             )
+        ) %>%
+        rename(
+          Name = player,
+          Username = authors
+        ) %>% 
+        mutate(
+          team.budget =
+            case_when(
+              team.budget == "ROME" ~ "A.C. Romana",
+              team.budget == "LONDON" ~ "Inter London",
+              team.budget == "ATHENAI" ~ "Athênai F.C.",
+              team.budget == "BUENOS AIRES" ~ "CA Buenos Aires",
+              team.budget == "SEOUL" ~ "Seoul MFC",
+              team.budget == "CATALUNYA" ~ "CF Catalunya",
+              team.budget == "HOLLYWOOD" ~ "Hollywood FC",
+              team.budget == "CAPE TOWN" ~ "F.C. Kaapstad",
+              team.budget == "REYKJAVIK" ~ "Reykjavik United",
+              team.budget == "NORTH SHORE" ~ "North Shore United",
+              team.budget == "BLACK FOREST" ~ "Schwarzwälder FV",
+              team.budget == "MONTREAL" ~ "Montréal United",
+              team.budget == "TOKYO" ~ "Tokyo S.C.",
+              team.budget == "CAIRO" ~ "Cairo City",
+              team.budget == "SAO PAULO" ~ "União São Paulo",
+              team.budget == "PARIS" ~ "AS Paris",
+              TRUE ~ NA
+            ),
+          Current = Current / 1E6
+        ) %>% 
+        rowwise() %>% 
+        mutate(
+          identical = 
+            all(
+              team.roster == team.update,
+              team.roster == team.budget,
+              team.update == team.budget
+            )
+        ) %>% 
+        relocate(
+          identical,
+          .after = team.budget
         )
       
       ##----------------------------------------------------------------
@@ -267,7 +331,7 @@ teamOverviewSERVER <- function(id){
             selectInput(
               inputId = session$ns("selectedTeam"),
               label = "Select a team",
-              choices = SSLData %>% select(Team) %>% unique() %>% arrange(Team)
+              choices = SSLData %>% select(team.roster) %>% unique() %>% arrange(team.roster)
             )  
         })
       
@@ -312,12 +376,17 @@ teamOverviewSERVER <- function(id){
               Position,
               Username,
               TPE,
-              Active#,
+              `User Status` = Active,
+              `Current Salary` = Current,
+              `Contract Status` = contractStatus,
+              `Player Assignment` = team.roster,
+              `Update Assignment` = team.update,
+              `Budget Assignment` = team.budget#,
               # Roster,
               # Prospect,
             ) %>%
             arrange(
-              Active,
+              `User Status`,
               -TPE
             ) %>% 
             reactable(
@@ -326,17 +395,44 @@ teamOverviewSERVER <- function(id){
               pagination = TRUE,
               defaultPageSize = 18,
               theme = pff(font_color = "#000"),
-              columns = 
+              columns =
                 list(
-                  Name = 
+                  Name =
+                    colDef(
+                      width = 200,
+                      footer = function(values) paste(sum(str_detect(values, "[A-z]+")), "Players")
+                    ),
+                  Username =
                     colDef(
                       width = 200
                     ),
-                  Username = 
+                  TPE = 
                     colDef(
-                      width = 200
+                      footer = function(values) paste("AVG:", mean(values, na.rm = TRUE) %>% round(0))
+                    ),
+                  `Contract Status` = 
+                    colDef(
+                      footer = function(values) paste(sum(str_detect(values, "IA")), "IA Contracts")
+                    ),
+                  `Current Salary` = 
+                    colDef(
+                      format = colFormat(prefix = "$", suffix = "M", separators = FALSE, digits = 2),
+                      footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
+                    ),
+                  `Player Assignment` = 
+                    colDef(
+                      width = 150
+                    ),
+                  `Update Assignment` = 
+                    colDef(
+                      width = 150
+                    ),
+                  `Budget Assignment` = 
+                    colDef(
+                      width = 150
                     )
-                )
+                ),
+              defaultColDef = colDef(footerStyle = list(fontWeight = "bold"))
             )
         }
       }
@@ -791,7 +887,7 @@ teamOverviewSERVER <- function(id){
             select(
               Name,
               `Preferred Foot`,
-              `Preferred Position`
+              Position
             ) %>% 
             left_join(
               roleAbility %>% 
