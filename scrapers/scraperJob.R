@@ -216,6 +216,151 @@ write.csv(forumData, file = "data/forumData.csv", row.names = FALSE)
 
 RSQLite::dbWriteTable(con, "Daily_Scrape", forumData, overwrite = TRUE)
 
+#### Audits the roster pages against the budget
+findAuthor <- function(link) {
+  forum <- xml2::read_html(link)
+  
+  authors <- 
+    forum %>% 
+    rvest::html_elements(".author a") %>% 
+    html_text() %>% 
+    .[is.na(as.numeric(.))]
+  
+  team <- 
+    forum %>% 
+    html_elements(".thead") %>% 
+    html_text() %>% 
+    .[stringr::str_detect(string = ., pattern = "Roster|Player Updates")] %>% 
+    stringr::str_remove_all(pattern = "\\r|\\t|\\n|Roster|Player Updates") %>% 
+    stringr::str_squish()
+  
+  title <- 
+    forum %>% 
+    html_elements(".subject_new") %>% 
+    html_text()
+  
+  data.frame(
+    player = title,
+    authors = authors,
+    team = rep(team, length(authors))
+  ) %>% 
+    return()
+}
+
+googlesheets4::gs4_deauth()
+
+budget <- 
+  googlesheets4::read_sheet(
+    ss = "https://docs.google.com/spreadsheets/d/1qjHSYloQL2h7Cbgz1g0woRnfvgrChbHJP2tmvaeJCgU/edit#gid=1311763493",
+    sheet = "ALL_PLAYERS"
+  )
+
+rosterPages <-
+  c("https://forum.simulationsoccer.com/forumdisplay.php?fid=148", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=59", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=113", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=60", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=105", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=81", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=66", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=139", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=116", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=152", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=135", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=63", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=68", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=70", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=141", 
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=132"
+  )
+
+updatePages <- 
+  c(
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=149",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=62",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=114",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=61",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=106",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=82",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=80",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=140",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=117",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=153",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=136",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=64",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=69",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=71",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=142",
+    "https://forum.simulationsoccer.com/forumdisplay.php?fid=133"
+  )
+
+rosterAudit <- 
+  suppressWarnings({
+    lapply(
+      X = rosterPages,
+      FUN = function(x) {
+        result <- tryCatch(findAuthor(x), error = function(e) paste(x, "produces this error: ", e))
+      }
+    ) %>% 
+      do.call(
+        what = rbind,
+        args = .
+      ) %>% 
+      full_join(
+        lapply(
+          X = updatePages,
+          FUN = function(x) {
+            result <- tryCatch(findAuthor(x), error = function(e) paste(x, "produces this error: ", e))
+          }
+        ) %>% 
+          do.call(
+            what = rbind,
+            args = .
+          ),
+        by = "authors"
+      ) %>% 
+      full_join(
+        budget %>% 
+          select(
+            Team,
+            `Major/Minor`,
+            Username,
+            Bank:`Minimum Wage`
+          ),
+        by = c("authors" = "Username")
+      ) %>% 
+      group_by(authors) %>% 
+      mutate(
+        team.roster = team.x,
+        team.update = team.y,
+        team.budget = str_split(Team, pattern = " & ", simplify = TRUE) %>% .[if_else(`Major/Minor` == "Major", 1, 2)]
+      ) %>% 
+      relocate(
+        team.roster,
+        team.update,
+        team.budget
+      ) %>% 
+      group_by(
+        team.roster
+      ) %>% 
+      mutate(
+        salary = sum(S13, na.rm = TRUE),
+        players = n()
+      ) %>% 
+      relocate(
+        salary,
+        players,
+        S13
+      ) %>% 
+      filter(
+        !is.na(authors)
+      )
+  })
+
+
+RSQLite::dbWriteTable(con, "rosterAudit", rosterAudit, overwrite = TRUE)
+
+
 RSQLite::dbDisconnect(con)
 
 
