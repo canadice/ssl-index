@@ -324,6 +324,7 @@ rosterAudit <-
           select(
             Team,
             `Major/Minor`,
+            Notes,
             Username,
             Bank:`Minimum Wage`
           ),
@@ -346,7 +347,8 @@ rosterAudit <-
       mutate(
         cap = sum(S13, na.rm = TRUE),
         assigned = n(),
-        player = paste(player.x, player.y)
+        player = player.x,
+        contractStatus = if_else(stringr::str_detect(Notes, "IA"), "IA", "Active")
       ) %>% 
       relocate(
         cap,
@@ -359,7 +361,8 @@ rosterAudit <-
       select(
         cap:team.budget,
         authors,
-        player
+        player,
+        contractStatus
       )
   })
 
