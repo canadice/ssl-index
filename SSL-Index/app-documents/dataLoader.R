@@ -190,16 +190,13 @@ playerData <-
 
 ## Loads game data
 keeperGameData <- 
-  dbGetQuery(con, "SELECT * from gameDataKeeper") %>%
-  mutate(
-    Season = as.numeric(Season)
-  )
+  dbGetQuery(con, "SELECT * from gameDataKeeper")
 
 playerGameData <- 
-  dbGetQuery(con, "SELECT * from gameDataPlayer") %>% 
-  mutate(
-    Season = as.numeric(Season)
-  )
+  dbGetQuery(con, "SELECT * from gameDataPlayer")
+
+rosterAudit <- 
+  dbGetQuery(con, "SELECT * from rosterAudit")
 
 ##################################################################
 ##                      Loading Index data                      ##

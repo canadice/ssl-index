@@ -74,9 +74,13 @@ playerDatabaseUI <- function(id){
                   inputId = ns("gameSeason"),
                   label = "Filter Season",
                   choices =
-                    playerGameData$Season %>%
-                    unique() %>%
-                    sort(),
+                    c(
+                      unique(playerGameData$Season) %>% 
+                      .[!(. == "WSFC 12")] %>% 
+                      as.numeric() %>% 
+                      sort(decreasing = TRUE),
+                      "WSFC 12" = 0
+                    ),
                   multiple = TRUE
                 )
               ),

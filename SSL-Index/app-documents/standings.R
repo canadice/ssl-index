@@ -23,8 +23,10 @@ standingsUI <- function(id){
             inputId = ns("season"),
             label = "Select season",
             choices = 
-              1:max(playerGameData$Season) %>% 
-              sort(decreasing = TRUE)
+              unique(playerGameData$Season) %>% 
+              .[!(. == "WSFC 12")] %>% 
+              as.numeric() %>% 
+              sort(decreasing = TRUE) 
           )
         )
       ),

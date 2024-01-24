@@ -24,9 +24,11 @@ playerStatsUI <- function(id){
             label = "Select season",
             choices = 
               c(
-                1:max(playerGameData$Season) %>% 
+                unique(playerGameData$Season) %>% 
+                  .[!(. == "WSFC 12")] %>% 
+                  as.numeric() %>% 
                   sort(decreasing = TRUE),
-                "WSFC 12" = 0,
+                "WSFC 12",
                 "ALL"
               )
               
