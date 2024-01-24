@@ -52,7 +52,8 @@ goalieFunction <- function(season){
         sum(`Save%`) as `Save%` ,
         sum(`Penalties Faced`) as `Penalties Faced` ,
         sum(`Penalties Saved`) as `Penalties Saved` ,
-        avg(`xSave%`) as `xSave%`
+        avg(`xSave%`) as `xSave%`,
+        sum(`xG Prevented`) as `xG Prevented`
       FROM gameDataKeeper
       WHERE Season = '", season, "'",
       " GROUP BY Name, Club",
@@ -131,6 +132,8 @@ goalieFunction <- function(season){
               Club == "E. Europe" ~ "Eastern Europe",
               Club == "Walland" ~ "Cymru",
               Club == "Reykjavik U." ~ "Reykjavik United",
+              Club == "Montréal U." ~ "Montréal United",
+              Club == "North Shore" ~ "North Shore United",
               TRUE ~ Club
             )
         ) %>% 
@@ -220,7 +223,7 @@ goalieFunction <- function(season){
       !contains(".y")
     ) %>% 
     rename_with(
-      ~ str_replace(.x, ".x", "")
+      ~ str_replace(.x, "\\.x", "")
     ) %>% 
     filter(
       `Minutes Played`>0
@@ -269,73 +272,74 @@ goalieFunction <- function(season){
 }
 
 outfieldFunction <- function(season){
-  
-  # aggregateOutfield <- 
-  #   tbl(con, "gameDataPlayer") %>% 
-  #   filter(Season == season) %>% 
-  #   select(
-  #     Name:`Attempted Presses`
-  #   ) %>%
-  #   group_by(Name, Club) %>%
-  #   summarize(
-  #     across(
-  #       everything(),
-  #       ~ sum(.x, na.rm = TRUE)
-  #     )
-  #   ) %>% 
-  #   collect()
-  
-
-
-  getQuery <-
-    paste(
-      "SELECT Name,
-        Club,
-        sum(Apps) as Apps,
-        sum(`Minutes Played`) as `Minutes Played` ,
-        sum(`Distance Run (km)`) as `Distance Run (km)` ,
-        avg(`Average Rating`) as `Average Rating` ,
-        sum(`Player of the Match`) as `Player of the Match` ,
-        sum(`Goals`) as Goals ,
-        sum(`Assists`) as Assists ,
-        sum(`xG`) as xG ,
-        sum(`Shots on Target`) as `Shots on Target` ,
-        sum(`Shots`) as Shots ,
-        sum(`Penalties Taken`) as `Penalties Taken` ,
-        sum(`Penalties Scored`) as `Penalties Scored` ,
-        sum(`Successful Passes`) as `Successful Passes` ,
-        sum(`Attempted Passes`) as `Attempted Passes` ,
-        sum(`Pass%`) as `Pass%` ,
-        sum(`Key Passes`) as `Key Passes` ,
-        sum(`Successful Crosses`) as `Successful Crosses` ,
-        sum(`Attempted Crosses`) as `Attempted Crosses` ,
-        sum(`Cross%`) as `Cross%` ,
-        sum(`Chances Created`) as `Chances Created` ,
-        sum(`Successful Headers`) as `Successful Headers` ,
-        sum(`Attempted Headers`) as `Attempted Headers` ,
-        sum(`Header%`) as `Header%` ,
-        sum(`Key Headers`) as `Key Headers` ,
-        sum(`Dribbles`) as Dribbles ,
-        sum(`Tackles Won`) as `Tackles Won` ,
-        sum(`Attempted Tackles`) as `Attempted Tackles` ,
-        sum(`Tackle%`) as `Tackle%` ,
-        sum(`Key Tackles`) as `Key Tackles` ,
-        sum(`Interceptions`) as Interceptions ,
-        sum(`Clearances`) as Clearances ,
-        sum(`Mistakes Leading to Goals`) as `Mistakes Leading to Goals` ,
-        sum(`Yellow Cards`) as `Yellow Cards` ,
-        sum(`Red Cards`) as `Red Cards` ,
-        sum(`Fouls`) as Fouls ,
-        sum(`Fouls Against`) as `Fouls Against` ,
-        sum(`Offsides`) as Offsides
-      FROM gameDataPlayer
-      WHERE Season = '", season, "'",
-      " GROUP BY Name, Club",
-      sep = ""
-    )
 
   aggregateOutfield <-
-    dbGetQuery(con, getQuery)
+    tbl(con, "gameDataPlayer") %>%
+    filter(Season == season) %>%
+    select(
+      Name:`Offsides`, xA:`Attempted Presses`,
+      -Nationality, -Position
+    ) %>%
+    group_by(Name, Club) %>%
+    summarize(
+      across(
+        everything(),
+        ~ sum(.x, na.rm = TRUE)
+      )
+    ) %>%
+    collect()
+  
+# 
+# 
+#   getQuery <-
+#     paste(
+#       "SELECT Name,
+#         Club,
+#         sum(Apps) as Apps,
+#         sum(`Minutes Played`) as `Minutes Played` ,
+#         sum(`Distance Run (km)`) as `Distance Run (km)` ,
+#         avg(`Average Rating`) as `Average Rating` ,
+#         sum(`Player of the Match`) as `Player of the Match` ,
+#         sum(`Goals`) as Goals ,
+#         sum(`Assists`) as Assists ,
+#         sum(`xG`) as xG ,
+#         sum(`Shots on Target`) as `Shots on Target` ,
+#         sum(`Shots`) as Shots ,
+#         sum(`Penalties Taken`) as `Penalties Taken` ,
+#         sum(`Penalties Scored`) as `Penalties Scored` ,
+#         sum(`Successful Passes`) as `Successful Passes` ,
+#         sum(`Attempted Passes`) as `Attempted Passes` ,
+#         sum(`Pass%`) as `Pass%` ,
+#         sum(`Key Passes`) as `Key Passes` ,
+#         sum(`Successful Crosses`) as `Successful Crosses` ,
+#         sum(`Attempted Crosses`) as `Attempted Crosses` ,
+#         sum(`Cross%`) as `Cross%` ,
+#         sum(`Chances Created`) as `Chances Created` ,
+#         sum(`Successful Headers`) as `Successful Headers` ,
+#         sum(`Attempted Headers`) as `Attempted Headers` ,
+#         sum(`Header%`) as `Header%` ,
+#         sum(`Key Headers`) as `Key Headers` ,
+#         sum(`Dribbles`) as Dribbles ,
+#         sum(`Tackles Won`) as `Tackles Won` ,
+#         sum(`Attempted Tackles`) as `Attempted Tackles` ,
+#         sum(`Tackle%`) as `Tackle%` ,
+#         sum(`Key Tackles`) as `Key Tackles` ,
+#         sum(`Interceptions`) as Interceptions ,
+#         sum(`Clearances`) as Clearances ,
+#         sum(`Mistakes Leading to Goals`) as `Mistakes Leading to Goals` ,
+#         sum(`Yellow Cards`) as `Yellow Cards` ,
+#         sum(`Red Cards`) as `Red Cards` ,
+#         sum(`Fouls`) as Fouls ,
+#         sum(`Fouls Against`) as `Fouls Against` ,
+#         sum(`Offsides`) as Offsides
+#       FROM gameDataPlayer
+#       WHERE Season = '", season, "'",
+#       " GROUP BY Name, Club",
+#       sep = ""
+#     )
+# 
+#   aggregateOutfield <-
+#     dbGetQuery(con, getQuery)
   
   # aggregateOutfield %>%
   #   filter(Name == "Mike Rup") %>%
@@ -486,6 +490,8 @@ outfieldFunction <- function(season){
               Club == "Walland" ~ "Cymru",
               Club == "E. Europe" ~ "Eastern Europe",
               Club == "Reykjavik U." ~ "Reykjavik United",
+              Club == "Montréal U." ~ "Montréal United",
+              Club == "North Shore" ~ "North Shore United",
               TRUE ~ Club
             ),
           `Left Foot` = 
@@ -669,7 +675,7 @@ outfieldFunction <- function(season){
       !contains(".y")
     ) %>% 
     rename_with(
-      ~ str_replace(.x, ".x", "")
+      ~ str_replace(.x, "\\.x", "")
     ) %>% 
     filter(
       `Minutes Played`>0
@@ -865,7 +871,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- "13"
 
-date <- "2024-02-13" %>% as.Date()
+date <- "2024-02-27" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
