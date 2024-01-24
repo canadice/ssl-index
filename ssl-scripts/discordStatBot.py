@@ -30,22 +30,28 @@ LOG_PLAYER_RANGE = os.getenv('LOG_SHEET')
 
 intents = discord.Intents.all()
 
-### Bot Functions
-# def get_data(search_string, has_claim):
+
+##  Default string when calling a function when Discord account doesn't have an associated name
+noName = "You have no name associated with this account, use !claim followed by your player name to link a player name to your Discord account!"
+
+
+#   FUNCTIONS
+##  BANK FUNCTIONS
+### Gets Bank Balance data for a given player
 def get_data(search_string):
     values = pd.read_csv("https://docs.google.com/spreadsheets/export?id={}&exportFormat=csv&gid={}".format(BANK_SHEET, PLAYER_RANGE))
     values = values[values["Username"].notna()]
     return_value = []
-    if search_string.lower() not in values["Player Name"].to_string().lower():
-        print('No data found.')
-        return_value = pd.DataFrame(columns = ["Username", "Player Name", "Balance"])
+    if search_string.lower() not in values["Name"].to_string().lower():
+        # print('No data found.')
+        return_value = pd.DataFrame(columns = ["Username", "Name", "Balance"])
     else:
-        row = values[values["Player Name"].str.lower() == search_string.lower()]
+        row = values[values["Name"].str.lower() == search_string.lower()]
         
-        return_value = row[["Username", "Player Name", "Balance"]]
+        return_value = row[["Username", "Name", "Balance"]]
 
     return (return_value, values)
-  
+### Gets Bank Log data for a given player
 def get_bank_log_data(search_string):
     values = pd.read_csv("https://docs.google.com/spreadsheets/export?id={}&exportFormat=csv&gid={}".format(BANK_SHEET, LOG_PLAYER_RANGE))
     values.columns = values.iloc[1]
@@ -54,7 +60,7 @@ def get_bank_log_data(search_string):
     return_value = []
     
     if search_string.lower() not in values["Username"].to_string().lower():
-        print('No data found.')
+        # print('No data found.')
         return_value = pd.DataFrame(columns = ['Date', 'Username', 'Net','Source'])
     else:
         row = values[values["Username"].str.lower() == search_string.lower()]
@@ -62,20 +68,22 @@ def get_bank_log_data(search_string):
         return_value = row[["Date", "Username", "Net", "Source"]].iloc[::-1].iloc[0:5,]
 
     return (return_value)
-  
+### Gets all Bank data for a single team
 def get_team_data(search_string):
     values = pd.read_csv("https://docs.google.com/spreadsheets/export?id={}&exportFormat=csv&gid={}".format(BANK_SHEET, PLAYER_RANGE))
     values = values[values["Username"].notna()]
     return_value = []
-    if search_string.lower() not in values["Team Name"].to_string().lower():
-        print('No data found.')
-    else:
-        row = values[values["Team Name"].str.lower() == search_string.lower()]
+    if search_string.lower() not in values["Team"].to_string().lower():
+        # print('No data found.')
         
-        return_value = row[["Username", "Player Name", "Balance"]]
+        return_value = pd.DataFrame(columns = ["Username", "Name", "Balance"])
+    else:
+        row = values[values["Team"].str.lower() == search_string.lower()]
+        
+        return_value = row[["Username", "Name", "Balance"]]
         
     return return_value
-  
+### Calculates the rank of the balances 
 def calculate_balance_rank(search_name, all_rows):
     search_name = search_name.str.lower().to_string(index = False)
   
@@ -100,7 +108,67 @@ def calculate_balance_rank(search_name, all_rows):
     percentile = round(round((total_users - rank) / total_users, 4)*100,2) 
     
     return(rank, percentile)
+
+##  DATABASE FUNCTIONS
+### Creates a connection to the user/player name database
+def create_connection():
+    """ create a database connection to the SQLite database
+        specified by db_file
+    :param db_file: database file
+    :return: Connection object or None
+    """
+    conn = None
+    try:
+        conn = sqlite3.connect("database/discordBotUser.db")
+    except Error as e:
+        print(e)
+
+    return conn
+### Adds a new user row to the database
+def add_row(conn, data):
+    """
+    Create a new row into the table
+    :param conn:
+    :param data:
+    :return: row id
+    """
+    sql = ''' INSERT INTO discordUser(discordID, username, player)
+              VALUES(?,?,?) '''
+    cur = conn.cursor()
+    cur.execute(sql, data)
+    conn.commit()
+    return cur.lastrowid
+### Updates a current user row to the database
+def update_row(conn, data):
+    """
+    update priority, begin_date, and end date of a task
+    :param conn:
+    :param task:
+    :return: row id
+    """
+    sql = ''' UPDATE discordUser
+              SET discordID = ? ,
+                  username = ? ,
+                  player = ?
+              WHERE discordID = ?'''
+    cur = conn.cursor()
+    cur.execute(sql, data)
+    conn.commit()
+    return(cur.lastrowid)
+### Gets the current player name tied to a Discord User
+def get_name(discord_id):
+  session = create_connection()
+  with session:
+    table = pd.read_sql_query("SELECT * from discordUser WHERE discordID = " + str(discord_id), session)
+    if(table.shape[0] > 0):
+      name = table["player"][0]
+    else:
+      name = None
+  session.close()
   
+  return(name)
+
+##  OUTPUT FUNCTION
 def playerStatsEmbed(data, desc):
   
     embed = discord.Embed(color = discord.Color.from_str("#BD9523"))
@@ -145,64 +213,6 @@ def playerStatsEmbed(data, desc):
       embed.add_field(name = "Advanced", value = advanced.to_csv(index = False, header = False, sep = "\t"), inline = True)
   
     return(embed)
-  
-def create_connection():
-    """ create a database connection to the SQLite database
-        specified by db_file
-    :param db_file: database file
-    :return: Connection object or None
-    """
-    conn = None
-    try:
-        conn = sqlite3.connect("database/discordBotUser.db")
-    except Error as e:
-        print(e)
-
-    return conn
-  
-def add_row(conn, data):
-    """
-    Create a new row into the table
-    :param conn:
-    :param data:
-    :return: row id
-    """
-    sql = ''' INSERT INTO discordUser(discordID, username, player)
-              VALUES(?,?,?) '''
-    cur = conn.cursor()
-    cur.execute(sql, data)
-    conn.commit()
-    return cur.lastrowid
-
-def update_row(conn, data):
-    """
-    update priority, begin_date, and end date of a task
-    :param conn:
-    :param task:
-    :return: row id
-    """
-    sql = ''' UPDATE discordUser
-              SET discordID = ? ,
-                  username = ? ,
-                  player = ?
-              WHERE discordID = ?'''
-    cur = conn.cursor()
-    cur.execute(sql, data)
-    conn.commit()
-    return(cur.lastrowid)
-  
-def get_name(discord_id):
-  session = create_connection()
-  with session:
-    table = pd.read_sql_query("SELECT * from discordUser WHERE discordID = " + str(discord_id), session)
-    if(table.shape[0] > 0):
-      name = table["player"][0]
-    else:
-      name = None
-  session.close()
-  
-  return(name)
-
 
 ### Actual Bot Commands
 
@@ -216,19 +226,19 @@ async def on_ready():
       f'{guild.name}(id: {guild.id})'
     )
 
-@bot.command(name='99', help='Responds with a random quote from Brooklyn 99')
-async def nine_nine(ctx):
-    brooklyn_99_quotes = [
-        'I\'m the human form of the 💯 emoji.',
-        'Bingpot!',
-        (
-            'Cool. Cool cool cool cool cool cool cool, '
-            'no doubt no doubt no doubt no doubt.'
-        ),
-    ]
-
-    response = random.choice(brooklyn_99_quotes)
-    await ctx.send(response)
+# @bot.command(name='99', help='Responds with a random quote from Brooklyn 99')
+# async def nine_nine(ctx):
+#     brooklyn_99_quotes = [
+#         'I\'m the human form of the 💯 emoji.',
+#         'Bingpot!',
+#         (
+#             'Cool. Cool cool cool cool cool cool cool, '
+#             'no doubt no doubt no doubt no doubt.'
+#         ),
+#     ]
+# 
+#     response = random.choice(brooklyn_99_quotes)
+#     await ctx.send(response)
     
 @bot.command(name='trivia', help='Responds with a random trivia from the SSL')
 async def nine_nine(ctx):
@@ -260,7 +270,7 @@ async def player(ctx, season: typing.Optional[int] = None, *, name: typing.Optio
       name = get_name(discord_id)
     
     if name is None:  
-      await ctx.send("You have no name associated with this account, use !claim to associate one!")
+      await ctx.send(noName)
     
     log = requests.get('http://143.198.159.1/ssl/playerLog?player=' + name.replace(" ", "%20"))
     
@@ -297,7 +307,7 @@ async def player(ctx, season: typing.Optional[int] = None, *, name: typing.Optio
       name = get_name(discord_id)
     
     if name is None:  
-      await ctx.send("You have no name associated with this account, use !claim to associate one!")
+      await ctx.send(noName)
     
     log = requests.get('http://143.198.159.1/ssl/playerLog?player=' + name.replace(" ", "%20"))
     
@@ -332,7 +342,7 @@ async def player(ctx, season: typing.Optional[int] = None, *, name: typing.Optio
       name = get_name(discord_id)
     
     if name is None:  
-      await ctx.send("You have no name associated with this account, use !claim to associate one!")
+      await ctx.send(noName)
       
     log = requests.get('http://143.198.159.1/ssl/playerLog?player=' + name.replace(" ", "%20"))
     
@@ -367,7 +377,7 @@ async def player(ctx, season: typing.Optional[int] = None, *, name: typing.Optio
       name = get_name(discord_id)
     
     if name is None:  
-      await ctx.send("You have no name associated with this account, use !claim to associate one!")
+      await ctx.send(noName)
     
     log = requests.get('http://143.198.159.1/ssl/playerLog?player=' + name.replace(" ", "%20"))
     
@@ -402,7 +412,7 @@ async def player(ctx, season: typing.Optional[int] = None, *, name: typing.Optio
       name = get_name(discord_id)
     
     if name is None:  
-      await ctx.send("You have no name associated with this account, use !claim to associate one!")
+      await ctx.send(noName)
       
     if season is None:
       response = requests.get('http://143.198.159.1/ssl/playerGraphSimple?player=' + name.replace(" ", "%20"))
@@ -511,14 +521,14 @@ async def get_balance(ctx, *, name: typing.Optional[str] = None):
       name = get_name(discord_id)
     
     if name is None:  
-      await ctx.send("You have no name associated with this account, use !claim to associate one!")
+      await ctx.send(noName)
     
     data, all_rows = get_data(name)
     
     if data.empty:
-      await ctx.send("Your player name does not exist in the bank. Please check the spelling with !whoami.")
+      await ctx.send("The player name does not exist in the bank. Please check the spelling with !whoami and correct it with !claim followed by the correct spelling.")
     else:
-      player = data['Player Name'].to_string(index = False)
+      player = data['Name'].to_string(index = False)
       
       balance = data["Balance"].to_string(index = False)
       
@@ -538,64 +548,69 @@ async def get_balance(ctx, *, name: typing.Optional[str] = None):
     
         # await message.channel.send(f"{print_string}")
         await ctx.send(embed=new_embed)
-    
-@bot.command(name='weekly', help='Checks if you have posted in the weekly capped PTs.', aliases = ["w", "cappedPT"])   
-async def capped(ctx, *, name: typing.Optional[str] = None):
-    if name is None:
-      discord_id = ctx.author.id
-      
-      name = get_name(discord_id)
-    
-    if name is None:  
-      await ctx.send("You have no name associated with this account, use !claim to associate one!")
-    else:
-      data = requests.get('https://api.simulationsoccer.com/ssl/cappedPT?player=' + name.replace(" ", "%20"))
-      
-      data = pd.DataFrame(eval(data.content))
-      
-      new_embed = discord.Embed(title=f"This week's AC and Affiliate for {name}",color = discord.Color.from_str("#BD9523"))
-      new_embed.add_field(name=f"Activity Check", value=data.iloc[0][0], inline=False)
-      new_embed.add_field(name=f"Affiliate Thread", value=data.iloc[1][0], inline=False)
-  
-      # await message.channel.send(f"{print_string}")
-      await ctx.send(embed=new_embed)
+
+# ### This function is superseeded by the task checklist on the forum
+# @bot.command(name='weekly', help='Checks if you have posted in the weekly capped PTs.', aliases = ["w", "cappedPT"])   
+# async def capped(ctx, *, name: typing.Optional[str] = None):
+#     if name is None:
+#       discord_id = ctx.author.id
+#       
+#       name = get_name(discord_id)
+#     
+#     if name is None:  
+#       await ctx.send("You have no name associated with this account, use !claim to associate one!")
+#     else:
+#       data = requests.get('https://api.simulationsoccer.com/ssl/cappedPT?player=' + name.replace(" ", "%20"))
+#       
+#       data = pd.DataFrame(eval(data.content))
+#       
+#       new_embed = discord.Embed(title=f"This week's AC and Affiliate for {name}",color = discord.Color.from_str("#BD9523"))
+#       new_embed.add_field(name=f"Activity Check", value=data.iloc[0][0], inline=False)
+#       new_embed.add_field(name=f"Affiliate Thread", value=data.iloc[1][0], inline=False)
+#   
+#       # await message.channel.send(f"{print_string}")
+#       await ctx.send(embed=new_embed)
     
 @bot.command(name='bankTeam', help='Shows bank balance for the entire team.', aliases = ["bt"])   
 async def get_balance(ctx, *, name: typing.Optional[str] = None):
     if name is None:  
-      await ctx.send("You need to select a team to get the balances of. Please write a team name after !bankTeam.")
+      await ctx.send("You need to select a team to get the balances of. Please write a Team after !bankTeam.")
       return
     
     data = get_team_data(name)
     
-    data["BalanceInt"] = data["Balance"].str.replace("$","").str.replace(",","")
-    data["BalanceInt"] = data["BalanceInt"].astype(int)
-    
-    data = data.sort_values("BalanceInt", ascending = False)
-    
-    users = data["Username"].to_string(index = False)
-    
-    players = data["Player Name"].to_string(index = False)
-    
-    balance = data["Balance"].to_string(index = False)
-    
-    new_embed = discord.Embed(title=f"Balance for {name}",color = discord.Color.from_str("#BD9523"))
-    new_embed.add_field(name=f"User", value=users, inline=True)
-    new_embed.add_field(name=f"Player", value=players, inline=True)
-    new_embed.add_field(name=f"Total Balance", value=balance, inline=True)
-    
-    # await message.channel.send(f"{print_string}")
-    await ctx.send(embed=new_embed)
+    if data.empty:
+      await ctx.send("Please check the spelling of the team name.")
+    else:
+      data["BalanceInt"] = data["Balance"].str.replace("$","").str.replace(",","")
+      data["BalanceInt"] = data["BalanceInt"].astype(int)
+      
+      data = data.sort_values("BalanceInt", ascending = False)
+      
+      users = data["Username"].to_string(index = False)
+      
+      players = data["Name"].to_string(index = False)
+      
+      balance = data["Balance"].to_string(index = False)
+      
+      new_embed = discord.Embed(title=f"Balance for {name}",color = discord.Color.from_str("#BD9523"))
+      new_embed.add_field(name=f"User", value=users, inline=True)
+      new_embed.add_field(name=f"Player", value=players, inline=True)
+      new_embed.add_field(name=f"Total Balance", value=balance, inline=True)
+      
+      # await message.channel.send(f"{print_string}")
+      await ctx.send(embed=new_embed)
 
-@bot.command(name='claim', help='Claims a player name for the Discord user.', aliases = ["c"])   
-async def claim(ctx, *, input_data: str):
+@bot.command(name='claim', help='Claims a Name for the Discord user.', aliases = ["c"])   
+async def claim(ctx, *, input_data: typing.Optional[str] = None):
+    if input_data is None:
+        await ctx.send("Please provide a player name after !claim to associate one to your Discord account.")
+        return
+      
     discord_id = ctx.author.id
     discord_user = ctx.author.name
     player_name = input_data
-    if input_data == "":
-        await ctx.send("Please provide a player name to claim")
-        return
-      
+    
     session = create_connection()
     with session:
       table = pd.read_sql_query("SELECT * from discordUser WHERE discordID = " + str(discord_id), session)
@@ -610,7 +625,7 @@ async def claim(ctx, *, input_data: str):
       else:
         add_row(session, [discord_id, discord_user, player_name])
         
-        await ctx.send(f"Associated Discord account with name: {player_name}")
+        await ctx.send(f"Associated Discord account with player name: {player_name}")
         
     session.close()
 
@@ -624,10 +639,10 @@ async def who_am_i(ctx):
       if(table.shape[0] > 0):
         old_name = table["player"][0]
         
-        await ctx.send(f"This account is associated with the name: {old_name}")
+        await ctx.send(f"This account is associated with the player name: {old_name}")
         
       else:
-        await ctx.send("You have no name associated with this account, use !claim to associate one!")
+        await ctx.send(noName)
         
     session.close()
         
