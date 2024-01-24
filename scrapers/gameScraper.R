@@ -52,7 +52,7 @@ goalieFunction <- function(season){
         sum(`Save%`) as `Save%` ,
         sum(`Penalties Faced`) as `Penalties Faced` ,
         sum(`Penalties Saved`) as `Penalties Saved` ,
-        avg(`xSave%`) as `xSave%` 
+        avg(`xSave%`) as `xSave%`
       FROM gameDataKeeper
       WHERE Season = '", season, "'",
       " GROUP BY Name, Club",
@@ -86,13 +86,13 @@ goalieFunction <- function(season){
   
   FMGoalie <- 
     {
-      read_html("D:/Football Manager 2022/screenshots/playerTemp.html", encoding = "UTF-8") %>% 
+      read_html("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/statistics.html", encoding = "UTF-8") %>% 
         html_table() %>% 
         .[[1]] %>% 
         dplyr::select(
           Name:Mins,
           `Av Rat`:PoM,
-          Won:`xSv %`
+          Won:`xGP`
         ) %>% 
         dplyr::filter(
           Position == "GK"
@@ -111,15 +111,16 @@ goalieFunction <- function(season){
           `Player of the Match` = `PoM`,
           # `Clean Sheets` = `Clean sheets`
           `Clean Sheets` = Shutouts,
-          `xSave%`= `xSv %`
+          `xSave%`= `xSv %`,
+          `xG Prevented` = xGP
         ) %>% 
         dplyr::mutate(
           across(
             c(
-              `Minutes Played`:`xSave%`
+              `Minutes Played`:`xG Prevented`
             ),
             .fns = str_replace_all,
-            pattern = "[^\\d\\.]+",
+            pattern = "[^-\\d\\.]+",
             replacement = ""
           ),
           Club = 
@@ -129,6 +130,7 @@ goalieFunction <- function(season){
               Club == "Red Star" ~ "Red Star Laos",
               Club == "E. Europe" ~ "Eastern Europe",
               Club == "Walland" ~ "Cymru",
+              Club == "Reykjavik U." ~ "Reykjavik United",
               TRUE ~ Club
             )
         ) %>% 
@@ -267,7 +269,25 @@ goalieFunction <- function(season){
 }
 
 outfieldFunction <- function(season){
-  getQuery <- 
+  
+  # aggregateOutfield <- 
+  #   tbl(con, "gameDataPlayer") %>% 
+  #   filter(Season == season) %>% 
+  #   select(
+  #     Name:`Attempted Presses`
+  #   ) %>%
+  #   group_by(Name, Club) %>%
+  #   summarize(
+  #     across(
+  #       everything(),
+  #       ~ sum(.x, na.rm = TRUE)
+  #     )
+  #   ) %>% 
+  #   collect()
+  
+
+
+  getQuery <-
     paste(
       "SELECT Name,
         Club,
@@ -313,9 +333,9 @@ outfieldFunction <- function(season){
       " GROUP BY Name, Club",
       sep = ""
     )
-  
+
   aggregateOutfield <-
-    dbGetQuery(con, getQuery) 
+    dbGetQuery(con, getQuery)
   
   # aggregateOutfield %>%
   #   filter(Name == "Mike Rup") %>%
@@ -377,65 +397,87 @@ outfieldFunction <- function(season){
   
   FMOutfield <- 
     {
-      read_html("D:/Football Manager 2022/screenshots/playerTemp.html", encoding = "UTF-8") %>% 
+      read_html("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/statistics.html", encoding = "UTF-8") %>% 
         html_table() %>% 
         .[[1]] %>% 
         dplyr::select(
-          `Inf`:Wor
+          `Inf`:`Right Foot`
         ) %>% 
         dplyr::rename(
           Apps = Apps,
+          `Minutes Played` = Mins,
+          `Distance Run (km)` = Distance,
+          `Average Rating` = `Av Rat`,
+          `Player of the Match` = `PoM`,
           Goals = Gls,
           Assists = Ast,
-          `Minutes Played` = Mins,
+          `xG Overperformance` = `xG-OP`,
+          
+          `Shots on Target` = ShT,
+          
+          `Blocks` = Blk,
+          
+          `Penalties Taken` = Pens,
+          `Penalties Scored` = `Pens S`,
+          
           `Attempted Passes` = `Pas A`,
           `Successful Passes` = `Ps C`,
           `Key Passes` = `K Pas`,
+          `Open Play Key Passes` = `OP-KP`,
+          
+          `Successful Open Play Crosses` = `OP-Crs C`,
+          `Attempted Open Play Crosses` = `OP-Crs A`,
           `Successful Crosses` = `Cr C`,
           `Attempted Crosses` = `Cr A`,
+          
           `Chances Created` = CCC,
-          `Tackles Won` = `Tck W`,
-          `Tackle%` = `Tck R`,
-          `Key Tackles` = `K Tck`,
+          
           `Successful Headers` = Hdrs,
           `Attempted Headers` = `Hdrs A`,
           `Header%` = `Hdr %`,
           `Key Headers` = `K Hdrs`,
-          `Shots on Target` = ShT,
-          `Mistakes Leading to Goals` = `Gl Mst`,
+          
           Dribbles = `Drb`,
-          Offsides = Off,
-          `Fouls Against` = FA,
+          
+          `Attempted Tackles` = `Tck A`,
+          `Tackles Won` = `Tck C`,
+          `Tackle%` = `Tck R`,
+          `Key Tackles` = `K Tck`,
+          
           Interceptions = Itc,
+          `Shots Blocked` = `Shts Blckd`,
+          Clearances = Clear,
+          `Mistakes Leading to Goals` = `Gl Mst`,
           `Yellow Cards` = Yel,
           `Red Cards` = Red,
           Fouls = Fls,
-          `Penalties Taken` = Pens,
-          `Penalties Scored` = `Pens S`,
-          `Distance Run (km)` = Distance,
-          `Average Rating` = `Av Rat`,
-          `Player of the Match` = `PoM`,
-          Clearances = Clear
+          `Fouls Against` = FA,
+          Offsides = Off,
+          
+          `Progressive Passes` = `Pr Passes`,
+          
+          `Successful Presses` = `Pres C`,
+          `Attempted Presses` = `Pres A`
         ) %>% 
         dplyr::mutate(
-          Starts = 
-            case_when(
-              str_detect(Apps, pattern = "\\(") ~
-                (str_split(Apps, pattern = "\\(", simplify = TRUE)[,1] %>% 
-                   str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
-                   as.numeric()
-                 ),
-              TRUE ~ Apps %>% as.numeric()
-            ),
-          Subs = 
-            case_when(
-              str_detect(Apps, pattern = "\\(") ~
-                (str_split(Apps, pattern = "\\(", simplify = TRUE)[,ncol(str_split(Apps, pattern = "\\(", simplify = TRUE))] %>% 
-                   str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
-                   as.numeric()
-                ),
-              TRUE ~ 0
-            ),
+          # Starts = 
+          #   case_when(
+          #     str_detect(Apps, pattern = "\\(") ~
+          #       (str_split(Apps, pattern = "\\(", simplify = TRUE)[,1] %>% 
+          #          str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
+          #          as.numeric()
+          #        ),
+          #     TRUE ~ Apps %>% as.numeric()
+          #   ),
+          # Subs = 
+          #   case_when(
+          #     str_detect(Apps, pattern = "\\(") ~
+          #       (str_split(Apps, pattern = "\\(", simplify = TRUE)[,ncol(str_split(Apps, pattern = "\\(", simplify = TRUE))] %>% 
+          #          str_extract_all(pattern = "[0-9]+", simplify = TRUE) %>% 
+          #          as.numeric()
+          #       ),
+          #     TRUE ~ 0
+          #   ),
           Club = 
             case_when(
               Club == "Accra FC" ~ "Adowa Accra FC",
@@ -443,22 +485,35 @@ outfieldFunction <- function(season){
               Club == "Red Star" ~ "Red Star Laos",
               Club == "Walland" ~ "Cymru",
               Club == "E. Europe" ~ "Eastern Europe",
+              Club == "Reykjavik U." ~ "Reykjavik United",
               TRUE ~ Club
+            ),
+          `Left Foot` = 
+            case_when(
+              `Left Foot` == "Very Strong" ~ 20,
+              `Left Foot` == "Strong" ~ 15,
+              TRUE ~ 10
+            ),
+          `Right Foot` = 
+            case_when(
+              `Right Foot` == "Very Strong" ~ 20,
+              `Right Foot` == "Strong" ~ 15,
+              TRUE ~ 10
             )
         ) %>% 
-        dplyr::mutate(
-          Apps = rowSums(data.frame(.$Starts, .$Subs), na.rm = TRUE)
-        ) %>%
-        dplyr::select(
-          -Starts, -Subs
-        ) %>% 
+        # dplyr::mutate(
+        #   Apps = rowSums(data.frame(.$Starts, .$Subs), na.rm = TRUE)
+        # ) %>%
+        # dplyr::select(
+        #   -Starts, -Subs
+        # ) %>% 
         mutate(
           across(
             c(
-              `Minutes Played`:`Offsides`
+              `Minutes Played`:`Attempted Presses`
             ),
             .fns = str_replace_all,
-            pattern = "[^\\d\\.]+",
+            pattern = "[^-\\d\\.]+",
             replacement = ""
           ),
           Name =
@@ -475,25 +530,18 @@ outfieldFunction <- function(season){
         #     )
         # ) %>%
         mutate(
-          `Pass%` = (`Successful Passes` %>% as.numeric()/`Attempted Passes` %>% as.numeric()) %>% round(4)*100,
-          `Header%` = (`Successful Headers` %>% as.numeric()/`Attempted Headers` %>% as.numeric()) %>% round(4)*100,
-          # Position = NA,
-          # Nationality =
-          #   case_when(
-          #     str_detect(Name, "GFuel") ~
-          #       Name %>%
-          #       str_split(
-          #         pattern = " - ",
-          #         simplify = TRUE
-          #       ) %>%
-          #       .[,3],
-          #     TRUE ~ Name %>%
-          #       str_split(
-          #         pattern = " - ",
-          #         simplify = TRUE
-          #       ) %>%
-          #       .[,2]
-          #   ),
+          `Pass%` = 
+            (`Successful Passes` %>% as.numeric()/
+               `Attempted Passes` %>% as.numeric()) %>% 
+            round(4)*100,
+          `Header%` = 
+            (`Successful Headers` %>% as.numeric()/
+               `Attempted Headers` %>% as.numeric()) %>% 
+            round(4)*100,
+          `Cross%` = 
+            (`Successful Crosses` %>% as.numeric()/
+               `Attempted Crosses` %>% as.numeric()) %>% 
+            round(4)*100,
           Nationality =
             Name %>%
             str_split(
@@ -508,10 +556,6 @@ outfieldFunction <- function(season){
                 simplify = TRUE
               ) %>%
               .[,1],
-          `Cross%` = (`Successful Crosses` %>% as.numeric()/`Attempted Crosses` %>% as.numeric()) %>% round(4)*100,
-          # `Header%` =
-          #   `Header%` %>% 
-          #   as.numeric(),
           `Tackle%` =
             `Tackle%` %>% 
             as.numeric(),
@@ -531,7 +575,6 @@ outfieldFunction <- function(season){
             ),
             as.numeric
           ),
-          `Attempted Tackles` = ((`Tackles Won` %>% as.numeric())/(`Tackle%`/100)) %>% round(0),
           Name = 
             case_when(
               str_detect(Name, "GFuel") ~ "A Singular Tub of FazeBerry ® GFuel ® Energy Formula - The Official Drink of ESports ®",
@@ -584,7 +627,7 @@ outfieldFunction <- function(season){
         select(
           -`Inf`,
           # -`Tck A`,
-          -Rec
+          # -Rec
         ) %>% 
         arrange(
           `Average Rating` %>% desc()
@@ -820,9 +863,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- "WSFC 12"
+season <- "13"
 
-date <- "2023-03-10" %>% as.Date()
+date <- "2024-02-13" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
@@ -836,7 +879,9 @@ date <- "2023-03-10" %>% as.Date()
   
   table(matchOutfield$Result) %>% print()
   
-  table(matchOutfield$Opponent) %>% print()
+  table(
+    paste(matchOutfield$Club, matchOutfield$Opponent, sep = "-")
+    ) %>% print()
   
   ## Checks sum of minutes played per player per team
   sum(matchOutfield$`Minutes Played`)/length(unique(matchOutfield$Club))/11
@@ -844,6 +889,7 @@ date <- "2023-03-10" %>% as.Date()
 ## Writing to the database
 dbAppendTable(con, "gameDataPlayer", matchOutfield)
 dbAppendTable(con, "gameDataKeeper", matchGoalie)
+
 
 # dbAppendTable(con, "Player_Game_Data", matchOutfield)
 # dbAppendTable(con, "Keeper_Game_Data", matchGoalie)
