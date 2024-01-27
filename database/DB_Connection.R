@@ -369,7 +369,7 @@ dbWriteTable(con, "Team_Information", teamInfo, overwrite = TRUE)
 #################################################################
 
 dbExecute(con, 
-          paste('UPDATE gameDataKeeper SET Division = 0 WHERE Division = "Cup"', 
+          paste('DELETE FROM gameDataKeeper WHERE Season = "13"', 
                 sep = "")
           )
 
