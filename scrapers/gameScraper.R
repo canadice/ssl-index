@@ -871,7 +871,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- "13"
 
-date <- "2024-02-27" %>% as.Date()
+date <- "2024-02-20" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
@@ -894,7 +894,7 @@ date <- "2024-02-27" %>% as.Date()
 }
 ## Writing to the database
 dbAppendTable(con, "gameDataPlayer", matchOutfield)
-dbAppendTable(con, "gameDataKeeper", matchGoalie)
+dbAppendTable(con, "gameDataKeeper", matchGoalie %>% filter(!(Name == "Michael Bourne")))
 
 
 # dbAppendTable(con, "Player_Game_Data", matchOutfield)
