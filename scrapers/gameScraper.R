@@ -277,7 +277,7 @@ outfieldFunction <- function(season){
     tbl(con, "gameDataPlayer") %>%
     filter(Season == season) %>%
     select(
-      Name:`Offsides`, xA:`Attempted Presses`,
+      Name:`Offsides`, xA:`Attempted Presses`, `Goals Outside Box`,
       -Nationality, -Position
     ) %>%
     group_by(Name, Club) %>%
@@ -650,6 +650,14 @@ outfieldFunction <- function(season){
         arrange(Name)
     }
   
+  aggregateOutfield <- 
+    aggregateOutfield[, 
+                      colnames(FMOutfield)[
+                        colnames(FMOutfield) %in% 
+                          colnames(aggregateOutfield)
+                        ]
+                      ]
+  
   currentOutfield <- 
     FMOutfield %>% 
     full_join(
@@ -672,7 +680,7 @@ outfieldFunction <- function(season){
       )
     ) %>% 
     select(
-      !contains(".y")
+      !contains("\\.y")
     ) %>% 
     rename_with(
       ~ str_replace(.x, "\\.x", "")
@@ -871,7 +879,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- "13"
 
-date <- "2024-02-20" %>% as.Date()
+date <- "2024-02-09" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
