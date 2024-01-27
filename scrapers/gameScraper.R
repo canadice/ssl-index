@@ -283,7 +283,11 @@ outfieldFunction <- function(season){
     group_by(Name, Club) %>%
     summarize(
       across(
-        everything(),
+        `Average Rating`,
+        ~ mean(.x, na.rm = TRUE)
+      ),
+      across(
+        !(contains("Rating")),
         ~ sum(.x, na.rm = TRUE)
       )
     ) %>%
@@ -855,7 +859,9 @@ outfieldOutput <- function(season, matchday){
               TRUE ~ `Average Rating`
             ),
           xG =
-            if_else(xG < 0, 0, xG)
+            if_else(xG < 0, 0, xG),
+          xA =
+            if_else(xA < 0, 0, xA)
         ) %>% 
         select(
           !contains(".x") & !contains(".y"),
@@ -879,7 +885,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- "13"
 
-date <- "2024-02-09" %>% as.Date()
+date <- "2024-03-17" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
