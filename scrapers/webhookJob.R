@@ -513,7 +513,7 @@ if(length(currentClaimThread) > 0){
       }
     }
   }
-  
+  print("No new claims!")
   
 } else {
   print("No new claims!")
