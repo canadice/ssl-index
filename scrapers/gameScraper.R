@@ -885,7 +885,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- "13"
 
-date <- "2024-05-15" %>% as.Date()
+date <- "2024-06-26" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
@@ -909,6 +909,10 @@ date <- "2024-05-15" %>% as.Date()
 ## Writing to the database
 dbAppendTable(con, "gameDataPlayer", matchOutfield)
 dbAppendTable(con, "gameDataKeeper", matchGoalie %>% filter(!(Name == "Michael Bourne")))
+
+# ### Filters in case MAJ and MIN are in same file
+# matchGoalie <- matchGoalie %>% filter(!is.na(Opponent))
+# matchOutfield <- matchOutfield %>% filter(!is.na(Opponent))
 
 
 # dbAppendTable(con, "Player_Game_Data", matchOutfield)
