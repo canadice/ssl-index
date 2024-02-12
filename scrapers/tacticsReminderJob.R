@@ -11,6 +11,8 @@
 # remotes::install_github("EriqLaplus/discordr")
 require(discordr)
 
+require(googlesheets4)
+
 require(dplyr)
 
 require(lubridate)
@@ -54,15 +56,63 @@ sendReminder <- function(x){
   )
 }
 
-
-
-
 lapply(
   X = hooks, 
   FUN = sendReminder
 )
 
+production <- 
+  Sys.getenv("PRODUCTIONCH")
 
+googlesheets4::gs4_deauth()
+
+sheet <- Sys.getenv("PRODUCTIONSH")
+
+schedule <- 
+  read_sheet(
+    ss = sheet,
+    skip = 1
+  ) %>%
+  mutate(
+    across(
+      everything(),
+      unlist
+    )
+  ) 
+
+current <- 
+  schedule %>% 
+  filter(
+    as.Date(`Eastern (UTC-5)...3`) == today()
+  )
+
+conn_obj <- 
+  create_discord_connection(
+    webhook = production, 
+    username = 'BOT Producer', 
+    set_default = TRUE)
+
+send_webhook_message(
+  paste(
+    "## Next set of games\n",
+    paste(
+      current$Matchday, "\n",
+      "Simmer: @", current$Simmer, "\n",
+      "Commentator: ", 
+      if_else(is.na(current$`Commentator 1`), "NONE", 
+              paste("@", current$`Commentator 1`, sep = "")), 
+      if_else(is.na(current$`Commentator 2`), "", 
+              paste(" & @", current$`Commentator 2`, sep = "")), 
+      sep = "",
+      collapse = "\n\n"
+    ),
+    "\n\n ||<@&921299760365846548>||",
+    sep = ""
+  )
+)
+  
+  
+  
 
 
 
