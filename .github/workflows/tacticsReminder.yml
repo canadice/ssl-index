@@ -59,6 +59,8 @@ jobs:
       TACTICSSFV: ${{ secrets.TACTICSSFV }}
       TACTICSTOK: ${{ secrets.TACTICSTOK }}
       TACTICSUSP: ${{ secrets.TACTICSUSP }}
+      PRODUCTIONCH: ${{ secrets.PRODUCTIONCH }}
+      PRODUCTIONSH: ${{ secrets.PRODUCTIONSH }}
       
 
     steps:
@@ -111,6 +113,8 @@ jobs:
           echo TACTICSSFV ="TACTICSSFV" >> ~/.Renviron
           echo TACTICSTOK ="TACTICSTOK" >> ~/.Renviron
           echo TACTICSUSP ="TACTICSUSP" >> ~/.Renviron
+          echo PRODUCTIONSH ="PRODUCTIONSH" >> ~/.Renviron
+          echo PRODUCTIONCH ="PRODUCTIONCH" >> ~/.Renviron
         shell: bash
 
       - name: Generate data
