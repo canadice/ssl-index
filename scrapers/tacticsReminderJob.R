@@ -68,6 +68,8 @@ googlesheets4::gs4_deauth()
 
 sheet <- Sys.getenv("PRODUCTIONSH")
 
+print(sheet)
+
 schedule <- 
   read_sheet(
     ss = sheet,
