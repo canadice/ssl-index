@@ -97,6 +97,11 @@ goalieFunction <- function(season){
   #   filter(Club %in% c("Schwarzwälder FV")) %>%
   #   write.csv2(file = "S13K1 Reset.csv", row.names = FALSE)
 
+  # aggregateGoalie %>%
+  #   filter(Club %in% c("F.C. Kaapstad", "CF Catalunya")) %>%
+  #   write.csv2(file = "S13K2 Reset.csv", row.names = FALSE)
+
+  
   loanReset <- function(name, teams){
     data <- read.csv2(paste(name,"Reset.csv"))
     
@@ -116,6 +121,11 @@ goalieFunction <- function(season){
     aggregateGoalie$Club %in% c("Schwarzwälder FV"),
     3:ncol(aggregateGoalie)
   ] <- loanReset("S13K1", c("Schwarzwälder FV"))
+  
+  aggregateGoalie[
+    aggregateGoalie$Club %in% c("F.C. Kaapstad", "CF Catalunya"),
+    3:ncol(aggregateGoalie)
+  ] <- loanReset("S13K2", c("F.C. Kaapstad", "CF Catalunya"))
   
   FMGoalie <- 
     {
@@ -384,6 +394,10 @@ outfieldFunction <- function(season){
   # aggregateOutfield %>%
   #   filter(Club %in% c("Schwarzwälder FV")) %>%
   #   write.csv2(file = "S131 Reset.csv", row.names = FALSE)
+  
+  # aggregateOutfield %>%
+  #   filter(Club %in% c("F.C. Kaapstad", "CF Catalunya")) %>%
+  #   write.csv2(file = "S132 Reset.csv", row.names = FALSE)
 
   ### Tam Kove had a reset in the loan deal in S10 making their stats reset after MD2
   
@@ -407,26 +421,31 @@ outfieldFunction <- function(season){
     3:ncol(aggregateOutfield)
   ] <- teamReset("S131", c("Schwarzwälder FV"))
   
+  aggregateOutfield[
+    aggregateOutfield$Club %in% c("F.C. Kaapstad", "CF Catalunya"),
+    3:ncol(aggregateOutfield)
+  ] <- teamReset("S132", c("F.C. Kaapstad", "CF Catalunya"))
+  
   
   # aggregateOutfield %>%
   #   filter(Name == "Nicolás Inclán") %>%
   #   write.csv2(file = "Nicolás Inclán Reset.csv", row.names = FALSE)
 
-  
-  loanReset <- function(name){
-    data <- read.csv2(paste(name,"Reset.csv"))
-    
-    (aggregateOutfield[aggregateOutfield$Name == name,
-                       3:ncol(aggregateOutfield)] -
-        { data %>% select(3:ncol(.)) }) %>%
-      round(5) %>% 
-      return()
-  }
-  
-  aggregateOutfield[
-    aggregateOutfield$Name == "Nicolás Inclán",
-    3:ncol(aggregateOutfield)
-  ] <- loanReset("Nicolás Inclán")
+  # 
+  # loanReset <- function(name){
+  #   data <- read.csv2(paste(name,"Reset.csv"))
+  #   
+  #   (aggregateOutfield[aggregateOutfield$Name == name,
+  #                      3:ncol(aggregateOutfield)] -
+  #       { data %>% select(3:ncol(.)) }) %>%
+  #     round(5) %>% 
+  #     return()
+  # }
+  # 
+  # aggregateOutfield[
+  #   aggregateOutfield$Name == "Nicolás Inclán",
+  #   3:ncol(aggregateOutfield)
+  # ] <- loanReset("Nicolás Inclán")
 
   #   
     # 
@@ -933,7 +952,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- "13"
 
-date <- "2024-07-03" %>% as.Date()
+date <- "2024-07-18" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
