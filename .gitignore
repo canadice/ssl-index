@@ -41,8 +41,4 @@ my.png
 *.RData
 Temp.csv
 Academy Draft Statistics.csv
-Budget Busquets Reset.csv
-Busquets Reset.csv
-Caleb Hayden Reset.csv
-Mike Rup Reset.csv
-Rafael Ramos Reset.csv
+*Reset.csv
