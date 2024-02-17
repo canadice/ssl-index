@@ -33,57 +33,85 @@ con <-
 
 goalieFunction <- function(season){
   
-  getQuery <- 
-    paste(
-      "SELECT Name,
-        Club,
-        sum(Apps) as Apps,
-        sum(`Minutes Played`) as `Minutes Played` ,
-        avg(`Average Rating`) as `Average Rating` ,
-        sum(`Player of the Match`) as `Player of the Match` ,
-        sum(`Won`) as Won ,
-        sum(`Lost`) as Lost ,
-        sum(`Drawn`) as Drawn ,
-        sum(`Clean Sheets`) as `Clean Sheets` ,
-        sum(`Conceded`) as Conceded ,
-        sum(`Saves Parried`) as `Saves Parried` ,
-        sum(`Saves Held`) as `Saves Held` ,
-        sum(`Saves Tipped`) as `Saves Tipped` ,
-        sum(`Save%`) as `Save%` ,
-        sum(`Penalties Faced`) as `Penalties Faced` ,
-        sum(`Penalties Saved`) as `Penalties Saved` ,
-        avg(`xSave%`) as `xSave%`,
-        sum(`xG Prevented`) as `xG Prevented`
-      FROM gameDataKeeper
-      WHERE Season = '", season, "'",
-      " GROUP BY Name, Club",
-      sep = ""
-    )
+  aggregateGoalie <-
+    tbl(con, "gameDataKeeper") %>%
+    filter(Season == season) %>%
+    select(
+      Name,
+      Club,
+      Apps:`xSave%`,
+      `xG Prevented`
+    ) %>%
+    group_by(Name, Club) %>%
+    summarize(
+      across(
+        c(`Average Rating`, `xSave%`),
+        ~ mean(.x, na.rm = TRUE)
+      ),
+      across(
+        !c(`Average Rating`, `xSave%`),
+        ~ sum(.x, na.rm = TRUE)
+      )
+    ) %>%
+    relocate(
+      `xSave%`,
+      .before = `xG Prevented` 
+    ) %>% 
+    relocate(
+      `Average Rating`,
+      .after = `Minutes Played`
+    ) %>% 
+    collect()
+  # 
+  # getQuery <- 
+  #   paste(
+  #     "SELECT Name,
+  #       Club,
+  #       sum(Apps) as Apps,
+  #       sum(`Minutes Played`) as `Minutes Played` ,
+  #       avg(`Average Rating`) as `Average Rating` ,
+  #       sum(`Player of the Match`) as `Player of the Match` ,
+  #       sum(`Won`) as Won ,
+  #       sum(`Lost`) as Lost ,
+  #       sum(`Drawn`) as Drawn ,
+  #       sum(`Clean Sheets`) as `Clean Sheets` ,
+  #       sum(`Conceded`) as Conceded ,
+  #       sum(`Saves Parried`) as `Saves Parried` ,
+  #       sum(`Saves Held`) as `Saves Held` ,
+  #       sum(`Saves Tipped`) as `Saves Tipped` ,
+  #       sum(`Save%`) as `Save%` ,
+  #       sum(`Penalties Faced`) as `Penalties Faced` ,
+  #       sum(`Penalties Saved`) as `Penalties Saved` ,
+  #       avg(`xSave%`) as `xSave%`,
+  #       sum(`xG Prevented`) as `xG Prevented`
+  #     FROM gameDataKeeper
+  #     WHERE Season = '", season, "'",
+  #     " GROUP BY Name, Club",
+  #     sep = ""
+  #   )
+  # 
+  # aggregateGoalie <- 
+  #   dbGetQuery(con, getQuery)
   
-  aggregateGoalie <- 
-    dbGetQuery(con, getQuery)
-    # 
-    # googlesheets4::read_sheet(
-    #   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    #   sheet = "KeeperGameData"
-    # ) %>% 
-    # filter(
-    #   Season == season
-    # ) %>% 
-    # group_by(
-    #   Name,
-    #   Club
-    # ) %>% 
-    # dplyr::summarize(
-    #   across(
-    #     where(is.numeric),
-    #     ~ sum(.x, na.rm = TRUE)
-    #   )
-    # ) %>% 
-    # mutate(
-    #   `Average Rating` = `Average Rating`/(Apps-1),
-    #   `xSave%` = `xSave%`/(Apps -1)
-    # )
+  # aggregateGoalie %>%
+  #   filter(Club %in% c("Athênai F.C.", "Inter London", "AS Paris")) %>%
+  #   write.csv2(file = "S13K Reset.csv", row.names = FALSE)
+
+  loanReset <- function(name){
+    data <- read.csv2(paste(name,"Reset.csv"))
+    
+    (aggregateGoalie[aggregateGoalie$Club %in% c("Athênai F.C.", "Inter London", "AS Paris"),
+                       3:ncol(aggregateGoalie)] -
+        { data %>% select(3:ncol(.)) }) %>%
+      round(5) %>% 
+      return()
+  }
+  
+  aggregateGoalie[
+    aggregateGoalie$Club %in% c("Athênai F.C.", "Inter London", "AS Paris"),
+    3:ncol(aggregateGoalie)
+  ] <- loanReset("S13K")
+  
   
   FMGoalie <- 
     {
@@ -244,7 +272,7 @@ goalieFunction <- function(season){
     mutate(
       `Average RatingDay` = 
         case_when(
-          is.na(`Average RatingSeason`) ~ `Average RatingDay`,
+          is.na(`Average RatingSeason`)  | `Average RatingSeason` == 0 ~ `Average RatingDay`,
           TRUE ~ (
             (`Average RatingDay` + `Average RatingSeason`) * 
               (`AppsSeason` + 1) -
@@ -254,7 +282,7 @@ goalieFunction <- function(season){
       `Save%` = ((`Saves Parried`+`Saves Held`+`Saves Tipped`)/(`Saves Parried`+`Saves Held`+`Saves Tipped`+Conceded)) %>% round(4) * 100,
       `xSave%Day` = 
         case_when(
-          is.na(`xSave%Season`) ~ `xSave%Day`,
+          is.na(`xSave%Season`) | `xSave%Season` == 0 ~ `xSave%Day`,
           TRUE ~ (
             ((`xSave%Day` + `xSave%Season`) -
               `xSave%Season`/2)*2
@@ -346,39 +374,46 @@ outfieldFunction <- function(season){
 #     dbGetQuery(con, getQuery)
   
   # aggregateOutfield %>%
-  #   filter(Name == "Mike Rup") %>%
-  #   write.csv2(file = "Mike Rup Reset.csv", row.names = FALSE)
+  #   filter(Club %in% c("Athênai F.C.", "Inter London", "AS Paris")) %>%
+  #   write.csv2(file = "S13 Reset.csv", row.names = FALSE)
 
   ### Tam Kove had a reset in the loan deal in S10 making their stats reset after MD2
   
-  # loanReset <- function(name){
-  #   data <- read.csv2(paste(name,"Reset.csv"))
-  #   
-  #     (aggregateOutfield[aggregateOutfield$Name == name,
-  #                       sapply(X = aggregateOutfield,
-  #                              FUN =  is.numeric)] -
-  #     { data %>% select(Apps:Offsides) }) %>% 
-  #       return()
-  # }
-  # 
-  # aggregateOutfield[aggregateOutfield$Name == "Budget Busquets",
-  #                   sapply(X = aggregateOutfield,
-  #                          FUN =  is.numeric)] <- 
-  #   loanReset("Budget Busquets")
-  # 
-  # aggregateOutfield[aggregateOutfield$Name == "Rafael Ramos",
-  #                   sapply(X = aggregateOutfield,
-  #                          FUN =  is.numeric)] <- 
-  #   loanReset("Rafael Ramos")
-  # aggregateOutfield[aggregateOutfield$Name == "Caleb Hayden",
-  #                   sapply(X = aggregateOutfield,
-  #                          FUN =  is.numeric)] <- 
-  #   loanReset("Caleb Hayden")
-  # aggregateOutfield[aggregateOutfield$Name == "Mike Rup",
-  #                   sapply(X = aggregateOutfield,
-  #                          FUN =  is.numeric)] <- 
-  #   loanReset("Mike Rup")
+  teamReset <- function(name){
+    data <- read.csv2(paste(name,"Reset.csv"))
 
+      (aggregateOutfield[aggregateOutfield$Club %in% c("Athênai F.C.", "Inter London", "AS Paris"),
+                        3:ncol(aggregateOutfield)] -
+      { data %>% select(3:ncol(.)) }) %>%
+      round(5) %>% 
+        return()
+  }
+  
+  aggregateOutfield[
+    aggregateOutfield$Club %in% c("Athênai F.C.", "Inter London", "AS Paris"),
+    3:ncol(aggregateOutfield)
+  ] <- teamReset("S13")
+  
+  
+  # aggregateOutfield %>%
+  #   filter(Name == "Nicolás Inclán") %>%
+  #   write.csv2(file = "Nicolás Inclán Reset.csv", row.names = FALSE)
+
+  
+  loanReset <- function(name){
+    data <- read.csv2(paste(name,"Reset.csv"))
+    
+    (aggregateOutfield[aggregateOutfield$Name == name,
+                       3:ncol(aggregateOutfield)] -
+        { data %>% select(3:ncol(.)) }) %>%
+      round(5) %>% 
+      return()
+  }
+  
+  aggregateOutfield[
+    aggregateOutfield$Name == "Nicolás Inclán",
+    3:ncol(aggregateOutfield)
+  ] <- loanReset("Nicolás Inclán")
 
   #   
     # 
@@ -707,7 +742,7 @@ outfieldFunction <- function(season){
     mutate(
       `Average RatingDay` = 
         case_when(
-          is.na(`Average RatingSeason`) ~ `Average RatingDay`,
+          is.na(`Average RatingSeason`) | `Average RatingSeason` == 0 ~ `Average RatingDay`,
           TRUE ~ (
             (`Average RatingDay` + `Average RatingSeason`) * 
               (`AppsSeason` + 1) -
@@ -885,7 +920,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- "13"
 
-date <- "2024-05-22" %>% as.Date()
+date <- "2024-06-26" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
