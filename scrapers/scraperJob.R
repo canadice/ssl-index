@@ -211,11 +211,11 @@ forumData <-
     Nationality, 
     .after = `Active`
   ) %>% 
-  select(
-    Username:Nationality,
-    Userlink,
-    Playerlink
-  ) %>% 
+  # select(
+  #   Username:Nationality,
+  #   Userlink,
+  #   Playerlink
+  # ) %>% 
   filter(
     !is.na(Team)
   )
