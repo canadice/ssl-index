@@ -7,7 +7,6 @@
 # # additional example workflows available for the R community.
 # 
 # on:
-# #   workflow_dispatch:
 #     #inputs:
 #     #  logLevel:
 #     #    description: 'Log level'
@@ -25,7 +24,6 @@
 #    schedule:
 #          - cron: "0 0/3 * * *"
 #   
-#    workflow_dispatch:
 # 
 # jobs:
 #   generate-data:
