@@ -356,10 +356,10 @@ playerDatabaseSERVER <- function(id){
           reactable(
             pagination = FALSE,
             theme = pff(font_color = "#000"),
-            rowStyle = function(index) {
-              if (data$Season[index] %% 2 == 0) list(background = "rgba(0, 0, 0, 0.05)")
-              else list(background = "rgba(0, 0, 0, 0.0)")
-            },
+            # rowStyle = function(index) {
+            #   if (data$Season[index] %% 2 == 0) list(background = "rgba(0, 0, 0, 0.05)")
+            #   else list(background = "rgba(0, 0, 0, 0.0)")
+            # },
             columns = 
               list(
                 Club = 
