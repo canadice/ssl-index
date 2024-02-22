@@ -905,34 +905,13 @@ topics <-
   read_html(forum) %>%
   html_elements(".inline_row .forumdisplay_regular .subject_new")
 
-# started <-
-#   topics %>%
-#   html_elements("span.desc") %>%
-#   html_text2() %>%
-#   stringi::stri_remove_empty_na() %>%
-#   str_split(pattern = "\n", simplify = TRUE) %>%
-#   .[,1] %>%
-#   stringr::str_remove_all(pattern = "th|rd|nd") %>%
-#   stringr::str_replace_all(pattern = "([0-9]+)st", replacement = "\\1") %>% 
-#   lubridate::as_datetime(format = "%d %B %Y - %I:%M %p", tz = "America/Los_Angeles") %>%
-#   lubridate::with_tz(tzone = "Europe/Stockholm")
-# 
-# currentFileThread <-
-#   topics[
-#     (now() - started) < (hours(24))
-#   ]
-
 currentFileThread <-
-  topics[1]
-
-# currentFileThread <- 
-#   currentFileThread[
-#     !(currentFileThread %>% 
-#       html_elements(".row4 a") %>% 
-#       html_text2() %>% 
-#       str_detect("Academy")
-#     )
-#   ]
+  topics[
+    !(topics %>%
+      html_text2() %>%
+      str_detect("Academy")
+    )
+  ][1]
 
 if(length(currentFileThread) > 0){
   posts <-
@@ -943,6 +922,7 @@ if(length(currentFileThread) > 0){
         paste(
           "https://forum.simulationsoccer.com/",
           .,
+          "&page=2",
           sep = ""
         )
       ) %>%
