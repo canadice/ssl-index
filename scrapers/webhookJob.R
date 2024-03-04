@@ -409,19 +409,19 @@ currentClaimThread <-
 
 if(length(currentClaimThread) > 0){
   posts <-
-    read_html(
-      currentClaimThread %>%
-        html_elements("a[title]") %>%
-        html_attr("href") %>%
-        paste(
-          "https://forum.simulationsoccer.com/",
-          .,
-          sep = ""
-        )
-      ) %>%
+    currentClaimThread %>%
+    html_elements("a[title]") %>%
+    html_attr("href") %>%
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      "&page=2",
+      sep = ""
+    ) %>% 
+    read_html() %>%
     html_elements(".post")
-
-  if(posts %>% length() > 1){
+  
+  if(posts %>% length() >= 1){
     posted <-
       posts %>%
       html_elements(".post_date") %>%
