@@ -38,3 +38,58 @@
 .scores:nth-child(even) {
   border-left: 1px solid;
 }
+
+
+.attribute,
+.attributeCost {
+  background-color: #e0e0e0;
+  border: 1px solid grey;
+  border-radius: 5px;
+  padding: 4px;
+}
+
+.attributeInput input {
+  border-radius: 5px;
+  border: 1px solid black;
+}
+
+/* Hover information for text */
+.hovertext {
+    position: relative;
+    border-bottom: 1px dashed black;
+}
+
+.hovertext:before {
+    content: attr(data_hover);
+    visibility: hidden;
+    opacity: 0;
+    width: 140px;
+    background-color: black;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    transition: opacity 1s ease-in-out;
+
+    position: absolute;
+    z-index: 1;
+    left: -10px;
+    top: 110%;
+}
+
+.hovertext:hover:before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Allows for hovertext on reactable column headers */
+.rt-th,
+.rt-th-inner,
+.rt-text-content{
+  overflow: visible !important;
+}
+
+.shiny-split-layout > div:has(> div.attribute) {
+  overflow: visible;
+}
+

@@ -7,82 +7,79 @@
 ###########################################################################
 ###########################################################################
 
-## Data handling from HTML format
-# remotes::install_github("Canadice/sslrtools", force = TRUE)
-require(sslrtools)
+suppressMessages({
+  ## Data handling
+  require(dplyr, quietly = FALSE)
+  require(tidyr, quietly = FALSE)
+  require(purrr, quietly = FALSE)
+  require(arsenal, quietly = FALSE)
+  
+  ## Visualizations
+  require(ggplot2, quietly = FALSE)
+  require(ggnewscale, quietly = FALSE)
+  require(RColorBrewer, quietly = FALSE)
+  require(cowplot, quietly = FALSE)
+  require(plotly, quietly = FALSE)
+  require(ggimage, quietly = FALSE)
+  require(magick, quietly = FALSE)
+  require(rsvg, quietly = FALSE)
+  require(grid, quietly = FALSE)
+  require(ggpubr, quietly = FALSE)
+  require(ggforce, quietly = FALSE)
+  
+  ## Tables
+  require(formattable, quietly = FALSE)
+  # require(gt, quietly = FALSE)
+  require(gtExtras, quietly = FALSE) #Github package
+  require(reactable, quietly = FALSE)
+  require(reactable.extras, quietly = FALSE)
+  require(reactablefmtr, quietly = FALSE)
+  require(tippy, quietly = FALSE)
+  
+  ## Package for handling date and time
+  require(lubridate, quietly = FALSE)
+  
+  ## Packages for handling strings
+  require(stringr, quietly = FALSE)
+  require(stringi, quietly = FALSE)
+  
+  ## Loading packages for handling RMarkdown files
+  require(rmarkdown, quietly = FALSE)
+  require(markdown, quietly = FALSE)
+  
+  ##Loading Database packages for MySQL database
+  require(DBI, quietly = FALSE)
+  require(dbplyr, quietly = FALSE)
+  require(RMySQL, quietly = FALSE)
+  
+  ## Loading jsonlite and httr for API calls
+  require(jsonlite, quietly = FALSE)
+  require(httr, quietly = FALSE)
+  
+  ## Loading Shiny packages
+  require(shiny, quietly = FALSE)
+  require(knitr, quietly = FALSE)
+  require(kableExtra, quietly = FALSE)
+  # require(shinythemes, quietly = FALSE)
+  require(shinycssloaders, quietly = FALSE)
+  require(shinyjs, quietly = FALSE)
+  require(shinydashboard, quietly = FALSE)
+  require(shinyBS, quietly = FALSE)
+  
+  require(fresh, quietly = FALSE)
+  require(shiny.router, quietly = FALSE)
+  
+  require(vembedr, quietly = FALSE)
+  
+  ## Package for login
+  require(sodium, quietly = FALSE)
+  require(shinymanager, quietly = FALSE)
+})
 
-require(rvest)
-
-## Data handling
-require(dplyr)
-require(tidyr)
-require(purrr)
-require(arsenal)
-
-## Visualizations
-require(ggplot2)
-require(ggnewscale)
-require(RColorBrewer)
-require(cowplot)
-require(plotly)
-require(ggimage)
-require(magick)
-require(rsvg)
-require(grid)
-require(ggpubr)
-require(ggforce)
-
-## Tables
-require(formattable)
-# require(gt)
-# require(gtExtras) #Github package
-require(reactable)
-require(reactablefmtr)
-
-
-## Package for handling date and time
-require(lubridate)
-
-## Packages for handling strings
-require(stringr)
-require(stringi)
-
-## Loading package that can talk to Google Sheets
-require(googlesheets4)
-require(googledrive)
-
-## Loading packages for handling RMarkdown files
-require(rmarkdown)
-require(markdown)
-
-##Loading Database packages for SQLite database
-require(DBI)
-require(dbplyr)
-require(RSQLite)
-
-## Loading jsonlite and httr for API calls
-require(jsonlite)
-require(httr)
-
-## Loading Shiny packages
-require(shiny)
-require(DT)
-require(knitr)
-require(kableExtra)
-# require(shinythemes)
-require(shinycssloaders)
-require(shinyjs)
-require(shinydashboard)
-
-require(fresh)
-require(shiny.router)
-
-require(vembedr)
 
 ##################################################################
 ##                      SSL Logo and Theme                      ##
 ##################################################################
-
 
 sslBlueD <- "#070B51"
 sslBlueL <- "#141204"
@@ -127,27 +124,11 @@ customTheme <-
 
 fileSources <- c("app-documents")
 
-## Loads and runs RMarkdown files
-rmdFiles <- 
-  sapply(
-    X = fileSources,
-    FUN = function(x){
-      list.files(path = x, pattern = ".Rmd$") %>% 
-        paste(x, ., sep = "/")
-    },
-    simplify = TRUE,
-    USE.NAMES = FALSE
-  ) %>% 
-  unlist() %>% 
-  .[str_detect(., pattern = ".Rmd")]
-
-sapply(rmdFiles, rmarkdown::render, quiet = T, output_dir = "app-documents")
-
 ## Loads files
 sapply(
   X = fileSources,
   FUN = function(x){
-    files <- list.files(path = x, pattern = ".R$")
+    files <- list.files(path = x, pattern = ".R$", recursive = TRUE)
     
     sapply(
       X = paste(x, files, sep = "/"),
@@ -156,12 +137,10 @@ sapply(
   }
 )
 
-
 ##################################################################
 ##                  The UI and Server function                  ##
 ##################################################################
 
-# jsResetCode <- "shinyjs.restart = function() {history.go(0)}"
 
 ui <- function(request){
   dashboardPage(
@@ -181,7 +160,6 @@ ui <- function(request){
         ),
         class = "dropdown",
         tags$head(
-          
           ## HTML code so that a href link inherits the text color, not the link color
           tags$style(HTML("a, a:hover, a:visited, a:active {color: inherit}")),
           tags$style(HTML('
@@ -205,358 +183,294 @@ ui <- function(request){
         )
       )
     ),
-    
-    ##---------------------------------------------------------------
-    ##                            Sidebar                           -
-    ##---------------------------------------------------------------
-    
     dashboardSidebar(
-      # # Adjust the sidebar in accordance with the higher header
-      # tags$style(".left-side, .main-sidebar {padding-top: 100px}"),
-      sidebarMenu(
-        id = "tabs",
-        menuItem(
-          "Welcome",
-          tabName = "welcome",
-          selected = TRUE
-        ),
-        menuItem(
-          "SSL Index",
-          menuSubItem(
-            "Schedule",
-            tabName = "schedule"
-          ),
-          menuSubItem(
-            "Standings",
-            tabName = "standings"
-          ),
-          menuSubItem(
-            "Cup",
-            tabName = "standingsCup"
-          ),
-          menuSubItem(
-            "Individual Statistics",
-            tabName = "playerStats"
-          ),
-          menuSubItem(
-            "Advanced Statistics",
-            tabName = "advancedStats"
-          ),
-          menuSubItem(
-            "Player Records",
-            tabName = "playerRecords"
-          )
-        ),
-        menuItem(
-          "SSL Academy",
-          menuSubItem(
-            "Academy Statistics",
-            tabName = "academyStats"
-          )
-        ),
-        menuItem(
-          "Teams",
-          tabName = "teamOverview"
-        ),
-        menuItem(
-          "Player Pages",
-          tabName = "playerPages"
-        ),
-        menuItem(
-          "Draft Class Tracker",
-          tabName = "trackerTPE"
-        ),
-        menuItem(
-          "Player Tools",
-          # menuSubItem(
-          #   "Build a new player",
-          #   tabName = "playerBuilder"
-          # ),
-          menuSubItem(
-            "Player Comparisons",
-            tabName = "playerComparison"  
-          ),
-          menuSubItem(
-            "Position Tracker",
-            tabName = "trackerPosition"
-          ),
-          menuSubItem(
-            "Regression",
-            tabName = "regression"
-          )
-        ),
-        menuItem(
-          "Fileworker Tools",
-          menuSubItem(
-            "Export Builds",
-            tabName = "fileUpdate"
-          ),
-          menuSubItem(
-            "Check FM Builds",
-            tabName = "fileCheck"
-          )
-        ),
-        menuItem(
-          "SSL Forum",
-          icon = icon("external-link-alt"),
-          href = "https://forum.simulationsoccer.com/"
-        ),
-        menuItem(
-          "Github", 
-          icon = icon("github"),
-          href = "https://github.com/canadice/ssl-index"
-        )
-      )#,
-      # extendShinyjs(text = jsResetCode, functions = "restart"), # Add the js code to the page
-      # actionButton("reset_button", "Reload Page")
+      uiOutput("sidebarpanel")
     ),
-    
-    ##----------------------------------------------------------------
-    ##                              Body                             -
-    ##----------------------------------------------------------------
-    
     dashboardBody(
       customTheme %>% use_theme(),
       includeCSS('style.css'),
       useShinyjs(),
-      tabItems(
-        tabItem(
-          "welcome",
-          welcomeUI(id = "welcome")
-        ),
-        tabItem(
-          "schedule",
-          titlePanel(
-            h1("Schedule", align = "center")
-          ),
-          scheduleUI(id = "schedule")
-        ),
-        tabItem(
-          "standings",
-          titlePanel(
-            h1("Standings", align = "center")
-          ),
-          standingsUI(id = "standings")
-        ),
-        tabItem(
-          "standingsCup",
-          titlePanel(
-            h1("Simulation Soccer Cup", align = "center")
-          ),
-          standingsCupUI(id = "standingsCup")
-        ),
-        tabItem(
-          "teamOverview",
-          titlePanel(
-            h1("Team Overview", align = "center")
-          ),
-          teamOverviewUI(id = "teamOverview")
-        ),
-        tabItem(
-          "playerStats",
-          titlePanel(
-            h1("Individual Stats", align = "center")
-          ),
-          playerStatsUI(id = "playerStats")
-        ),
-        tabItem(
-          "playerComparison",
-          titlePanel(
-            h1("Player Comparison", align = "center")
-          ),
-          playerComparisonUI(id = "playerComparison")
-        ),
-        tabItem(
-          "playerPages",
-          titlePanel(
-            h1("Player Pages", align = "center")
-          ),
-          playerDatabaseUI(id = "playerPages")
-        ),
-        tabItem(
-          "trackerPosition",
-          titlePanel(
-            h1("Position Tracker", align = "center")
-          ),
-          trackerPositionUI(id = "trackerPosition")
-        ),
-        tabItem(
-          "playerRecords",
-          titlePanel(
-            h1("Individual Records", align = "center")
-          ),
-          playerRecordsUI(id = "playerRecords")
-        ),
-        tabItem(
-          "trackerTPE",
-          titlePanel(
-            h1("Draft Class Tracker", align = "center")
-          ),
-          trackerTPEUI(id = "trackerTPE")
-        ),
-        tabItem(
-          "regression",
-          regressionUI(id = "regression")
-        ),
-        tabItem(
-          "advancedStats",
-          advancedStatsUI(id = "advancedStats")
-        ),
-        tabItem(
-          "academyStats",
-          academyStatsUI(id = "academyStats")
-        ),
-        tabItem(
-          "fileUpdate",
-          titlePanel(
-            h1("File Update Tool", align = "center")
-          ),
-          fileUpdateToolUI(id = "fileUpdate")
-        ),
-        tabItem(
-          "fileCheck",
-          titlePanel(
-            h1("File Check Tool", align = "center")
-          ),
-          fileCheckUI(id = "fileCheck")
-        )#,
-        # tabItem(
-        #   "playerBuilder",
-        #   titlePanel(
-        #     h1("Player Builder", align = "center")
-        #   ),
-        #   hr(),
-        #   p(
-        #     paste("The Player Builder allows you to build your player",
-        #       "using your earned TPE as a bank. The resulting build",
-        #       "can then be exported to the Forum using the Export button.")
-        #   ),
-        #   hr(),
-        #   playerBuilderUI(id = "playerBuilder")
-        # )
-      )
+      uiOutput("body")
     )
-    ##----------------------------------------------------------------
   )
 }
 
+## Adds shinymanager authentication to the app
+ui <- secure_app(ui)
+
 server <- function(input, output, session) {
   
-  # ## Observes a reset
-  # observeEvent(input$reset_button, {js$restart()}) 
+  resAuth <- secure_server(
+    check_credentials = customCheckCredentials(),
+    session = session
+  )
   
+  authOutput <- reactive({
+    reactiveValuesToList(resAuth)
+  })
   
-  loadedModuleSchedule <- reactiveVal(FALSE)
-  loadedModuleStandings <- reactiveVal(FALSE)
-  loadedModulePlayerStats <- reactiveVal(FALSE)
-  loadedModulePlayerComparison <- reactiveVal(FALSE)
-  loadedModulePlayerBuilder <- reactiveVal(FALSE)
-  loadedModuleTrackerPosition <- reactiveVal(FALSE)
-  loadedModuleOverviewTeam <- reactiveVal(FALSE)
-  loadedModulePlayerDatabase <- reactiveVal(FALSE)
-  loadedModulePlayerRecords <- reactiveVal(FALSE)
-  loadedModuletrackerTPE <- reactiveVal(FALSE)
-  loadedModulefileUpdate <- reactiveVal(FALSE)
-  loadedModuleregression <- reactiveVal(FALSE)
-  loadedModuleadvancedStats <- reactiveVal(FALSE)
-  loadedModuleacademyStats <- reactiveVal(FALSE)
-  loadedModulestandingsCup <- reactiveVal(FALSE)
-  loadedModulefileCheck <- reactiveVal(FALSE)
-  # loadedModuleIIHF <- reactiveVal(FALSE)
-  
+  ##----------------------------------------------------------------
+  ##                              Body                             -
+  ##----------------------------------------------------------------
+  output$body <- renderUI({
+    tabItems(
+      tabItem(
+        "playerpage",
+        playerPageUI(id = "playerpage"),
+        class = "active"
+      ),
+      tabItem(
+        "leagueindex",
+        leagueIndexUI(id = "leagueindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      )
+      
+      
+      # tabItem(
+      #   "welcome",
+      #   welcomeUI(id = "welcome"),
+      #   class = "active"
+      # ),
+      # tabItem(
+      #   "schedule",
+      #   titlePanel(
+      #     h1("Schedule", align = "center")
+      #   ),
+      #   scheduleUI(id = "schedule")
+      # ),
+      # tabItem(
+      #   "standings",
+      #   titlePanel(
+      #     h1("Standings", align = "center")
+      #   ),
+      #   standingsUI(id = "standings")
+      # ),
+      # tabItem(
+      #   "standingsCup",
+      #   titlePanel(
+      #     h1("Simulation Soccer Cup", align = "center")
+      #   ),
+      #   standingsCupUI(id = "standingsCup")
+      # ),
+      # tabItem(
+      #   "teamOverview",
+      #   titlePanel(
+      #     h1("Team Overview", align = "center")
+      #   ),
+      #   teamOverviewUI(id = "teamOverview")
+      # ),
+      # tabItem(
+      #   "playerStats",
+      #   titlePanel(
+      #     h1("Individual Stats", align = "center")
+      #   ),
+      #   playerStatsUI(id = "playerStats")
+      # ),
+      # tabItem(
+      #   "playerComparison",
+      #   titlePanel(
+      #     h1("Player Comparison", align = "center")
+      #   ),
+      #   playerComparisonUI(id = "playerComparison")
+      # ),
+      # tabItem(
+      #   "playerPages",
+      #   titlePanel(
+      #     h1("Player Pages", align = "center")
+      #   ),
+      #   playerDatabaseUI(id = "playerPages")
+      # ),
+      # tabItem(
+      #   "trackerPosition",
+      #   titlePanel(
+      #     h1("Position Tracker", align = "center")
+      #   ),
+      #   trackerPositionUI(id = "trackerPosition")
+      # ),
+      # tabItem(
+      #   "playerRecords",
+      #   titlePanel(
+      #     h1("Individual Records", align = "center")
+      #   ),
+      #   playerRecordsUI(id = "playerRecords")
+      # ),
+      # tabItem(
+      #   "trackerTPE",
+      #   titlePanel(
+      #     h1("Draft Class Tracker", align = "center")
+      #   ),
+      #   trackerTPEUI(id = "trackerTPE")
+      # ),
+      # tabItem(
+      #   "regression",
+      #   regressionUI(id = "regression")
+      # ),
+      # tabItem(
+      #   "advancedStats",
+      #   advancedStatsUI(id = "advancedStats")
+      # ),
+      # tabItem(
+      #   "academyStats",
+      #   academyStatsUI(id = "academyStats")
+      # ),
+      # tabItem(
+      #   "fileUpdate",
+      #   titlePanel(
+      #     h1("File Update Tool", align = "center")
+      #   ),
+      #   fileUpdateToolUI(id = "fileUpdate")
+      # ),
+      # tabItem(
+      #   "fileCheck",
+      #   titlePanel(
+      #     h1("File Check Tool", align = "center")
+      #   ),
+      #   fileCheckUI(id = "fileCheck")
+      # ),
+      # tabItem(
+      #   "playerBuilder",
+      #   titlePanel(
+      #     h1("Player Builder", align = "center")
+      #   ),
+      #   hr(),
+      #   p(
+      #     paste("The Player Builder allows you to build your player",
+      #       "using your earned TPE as a bank. The resulting build",
+      #       "can then be exported to the Forum using the Export button.")
+      #   ),
+      #   hr(),
+      #   playerBuilderUI(id = "playerBuilder")
+      # )
+    )
+  })
   
   ##---------------------------------------------------------------
-  ##          Loading each of the different backend sites         -
+  ##                            Sidebar                           -
   ##---------------------------------------------------------------
-  ### Only run the module once the menu is clicked to fasten start time
-  observeEvent(input$tabs,{
-    ## Checks which menu tab has been selected and whether the module has already been loaded
-    if(input$tabs == "schedule" & !loadedModuleSchedule()){
-      
-      loadedModuleSchedule(TRUE)
-      
-      scheduleSERVER(id = "schedule")
-      
-    } else if(input$tabs=="standings" & !loadedModuleStandings()){
-      
-      loadedModuleStandings(TRUE)
-      
-      standingsSERVER(id = "standings")
-      
-    } else if(input$tabs == "playerStats" & !loadedModulePlayerStats()){
-      
-      playerStatsSERVER(id = "playerStats")
-      
-    } else if(input$tabs == "playerComparison" & !loadedModulePlayerComparison()){
-
-      loadedModulePlayerComparison(TRUE)
-
-      playerComparisonSERVER(id = "playerComparison")
-
-    } else if(input$tabs == "playerBuilder" & !loadedModulePlayerBuilder()){
-      
-      loadedModulePlayerBuilder(TRUE)
-      
-      playerBuilderSERVER(id = "playerBuilder")
-      
-    } else if(input$tabs == "trackerPosition" & !loadedModuleTrackerPosition()){
-      
-      loadedModuleTrackerPosition(TRUE)
-      
-      trackerPositionSERVER(id = "trackerPosition")
-      
-    } else if(input$tabs == "teamOverview" & !loadedModuleOverviewTeam()){
-      
-      loadedModuleOverviewTeam(TRUE)
-      
-      teamOverviewSERVER(id = "teamOverview")
-      
-    } else if(input$tabs == "playerPages" & !loadedModulePlayerDatabase()){
-      
-      loadedModulePlayerDatabase(TRUE)
-      
-      playerDatabaseSERVER(id = "playerPages")
-      
-    } else if(input$tabs == "playerRecords" & !loadedModulePlayerDatabase()){
-      
-      loadedModulePlayerRecords(TRUE)
-      
-      playerRecordsSERVER(id = "playerRecords")
-      
-    } else if(input$tabs == "trackerTPE" & !loadedModuletrackerTPE()){
-      
-      loadedModuletrackerTPE(TRUE)
-      
-      trackerTPESERVER(id = "trackerTPE")
-      
-    } else if(input$tabs == "fileUpdate" & !loadedModulefileUpdate()){
-      
-      loadedModulefileUpdate(TRUE)
-      
-      fileUpdateToolSERVER(id = "fileUpdate")
-      
-    } else if(input$tabs == "regression" & !loadedModuleregression()){
-      loadedModuleregression(TRUE)
-      regressionServer(id = "regression")
-      
-    } else if(input$tabs == "advancedStats" & !loadedModuleadvancedStats()){
-      loadedModuleadvancedStats(TRUE)
-      advancedStatsServer(id = "advancedStats")
-      
-    } else if(input$tabs == "academyStats" & !loadedModuleacademyStats()){
-      loadedModuleacademyStats(TRUE)
-      academyStatsServer(id = "academyStats")
-      
-    } else if(input$tabs == "standingsCup" & !loadedModulestandingsCup()){
-      loadedModulestandingsCup(TRUE)
-      standingsCupServer(id = "standingsCup")
-      
-    } else if(input$tabs == "fileCheck" & !loadedModulefileCheck()){
-      loadedModulefileCheck(TRUE)
-      fileCheckServer(id = "fileCheck")
-      
-    }
-  }, ignoreNULL = TRUE, ignoreInit = TRUE)
+  output$sidebarpanel <- renderUI({
+    
+    sidebarMenu(
+      id = "tabs",
+      menuItem(
+        "Your Player",
+        tabName = "playerpage",
+        selected = TRUE
+      ),
+      menuItem(
+        "Index",
+        menuSubItem(
+          "League Index",
+          tabName = "leagueindex"
+        # ),
+        # menuSubItem(
+        #   "Team Index",
+        #   tabName = "teamindex"
+        )
+      ),
+      # menuItem(
+      #   "Welcome",
+      #   tabName = "welcome",
+      #   selected = TRUE
+      # ),
+      # menuItem(
+      #   "SSL Index",
+      #   menuSubItem(
+      #     "Schedule",
+      #     tabName = "schedule"
+      #   ),
+      #   menuSubItem(
+      #     "Standings",
+      #     tabName = "standings"
+      #   ),
+      #   menuSubItem(
+      #     "Cup",
+      #     tabName = "standingsCup"
+      #   ),
+      #   menuSubItem(
+      #     "Individual Statistics",
+      #     tabName = "playerStats"
+      #   ),
+      #   menuSubItem(
+      #     "Advanced Statistics",
+      #     tabName = "advancedStats"
+      #   ),
+      #   menuSubItem(
+      #     "Player Records",
+      #     tabName = "playerRecords"
+      #   )
+      # ),
+      # menuItem(
+      #   "SSL Academy",
+      #   menuSubItem(
+      #     "Academy Statistics",
+      #     tabName = "academyStats"
+      #   )
+      # ),
+      # menuItem(
+      #   "Teams",
+      #   tabName = "teamOverview"
+      # ),
+      # menuItem(
+      #   "Player Pages",
+      #   tabName = "playerPages"
+      # ),
+      # menuItem(
+      #   "Draft Class Tracker",
+      #   tabName = "trackerTPE"
+      # ),
+      # menuItem(
+      #   "Player Tools",
+      #   # menuSubItem(
+      #   #   "Build a new player",
+      #   #   tabName = "playerBuilder"
+      #   # ),
+      #   menuSubItem(
+      #     "Player Comparisons",
+      #     tabName = "playerComparison"  
+      #   ),
+      #   menuSubItem(
+      #     "Position Tracker",
+      #     tabName = "trackerPosition"
+      #   ),
+      #   menuSubItem(
+      #     "Regression",
+      #     tabName = "regression"
+      #   )
+      # ),
+      # menuItem(
+      #   "Fileworker Tools",
+      #   menuSubItem(
+      #     "Export Builds",
+      #     tabName = "fileUpdate"
+      #   ),
+      #   menuSubItem(
+      #     "Check FM Builds",
+      #     tabName = "fileCheck"
+      #   )
+      # ),
+      menuItem(
+        "SSL Forum",
+        icon = icon("external-link-alt"),
+        href = "https://forum.simulationsoccer.com/"
+      ),
+      menuItem(
+        "Github", 
+        icon = icon("github"),
+        href = "https://github.com/canadice/ssl-index"
+      ),
+      menuItem(
+        "User Profile",
+        href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
+      )
+    )#,
+    # extendShinyjs(text = jsResetCode, functions = "restart"), # Add the js code to the page
+    # actionButton("reset_button", "Reload Page")
+  })
+  
+  ##----------------------------------------------------------------
   
   ### Sets the url for each tab
   observeEvent(input$tabs,{
@@ -581,6 +495,14 @@ server <- function(input, output, session) {
     }
   })
   
+  observe({
+    req(authOutput()$uid)
+    
+    ## Loads the different server modules
+    playerPageServer("playerpage", userinfo = authOutput())
+    leagueIndexServer("leagueindex")
+    # teamIndexServer("teamindex")
+  })
   
 }
 # Run the application 
