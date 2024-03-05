@@ -1,6 +1,3 @@
 config.yml
 old-app-documents
-database
-.api
-documents
-ssl-scripts
+
