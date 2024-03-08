@@ -5,7 +5,8 @@ playerPageUI <- function(id) {
       
       ## User information
       fluidRow(
-        verbatimTextOutput(ns("user"))
+        reactableOutput(ns("user")) %>% 
+          withSpinner()
       ),
       
       ## TPE Information
@@ -20,8 +21,16 @@ playerPageUI <- function(id) {
                 width = 12,
                 align = "center", 
                 style = "display: flex; justify-content: center;",
-                uiOutput(ns("totalTPE")),
-                uiOutput(ns("remainingTPE"))
+                valueBox(
+                  subtitle = "Total Earned TPE",
+                  value = textOutput(ns("totalTPE"), inline = TRUE) %>% withSpinner(),
+                  width = 3
+                ),
+                valueBox(
+                  subtitle = "Available TPE",
+                  value = textOutput(ns("remainingTPE"), inline = TRUE) %>% withSpinner(), 
+                  width = 3
+                )
               ) 
             ),
             fluidRow(
@@ -121,6 +130,11 @@ playerPageServer <- function(id, userinfo) {
     id,
     function(input, output, session) {
       
+      
+      playerDataAsync <- reactive({
+        
+      })
+      
       playerData <- reactiveValues(
         data = getPlayerData(uid = userinfo$uid)
       )
@@ -174,21 +188,13 @@ playerPageServer <- function(id, userinfo) {
       })
       
       
-      ## TPE UIs
-      output$totalTPE <- renderUI({
-        valueBox(
-          subtitle = "Total Earned TPE",
-          value = playerData$data$tpe,
-          width = 12
-        )
+      ## TPE texts
+      output$totalTPE <- renderText({
+        playerData$data$tpe
       })
       
-      output$remainingTPE <- renderUI({
-        valueBox(
-          subtitle = "Available TPE",
-          value = currentAvailable() - currentCost(), 
-          width = 12
-          )
+      output$remainingTPE <- renderText({
+        currentAvailable() - currentCost()
       })
       
       ## Gets date of the start of the week in Pacific
@@ -207,7 +213,10 @@ playerPageServer <- function(id, userinfo) {
             cellWidths = c("50%", "25%", "25%"),
             cellArgs = list(style = "padding: 5px")
           ),
-          colnames(playerData$data%>% select(acceleration:strength)) %>% 
+          c(
+            "acceleration", "agility", "balance", "jumping reach", 
+            "natural fitness", "pace", "stamina", "strength"
+          ) %>% 
             map(
               .x = .,
               .f = 
@@ -230,7 +239,11 @@ playerPageServer <- function(id, userinfo) {
             cellWidths = c("50%", "25%", "25%"),
             cellArgs = list(style = "padding: 5px")
           ),
-          colnames(playerData$data%>% select(aggression:`work rate`)) %>% 
+          c(
+            "aggression", "anticipation", "bravery", "composure", "concentration", 
+            "decisions", "determination", "flair", "leadership", "off the ball", 
+            "positioning", "teamwork", "vision", "work rate"
+          ) %>% 
             map(
               .x = .,
               .f = 
@@ -254,7 +267,7 @@ playerPageServer <- function(id, userinfo) {
             cellArgs = list(style = "padding: 5px")
           ),
           colnames(
-            playerData$data%>% 
+            playerData$data %>% 
               select(corners:technique, `aerial reach`:throwing) %>% 
               select(
                 where(function(x) !is.na(x))
@@ -665,10 +678,9 @@ playerPageServer <- function(id, userinfo) {
       )
       
       
-      output$user <- renderPrint({ 
-        tagList(
-          
-        )
+      output$user <- renderReactable({ 
+          getPlayerDataAsync(uid = userinfo$uid) %...>%
+            reactable()
       })
     }
   )

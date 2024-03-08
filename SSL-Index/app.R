@@ -71,10 +71,17 @@ suppressMessages({
   
   require(vembedr, quietly = FALSE)
   
+  ## Packages for asynchronuous programming
+  require(promises, quietly = FALSE)
+  require(future, quietly = FALSE)
+  
   ## Package for login
   require(sodium, quietly = FALSE)
   require(shinymanager, quietly = FALSE)
 })
+
+## Sets up that evaluating futures is done in parallell
+plan(multisession)
 
 
 ##################################################################
