@@ -1,5 +1,5 @@
 
-attributeEdit <- function(name, value, session){
+attributeEdit <- function(name, value, session, update = TRUE){
   if(stringr::str_detect(name, pattern = "Fitness|Stamina")){
     splitLayout(
       name %>% 
@@ -36,8 +36,10 @@ attributeEdit <- function(name, value, session){
         inputId = session$ns(name),
         label = NULL,
         value = value,
-        min = 5,
-        max = 20,
+        ## If it's an update process a value can't be reduced
+        ## If it's a regression process (update == FALSE) a value can't be increased
+        min = if_else(update, value, 5),
+        max = if_else(update, 20, value),
         width = NULL
       ) %>% 
         div(class = "attributeInput"),

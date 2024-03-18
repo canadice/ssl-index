@@ -5,8 +5,10 @@ playerPageUI <- function(id) {
       
       ## User information
       fluidRow(
-        reactableOutput(ns("user")) %>% 
-          withSpinner()
+        verbatimTextOutput(ns("user")) %>% 
+          withSpinner(
+            proxy.height = "20px"
+          )
       ),
       
       ## TPE Information
@@ -23,12 +25,16 @@ playerPageUI <- function(id) {
                 style = "display: flex; justify-content: center;",
                 valueBox(
                   subtitle = "Total Earned TPE",
-                  value = textOutput(ns("totalTPE"), inline = TRUE) %>% withSpinner(),
+                  value = 
+                    textOutput(ns("totalTPE"), inline = TRUE) %>% 
+                    withSpinner(proxy.height = "20px"),
                   width = 3
                 ),
                 valueBox(
                   subtitle = "Available TPE",
-                  value = textOutput(ns("remainingTPE"), inline = TRUE) %>% withSpinner(), 
+                  value = 
+                    textOutput(ns("remainingTPE"), inline = TRUE) %>% 
+                    withSpinner(proxy.height = "20px"), 
                   width = 3
                 )
               ) 
@@ -36,10 +42,11 @@ playerPageUI <- function(id) {
             fluidRow(
               column(
                 width = 12,
+                align = "center", 
+                style = "display: flex; justify-content: center;",
                 uiOutput(ns("activityCheck")),
                 uiOutput(ns("trainingCamp"))
-              ) %>% 
-                div(align = "center")
+              )
             )
           )
         }
@@ -74,18 +81,17 @@ playerPageUI <- function(id) {
             fluidRow(
               column(
                 width = 12,
+                align = "center", 
+                style = "display: flex; justify-content: center;",
                 actionButton(
                   inputId = ns("resetUpdate"),
-                  "Reset"
+                  "Reset Build"
                 ),
                 actionButton(
                   inputId = ns("verifyUpdate"),
                   "Update"
                 )
-              ) %>% 
-                div(
-                  align = "center"
-                )
+              )
             )
           )
         }
@@ -130,9 +136,9 @@ playerPageServer <- function(id, userinfo) {
     id,
     function(input, output, session) {
       
-      
+      ## Asynchronous reading of the player data
       playerDataAsync <- reactive({
-        
+        getPlayerDataAsync(uid = userinfo$uid)
       })
       
       playerData <- reactiveValues(
@@ -144,18 +150,22 @@ playerPageServer <- function(id, userinfo) {
       )
       
       ## Sets the total TPE and the cost of the current build
-      currentAvailable <- reactiveVal(playerData$data$tpe)
+      currentAvailable <- 
+        reactive({
+          playerDataAsync() %...>%
+            select(tpe)
+        })
       
       currentCost <- 
-        reactiveVal(
-          playerData$data %>% 
-            select(acceleration:throwing) %>% 
-            select(!`natural fitness` & !stamina) %>% 
+        reactive({
+          playerDataAsync() %...>%
+            select(acceleration:throwing) %...>%
+            select(!`natural fitness` & !stamina) %...>% 
             pivot_longer(
               cols = everything(),
               names_to = "attribute",
               values_to = "value"
-            ) %>% 
+            ) %...>%
             left_join(
               tpeCost %>% 
                 select(
@@ -163,14 +173,14 @@ playerPageServer <- function(id, userinfo) {
                   cumCost
                 ),
               by = "value"
-            ) %>% 
-            select(cumCost) %>% 
+            ) %...>% 
+            select(cumCost) %...>% 
             sum(na.rm = TRUE)
-        )
+        })
       
       ## Observer for the change in total cost 
       observe({
-        currentCost(
+        currentCost() <- 
           playerData$data %>% 
             select(acceleration:throwing) %>% 
             select(!`natural fitness`& !stamina) %>% 
@@ -184,7 +194,6 @@ playerPageServer <- function(id, userinfo) {
             ) %>% 
             unlist() %>% 
             sum()
-        )
       })
       
       
@@ -279,7 +288,8 @@ playerPageServer <- function(id, userinfo) {
                 attributeEdit(
                   name = .x %>% stringr::str_to_title(), 
                   value = playerData$data[,.x], 
-                  session = session
+                  session = session,
+                  update = TRUE
                 )
             )
         )
@@ -316,92 +326,13 @@ playerPageServer <- function(id, userinfo) {
       observeEvent(
         input$verifyUpdate,
         {
-          update <- 
-            data.frame(
-              attribute = 
-                playerData$data %>% 
-                select(acceleration:throwing) %>%
-                select(
-                  where(
-                    ~ !is.na(.x)
-                  )
-                ) %>% 
-                colnames() %>% 
-                str_to_title(),
-              new =
-                playerData$data %>%
-                select(acceleration:throwing) %>%
-                colnames() %>%
-                str_to_title() %>%
-                sapply(
-                  X = .,
-                  FUN = function(x) input[[x]],
-                  simplify = TRUE
-                ) %>% 
-                unlist(),
-              old = 
-                playerData$data %>% 
-                select(acceleration:throwing) %>% 
-                select(
-                  where(
-                    ~ !is.na(.x)
-                  )
-                ) %>% 
-                t()
-            ) %>% 
-            filter(
-              old != new
-            )
-          
-          if(update %>% nrow() > 0){
+          if(currentAvailable() - currentCost() < 0){
             showModal(
               modalDialog(
                 span(
-                  "Are you sure you want to update these attributes?" %>% strong(),
-                  style = "color: red;"
+                  "You have spent too much TPE on your attributes!"
                 ),
-                br(),
-                column(
-                  width = 8,
-                  offset = 2,
-                  helpText(
-                    paste(
-                      paste(
-                        update$attribute,
-                        paste(
-                          update$old,
-                          update$new,
-                          sep = " -> "
-                        )
-                      ),
-                      collapse = "<br>"
-                    ) %>% 
-                      HTML()
-                  ) %>% 
-                    div(
-                      style = "background: #f0f0f0; border: #656565"
-                    )
-                ),
-                br(),
-                tagList(
-                  modalButton("No, go back"),
-                  actionButton(
-                    inputId = session$ns("confirmUpdate"),
-                    label = "Yes, confirm update!"
-                  )
-                ),
-                title="Update output",
-                footer = NULL,
-                easyClose = FALSE
-              )
-            )
-          } else {
-            showModal(
-              modalDialog(
-                span(
-                  "You have not changed your build yet."
-                ),
-                title="Update output",
+                title="Too much TPE spent!",
                 footer = 
                   tagList(
                     modalButton("Ok")
@@ -409,7 +340,120 @@ playerPageServer <- function(id, userinfo) {
                 easyClose = TRUE
               )
             )
+          } else {
+            update <- 
+              data.frame(
+                attribute = 
+                  playerData$data %>% 
+                  select(acceleration:throwing) %>%
+                  select(
+                    where(
+                      ~ !is.na(.x)
+                    )
+                  ) %>% 
+                  colnames() %>% 
+                  str_to_title(),
+                new =
+                  playerData$data %>%
+                  select(acceleration:throwing) %>%
+                  colnames() %>%
+                  str_to_title() %>%
+                  sapply(
+                    X = .,
+                    FUN = function(x) input[[x]],
+                    simplify = TRUE
+                  ) %>% 
+                  unlist(),
+                old = 
+                  playerData$data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(
+                    where(
+                      ~ !is.na(.x)
+                    )
+                  ) %>% 
+                  t()
+              ) %>% 
+              filter(
+                old != new
+              )
+            
+            if(update %>% nrow() > 0){
+              if(any((update$old - update$new) > 0)){
+                showModal(
+                  modalDialog(
+                    span(
+                      "You cannot reduce attributes in a regular update.",
+                      paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")
+                    ),
+                    title="Reducing attributes!",
+                    footer = 
+                      tagList(
+                        modalButton("Ok")
+                      ),
+                    easyClose = TRUE
+                  )
+                )
+              } else {
+                showModal(
+                  modalDialog(
+                    span(
+                      "Are you sure you want to update these attributes?" %>% strong(),
+                      style = "color: red;"
+                    ),
+                    br(),
+                    column(
+                      width = 8,
+                      offset = 2,
+                      helpText(
+                        paste(
+                          paste(
+                            update$attribute,
+                            paste(
+                              update$old,
+                              update$new,
+                              sep = " -> "
+                            )
+                          ),
+                          collapse = "<br>"
+                        ) %>% 
+                          HTML()
+                      ) %>% 
+                        div(
+                          style = "background: #f0f0f0; border: #656565"
+                        )
+                    ),
+                    br(),
+                    tagList(
+                      modalButton("No, go back"),
+                      actionButton(
+                        inputId = session$ns("confirmUpdate"),
+                        label = "Yes, confirm update!"
+                      )
+                    ),
+                    title="Update output",
+                    footer = NULL,
+                    easyClose = FALSE
+                  )
+                )
+              }
+            } else {
+              showModal(
+                modalDialog(
+                  span(
+                    "You have not changed your build yet, there is nothing to update."
+                  ),
+                  title="No changes made!",
+                  footer = 
+                    tagList(
+                      modalButton("Ok")
+                    ),
+                  easyClose = TRUE
+                )
+              )
+            }
           }
+          
         },
         # This makes it so that the event doesn't trigger after a change in the data
         ignoreInit = TRUE
@@ -678,9 +722,10 @@ playerPageServer <- function(id, userinfo) {
       )
       
       
-      output$user <- renderReactable({ 
-          getPlayerDataAsync(uid = userinfo$uid) %...>%
-            reactable()
+      output$user <- renderPrint({ 
+        playerDataAsync() %...>%
+          select(tpe)
+          
       })
     }
   )
