@@ -53,48 +53,69 @@ playerPageUI <- function(id) {
       ),
       ## Update Attributes
       fluidRow(
-        {
-          box(
-            title = "Player Attributes",
-            collapsible = TRUE,
-            width = NULL,
-            fluidRow(
-              column(
-                width = 4,
-                uiOutput(
-                  ns("physical")
-                )
+        box(
+          title = "Player Attributes",
+          collapsible = TRUE,
+          width = NULL,
+          # RENDER PLOT WITH ATTRIBUTES,
+          fluidRow(
+            column(
+              width = 12,
+              align = "center", 
+              style = "display: flex; justify-content: center;",
+              actionButton(
+                inputId = ns("goToRegression"),
+                "Regress"
               ),
-              column(
-                width = 4,
-                uiOutput(
-                  ns("mental")
-                )
-              ),
-              column(
-                width = 4,
-                uiOutput(
-                  ns("specific")
-                )
-              )
-            ),
-            fluidRow(
-              column(
-                width = 12,
-                align = "center", 
-                style = "display: flex; justify-content: center;",
-                actionButton(
-                  inputId = ns("resetUpdate"),
-                  "Reset Build"
-                ),
-                actionButton(
-                  inputId = ns("verifyUpdate"),
-                  "Update"
-                )
+              actionButton(
+                inputId = ns("goToUpdate"),
+                "Update"
               )
             )
           )
-        }
+        ) %>% 
+          div(id = "attributeBox"),
+        box(
+          title = "Player Attributes",
+          collapsible = TRUE,
+          width = NULL,
+          fluidRow(
+            column(
+              width = 4,
+              uiOutput(
+                ns("physical")
+              )
+            ),
+            column(
+              width = 4,
+              uiOutput(
+                ns("mental")
+              )
+            ),
+            column(
+              width = 4,
+              uiOutput(
+                ns("specific")
+              )
+            )
+          ),
+          fluidRow(
+            column(
+              width = 12,
+              align = "center", 
+              style = "display: flex; justify-content: center;",
+              actionButton(
+                inputId = ns("resetUpdate"),
+                "Reset Build"
+              ),
+              actionButton(
+                inputId = ns("verifyUpdate"),
+                "Update"
+              )
+            )
+          )
+        ) %>% 
+          div(id = "updateBox")
       ),
       ## History Information
       fluidRow(
@@ -137,9 +158,10 @@ playerPageServer <- function(id, userinfo) {
     function(input, output, session) {
       
       ## Asynchronous reading of the player data
-      playerDataAsync <- reactive({
-        getPlayerDataAsync(uid = userinfo$uid)
-      })
+      playerDataAsync <- 
+        reactive({
+          getPlayerDataAsync(uid = userinfo$uid)
+        }) 
       
       playerData <- reactiveValues(
         data = getPlayerData(uid = userinfo$uid)
@@ -151,13 +173,13 @@ playerPageServer <- function(id, userinfo) {
       
       ## Sets the total TPE and the cost of the current build
       currentAvailable <- 
-        reactive({
+        reactiveVal({
           playerDataAsync() %...>%
             select(tpe)
         })
       
       currentCost <- 
-        reactive({
+        reactiveVal({
           playerDataAsync() %...>%
             select(acceleration:throwing) %...>%
             select(!`natural fitness` & !stamina) %...>% 
@@ -178,13 +200,21 @@ playerPageServer <- function(id, userinfo) {
             sum(na.rm = TRUE)
         })
       
+      currentRemaining <- 
+        reactive({
+          currentAvailable() %...>%
+            sum(-currentCost())
+        })
+      
       ## Observer for the change in total cost 
       observe({
-        currentCost() <- 
-          playerData$data %>% 
-            select(acceleration:throwing) %>% 
-            select(!`natural fitness`& !stamina) %>% 
-            colnames() %>% 
+        currentCost( 
+          attributes %>% 
+            filter(
+              !attribute %in% c("Natural Fitness", "Stamina")
+            ) %>% 
+            select(attribute) %>% 
+            unlist() %>% 
             stringr::str_to_title() %>% 
             lapply(
               X = .,
@@ -194,16 +224,18 @@ playerPageServer <- function(id, userinfo) {
             ) %>% 
             unlist() %>% 
             sum()
+        )
       })
-      
       
       ## TPE texts
       output$totalTPE <- renderText({
-        playerData$data$tpe
+        currentAvailable() %...>% 
+          unlist() %...>% 
+          unname()
       })
       
       output$remainingTPE <- renderText({
-        currentAvailable() - currentCost()
+        currentRemaining()
       })
       
       ## Gets date of the start of the week in Pacific
@@ -226,14 +258,16 @@ playerPageServer <- function(id, userinfo) {
             "acceleration", "agility", "balance", "jumping reach", 
             "natural fitness", "pace", "stamina", "strength"
           ) %>% 
+            stringr::str_to_title() %>% 
             map(
               .x = .,
               .f = 
                 ~ 
                 attributeEdit(
-                  name = .x %>% stringr::str_to_title(), 
-                  value = playerData$data[,.x], 
-                  session = session
+                  name = .x, 
+                  value = 5, 
+                  session = session,
+                  update = TRUE
                 )
             )
         )
@@ -259,8 +293,9 @@ playerPageServer <- function(id, userinfo) {
                 ~ 
                 attributeEdit(
                   name = .x %>% stringr::str_to_title(), 
-                  value = playerData$data[,.x], 
-                  session = session
+                  value = 5, 
+                  session = session,
+                  update = TRUE
                 )
             )
         )
@@ -275,19 +310,21 @@ playerPageServer <- function(id, userinfo) {
             cellWidths = c("50%", "25%", "25%"),
             cellArgs = list(style = "padding: 5px")
           ),
-          colnames(
-            playerData$data %>% 
-              select(corners:technique, `aerial reach`:throwing) %>% 
-              select(
-                where(function(x) !is.na(x))
-              )) %>% 
+          c(
+            "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
+            "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
+            "Passing", "Penalty Taking", "Tackling", "Technique", "Aerial Reach",
+            "Command Of Area", "Communication", "Eccentricity", "Handling",
+            "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
+            "Tendency To Rush", "Throwing"
+          ) %>% 
             map(
               .x = .,
               .f = 
                 ~ 
                 attributeEdit(
-                  name = .x %>% stringr::str_to_title(), 
-                  value = playerData$data[,.x], 
+                  name = .x, 
+                  value = 5, 
                   session = session,
                   update = TRUE
                 )
@@ -295,10 +332,33 @@ playerPageServer <- function(id, userinfo) {
         )
       })
       
+      observe({
+        input$goToUpdate
+        
+        attributes$attribute %>% 
+        map(
+          .x = .,
+          .f = function(x){
+            updateNumericInput(
+              session = session,
+              inputId = x,
+              value = playerDataAsync() %...>% select(all_of(x)),
+              min = playerDataAsync() %...>% select(all_of(x))
+            )
+          } 
+        )
+        
+        # updateNumericInput(session = session, inputId = "Acceleration", value = 10, min = 10)  
+      })
+      
+      
       # Create all the cost UIs
-      playerData$data %>% 
-        select(acceleration:throwing) %>% 
-        colnames() %>% 
+      attributes %>% 
+        filter(
+          !attribute %in% c("Natural Fitness", "Stamina")
+        ) %>% 
+        select(attribute) %>% 
+        unlist() %>%  
         stringr::str_to_title() %>% 
         lapply(
           X = .,
@@ -723,9 +783,11 @@ playerPageServer <- function(id, userinfo) {
       
       
       output$user <- renderPrint({ 
-        playerDataAsync() %...>%
-          select(tpe)
-          
+        list(
+          class(currentAvailable()),
+          class(currentCost()),
+          class(currentRemaining())
+        )
       })
     }
   )
