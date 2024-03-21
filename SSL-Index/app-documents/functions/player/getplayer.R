@@ -23,7 +23,7 @@ getPlayerData <- function(uid = NULL, pid = NULL){
 }
 
 getPlayerDataAsync <- function(uid = NULL, pid = NULL){
-  future_promise(
+  future_promise({
     if(pid %>% is.null()){
       portalQuery(
         paste(
@@ -44,7 +44,7 @@ getPlayerDataAsync <- function(uid = NULL, pid = NULL){
         )
       )
     }
-  )
+  })
 }
 
 
