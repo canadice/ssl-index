@@ -17,6 +17,7 @@ require(dplyr)
 
 require(lubridate)
 
+require(googlesheets4)
 
 production <- 
   Sys.getenv("PRODUCTIONCH")
@@ -41,7 +42,7 @@ schedule <-
 current <- 
   schedule %>% 
   filter(
-    as.Date(`Eastern (UTC-5)...3`) == today()
+    as.Date(`Eastern (UTC-5 / UTC-4)...3`) == today()
   )
 
 if(nrow(current) > 0){
