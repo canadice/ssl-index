@@ -1,5 +1,8 @@
 
-attributeEdit <- function(name, value, session, update = TRUE){
+
+
+
+attributeEdit <- function(name, value, ns = ns, update = TRUE){
   if(stringr::str_detect(name, pattern = "Fitness|Stamina")){
     splitLayout(
       name %>% 
@@ -10,7 +13,7 @@ attributeEdit <- function(name, value, session, update = TRUE){
       ) %>% 
         div(class = "attribute"),
       numericInput(
-        inputId = session$ns(name),
+        inputId = ns(name) %>% str_remove_all(pattern = " "),
         label = NULL,
         value = 20,
         min = 20,
@@ -23,7 +26,8 @@ attributeEdit <- function(name, value, session, update = TRUE){
         div(class = "attributeCost"),
       cellWidths = c("50%", "25%", "25%"),
       cellArgs = list(style = "white-space: initial; padding: 5px")
-    )
+    ) %>% 
+      div(id = paste(name %>% str_remove_all(pattern = " "), "AttributeBox", sep = "") %>% ns())
   } else {
     splitLayout(
       name %>% 
@@ -33,7 +37,7 @@ attributeEdit <- function(name, value, session, update = TRUE){
         ) %>% 
         div(class = "attribute"),
       numericInput(
-        inputId = session$ns(name),
+        inputId = ns(name) %>% str_remove_all(pattern = " "),
         label = NULL,
         value = value,
         ## If it's an update process a value can't be reduced
@@ -43,11 +47,12 @@ attributeEdit <- function(name, value, session, update = TRUE){
         width = NULL
       ) %>% 
         div(class = "attributeInput"),
-      uiOutput(session$ns(paste("cost", name, sep = ""))) %>% 
+      uiOutput(ns(paste("cost", name %>% str_remove_all(pattern = " "), sep = ""))) %>% 
         div(class = "attributeCost"),
       cellWidths = c("50%", "25%", "25%"),
       cellArgs = list(style = "white-space: initial; padding: 5px")
-    )
+    ) %>% 
+      div(id = paste(name %>% str_remove_all(pattern = " "), "AttributeBox", sep = "") %>% ns())
   }
 }
 
