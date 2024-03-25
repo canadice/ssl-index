@@ -5,6 +5,32 @@ getTpeHistory <- function(pid){
   )
 }
 
+completedActivityCheck <- function(pid){
+  ## Gets date of the start of the week in Pacific
+  weekStart <- 
+    lubridate::now() %>% 
+    with_tz("US/Pacific") %>% 
+    floor_date("week", week_start = "Monday")
+  
+  (portalQuery(
+    paste("SELECT * FROM tpehistory WHERE pid = ", pid, " AND source LIKE '%Activity Check' AND time > ", weekStart)
+  ) %>% 
+    nrow()) > 0
+}
+
+completedTrainingCamp <- function(pid){
+  seasonStart <- 
+    (currentSeason$startDate %>% 
+       as_date() %>% 
+       force_tz("US/Pacific")
+    )
+  
+  (portalQuery(
+    paste("SELECT * FROM tpehistory WHERE pid = ", pid, " AND source LIKE '%Training Camp' AND time > ", seasonStart)
+  ) %>% 
+    nrow()) > 0
+}
+
 ## Adds tpe updates to the log
 tpeLog <- function(uid, pid, tpe){
   portalQuery(
