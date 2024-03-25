@@ -74,7 +74,7 @@ playerPageUI <- function(id) {
             )
           )
         ) %>% 
-          div(id = "attributeBox"),
+          div(id = ns("attributeBox")),
         box(
           title = "Player Attributes",
           collapsible = TRUE,
@@ -82,20 +82,89 @@ playerPageUI <- function(id) {
           fluidRow(
             column(
               width = 4,
-              uiOutput(
-                ns("physical")
+              tagList(
+                splitLayout(
+                  "Attribute" %>% strong(),
+                  "Value" %>% strong(),
+                  "Cost" %>% strong(),
+                  cellWidths = c("50%", "25%", "25%"),
+                  cellArgs = list(style = "padding: 5px")
+                ),
+                c(
+                  "acceleration", "agility", "balance", "jumping reach", 
+                  "natural fitness", "pace", "stamina", "strength"
+                ) %>% 
+                  stringr::str_to_title() %>% 
+                  map(
+                    .x = .,
+                    .f = 
+                      ~ 
+                      attributeEdit(
+                        name = .x, 
+                        value = 5, 
+                        ns = ns,
+                        update = TRUE
+                      )
+                  )
               )
             ),
             column(
               width = 4,
-              uiOutput(
-                ns("mental")
+              tagList(
+                splitLayout(
+                  "Attribute" %>% strong(),
+                  "Value" %>% strong(),
+                  "Cost" %>% strong(),
+                  cellWidths = c("50%", "25%", "25%"),
+                  cellArgs = list(style = "padding: 5px")
+                ),
+                c(
+                  "aggression", "anticipation", "bravery", "composure", "concentration", 
+                  "decisions", "determination", "flair", "leadership", "off the ball", 
+                  "positioning", "teamwork", "vision", "work rate"
+                ) %>% 
+                  map(
+                    .x = .,
+                    .f = 
+                      ~ 
+                      attributeEdit(
+                        name = .x %>% stringr::str_to_title(), 
+                        value = 5, 
+                        ns = ns,
+                        update = TRUE
+                      )
+                  )
               )
             ),
             column(
               width = 4,
-              uiOutput(
-                ns("specific")
+              tagList(
+                splitLayout(
+                  "Attribute" %>% strong(),
+                  "Value" %>% strong(),
+                  "Cost" %>% strong(),
+                  cellWidths = c("50%", "25%", "25%"),
+                  cellArgs = list(style = "padding: 5px")
+                ),
+                c(
+                  "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
+                  "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
+                  "Passing", "Penalty Taking", "Tackling", "Technique", "Aerial Reach",
+                  "Command Of Area", "Communication", "Eccentricity", "Handling",
+                  "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
+                  "Tendency To Rush", "Throwing"
+                ) %>% 
+                  map(
+                    .x = .,
+                    .f = 
+                      ~ 
+                      attributeEdit(
+                        name = .x, 
+                        value = 5, 
+                        ns = ns,
+                        update = TRUE
+                      )
+                  )
               )
             )
           ),
@@ -115,7 +184,8 @@ playerPageUI <- function(id) {
             )
           )
         ) %>% 
-          div(id = "updateBox")
+          div(id = ns("updateBox")) %>% 
+          shinyjs::hidden()
       ),
       ## History Information
       fluidRow(
@@ -161,15 +231,31 @@ playerPageServer <- function(id, userinfo) {
       playerDataAsync <- 
         reactive({
           getPlayerDataAsync(uid = userinfo$uid)
-        }) 
+        }) %>% 
+        bindEvent(
+          input$trainingCamp,
+          ignoreNULL = FALSE
+        )
       
-      playerData <- reactiveValues(
-        data = getPlayerData(uid = userinfo$uid)
-      )
+      tpeHistory <- reactive({
+        playerDataAsync() %...>% 
+          select(pid) %...>% 
+          getTpeHistory()
+      }) %>% 
+        bindEvent(
+          input$trainingCamp,
+          ignoreNULL = FALSE
+        )
       
-      tpeHistory <- reactiveValues(
-        data = getTpeHistory(playerData$data$pid)
-      )
+      updateHistory <- reactive({
+        playerDataAsync() %...>% 
+          select(pid) %...>% 
+          getUpdateHistory()
+      }) %>% 
+        bindEvent(
+          input$trainingCamp,
+          ignoreNULL = FALSE
+        )
       
       ## Sets the total TPE and the cost of the current build
       currentAvailable <- 
@@ -178,6 +264,7 @@ playerPageServer <- function(id, userinfo) {
             select(tpe)
         })
       
+      # Initialize current cost from the player data
       currentCost <- 
         reactiveVal({
           playerDataAsync() %...>%
@@ -200,157 +287,134 @@ playerPageServer <- function(id, userinfo) {
             sum(na.rm = TRUE)
         })
       
+      # Calculates currently remaining (unallocated) TPE
       currentRemaining <- 
         reactive({
-          currentAvailable() %...>%
-            sum(-currentCost())
+          
+          ## If the currentCost is a promise wait for all, if not a promise just wait for TPE
+          if(class(currentCost()) == "promise"){
+            promise_all(tpe = currentAvailable(), cost = currentCost()) %...>%
+              with({
+                tpe - cost
+              })
+          } else {
+            currentAvailable() %...>% 
+              sum(-currentCost())
+          }
+          
+          
         })
       
       ## Observer for the change in total cost 
       observe({
-        currentCost( 
-          attributes %>% 
-            filter(
-              !attribute %in% c("Natural Fitness", "Stamina")
-            ) %>% 
-            select(attribute) %>% 
-            unlist() %>% 
-            stringr::str_to_title() %>% 
-            lapply(
-              X = .,
-              FUN = function(x){
-                tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
-              }
-            ) %>% 
-            unlist() %>% 
-            sum()
+        if(input$goToUpdate > 0){
+          currentCost( 
+            attributes %>% 
+              filter(
+                !attribute %in% c("Natural Fitness", "Stamina")
+              ) %>% 
+              select(attribute) %>% 
+              unlist() %>% 
+              stringr::str_to_title() %>% 
+              str_remove_all(pattern = " ") %>% 
+              lapply(
+                X = .,
+                FUN = function(x){
+                  tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
+                }
+              ) %>% 
+              unlist() %>% 
+              sum()
+          )
+        }
+      }) %>% 
+        bindEvent(
+          {
+            attributes %>% 
+              filter(
+                !attribute %in% c("Natural Fitness", "Stamina")
+              ) %>% 
+              select(attribute) %>% 
+              unlist() %>% 
+              stringr::str_to_title() %>% 
+              lapply(
+                X = .,
+                FUN = function(x){
+                  input[[x]]
+                }
+              )
+          },
+          input$goToUpdate,
+          ignoreInit = TRUE
         )
-      })
       
       ## TPE texts
       output$totalTPE <- renderText({
-        currentAvailable() %...>% 
-          unlist() %...>% 
+        currentAvailable() %...>%
+          unlist() %...>%
           unname()
       })
       
       output$remainingTPE <- renderText({
-        currentRemaining()
+        currentRemaining() %...>% 
+          unlist()
       })
       
-      ## Gets date of the start of the week in Pacific
-      weekStart <- 
-        lubridate::now() %>% 
-        with_tz("US/Pacific") %>% 
-        floor_date("week", week_start = "Monday")
-      
-      ## Updating attributes
-      output$physical <- renderUI({
-        tagList(
-          splitLayout(
-            "Attribute" %>% strong(),
-            "Value" %>% strong(),
-            "Cost" %>% strong(),
-            cellWidths = c("50%", "25%", "25%"),
-            cellArgs = list(style = "padding: 5px")
-          ),
-          c(
-            "acceleration", "agility", "balance", "jumping reach", 
-            "natural fitness", "pace", "stamina", "strength"
-          ) %>% 
-            stringr::str_to_title() %>% 
-            map(
-              .x = .,
-              .f = 
-                ~ 
-                attributeEdit(
-                  name = .x, 
-                  value = 5, 
-                  session = session,
-                  update = TRUE
-                )
-            )
-        )
-      })
-      
-      output$mental <- renderUI({
-        tagList(
-          splitLayout(
-            "Attribute" %>% strong(),
-            "Value" %>% strong(),
-            "Cost" %>% strong(),
-            cellWidths = c("50%", "25%", "25%"),
-            cellArgs = list(style = "padding: 5px")
-          ),
-          c(
-            "aggression", "anticipation", "bravery", "composure", "concentration", 
-            "decisions", "determination", "flair", "leadership", "off the ball", 
-            "positioning", "teamwork", "vision", "work rate"
-          ) %>% 
-            map(
-              .x = .,
-              .f = 
-                ~ 
-                attributeEdit(
-                  name = .x %>% stringr::str_to_title(), 
-                  value = 5, 
-                  session = session,
-                  update = TRUE
-                )
-            )
-        )
-      })
-      
-      output$specific <- renderUI({
-        tagList(
-          splitLayout(
-            "Attribute" %>% strong(),
-            "Value" %>% strong(),
-            "Cost" %>% strong(),
-            cellWidths = c("50%", "25%", "25%"),
-            cellArgs = list(style = "padding: 5px")
-          ),
-          c(
-            "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
-            "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
-            "Passing", "Penalty Taking", "Tackling", "Technique", "Aerial Reach",
-            "Command Of Area", "Communication", "Eccentricity", "Handling",
-            "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
-            "Tendency To Rush", "Throwing"
-          ) %>% 
-            map(
-              .x = .,
-              .f = 
-                ~ 
-                attributeEdit(
-                  name = .x, 
-                  value = 5, 
-                  session = session,
-                  update = TRUE
-                )
-            )
-        )
-      })
-      
+      ## Observer that shows the update settings if clicked
       observe({
-        input$goToUpdate
-        
-        attributes$attribute %>% 
-        map(
-          .x = .,
-          .f = function(x){
-            updateNumericInput(
-              session = session,
-              inputId = x,
-              value = playerDataAsync() %...>% select(all_of(x)),
-              min = playerDataAsync() %...>% select(all_of(x))
-            )
-          } 
-        )
-        
-        # updateNumericInput(session = session, inputId = "Acceleration", value = 10, min = 10)  
-      })
+        shinyjs::toggle("attributeBox")
+        shinyjs::toggle("updateBox")
+      }) %>% 
+        bindEvent(input$goToUpdate, ignoreInit = TRUE)
       
+      ## Fills UI with player data when clicking update
+      observe({
+        promise_all(
+          data1 = playerDataAsync(), 
+          data2 = playerDataAsync()
+          ) %...>% 
+          with({
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              colnames() %>% 
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = data2[, x],
+                    min = data2[, x]
+                  )
+                }
+              )
+            
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(
+                where(is.na)
+              ) %>% 
+              colnames() %>% 
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = 5,
+                    min = 5,
+                    max = 5
+                  )
+                  
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
+                }
+              )
+          })
+      }) %>% 
+        bindEvent(
+          input$goToUpdate,
+          ignoreInit = TRUE
+        )
       
       # Create all the cost UIs
       attributes %>% 
@@ -360,6 +424,7 @@ playerPageServer <- function(id, userinfo) {
         select(attribute) %>% 
         unlist() %>%  
         stringr::str_to_title() %>% 
+        str_remove_all(pattern = " ") %>% 
         lapply(
           X = .,
           FUN = function(x){
@@ -519,57 +584,59 @@ playerPageServer <- function(id, userinfo) {
         ignoreInit = TRUE
       )
       
-      observeEvent(
-        input$confirmUpdate,
-        {
-          removeModal()
-          
-          update <- 
-            data.frame(
-              attribute = 
-                playerData$data%>% 
-                select(acceleration:throwing) %>%
-                select(
-                  where(
-                    ~ !is.na(.x)
-                  )
-                ) %>% 
-                colnames() %>% 
-                str_to_title(),
-              new =
-                playerData$data%>%
-                select(acceleration:throwing) %>%
-                colnames() %>%
-                str_to_title() %>%
-                sapply(
-                  X = .,
-                  FUN = function(x) input[[x]],
-                  simplify = TRUE
-                ) %>% 
-                unlist(),
-              old = 
-                playerData$data%>% 
-                select(acceleration:throwing) %>% 
-                select(
-                  where(
-                    ~ !is.na(.x)
-                  )
-                ) %>% 
-                t()
-            ) %>% 
-            filter(
-              old != new
-            )
-          
-          updateLog(uid = userinfo$uid, pid = playerData$data$pid, updates = update)
-          
-          updateBuild(pid = playerData$data$pid, updates = update)
-          
-          playerData$data <- getPlayerData(pid = playerData$data$pid)
-        },
-        # This makes it so that the event doesn't trigger twice
-        ignoreInit = TRUE
-      )
+      observe({
+        removeModal()
+        
+        update <- 
+          data.frame(
+            attribute = 
+              playerData$data%>% 
+              select(acceleration:throwing) %>%
+              select(
+                where(
+                  ~ !is.na(.x)
+                )
+              ) %>% 
+              colnames() %>% 
+              str_to_title(),
+            new =
+              playerData$data%>%
+              select(acceleration:throwing) %>%
+              colnames() %>%
+              str_to_title() %>%
+              sapply(
+                X = .,
+                FUN = function(x) input[[x]],
+                simplify = TRUE
+              ) %>% 
+              unlist(),
+            old = 
+              playerData$data%>% 
+              select(acceleration:throwing) %>% 
+              select(
+                where(
+                  ~ !is.na(.x)
+                )
+              ) %>% 
+              t()
+          ) %>% 
+          filter(
+            old != new
+          )
+        
+        updateLog(uid = userinfo$uid, pid = playerData$data$pid, updates = update)
+        
+        updateBuild(pid = playerData$data$pid, updates = update)
+        
+        playerData$data <- getPlayerData(pid = playerData$data$pid)
+        
+        shinyjs::toggle("attributeBox")
+        shinyjs::toggle("updateBox")
+      }) %>% 
+        bindEvent(
+          input$confirmUpdate,
+          ignoreInit = TRUE
+        )
       
       observeEvent(
         input$resetUpdate,
@@ -656,82 +723,66 @@ playerPageServer <- function(id, userinfo) {
       
       ## Gets update history
       output$updateHistory <- renderReactable({
-        
-        getUpdateHistory(playerData$data$pid) %>% 
+        updateHistory() %...>% 
           reactable()
-        
       })
       
       ## Gets TPE history
       output$tpeHistory <- renderReactable({
-        
-        getTpeHistory(playerData$data$pid) %>%
+        tpeHistory() %...>%
           reactable()
-        
       })
       
       ## UI Outputs for TPE
       output$activityCheck <- 
         renderUI({
-          completed <- 
-            (
-              tpeHistory$data %>% 
-              filter(time > (weekStart), source == "Activity Check") %>% 
-              nrow()
-            ) > 0
-          
-          if(completed){
-            actionButton(
-              session$ns("activityCheck"),
-              "Activity Check",
-              disabled = ""
-            )  
-          } else {
-            actionButton(
-              session$ns("activityCheck"),
-              "Activity Check"
-            )
-          }
-          
+          playerDataAsync() %...>% 
+            select(pid) %...>%
+            {
+              if(completedActivityCheck(.)){
+                actionButton(
+                  session$ns("activityCheck"),
+                  "Activity Check",
+                  disabled = ""
+                )  
+              } else {
+                actionButton(
+                  session$ns("activityCheck"),
+                  "Activity Check"
+                )
+              }
+            }
         })
       
       output$trainingCamp <- 
         renderUI({
-          completed <- 
-            (
-              tpeHistory$data %>% 
-                filter(
-                  time > 
-                    (currentSeason$startDate %>% 
-                       as_date() %>% 
-                       force_tz("US/Pacific")
-                     ), 
-                  source %>% str_detect(pattern = "Training Camp")
-                ) %>% 
-                nrow()
-            ) > 0
-          
-          if(completed){
-            # Show no button at all
-          } else {
-            actionButton(
-              session$ns("trainingCamp"),
-              "Seasonal Training Camp"
-            )
-          }
-          
+          playerDataAsync() %...>% 
+            select(pid) %...>% 
+            {
+              if(completedTrainingCamp(.)){
+                # Show no button at all
+              } else {
+                actionButton(
+                  session$ns("trainingCamp"),
+                  "Seasonal Training Camp"
+                )
+              }
+            }
         })
       
       observeEvent(
         input$trainingCamp,
         {
           
-          age <- 
-            currentSeason$season - 
-            (playerData$data$class %>% 
-               str_extract_all(pattern = "[0-9]+") %>% 
-               as.numeric()
-             )
+          age <- playerDataAsync() %...>%
+            select(class) %...>% 
+            mutate(
+              class = 
+                class %>% 
+                str_extract_all(pattern = "[0-9]+") %>% 
+                as.numeric()
+            ) %...>% 
+            sum(-., currentSeason$season)
           
           tpe <- 
             data.frame(
@@ -744,15 +795,12 @@ playerPageServer <- function(id, userinfo) {
               )
             )
           
-          tpeLog(uid = userinfo$uid, pid = playerData$data$pid, tpe = tpe)
+          tpeLog(uid = userinfo$uid, pid = playerDataAsync() %...>% select(pid), tpe = tpe)
           
           shinyjs::disable(session$ns("trainingCamp"))
           
-          updateTPE(pid = playerData$data$pid, tpe = tpe)
+          updateTPE(pid = playerDataAsync() %...>% select(pid), tpe = tpe)
           
-          playerData$data <- getPlayerData(pid = playerData$data$pid)
-          
-          tpeHistory$data <- getTpeHistory(pid = playerData$data$pid)
         },
         # This makes it so that the event doesn't trigger after a change in the data
         ignoreInit = TRUE
@@ -784,9 +832,7 @@ playerPageServer <- function(id, userinfo) {
       
       output$user <- renderPrint({ 
         list(
-          class(currentAvailable()),
-          class(currentCost()),
-          class(currentRemaining())
+          
         )
       })
     }
