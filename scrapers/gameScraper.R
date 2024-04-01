@@ -119,30 +119,6 @@ goalieFunction <- function(season){
       return()
   }
   
-  aggregateGoalie[
-    aggregateGoalie$Club %in% c("Athênai F.C.", "Inter London", "AS Paris"),
-    3:ncol(aggregateGoalie)
-  ] <- loanReset("S13K", c("Athênai F.C.", "Inter London", "AS Paris"))
-  
-  aggregateGoalie[
-    aggregateGoalie$Club %in% c("Schwarzwälder FV"),
-    3:ncol(aggregateGoalie)
-  ] <- loanReset("S13K1", c("Schwarzwälder FV"))
-  
-  aggregateGoalie[
-    aggregateGoalie$Club %in% c("F.C. Kaapstad", "CF Catalunya"),
-    3:ncol(aggregateGoalie)
-  ] <- loanReset("S13K2", c("F.C. Kaapstad", "CF Catalunya"))
-  
-  aggregateGoalie[
-    aggregateGoalie$Club %in% c("A.C. Romana"),
-    3:ncol(aggregateGoalie)
-  ] <- loanReset("S13K3", c("A.C. Romana"))
-  
-  aggregateGoalie[
-    aggregateGoalie$Club %in% c("Cairo City"),
-    3:ncol(aggregateGoalie)
-  ] <- loanReset("S13K4", c("Cairo City"))
   
   
   FMGoalie <- 
@@ -353,80 +329,6 @@ outfieldFunction <- function(season){
     ) %>%
     collect()
   
-# 
-# 
-#   getQuery <-
-#     paste(
-#       "SELECT Name,
-#         Club,
-#         sum(Apps) as Apps,
-#         sum(`Minutes Played`) as `Minutes Played` ,
-#         sum(`Distance Run (km)`) as `Distance Run (km)` ,
-#         avg(`Average Rating`) as `Average Rating` ,
-#         sum(`Player of the Match`) as `Player of the Match` ,
-#         sum(`Goals`) as Goals ,
-#         sum(`Assists`) as Assists ,
-#         sum(`xG`) as xG ,
-#         sum(`Shots on Target`) as `Shots on Target` ,
-#         sum(`Shots`) as Shots ,
-#         sum(`Penalties Taken`) as `Penalties Taken` ,
-#         sum(`Penalties Scored`) as `Penalties Scored` ,
-#         sum(`Successful Passes`) as `Successful Passes` ,
-#         sum(`Attempted Passes`) as `Attempted Passes` ,
-#         sum(`Pass%`) as `Pass%` ,
-#         sum(`Key Passes`) as `Key Passes` ,
-#         sum(`Successful Crosses`) as `Successful Crosses` ,
-#         sum(`Attempted Crosses`) as `Attempted Crosses` ,
-#         sum(`Cross%`) as `Cross%` ,
-#         sum(`Chances Created`) as `Chances Created` ,
-#         sum(`Successful Headers`) as `Successful Headers` ,
-#         sum(`Attempted Headers`) as `Attempted Headers` ,
-#         sum(`Header%`) as `Header%` ,
-#         sum(`Key Headers`) as `Key Headers` ,
-#         sum(`Dribbles`) as Dribbles ,
-#         sum(`Tackles Won`) as `Tackles Won` ,
-#         sum(`Attempted Tackles`) as `Attempted Tackles` ,
-#         sum(`Tackle%`) as `Tackle%` ,
-#         sum(`Key Tackles`) as `Key Tackles` ,
-#         sum(`Interceptions`) as Interceptions ,
-#         sum(`Clearances`) as Clearances ,
-#         sum(`Mistakes Leading to Goals`) as `Mistakes Leading to Goals` ,
-#         sum(`Yellow Cards`) as `Yellow Cards` ,
-#         sum(`Red Cards`) as `Red Cards` ,
-#         sum(`Fouls`) as Fouls ,
-#         sum(`Fouls Against`) as `Fouls Against` ,
-#         sum(`Offsides`) as Offsides
-#       FROM gameDataPlayer
-#       WHERE Season = '", season, "'",
-#       " GROUP BY Name, Club",
-#       sep = ""
-#     )
-# 
-#   aggregateOutfield <-
-#     dbGetQuery(con, getQuery)
-  
-  # aggregateOutfield %>%
-  #   filter(Club %in% c("Athênai F.C.", "Inter London", "AS Paris")) %>%
-  #   write.csv2(file = "S13 Reset.csv", row.names = FALSE)
-
-  # aggregateOutfield %>%
-  #   filter(Club %in% c("Schwarzwälder FV")) %>%
-  #   write.csv2(file = "S131 Reset.csv", row.names = FALSE)
-  
-  # aggregateOutfield %>%
-  #   filter(Club %in% c("F.C. Kaapstad", "CF Catalunya")) %>%
-  #   write.csv2(file = "S132 Reset.csv", row.names = FALSE)
-  
-  # aggregateOutfield %>%
-  #   filter(Club %in% c("A.C. Romana")) %>%
-  #   write.csv2(file = "S133 Reset.csv", row.names = FALSE)
-
-  # aggregateOutfield %>%
-  #   filter(Club %in% c("Cairo City")) %>%
-  #   write.csv2(file = "S134 Reset.csv", row.names = FALSE)
-
-  ### Tam Kove had a reset in the loan deal in S10 making their stats reset after MD2
-  
   teamReset <- function(name, teams){
     data <- read.csv2(paste(name,"Reset.csv"))
 
@@ -446,59 +348,6 @@ outfieldFunction <- function(season){
     return(aggregateOutfield)
   }
   
-  aggregateOutfield <- teamReset("S13", c("Athênai F.C.", "Inter London", "AS Paris"))
-  
-  aggregateOutfield <- teamReset("S131", c("Schwarzwälder FV"))
-  
-  aggregateOutfield <- teamReset("S132", c("F.C. Kaapstad", "CF Catalunya"))
-  
-  aggregateOutfield <- teamReset("S133", c("A.C. Romana"))
-  
-  aggregateOutfield <- teamReset("S134", c("Cairo City"))
-  
-  
-  # aggregateOutfield %>%
-  #   filter(Name == "Nicolás Inclán") %>%
-  #   write.csv2(file = "Nicolás Inclán Reset.csv", row.names = FALSE)
-
-  # 
-  # loanReset <- function(name){
-  #   data <- read.csv2(paste(name,"Reset.csv"))
-  #   
-  #   (aggregateOutfield[aggregateOutfield$Name == name,
-  #                      3:ncol(aggregateOutfield)] -
-  #       { data %>% select(3:ncol(.)) }) %>%
-  #     round(5) %>% 
-  #     return()
-  # }
-  # 
-  # aggregateOutfield[
-  #   aggregateOutfield$Name == "Nicolás Inclán",
-  #   3:ncol(aggregateOutfield)
-  # ] <- loanReset("Nicolás Inclán")
-
-  #   
-    # 
-    # googlesheets4::read_sheet(
-    #   ss = "https://docs.google.com/spreadsheets/d/167RCPHiZYryXxvkl-Y5dSnRul04WANqSfN6CgGwVB8Y/edit?usp=sharing",
-    #   sheet = "PlayerGameData"
-    # ) %>% 
-    # filter(
-    #   Season == season
-    # ) %>% 
-    # group_by(
-    #   Name,
-    #   Club
-    # ) %>% 
-    # dplyr::summarize(
-    #   across(
-    #     where(is.numeric),
-    #     ~ sum(.x, na.rm = TRUE)
-    #   )
-    # ) %>% 
-    # mutate(
-    #   `Average Rating` = `Average Rating`/(Apps-1)
-    # )
   
   FMOutfield <- 
     {
@@ -980,9 +829,9 @@ outfieldOutput <- function(season, matchday){
 
 ### Start here
 
-season <- "13"
+season <- "14"
 
-date <- "2024-11-07" %>% as.Date()
+date <- "2024-02-13" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
@@ -1005,7 +854,7 @@ date <- "2024-11-07" %>% as.Date()
 }
 ## Writing to the database
 dbAppendTable(con, "gameDataPlayer", matchOutfield)
-dbAppendTable(con, "gameDataKeeper", matchGoalie %>% filter(!(Name == "Michael Bourne")))
+dbAppendTable(con, "gameDataKeeper", matchGoalie)
 
 # ### Filters in case MAJ and MIN are in same file
 # matchGoalie <- matchGoalie %>% filter(!is.na(Opponent))
