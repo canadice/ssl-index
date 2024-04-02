@@ -75,8 +75,11 @@ if(nrow(current) > 0){
     send_webhook_message(
       paste(
         "######\n",
+        "## Next set of matches:", 
+        paste(current$Matchday, collapse = "\n\n"),
+        "\n\n",
         "The tactics deadline is <t:", 
-        (lubridate::today() + lubridate::hours(20)) %>% as.numeric(),
+        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(21)) %>% as.numeric(),
         ":R>!\n", 
         "######",
         sep = ""
