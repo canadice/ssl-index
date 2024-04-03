@@ -79,7 +79,7 @@ if(nrow(current) > 0){
         paste(current$Matchday, collapse = "\n\n"),
         "\n\n",
         "The tactics deadline is <t:", 
-        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(21)) %>% as.numeric(),
+        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(12)) %>% as.numeric(),
         ":R>!\n", 
         "######",
         sep = ""
