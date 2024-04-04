@@ -75,7 +75,7 @@ if(nrow(current) > 0){
     send_webhook_message(
       paste(
         "######\n",
-        "## Next set of matches:", 
+        "## Next set of matches:\n\n", 
         paste(current$Matchday, collapse = "\n\n"),
         "\n\n",
         "The tactics deadline is <t:", 
