@@ -356,7 +356,7 @@ tibble(
 #################################################################
 
 data.frame(
-  time = now(),
+  time = now() %>% force_tz("US/Pacific") %>% as.numeric(),
   uid = 1,
   pid = 1,
   attribute = "",
@@ -372,7 +372,7 @@ data.frame(
   )
 
 data.frame(
-  time = now(),
+  time = now() %>% force_tz("US/Pacific") %>% as.numeric(),
   uid = 1,
   pid = 1,
   source = "",
