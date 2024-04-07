@@ -1,222 +1,118 @@
 playerPageUI <- function(id) {
   ns <- NS(id)
   tagList(
-    fluidPage(
-      
-      ## User information
-      fluidRow(
-        verbatimTextOutput(ns("user")) %>% 
-          withSpinner(
-            proxy.height = "20px"
-          )
-      ),
-      
-      ## TPE Information
-      fluidRow(
-        {
-          box(
-            title = "TPE",
-            collapsible = TRUE,
-            width = NULL,
-            fluidRow(
-              column(
-                width = 12,
-                align = "center", 
-                style = "display: flex; justify-content: center;",
-                valueBox(
-                  subtitle = "Total Earned TPE",
-                  value = 
-                    textOutput(ns("totalTPE"), inline = TRUE) %>% 
-                    withSpinner(proxy.height = "20px"),
-                  width = 3
-                ),
-                valueBox(
-                  subtitle = "Available TPE",
-                  value = 
-                    textOutput(ns("remainingTPE"), inline = TRUE) %>% 
-                    withSpinner(proxy.height = "20px"), 
-                  width = 3
-                )
-              ) 
-            ),
-            fluidRow(
-              column(
-                width = 12,
-                align = "center", 
-                style = "display: flex; justify-content: center;",
-                uiOutput(ns("activityCheck")),
-                uiOutput(ns("trainingCamp"))
-              )
-            )
-          )
-        }
-      ),
-      ## Update Attributes
-      fluidRow(
-        box(
-          title = "Player Attributes",
-          collapsible = TRUE,
-          width = NULL,
-          # RENDER PLOT WITH ATTRIBUTES,
-          fluidRow(
-            column(
-              width = 12,
-              align = "center", 
-              style = "display: flex; justify-content: center;",
-              actionButton(
-                inputId = ns("goToRegression"),
-                "Regress"
-              ),
-              actionButton(
-                inputId = ns("goToUpdate"),
-                "Update"
-              )
-            )
-          )
+    fluidRow(
+      column(
+        width = 8,
+        textOutput(
+          outputId = ns("playerInfo")
         ) %>% 
-          div(id = ns("attributeBox")),
-        box(
-          title = "Player Attributes",
-          collapsible = TRUE,
-          width = NULL,
-          fluidRow(
-            column(
-              width = 4,
-              tagList(
-                splitLayout(
-                  "Attribute" %>% strong(),
-                  "Value" %>% strong(),
-                  "Cost" %>% strong(),
-                  cellWidths = c("50%", "25%", "25%"),
-                  cellArgs = list(style = "padding: 5px")
-                ),
-                c(
-                  "acceleration", "agility", "balance", "jumping reach", 
-                  "natural fitness", "pace", "stamina", "strength"
-                ) %>% 
-                  stringr::str_to_title() %>% 
-                  map(
-                    .x = .,
-                    .f = 
-                      ~ 
-                      attributeEdit(
-                        name = .x, 
-                        value = 5, 
-                        ns = ns,
-                        update = TRUE
-                      )
-                  )
-              )
+          withSpinnerMedium()
+      )
+    ),
+    fluidRow(
+      box(
+        title = "TPE", collapsible = TRUE, width = NULL,
+        fluidRow(
+          column(
+            width = 12, align = "center", style = "display: flex; justify-content: center;",
+            valueBox(
+              subtitle = "Total Earned TPE",
+              value = textOutput(ns("tpeTotal"), inline = TRUE) %>% 
+                withSpinnerSmall(),
+              width = 3
             ),
-            column(
-              width = 4,
-              tagList(
-                splitLayout(
-                  "Attribute" %>% strong(),
-                  "Value" %>% strong(),
-                  "Cost" %>% strong(),
-                  cellWidths = c("50%", "25%", "25%"),
-                  cellArgs = list(style = "padding: 5px")
-                ),
-                c(
-                  "aggression", "anticipation", "bravery", "composure", "concentration", 
-                  "decisions", "determination", "flair", "leadership", "off the ball", 
-                  "positioning", "teamwork", "vision", "work rate"
-                ) %>% 
-                  map(
-                    .x = .,
-                    .f = 
-                      ~ 
-                      attributeEdit(
-                        name = .x %>% stringr::str_to_title(), 
-                        value = 5, 
-                        ns = ns,
-                        update = TRUE
-                      )
-                  )
-              )
+            valueBox(
+              subtitle = "Available TPE",
+              value = textOutput(ns("tpeRemaining"), inline = TRUE) %>% 
+                withSpinnerSmall(), 
+              width = 3
+            )
+          )
+        )
+      ),
+      box(
+        title = "Player Overview", collapsible = TRUE, width = NULL,
+        fluidRow(
+          column(
+            width = 12,
+            plotOutput(ns("playerOverview")) %>% 
+              withSpinnerMedium()
+          )
+        ),
+        fluidRow(
+          column(
+            width = 12,
+            align = "center", 
+            style = "display: flex; justify-content: center;",
+            uiOutput(
+              outputId = ns("buttonRegression")
+            ) %>% 
+              withSpinnerSmall(),
+            uiOutput(
+              outputId = ns("buttonUpdate")
+            ) %>% 
+              withSpinnerSmall()
+          )
+        )
+      ) %>% 
+        div(id = ns("attributeOverview")),
+      box(
+        title = "Update Player", collapsible = FALSE, width = NULL,
+        fluidRow(
+          column(
+            width = 12,
+            align = "center", 
+            style = "display: flex; justify-content: center;",
+            actionButton(
+              inputId = ns("resetUpdate"),
+              "Reset"
             ),
-            column(
-              width = 4,
-              tagList(
-                splitLayout(
-                  "Attribute" %>% strong(),
-                  "Value" %>% strong(),
-                  "Cost" %>% strong(),
-                  cellWidths = c("50%", "25%", "25%"),
-                  cellArgs = list(style = "padding: 5px")
-                ),
-                c(
-                  "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
-                  "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
-                  "Passing", "Penalty Taking", "Tackling", "Technique", "Aerial Reach",
-                  "Command Of Area", "Communication", "Eccentricity", "Handling",
-                  "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
-                  "Tendency To Rush", "Throwing"
-                ) %>% 
-                  map(
-                    .x = .,
-                    .f = 
-                      ~ 
-                      attributeEdit(
-                        name = .x, 
-                        value = 5, 
-                        ns = ns,
-                        update = TRUE
-                      )
-                  )
-              )
-            )
-          ),
-          fluidRow(
-            column(
-              width = 12,
-              align = "center", 
-              style = "display: flex; justify-content: center;",
-              actionButton(
-                inputId = ns("resetUpdate"),
-                "Reset Build"
-              ),
-              actionButton(
-                inputId = ns("verifyUpdate"),
-                "Update"
-              )
+            actionButton(
+              inputId = ns("verifyUpdate"),
+              "Update"
             )
           )
-        ) %>% 
-          div(id = ns("updateBox")) %>% 
-          shinyjs::hidden()
+        )
+      ) %>% 
+        div(id = ns("attributeUpdate")) %>% 
+        hidden(),
+      box(
+        title = "Regress Player", collapsible = FALSE, width = NULL,
+        fluidRow(
+          column(
+            width = 12,
+            align = "center", 
+            style = "display: flex; justify-content: center;",
+            actionButton(
+              inputId = ns("resetRegression"),
+              "Reset"
+            ),
+            actionButton(
+              inputId = ns("verifyRegression"),
+              "Regress"
+            )
+          )
+        )
+      ) %>% 
+        div(id = ns("attributeRegress")) %>% 
+        hidden(),
+      box(
+        title = "Updating History", collapsed = TRUE, collapsible = TRUE, width = NULL,
+        fluidRow(
+          column(width = 12,
+            reactableOutput(ns("historyUpdates")) %>% 
+              withSpinnerMedium()
+          )
+        )
       ),
-      ## History Information
-      fluidRow(
-        {
-          box(
-            title = "Updating History",
-            collapsible = TRUE,
-            width = NULL,
-            fluidRow(
-              column(
-                width = 12,
-                reactableOutput(ns("updateHistory"))
-              )
-            )
+      box(title = "TPE History", collapsed = TRUE, collapsible = TRUE,width = NULL,
+        fluidRow(
+          column(
+            width = 12,
+            reactableOutput(ns("historyTPE"))
           )
-        }
-      ),
-      fluidRow(
-        {
-          box(
-            title = "TPE History",
-            collapsible = TRUE,
-            width = NULL,
-            fluidRow(
-              column(
-                width = 12,
-                reactableOutput(ns("tpeHistory"))
-              )
-            )
-          )
-        }
+        )
       )
     )
   )
@@ -227,561 +123,218 @@ playerPageServer <- function(id, userinfo) {
     id,
     function(input, output, session) {
       
-      ##### REACTIVES ######
-      
-      ## Asynchronous reading of the player data
-      playerDataAsync <- 
+      #### REACTIVES ####
+      playerData <- 
         reactive({
           getPlayerDataAsync(uid = userinfo$uid)
-        }) %>% 
-        bindEvent(
-          input$trainingCamp,
-          ignoreNULL = FALSE
-        )
-      
-      tpeHistory <- reactive({
-        playerDataAsync() %...>% 
-          select(pid) %...>% 
-          getTpeHistory()
-      }) %>% 
-        bindEvent(
-          input$trainingCamp,
-          ignoreNULL = FALSE
-        )
-      
-      updateHistory <- reactive({
-        playerDataAsync() %...>% 
-          select(pid) %...>% 
-          getUpdateHistory()
-      }) %>% 
-        bindEvent(
-          input$trainingCamp,
-          ignoreNULL = FALSE
-        )
-      
-      ## Sets the total TPE and the cost of the current build
-      currentAvailable <- 
-        reactiveVal({
-          playerDataAsync() %...>%
-            select(tpe)
         })
       
-      # Initialize current cost from the player data
-      currentCost <- 
-        reactiveVal({
-          playerDataAsync() %...>%
-            select(acceleration:throwing) %...>%
-            select(!`natural fitness` & !stamina) %...>% 
-            pivot_longer(
-              cols = everything(),
-              names_to = "attribute",
-              values_to = "value"
-            ) %...>%
-            left_join(
-              tpeCost %>% 
-                select(
-                  value,
-                  cumCost
-                ),
-              by = "value"
-            ) %...>% 
-            select(cumCost) %...>% 
-            sum(na.rm = TRUE)
-        })
-      
-      # Calculates currently remaining (unallocated) TPE
-      currentRemaining <- 
+      tpeTotal <- 
         reactive({
-          
-          ## If the currentCost is a promise wait for all, if not a promise just wait for TPE
-          if(class(currentCost()) == "promise"){
-            promise_all(tpe = currentAvailable(), cost = currentCost()) %...>%
-              with({
-                tpe - cost
-              })
-          } else {
-            currentAvailable() %...>% 
-              sum(-currentCost())
-          }
-          
-          
+          playerData() %>% 
+            then(
+              onFulfilled = function(value) {
+                value$tpe
+              },
+              onRejected = function(reason) {
+                NaN
+              }
+            )
+        })
+      
+      tpeBanked <- 
+        reactive({
+          playerData() %>% 
+            then(
+              onFulfilled = function(value) {
+                value %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!`natural fitness` & !stamina) %>% 
+                  pivot_longer(
+                    cols = everything(),
+                    names_to = "attribute",
+                    values_to = "value"
+                  ) %>%
+                  left_join(
+                    tpeCost %>% 
+                      select(
+                        value,
+                        cumCost
+                      ),
+                    by = "value"
+                  ) %>% 
+                  select(cumCost) %>% 
+                  sum(na.rm = TRUE) %>% 
+                  {
+                    value$tpe - .
+                  }
+              },
+              onRejected = function(reason) {
+                NaN
+              }
+            )
+        }) 
+      
+      historyTPE <- 
+        reactive({
+          playerData() %>% 
+            then(
+              onFulfilled = function(value){
+                getTpeHistory(value$pid)
+              }
+            )
+        })
+      
+      historyUpdates <- 
+        reactive({
+          playerData() %>% 
+            then(
+              onFulfilled = function(value){
+                getUpdateHistory(value$pid)
+              }
+            )
         })
       
       
-      ##### UI ######
-      # Create all the cost UIs
-      attributes %>% 
-        filter(
-          !attribute %in% c("Natural Fitness", "Stamina")
-        ) %>% 
-        select(attribute) %>% 
-        unlist() %>%  
-        stringr::str_to_title() %>% 
-        str_remove_all(pattern = " ") %>% 
-        lapply(
-          X = .,
-          FUN = function(x){
-            output[[paste0("cost", x)]] <- 
-              renderUI({
-                nextcost <- tpeCost[tpeCost$value == (session$input[[x]] + 1), "sinCost"]
-                
-                if(length(nextcost) == 0) nextcost <- ""
-                
-                paste(
-                  "Next: ",
-                  nextcost,
-                  "Total: ",
-                  tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
-                )
-                
-              })
-          }
-        )
-      
-      ##### OBSERVERS ######
-      ## Observer for the change in total cost 
-      observe({
-        if(input$goToUpdate > 0){
-          currentCost( 
-            attributes %>% 
-              filter(
-                !attribute %in% c("Natural Fitness", "Stamina")
-              ) %>% 
-              select(attribute) %>% 
-              unlist() %>% 
-              stringr::str_to_title() %>% 
-              str_remove_all(pattern = " ") %>% 
-              lapply(
-                X = .,
-                FUN = function(x){
-                  tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
-                }
-              ) %>% 
-              unlist() %>% 
-              sum()
+      #### OUTPUTS ####
+      output$playerInfo <- renderText({
+        playerData() %>% 
+          then(
+            onFulfilled = function(value) {
+              value$name
+            },
+            onRejected = function(reason) {
+              "An error occurred."
+            }
           )
-        }
-      }) %>% 
-        bindEvent(
-          # Changes in any input slider
-          {
-            attributes %>% 
-              filter(
-                !attribute %in% c("Natural Fitness", "Stamina")
-              ) %>% 
-              select(attribute) %>% 
-              unlist() %>% 
-              stringr::str_to_title() %>% 
-              lapply(
-                X = .,
-                FUN = function(x){
-                  input[[x]]
-                }
-              )
-          },
-          # input$goToUpdate,
-          ignoreInit = TRUE
-        )
+      })
       
-      ## Observer that shows the update settings if clicked
-      observe({
-        shinyjs::toggle("attributeBox")
-        shinyjs::toggle("updateBox")
-      }) %>% 
-        bindEvent(input$goToUpdate, ignoreInit = TRUE)
+      output$tpeTotal <- renderText({
+        tpeTotal()
+      })
       
-      ## Fills UI with player data when clicking update
-      observe({
-        promise_all(
-          data1 = playerDataAsync(), 
-          data2 = playerDataAsync()
-          ) %...>% 
-          with({
-            data1 %>% 
-              select(acceleration:throwing) %>% 
-              colnames() %>% 
-              map(
-                .x = .,
-                .f = function(x){
-                  updateNumericInput(
-                    session = session,
-                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                    value = data2[, x],
-                    min = data2[, x]
-                  )
-                }
-              )
-            
-            data1 %>% 
-              select(acceleration:throwing) %>% 
-              select(
-                where(is.na)
-              ) %>% 
-              colnames() %>% 
-              map(
-                .x = .,
-                .f = function(x){
-                  updateNumericInput(
-                    session = session,
-                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                    value = 5,
-                    min = 5,
-                    max = 5
-                  )
-                  
-                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
-                }
-              )
-          })
-      }) %>% 
-        bindEvent(
-          input$goToUpdate,
-          input$resetUpdate,
-          ignoreInit = TRUE
-        )
+      output$tpeRemaining <- renderText({
+        tpeBanked()
+      })
       
-      
-      
-      ## Observer for the verify update button that summarizes the updates and allows for it to be sent to the database
-      
-      # TODO: ADD VALIDATION https://rstudio.github.io/shinyvalidate/
-      observe({
-        if((currentRemaining() %...>% sum(0)) < 0){
-          showModal(
-            modalDialog(
-              span("You have spent too much TPE on your attributes! Reduce some of your attributes and try again."),
-              title="Not enough TPE!",
-              footer = tagList( modalButton("Ok") ),
-              easyClose = TRUE
-            )
-          )
-        } else {
-          update <- 
-            tibble(
-              attribute = attributes$attribute,
-              old = playerDataAsync() %...>% 
-                select(acceleration:throwing) %...>% 
-                t(),
-              new = attribute %>% 
-                sapply(
-                  X = .,
-                  FUN = function(x) input[[x]],
-                  simplify = TRUE
+      output$playerOverview <- renderPlot({
+        playerData() %>% 
+          then(
+            onFulfilled = function(value){
+              p <- 
+                value %>% 
+                select(acceleration:throwing) %>% 
+                select(where(~ !is.na(.x))) %>% 
+                pivot_longer(
+                  cols = everything(),
+                  values_to = "Value",
+                  names_to = "Attribute"
                 ) %>% 
-                unlist()
-            ) %...>% 
-            filter(
-              old != new
-            )
-          
-          print(update)
-        }
+                mutate(
+                  Attribute = str_to_title(Attribute)
+                ) %>% 
+                left_join(
+                  attributes,
+                  by = c("Attribute" = "attribute") 
+                ) %>% 
+                mutate(
+                  Attribute = factor(Attribute, levels = sort(Attribute %>% unique(), decreasing = TRUE)),
+                  group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
+                  ValueFill = case_when(
+                    Value >= 15 ~ 1,
+                    Value >= 10 ~ 2,
+                    TRUE ~ 3
+                  ) %>% factor()
+                ) %>% 
+                ggplot() + aes(x = Attribute, y = Value, fill = ValueFill) + 
+                geom_bar(stat = "identity") +
+                facet_wrap(. ~ group, scales = "free") + 
+                scale_y_continuous(expand = c(0,0), limits = c(0, 20), minor_breaks = seq(0, 20, 1)) +
+                scale_fill_manual(
+                  guide = NULL,
+                  values = c("#008450", "#EFB700", "#B81D13")
+                ) +
+                coord_flip() + 
+                theme_bw() +
+                theme(
+                  panel.grid.major.y = element_blank(),
+                  panel.grid.minor.y = element_blank(),
+                  axis.text = element_text(size = 14),
+                  strip.text = element_text(size = 16),
+                  plot.margin = unit(margin(r = 10), "pt"),
+                  plot.background = element_rect(fill = "transparent", color = NA)
+                ) + 
+                labs(x = NULL, y = NULL)
+              
+              print(p)
+            }
+          )
+      }, bg="transparent")
+      
+      output$historyTPE <- renderReactable({
+        historyTPE() %...>%
+          reactable()
+      })
         
-      }) %>% 
-        bindEvent(input$verifyUpdate, ignoreInit = TRUE)
+      output$historyUpdates <- renderReactable({
+        historyUpdates() %...>%
+          reactable()
+      })
       
+      output$buttonRegression <- renderUI({
+        tpeBanked() %>% 
+          then(
+            onFulfilled = function(value){
+              if(value < 0) {
+                actionButton(
+                  inputId = session$ns("goToRegression"),
+                  "Regress"
+                )
+              } else {
+                actionButton(
+                  inputId = session$ns("goToRegression"),
+                  "Regress",
+                  disabled = ""
+                )
+              }
+            }
+          )
+      })
       
-      # observeEvent(
-      #       update <- 
-      #         data.frame(
-      #           attribute = 
-      #             playerData$data %>% 
-      #             select(acceleration:throwing) %>%
-      #             select(
-      #               where(
-      #                 ~ !is.na(.x)
-      #               )
-      #             ) %>% 
-      #             colnames() %>% 
-      #             str_to_title(),
-      #           new =
-      #             playerData$data %>%
-      #             select(acceleration:throwing) %>%
-      #             colnames() %>%
-      #             str_to_title() %>%
-      #             sapply(
-      #               X = .,
-      #               FUN = function(x) input[[x]],
-      #               simplify = TRUE
-      #             ) %>% 
-      #             unlist(),
-      #           old = 
-      #             playerData$data %>% 
-      #             select(acceleration:throwing) %>% 
-      #             select(
-      #               where(
-      #                 ~ !is.na(.x)
-      #               )
-      #             ) %>% 
-      #             t()
-      #         ) %>% 
-      #         filter(
-      #           old != new
-      #         )
-      #       
-      #       if(update %>% nrow() > 0){
-      #         if(any((update$old - update$new) > 0)){
-      #           showModal(
-      #             modalDialog(
-      #               span(
-      #                 "You cannot reduce attributes in a regular update.",
-      #                 paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")
-      #               ),
-      #               title="Reducing attributes!",
-      #               footer = 
-      #                 tagList(
-      #                   modalButton("Ok")
-      #                 ),
-      #               easyClose = TRUE
-      #             )
-      #           )
-      #         } else {
-      #           showModal(
-      #             modalDialog(
-      #               span(
-      #                 "Are you sure you want to update these attributes?" %>% strong(),
-      #                 style = "color: red;"
-      #               ),
-      #               br(),
-      #               column(
-      #                 width = 8,
-      #                 offset = 2,
-      #                 helpText(
-      #                   paste(
-      #                     paste(
-      #                       update$attribute,
-      #                       paste(
-      #                         update$old,
-      #                         update$new,
-      #                         sep = " -> "
-      #                       )
-      #                     ),
-      #                     collapse = "<br>"
-      #                   ) %>% 
-      #                     HTML()
-      #                 ) %>% 
-      #                   div(
-      #                     style = "background: #f0f0f0; border: #656565"
-      #                   )
-      #               ),
-      #               br(),
-      #               tagList(
-      #                 modalButton("No, go back"),
-      #                 actionButton(
-      #                   inputId = session$ns("confirmUpdate"),
-      #                   label = "Yes, confirm update!"
-      #                 )
-      #               ),
-      #               title="Update output",
-      #               footer = NULL,
-      #               easyClose = FALSE
-      #             )
-      #           )
-      #         }
-      #       } else {
-      #         showModal(
-      #           modalDialog(
-      #             span(
-      #               "You have not changed your build yet, there is nothing to update."
-      #             ),
-      #             title="No changes made!",
-      #             footer = 
-      #               tagList(
-      #                 modalButton("Ok")
-      #               ),
-      #             easyClose = TRUE
-      #           )
-      #         )
-      #       }
-      #     }
-      #     
-      #   },
-      #   # This makes it so that the event doesn't trigger after a change in the data
-      #   ignoreInit = TRUE
-      # )
+      output$buttonUpdate <- renderUI({
+        tpeBanked() %>% 
+          then(
+            onFulfilled = function(value){
+              if(value > 0) {
+                actionButton(
+                  inputId = session$ns("goToUpdate"),
+                  "Update"
+                )
+              } else {
+                actionButton(
+                  inputId = session$ns("goToUpdate"),
+                  "Update",
+                  disabled = ""
+                )
+              }
+            }
+          )
+      })
+      
+      #### OBSERVERS ####
       
       observe({
-        removeModal()
-        
-        update <- 
-          data.frame(
-            attribute = 
-              playerData$data%>% 
-              select(acceleration:throwing) %>%
-              select(
-                where(
-                  ~ !is.na(.x)
-                )
-              ) %>% 
-              colnames() %>% 
-              str_to_title(),
-            new =
-              playerData$data%>%
-              select(acceleration:throwing) %>%
-              colnames() %>%
-              str_to_title() %>%
-              sapply(
-                X = .,
-                FUN = function(x) input[[x]],
-                simplify = TRUE
-              ) %>% 
-              unlist(),
-            old = 
-              playerData$data%>% 
-              select(acceleration:throwing) %>% 
-              select(
-                where(
-                  ~ !is.na(.x)
-                )
-              ) %>% 
-              t()
-          ) %>% 
-          filter(
-            old != new
-          )
-        
-        updateLog(uid = userinfo$uid, pid = playerData$data$pid, updates = update)
-        
-        updateBuild(pid = playerData$data$pid, updates = update)
-        
-        playerData$data <- getPlayerData(pid = playerData$data$pid)
-        
-        shinyjs::toggle("attributeBox")
-        shinyjs::toggle("updateBox")
+        shinyjs::toggle("attributeOverview")
+        shinyjs::toggle("attributeUpdate")
       }) %>% 
-        bindEvent(
-          input$confirmUpdate,
-          ignoreInit = TRUE
-        )
+        bindEvent(input$goToUpdate,ignoreInit = TRUE)
       
-      ##### OUTPUTS ######
+      observe({
+        shinyjs::toggle("attributeOverview")
+        shinyjs::toggle("attributeRegress")
+      }) %>% 
+        bindEvent(input$goToRegression,ignoreInit = TRUE)
       
-      ## TPE texts
-      output$totalTPE <- renderText({
-        currentAvailable() %...>%
-          unlist() %...>%
-          unname()
-      })
-      
-      output$remainingTPE <- renderText({
-        currentRemaining() %...>% 
-          unlist()
-      })
-      
-      ## Gets update history
-      output$updateHistory <- renderReactable({
-        updateHistory() %...>% 
-          reactable()
-      })
-      
-      ## Gets TPE history
-      output$tpeHistory <- renderReactable({
-        tpeHistory() %...>%
-          reactable()
-      })
-      
-      ## UI Outputs for TPE
-      output$activityCheck <- 
-        renderUI({
-          playerDataAsync() %...>% 
-            select(pid) %...>%
-            {
-              if(completedActivityCheck(.)){
-                actionButton(
-                  session$ns("activityCheck"),
-                  "Activity Check",
-                  disabled = ""
-                )  
-              } else {
-                actionButton(
-                  session$ns("activityCheck"),
-                  "Activity Check"
-                )
-              }
-            }
-        })
-      
-      output$trainingCamp <- 
-        renderUI({
-          playerDataAsync() %...>% 
-            select(pid) %...>% 
-            {
-              if(completedTrainingCamp(.)){
-                # Show no button at all
-              } else {
-                actionButton(
-                  session$ns("trainingCamp"),
-                  "Seasonal Training Camp"
-                )
-              }
-            }
-        })
-      
-      observeEvent(
-        input$trainingCamp,
-        {
-          
-          age <- playerDataAsync() %...>%
-            select(class) %...>% 
-            mutate(
-              class = 
-                class %>% 
-                str_extract_all(pattern = "[0-9]+") %>% 
-                as.numeric()
-            ) %...>% 
-            sum(-., currentSeason$season)
-          
-          tpe <- 
-            data.frame(
-              source = paste("S", currentSeason$season, " Training Camp", sep = ""),
-              tpe = case_when(
-                age <= 2 ~ 40,
-                age <= 5 ~ 30,
-                age <= 8 ~ 20,
-                TRUE ~ 10
-              )
-            )
-          
-          tpeLog(uid = userinfo$uid, pid = playerDataAsync() %...>% select(pid), tpe = tpe)
-          
-          shinyjs::disable(session$ns("trainingCamp"))
-          
-          updateTPE(pid = playerDataAsync() %...>% select(pid), tpe = tpe)
-          
-        },
-        # This makes it so that the event doesn't trigger after a change in the data
-        ignoreInit = TRUE
-      )
-      
-      observeEvent(
-        input$activityCheck,
-        {
-          tpe <- 
-            data.frame(
-              source = "Activity Check",
-              tpe = 6
-            )
-          
-          tpeLog(uid = userinfo$uid, pid = playerData$data$pid, tpe = tpe)
-          
-          shinyjs::disable(session$ns("activityCheck"))
-          
-          updateTPE(pid = playerData$data$pid, tpe = tpe)
-          
-          playerData$data <- getPlayerData(pid = playerData$data$pid)
-          
-          tpeHistory$data <- getTpeHistory(pid = playerData$data$pid)
-        },
-        # This makes it so that the event doesn't trigger after a change in the data
-        ignoreInit = TRUE
-      )
-      
-      
-      output$user <- renderPrint({ 
-        list(
-          currentRemaining()
-        )
-      })
     }
   )
 }
