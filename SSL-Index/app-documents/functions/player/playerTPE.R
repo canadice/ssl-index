@@ -10,7 +10,8 @@ completedActivityCheck <- function(pid){
   weekStart <- 
     lubridate::now() %>% 
     with_tz("US/Pacific") %>% 
-    floor_date("week", week_start = "Monday")
+    floor_date("week", week_start = "Monday") %>% 
+    as.numeric()
   
   (portalQuery(
     paste("SELECT * FROM tpehistory WHERE pid = ", pid, " AND source LIKE '%Activity Check' AND time > ", weekStart)
@@ -23,7 +24,8 @@ completedTrainingCamp <- function(pid){
     (currentSeason$startDate %>% 
        as_date() %>% 
        force_tz("US/Pacific")
-    )
+    ) %>% 
+    as.numeric()
   
   (portalQuery(
     paste("SELECT * FROM tpehistory WHERE pid = ", pid, " AND source LIKE '%Training Camp' AND time > ", seasonStart)
@@ -43,7 +45,7 @@ tpeLog <- function(uid, pid, tpe){
         paste(
           uid,
           pid,
-          paste0("'", lubridate::now() ,"'"),
+          paste0("'", lubridate::now() %>% force_tz("US/Pacific")  %>% as.numeric(),"'"),
           paste0("'", tpe$source, "'"),
           tpe$tpe,
           sep = ","
