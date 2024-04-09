@@ -54,16 +54,16 @@
 }
 
 /* Hover information for text */
+/* Updated CSS */
 .hovertext {
-    position: relative;
-    border-bottom: 1px dashed black;
+    position: relative; /* Make sure the parent container has relative positioning */
 }
 
 .hovertext:before {
     content: attr(data_hover);
     visibility: hidden;
     opacity: 0;
-    width: 140px;
+    width: 100%;
     background-color: black;
     color: white;
     text-align: center;
@@ -73,14 +73,16 @@
 
     position: absolute;
     z-index: 1;
-    left: -10px;
-    top: 110%;
+    top: calc(100% + 5px);  /*Position below the input field */
+    left: 0; /* Align with the left edge of the input field */
 }
 
 .hovertext:hover:before {
     opacity: 1;
     visibility: visible;
 }
+
+
 
 /* Allows for hovertext on reactable column headers */
 .rt-th,

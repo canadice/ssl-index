@@ -61,6 +61,51 @@ playerPageUI <- function(id) {
         title = "Update Player", collapsible = FALSE, width = NULL,
         fluidRow(
           column(
+            width = 4,
+            tagList(
+              c(
+                "acceleration", "agility", "balance", "jumping reach", 
+                "natural fitness", "pace", "stamina", "strength"
+              ) %>% 
+                map(
+                  .x = .,
+                  .f = 
+                    ~ attributeInput(ns = ns, name = .x, value = NA)
+                )
+            )
+          ),
+          column(
+            width = 4,
+            c(
+              "aggression", "anticipation", "bravery", "composure", "concentration", 
+              "decisions", "determination", "flair", "leadership", "off the ball", 
+              "positioning", "teamwork", "vision", "work rate"
+            ) %>% 
+              map(
+                .x = .,
+                .f = 
+                  ~ attributeInput(ns = ns, name = .x, value = NA)
+              )
+          ),
+          column(
+            width = 4,
+            c(
+              "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
+              "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
+              "Passing", "Penalty Taking", "Tackling", "Technique", "Aerial Reach",
+              "Command Of Area", "Communication", "Eccentricity", "Handling",
+              "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
+              "Tendency To Rush", "Throwing"
+            ) %>% 
+              map(
+                .x = .,
+                .f = 
+                  ~ attributeInput(ns = ns, name = .x, value = NA)
+              )
+          )
+        ),
+        fluidRow(
+          column(
             width = 12,
             align = "center", 
             style = "display: flex; justify-content: center;",
