@@ -168,6 +168,12 @@ playerPageServer <- function(id, userinfo) {
     id,
     function(input, output, session) {
       
+      editableAttributes <- 
+        attributes$attribute %>% 
+        .[!(. %in% c("Natural Fitness", "Stamina"))] %>% 
+        str_to_title() %>% 
+        str_remove_all(pattern = " ") 
+      
       #### REACTIVES ####
       playerData <- 
         reactive({
@@ -175,7 +181,7 @@ playerPageServer <- function(id, userinfo) {
         })
       
       tpeTotal <- 
-        reactive({
+        reactiveVal({
           playerData() %>% 
             then(
               onFulfilled = function(value) {
@@ -188,7 +194,7 @@ playerPageServer <- function(id, userinfo) {
         })
       
       tpeBanked <- 
-        reactive({
+        reactiveVal({
           playerData() %>% 
             then(
               onFulfilled = function(value) {
@@ -219,6 +225,9 @@ playerPageServer <- function(id, userinfo) {
               }
             )
         }) 
+      
+      updating <- 
+        reactiveVal({FALSE})
       
       historyTPE <- 
         reactive({
@@ -316,6 +325,28 @@ playerPageServer <- function(id, userinfo) {
           )
       }, bg="transparent")
       
+      ## All the cost outputs
+      editableAttributes %>% 
+        lapply(
+          X = .,
+          FUN = function(x){
+            output[[paste0("cost", x)]] <- 
+              renderUI({
+                nextcost <- tpeCost[tpeCost$value == (session$input[[x]] + 1), "sinCost"]
+                
+                if(length(nextcost) == 0) nextcost <- ""
+                
+                paste(
+                  "Next: ",
+                  nextcost,
+                  "Total: ",
+                  tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
+                )
+                
+              })
+          }
+        )
+      
       output$historyTPE <- renderReactable({
         historyTPE() %...>%
           reactable()
@@ -371,14 +402,108 @@ playerPageServer <- function(id, userinfo) {
       observe({
         shinyjs::toggle("attributeOverview")
         shinyjs::toggle("attributeUpdate")
+        
+        updating(TRUE)
       }) %>% 
         bindEvent(input$goToUpdate,ignoreInit = TRUE)
       
       observe({
         shinyjs::toggle("attributeOverview")
         shinyjs::toggle("attributeRegress")
+        
+        updating(TRUE)
       }) %>% 
         bindEvent(input$goToRegression,ignoreInit = TRUE)
+      
+      observe({
+        if(updating()){
+          tpeBanked(
+            playerData() %>% 
+              then(
+                onFulfilled = function(value) {
+                  editableAttributes %>% 
+                    lapply(
+                      X = .,
+                      FUN = function(x){
+                        tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
+                      }
+                    ) %>% 
+                    unlist() %>% 
+                    sum() %>% 
+                    {
+                      value$tpe - .
+                    }
+                },
+                onRejected = function(reason) {
+                  NaN
+                }
+              )
+          )
+        }
+      }) %>% 
+        bindEvent(
+          # Changes in any input slider
+          {
+            editableAttributes %>% 
+              lapply(
+                X = .,
+                FUN = function(x){
+                  input[[x]]
+                }
+              )
+          },
+          ignoreInit = TRUE
+        )
+      
+      ## Fills UI with player data when clicking update
+      observe({
+        promise_all(
+          data1 = playerData(), 
+          data2 = playerData()
+        ) %...>% 
+          with({
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              colnames() %>% 
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = data2[, x],
+                    min = data2[, x]
+                  )
+                }
+              )
+            
+            data1 %>%
+              select(acceleration:throwing) %>%
+              select(
+                where(is.na)
+              ) %>%
+              colnames() %>%
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = 5,
+                    min = 5,
+                    max = 5
+                  )
+                  
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
+                }
+              )
+          })
+      }) %>% 
+        bindEvent(
+          input$goToUpdate,
+          input$resetUpdate,
+          ignoreInit = TRUE
+        )
       
     }
   )

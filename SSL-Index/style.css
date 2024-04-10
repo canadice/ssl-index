@@ -39,6 +39,14 @@
   border-left: 1px solid;
 }
 
+.shiny-split-layout {
+  display: flex; /* Use Flexbox */
+}
+
+.shiny-split-layout > div {
+  display: flex; /* Nested Flexbox */
+  flex-direction: column; /* Stack children vertically */
+}
 
 .attribute,
 .attributeCost {
@@ -46,11 +54,19 @@
   border: 1px solid grey;
   border-radius: 5px;
   padding: 4px;
+  flex: 1; /* Distribute remaining space evenly */
+  display: flex; /* Use Flexbox */
+  align-items: center; /* Align items vertically */
+}
+
+.attributeCost {
+  justify-content: center; /* Center content horizontally */
 }
 
 .attributeInput input {
   border-radius: 5px;
   border: 1px solid black;
+  flex: 1; /* Take up all available space */
 }
 
 /* Hover information for text */
