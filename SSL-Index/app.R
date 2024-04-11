@@ -88,8 +88,12 @@ plan(multisession)
 ##                      SSL Logo and Theme                      ##
 ##################################################################
 
-sslBlueD <- "#070B51"
-sslBlueL <- "#141204"
+# sslBlueD <- "#070B51"
+# sslBlueL <- "#141204"
+# sslGold <- "#BD9523"
+
+sslBlueL <- "#324f7e"
+sslBlueD <- "#4b8dad"
 sslGold <- "#BD9523"
 
 customTheme <- 
@@ -118,8 +122,8 @@ customTheme <-
     ),
     adminlte_global(
       content_bg = "#FFF",
-      box_bg = "#D8DEE9", 
-      info_box_bg = "#D8DEE9"
+      box_bg = "#e4eef3", 
+      info_box_bg = "#e4eef3"
     )
   )
   
@@ -156,14 +160,14 @@ ui <- function(request){
     ##----------------------------------------------------------------
     
     dashboardHeader(
-      title = "SSL Index",
+      title = "TESTING GROUND",
       tags$li(
         tags$head(
           tags$link(
             rel = "icon", 
             type = "image/png", 
             href = "favicon.png"),
-          tags$title("SSL Index")
+          tags$title("TESTING GROUND")
         ),
         class = "dropdown",
         tags$head(
