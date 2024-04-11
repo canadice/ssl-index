@@ -399,6 +399,7 @@ playerPageServer <- function(id, userinfo) {
       
       #### OBSERVERS ####
       
+      # Opens updating
       observe({
         shinyjs::toggle("attributeOverview")
         shinyjs::toggle("attributeUpdate")
@@ -407,6 +408,7 @@ playerPageServer <- function(id, userinfo) {
       }) %>% 
         bindEvent(input$goToUpdate,ignoreInit = TRUE)
       
+      # Opens regression
       observe({
         shinyjs::toggle("attributeOverview")
         shinyjs::toggle("attributeRegress")
@@ -415,6 +417,7 @@ playerPageServer <- function(id, userinfo) {
       }) %>% 
         bindEvent(input$goToRegression,ignoreInit = TRUE)
       
+      # Updates the banked tpe when changing attributes
       observe({
         if(updating()){
           tpeBanked(
@@ -455,7 +458,10 @@ playerPageServer <- function(id, userinfo) {
           ignoreInit = TRUE
         )
       
-      ## Fills UI with player data when clicking update
+      # Set attribute UI to current build and 
+      # fixes minimum value when updating
+      # fixes maximum value when regressing
+      # only resets value when resetting
       observe({
         promise_all(
           data1 = playerData(), 
@@ -501,8 +507,151 @@ playerPageServer <- function(id, userinfo) {
       }) %>% 
         bindEvent(
           input$goToUpdate,
+          ignoreInit = TRUE
+        )
+      
+      observe({
+        promise_all(
+          data1 = playerData(), 
+          data2 = playerData()
+        ) %...>% 
+          with({
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              colnames() %>% 
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = data2[, x],
+                    max = data2[, x]
+                  )
+                }
+              )
+            
+            data1 %>%
+              select(acceleration:throwing) %>%
+              select(
+                where(is.na)
+              ) %>%
+              colnames() %>%
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = 5,
+                    min = 5,
+                    max = 5
+                  )
+                  
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
+                }
+              )
+          })
+      }) %>% 
+        bindEvent(
+          input$goToRegression,
+          ignoreInit = TRUE
+        )
+      
+      observe({
+        promise_all(
+          data1 = playerData(), 
+          data2 = playerData()
+        ) %...>% 
+          with({
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              colnames() %>% 
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = data2[, x]
+                  )
+                }
+              )
+            
+            data1 %>%
+              select(acceleration:throwing) %>%
+              select(
+                where(is.na)
+              ) %>%
+              colnames() %>%
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = 5,
+                    min = 5,
+                    max = 5
+                  )
+                  
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
+                }
+              )
+          })
+      }) %>% 
+        bindEvent(
           input$resetUpdate,
           ignoreInit = TRUE
+        )
+      
+      observe({
+        promise_all(
+          current = playerData(),
+          bank = tpeBanked()
+        ) %...>%
+          with({
+            if(bank < 0){
+              modalOverdraft()
+            } else {
+              update <- 
+                tibble(
+                  attribute = 
+                    current %>% 
+                    select(acceleration:throwing) %>% 
+                    select(!where(is.na)) %>% 
+                    colnames() %>%
+                    str_to_title(),
+                  old = current %>% 
+                    select(acceleration:throwing) %>% 
+                    select(!where(is.na)) %>% 
+                    t(),
+                  new = 
+                    attribute %>%
+                    str_remove_all(pattern = " ") %>% 
+                    sapply(
+                      X = .,
+                      FUN = function(x) input[[x]],
+                      simplify = TRUE
+                    ) %>% 
+                    unlist()
+                ) %>% 
+                filter(old != new)
+              
+              if(nrow(update) > 0){
+                if(any((update$old - update$new) > 0)){
+                  modalReduction(update)
+                } else {
+                  modalVerify(update, session = session)
+                }
+              } else {
+                modalNothing()
+              }
+            }
+          })
+      }) %>% 
+        bindEvent(
+          input$verifyUpdate
         )
       
     }
