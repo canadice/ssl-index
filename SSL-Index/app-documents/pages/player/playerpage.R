@@ -175,10 +175,17 @@ playerPageServer <- function(id, userinfo) {
         str_remove_all(pattern = " ") 
       
       #### REACTIVES ####
+      updating <- 
+        reactiveVal({FALSE})
+      
+      updated <- 
+        reactiveVal({0})
+      
       playerData <- 
         reactive({
           getPlayerDataAsync(uid = userinfo$uid)
-        })
+        }) %>% 
+        bindEvent(updated())
       
       tpeTotal <- 
         reactiveVal({
@@ -225,9 +232,6 @@ playerPageServer <- function(id, userinfo) {
               }
             )
         }) 
-      
-      updating <- 
-        reactiveVal({FALSE})
       
       historyTPE <- 
         reactive({
@@ -405,8 +409,10 @@ playerPageServer <- function(id, userinfo) {
         shinyjs::toggle("attributeUpdate")
         
         updating(TRUE)
+        
+        # print("Go to Updating")
       }) %>% 
-        bindEvent(input$goToUpdate,ignoreInit = TRUE)
+        bindEvent(input$goToUpdate,ignoreInit = TRUE, once = TRUE)
       
       # Opens regression
       observe({
@@ -614,29 +620,7 @@ playerPageServer <- function(id, userinfo) {
             if(bank < 0){
               modalOverdraft()
             } else {
-              update <- 
-                tibble(
-                  attribute = 
-                    current %>% 
-                    select(acceleration:throwing) %>% 
-                    select(!where(is.na)) %>% 
-                    colnames() %>%
-                    str_to_title(),
-                  old = current %>% 
-                    select(acceleration:throwing) %>% 
-                    select(!where(is.na)) %>% 
-                    t(),
-                  new = 
-                    attribute %>%
-                    str_remove_all(pattern = " ") %>% 
-                    sapply(
-                      X = .,
-                      FUN = function(x) input[[x]],
-                      simplify = TRUE
-                    ) %>% 
-                    unlist()
-                ) %>% 
-                filter(old != new)
+              update <- updateSummary(current = current, inputs = input)
               
               if(nrow(update) > 0){
                 if(any((update$old - update$new) > 0)){
@@ -651,7 +635,38 @@ playerPageServer <- function(id, userinfo) {
           })
       }) %>% 
         bindEvent(
-          input$verifyUpdate
+          input$verifyUpdate,
+          ignoreInit = TRUE
+        )
+      
+      observe({
+        promise_all(
+          current = playerData(),
+          bank = tpeBanked()
+        ) %...>%
+          with({
+            removeModal()
+            
+            update <- updateSummary(current = current, inputs = input)
+            
+            updateLog(uid = userinfo$uid, pid = current$pid, updates = update)
+            
+            updateBuild(pid = current$pid, updates = update)
+            
+            updated(updated() + 1)
+            
+            updating(FALSE)
+            
+            shinyjs::toggle("attributeOverview")
+            shinyjs::toggle("attributeUpdate")
+            
+            # print("Go back to overview")
+          })
+      }) %>% 
+        bindEvent(
+          input$confirmUpdate,
+          ignoreInit = TRUE,
+          once = TRUE
         )
       
     }

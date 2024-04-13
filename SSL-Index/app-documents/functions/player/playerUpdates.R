@@ -49,5 +49,32 @@ getUpdateHistory <- function(pid){
   )
 }
 
+## Summarizes updated attributes in a tibble
+updateSummary <- function(current, inputs){
+  tibble(
+    attribute = 
+      current %>% 
+      select(acceleration:throwing) %>% 
+      select(!where(is.na)) %>% 
+      colnames() %>%
+      str_to_title(),
+    old = current %>% 
+      select(acceleration:throwing) %>% 
+      select(!where(is.na)) %>% 
+      t() %>% 
+      c(),
+    new = 
+      attribute %>%
+      str_remove_all(pattern = " ") %>% 
+      sapply(
+        X = .,
+        FUN = function(x) inputs[[x]],
+        simplify = TRUE
+      ) %>% 
+      unlist()
+  ) %>% 
+    filter(old != new) 
+}
+
 # updateCheck <- function(tpe, updates)
 
