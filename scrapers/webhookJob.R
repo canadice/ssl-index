@@ -933,6 +933,8 @@ if(length(currentFileThread) > 0){
       posts %>%
       html_elements(".post_date") %>%
       html_text2() %>%
+      str_split(pattern = " - ", simplify = TRUE) %>% 
+      .[,1] %>% 
       lubridate::ymd_hm(tz = "America/Los_Angeles") %>% 
       lubridate::with_tz(tzone = "Europe/Stockholm")
     
