@@ -29,6 +29,13 @@ playerPageUI <- function(id) {
               width = 3
             )
           )
+        ),
+        fluidRow(
+          column(
+            width = 12, align = "center", style = "display: flex; justify-content: center;",
+            uiOutput(ns("buttonAC")),
+            uiOutput(ns("buttonTrainingCamp"))
+          )
         )
       ),
       box(
@@ -158,7 +165,9 @@ playerPageUI <- function(id) {
             reactableOutput(ns("historyTPE"))
           )
         )
-      )
+      ),
+      br(),
+      br()
     )
   )
 }
@@ -398,6 +407,44 @@ playerPageServer <- function(id, userinfo) {
                 )
               }
             }
+          )
+      })
+      
+      output$buttonAC <- renderUI({
+        playerData() %>% 
+          then(
+            onFulfilled = function(value){
+              if(completedActivityCheck(value$pid)){
+                actionButton(
+                  session$ns("activityCheck"),
+                  "Activity Check",
+                  disabled = ""
+                )  
+              } else {
+                actionButton(
+                  session$ns("activityCheck"),
+                  "Activity Check"
+                )
+              }
+            },
+            onRejected = NULL
+          )
+      })
+      
+      output$buttonTrainingCamp <- renderUI({
+        playerData() %>% 
+          then(
+            onFulfilled = function(value){
+              if(completedTrainingCamp(value$pid)){
+                # Show no button if TC is completed
+              } else {
+                actionButton(
+                  session$ns("trainingCamp"),
+                  "Seasonal Training Camp"
+                )
+              }
+            },
+            onRejected = NULL
           )
       })
       
@@ -665,6 +712,76 @@ playerPageServer <- function(id, userinfo) {
       }) %>% 
         bindEvent(
           input$confirmUpdate,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
+      observe({
+        tpeSummary <- 
+          tibble(
+            source = "Activity Check",
+            tpe = 6
+          )
+        
+        playerData() %>% 
+          then(
+            onFulfilled = function(value){
+              tpeLog(uid = userinfo$uid, pid = value$pid, tpe = tpeSummary)
+              
+              shinyjs::disable(session$ns("activityCheck"))
+              
+              updateTPE(pid = value$pid, tpe = tpeSummary)
+              
+              modalAC()
+              
+              updated(updated() + 1)
+            },
+            onRejected = NULL
+          )
+      }) %>% 
+        bindEvent(
+          input$activityCheck,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
+      observe({
+        playerData() %>% 
+          then(
+            onFulfilled = function(value){
+              class <- 
+                value$class %>% 
+                str_extract_all(pattern = "[0-9]+") %>% 
+                as.numeric()
+              
+              age <- currentSeason$season - class
+              
+              tpeSummary <- 
+                tibble(
+                  source = paste("S", currentSeason$season, " Training Camp", sep = ""),
+                  tpe = case_when(
+                    age <= 2 ~ 40,
+                    age <= 5 ~ 30,
+                    age <= 8 ~ 20,
+                    TRUE ~ 10
+                  )
+                )
+              
+              tpeLog(uid = userinfo$uid, pid = value$pid, tpe = tpeSummary)
+              
+              shinyjs::disable(session$ns("trainingCamp"))
+              
+              updateTPE(pid = value$pid, tpe = tpeSummary)
+              
+              modalTC(tpe = tpeSummary)
+              
+              updated(updated() + 1)
+            },
+            onRejected = NULL
+          )
+      }) %>% 
+        bindEvent(
+          input$trainingCamp,
           ignoreInit = TRUE,
           once = TRUE
         )

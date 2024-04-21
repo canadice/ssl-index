@@ -85,3 +85,35 @@ modalNothing <- function(){
     )
   )
 }
+
+modalAC <- function(){
+  showModal(
+    modalDialog(
+      span(
+        "You have successfully claimed your Activity Check for the week"
+      ),
+      title="Activity Check Claimed!",
+      footer = 
+        tagList(
+          modalButton("Ok")
+        ),
+      easyClose = TRUE
+    )
+  )
+}
+
+modalTC <- function(tpe){
+  showModal(
+    modalDialog(
+      span(
+        paste("You have successfully claimed your Training Camp for the season.", tpe$tpe, "TPE has been added to your player.")
+      ),
+      title="Training Camp Claimed!",
+      footer = 
+        tagList(
+          modalButton("Ok")
+        ),
+      easyClose = TRUE
+    )
+  )
+}
