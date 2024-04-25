@@ -915,20 +915,20 @@ currentFileThread <-
 
 if(length(currentFileThread) > 0){
   posts <-
-    read_html(
-      currentFileThread %>% 
-        html_elements("a[title]") %>%
-        html_attr("href") %>%
-        paste(
-          "https://forum.simulationsoccer.com/",
-          .,
-          "&page=2",
-          sep = ""
-        )
-      ) %>%
+    currentFileThread %>% 
+      html_elements("a[title]") %>%
+      html_attr("href") %>%
+      paste(
+        "https://forum.simulationsoccer.com/",
+        .,
+        "&page=2",
+        sep = ""
+      ) %>% 
+    read_html() %>% 
     html_elements(".post")
+    
   
-  if(posts %>% length() > 1){
+  if(posts %>% length() > 0){
     posted <-
       posts %>%
       html_elements(".post_date") %>%
