@@ -36,7 +36,8 @@ playerPageUI <- function(id) {
             uiOutput(ns("buttonAC")),
             uiOutput(ns("buttonTrainingCamp"))
           )
-        )
+        ) %>% 
+          div(id = ns("tpeButtons"))
       ),
       box(
         title = "Player Overview", collapsible = TRUE, width = NULL,
@@ -117,6 +118,10 @@ playerPageUI <- function(id) {
             align = "center", 
             style = "display: flex; justify-content: center;",
             actionButton(
+              inputId = ns("backUpdate"),
+              "Go back"
+            ),
+            actionButton(
               inputId = ns("resetUpdate"),
               "Reset"
             ),
@@ -136,6 +141,10 @@ playerPageUI <- function(id) {
             width = 12,
             align = "center", 
             style = "display: flex; justify-content: center;",
+            actionButton(
+              inputId = ns("backRegression"),
+              "Go back"
+            ),
             actionButton(
               inputId = ns("resetRegression"),
               "Reset"
@@ -454,17 +463,19 @@ playerPageServer <- function(id, userinfo) {
       observe({
         shinyjs::toggle("attributeOverview")
         shinyjs::toggle("attributeUpdate")
+        shinyjs::toggle("tpeButtons")
         
         updating(TRUE)
         
         # print("Go to Updating")
       }) %>% 
-        bindEvent(input$goToUpdate,ignoreInit = TRUE, once = TRUE)
+        bindEvent(input$goToUpdate,ignoreInit = TRUE)
       
       # Opens regression
       observe({
         shinyjs::toggle("attributeOverview")
         shinyjs::toggle("attributeRegress")
+        shinyjs::toggle("tpeButtons")
         
         updating(TRUE)
       }) %>% 
@@ -516,6 +527,8 @@ playerPageServer <- function(id, userinfo) {
       # fixes maximum value when regressing
       # only resets value when resetting
       observe({
+        # print(paste("Going to update page", input$goToUpdate))
+        
         promise_all(
           data1 = playerData(), 
           data2 = playerData()
@@ -611,6 +624,7 @@ playerPageServer <- function(id, userinfo) {
           ignoreInit = TRUE
         )
       
+      # Resets the player build 
       observe({
         promise_all(
           data1 = playerData(), 
@@ -654,7 +668,7 @@ playerPageServer <- function(id, userinfo) {
           })
       }) %>% 
         bindEvent(
-          input$resetUpdate,
+          combineTriggers(input$resetUpdate, input$resetRegression),
           ignoreInit = TRUE
         )
       
@@ -706,6 +720,7 @@ playerPageServer <- function(id, userinfo) {
             
             shinyjs::toggle("attributeOverview")
             shinyjs::toggle("attributeUpdate")
+            shinyjs::toggle("tpeButtons")
             
             # print("Go back to overview")
           })
@@ -714,6 +729,21 @@ playerPageServer <- function(id, userinfo) {
           input$confirmUpdate,
           ignoreInit = TRUE,
           once = TRUE
+        )
+      
+      # Adds a go back button for both updating and regression
+      observe({
+        # print(paste("Going back to overview", combineTriggers(input$backUpdate, input$backRegression)))
+        
+        shinyjs::toggle("attributeOverview")
+        shinyjs::toggle("attributeUpdate")
+        shinyjs::toggle("tpeButtons")
+        
+        updating(FALSE)
+      }) %>% 
+        bindEvent(
+          combineTriggers(input$backUpdate, input$backRegression),
+          ignoreInit = TRUE
         )
       
       observe({

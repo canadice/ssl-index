@@ -207,7 +207,11 @@ ui <- function(request){
 }
 
 ## Adds shinymanager authentication to the app
-ui <- secure_app(ui)
+ui <- 
+  secure_app(
+    ui,
+    fab_position = "bottom-left"
+  )
 
 server <- function(input, output, session) {
   
