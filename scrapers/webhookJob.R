@@ -991,7 +991,11 @@ if(length(currentFileThread) > 0){
         )
       
       print("Sent new sim file.")
+    } else {
+      print("Something was missed!")
     }
+  } else {
+    print("No new sim file!")
   }
   
 } else {
