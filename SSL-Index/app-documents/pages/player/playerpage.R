@@ -196,17 +196,20 @@ playerPageServer <- function(id, userinfo) {
       updating <- 
         reactiveVal({FALSE})
       
-      updated <- 
-        reactiveVal({0})
+      updated <- reactiveVal({0})
       
       playerData <- 
         reactive({
+          # print("Getting data through first")
+          
           getPlayerDataAsync(uid = userinfo$uid)
         }) %>% 
-        bindEvent(updated())
+        bindEvent(
+          updated()
+        )
       
       tpeTotal <- 
-        reactiveVal({
+        reactive({
           playerData() %>% 
             then(
               onFulfilled = function(value) {
@@ -370,13 +373,42 @@ playerPageServer <- function(id, userinfo) {
         )
       
       output$historyTPE <- renderReactable({
-        historyTPE() %...>%
-          reactable()
+        historyTPE() %>%
+          then(
+            onFulfilled = function(value){
+              value %>% 
+              mutate(
+                time = as_datetime(time)
+              ) %>% 
+              reactable(
+                columns = 
+                  list(
+                    time = colDef(format = colFormat(datetime = TRUE))
+                  )
+              )
+            },
+            onRejected = NULL
+          )
+          
       })
         
       output$historyUpdates <- renderReactable({
-        historyUpdates() %...>%
-          reactable()
+        historyUpdates() %>% 
+          then(
+            onFulfilled = function(value){
+              value %>% 
+                mutate(
+                  time = as_datetime(time)
+                ) %>% 
+                reactable(
+                  columns = 
+                    list(
+                      time = colDef(format = colFormat(datetime = TRUE))
+                    )
+                )
+            },
+            onRejected = NULL
+          )
       })
       
       output$buttonRegression <- renderUI({
@@ -459,28 +491,6 @@ playerPageServer <- function(id, userinfo) {
       
       #### OBSERVERS ####
       
-      # Opens updating
-      observe({
-        shinyjs::toggle("attributeOverview")
-        shinyjs::toggle("attributeUpdate")
-        shinyjs::toggle("tpeButtons")
-        
-        updating(TRUE)
-        
-        # print("Go to Updating")
-      }) %>% 
-        bindEvent(input$goToUpdate,ignoreInit = TRUE)
-      
-      # Opens regression
-      observe({
-        shinyjs::toggle("attributeOverview")
-        shinyjs::toggle("attributeRegress")
-        shinyjs::toggle("tpeButtons")
-        
-        updating(TRUE)
-      }) %>% 
-        bindEvent(input$goToRegression,ignoreInit = TRUE)
-      
       # Updates the banked tpe when changing attributes
       observe({
         if(updating()){
@@ -527,7 +537,11 @@ playerPageServer <- function(id, userinfo) {
       # fixes maximum value when regressing
       # only resets value when resetting
       observe({
-        # print(paste("Going to update page", input$goToUpdate))
+        shinyjs::toggle("attributeOverview")
+        shinyjs::toggle("attributeUpdate")
+        shinyjs::toggle("tpeButtons")
+        
+        updating(TRUE)
         
         promise_all(
           data1 = playerData(), 
@@ -577,6 +591,12 @@ playerPageServer <- function(id, userinfo) {
         )
       
       observe({
+        shinyjs::toggle("attributeOverview")
+        shinyjs::toggle("attributeRegress")
+        shinyjs::toggle("tpeButtons")
+        
+        updating(TRUE)
+        
         promise_all(
           data1 = playerData(), 
           data2 = playerData()
@@ -722,7 +742,7 @@ playerPageServer <- function(id, userinfo) {
             shinyjs::toggle("attributeUpdate")
             shinyjs::toggle("tpeButtons")
             
-            # print("Go back to overview")
+            # print("Go back to overview from confirmation")
           })
       }) %>% 
         bindEvent(
@@ -747,15 +767,15 @@ playerPageServer <- function(id, userinfo) {
         )
       
       observe({
-        tpeSummary <- 
-          tibble(
-            source = "Activity Check",
-            tpe = 6
-          )
-        
         playerData() %>% 
           then(
             onFulfilled = function(value){
+              tpeSummary <- 
+                tibble(
+                  source = "Activity Check",
+                  tpe = 6
+                )
+              
               tpeLog(uid = userinfo$uid, pid = value$pid, tpe = tpeSummary)
               
               shinyjs::disable(session$ns("activityCheck"))
@@ -765,6 +785,7 @@ playerPageServer <- function(id, userinfo) {
               modalAC()
               
               updated(updated() + 1)
+              
             },
             onRejected = NULL
           )
@@ -806,6 +827,7 @@ playerPageServer <- function(id, userinfo) {
               modalTC(tpe = tpeSummary)
               
               updated(updated() + 1)
+              
             },
             onRejected = NULL
           )

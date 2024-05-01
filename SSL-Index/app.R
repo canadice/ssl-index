@@ -243,122 +243,6 @@ server <- function(input, output, session) {
       #   teamIndexUI(id = "teamindex")
       )
       
-      
-      # tabItem(
-      #   "welcome",
-      #   welcomeUI(id = "welcome"),
-      #   class = "active"
-      # ),
-      # tabItem(
-      #   "schedule",
-      #   titlePanel(
-      #     h1("Schedule", align = "center")
-      #   ),
-      #   scheduleUI(id = "schedule")
-      # ),
-      # tabItem(
-      #   "standings",
-      #   titlePanel(
-      #     h1("Standings", align = "center")
-      #   ),
-      #   standingsUI(id = "standings")
-      # ),
-      # tabItem(
-      #   "standingsCup",
-      #   titlePanel(
-      #     h1("Simulation Soccer Cup", align = "center")
-      #   ),
-      #   standingsCupUI(id = "standingsCup")
-      # ),
-      # tabItem(
-      #   "teamOverview",
-      #   titlePanel(
-      #     h1("Team Overview", align = "center")
-      #   ),
-      #   teamOverviewUI(id = "teamOverview")
-      # ),
-      # tabItem(
-      #   "playerStats",
-      #   titlePanel(
-      #     h1("Individual Stats", align = "center")
-      #   ),
-      #   playerStatsUI(id = "playerStats")
-      # ),
-      # tabItem(
-      #   "playerComparison",
-      #   titlePanel(
-      #     h1("Player Comparison", align = "center")
-      #   ),
-      #   playerComparisonUI(id = "playerComparison")
-      # ),
-      # tabItem(
-      #   "playerPages",
-      #   titlePanel(
-      #     h1("Player Pages", align = "center")
-      #   ),
-      #   playerDatabaseUI(id = "playerPages")
-      # ),
-      # tabItem(
-      #   "trackerPosition",
-      #   titlePanel(
-      #     h1("Position Tracker", align = "center")
-      #   ),
-      #   trackerPositionUI(id = "trackerPosition")
-      # ),
-      # tabItem(
-      #   "playerRecords",
-      #   titlePanel(
-      #     h1("Individual Records", align = "center")
-      #   ),
-      #   playerRecordsUI(id = "playerRecords")
-      # ),
-      # tabItem(
-      #   "trackerTPE",
-      #   titlePanel(
-      #     h1("Draft Class Tracker", align = "center")
-      #   ),
-      #   trackerTPEUI(id = "trackerTPE")
-      # ),
-      # tabItem(
-      #   "regression",
-      #   regressionUI(id = "regression")
-      # ),
-      # tabItem(
-      #   "advancedStats",
-      #   advancedStatsUI(id = "advancedStats")
-      # ),
-      # tabItem(
-      #   "academyStats",
-      #   academyStatsUI(id = "academyStats")
-      # ),
-      # tabItem(
-      #   "fileUpdate",
-      #   titlePanel(
-      #     h1("File Update Tool", align = "center")
-      #   ),
-      #   fileUpdateToolUI(id = "fileUpdate")
-      # ),
-      # tabItem(
-      #   "fileCheck",
-      #   titlePanel(
-      #     h1("File Check Tool", align = "center")
-      #   ),
-      #   fileCheckUI(id = "fileCheck")
-      # ),
-      # tabItem(
-      #   "playerBuilder",
-      #   titlePanel(
-      #     h1("Player Builder", align = "center")
-      #   ),
-      #   hr(),
-      #   p(
-      #     paste("The Player Builder allows you to build your player",
-      #       "using your earned TPE as a bank. The resulting build",
-      #       "can then be exported to the Forum using the Export button.")
-      #   ),
-      #   hr(),
-      #   playerBuilderUI(id = "playerBuilder")
-      # )
     )
   })
   
@@ -385,87 +269,21 @@ server <- function(input, output, session) {
         #   tabName = "teamindex"
         )
       ),
-      # menuItem(
-      #   "Welcome",
-      #   tabName = "welcome",
-      #   selected = TRUE
-      # ),
-      # menuItem(
-      #   "SSL Index",
-      #   menuSubItem(
-      #     "Schedule",
-      #     tabName = "schedule"
-      #   ),
-      #   menuSubItem(
-      #     "Standings",
-      #     tabName = "standings"
-      #   ),
-      #   menuSubItem(
-      #     "Cup",
-      #     tabName = "standingsCup"
-      #   ),
-      #   menuSubItem(
-      #     "Individual Statistics",
-      #     tabName = "playerStats"
-      #   ),
-      #   menuSubItem(
-      #     "Advanced Statistics",
-      #     tabName = "advancedStats"
-      #   ),
-      #   menuSubItem(
-      #     "Player Records",
-      #     tabName = "playerRecords"
-      #   )
-      # ),
-      # menuItem(
-      #   "SSL Academy",
-      #   menuSubItem(
-      #     "Academy Statistics",
-      #     tabName = "academyStats"
-      #   )
-      # ),
-      # menuItem(
-      #   "Teams",
-      #   tabName = "teamOverview"
-      # ),
-      # menuItem(
-      #   "Player Pages",
-      #   tabName = "playerPages"
-      # ),
-      # menuItem(
-      #   "Draft Class Tracker",
-      #   tabName = "trackerTPE"
-      # ),
-      # menuItem(
-      #   "Player Tools",
-      #   # menuSubItem(
-      #   #   "Build a new player",
-      #   #   tabName = "playerBuilder"
-      #   # ),
-      #   menuSubItem(
-      #     "Player Comparisons",
-      #     tabName = "playerComparison"  
-      #   ),
-      #   menuSubItem(
-      #     "Position Tracker",
-      #     tabName = "trackerPosition"
-      #   ),
-      #   menuSubItem(
-      #     "Regression",
-      #     tabName = "regression"
-      #   )
-      # ),
-      # menuItem(
-      #   "Fileworker Tools",
-      #   menuSubItem(
-      #     "Export Builds",
-      #     tabName = "fileUpdate"
-      #   ),
-      #   menuSubItem(
-      #     "Check FM Builds",
-      #     tabName = "fileCheck"
-      #   )
-      # ),
+      {
+        if(8 %in% authOutput()$usergroup){
+          menuItem(
+            "Manager",
+            menuSubItem(
+              "Your Team",
+              tabName = "teamView"
+              # ),
+              # menuSubItem(
+              #   "Team Index",
+              #   tabName = "teamindex"
+            )
+          )
+        }
+      },
       menuItem(
         "SSL Forum",
         icon = icon("external-link-alt"),
@@ -477,7 +295,7 @@ server <- function(input, output, session) {
         href = "https://github.com/canadice/ssl-index"
       ),
       menuItem(
-        "User Profile",
+        "Your User",
         href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
       )
     )#,
@@ -513,11 +331,18 @@ server <- function(input, output, session) {
   observe({
     req(authOutput()$uid)
     
+    # print("Authenticating")
+    # print(authOutput())
+    # 
     ## Loads the different server modules
     playerPageServer("playerpage", userinfo = authOutput())
     leagueIndexServer("leagueindex")
     # teamIndexServer("teamindex")
-  })
+  }) %>% 
+    bindEvent(
+      authOutput(),
+      ignoreInit = FALSE
+    )
   
 }
 # Run the application 

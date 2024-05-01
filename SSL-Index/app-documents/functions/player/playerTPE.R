@@ -45,7 +45,7 @@ tpeLog <- function(uid, pid, tpe){
         paste(
           uid,
           pid,
-          paste0("'", lubridate::now() %>% force_tz("US/Pacific")  %>% as.numeric(),"'"),
+          paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(),"'"),
           paste0("'", tpe$source, "'"),
           tpe$tpe,
           sep = ","

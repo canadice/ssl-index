@@ -5,7 +5,7 @@ customCheckCredentials <- function(){
       mybbQuery(
         query = 
           paste(
-          "SELECT uid, username, password, salt, usergroup
+          "SELECT uid, username, password, salt, usergroup, additionalgroups
           FROM mybb_users
           WHERE username = '", user, "'",
           sep = ""
@@ -40,7 +40,11 @@ customCheckCredentials <- function(){
           list(
             uid = res$uid, 
             username = res$username, 
-            usergroup = res$usergroup
+            usergroup = 
+              paste(res$usergroup, res$additionalgroups, sep = ",") %>% 
+              str_split(pattern = ",", simplify = TRUE) %>%
+              as.numeric() %>% 
+              as.list()
           )
       ) %>% 
         return()
