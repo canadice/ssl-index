@@ -29,7 +29,7 @@ getPlayerDataAsync <- function(uid = NULL, pid = NULL){
         paste(
           "SELECT *
         FROM playerdata
-        WHERE uid =", uid
+        WHERE uid =", uid, " AND status_p = 1"
         )
         # ORDER BY pid DESC
         
@@ -40,14 +40,25 @@ getPlayerDataAsync <- function(uid = NULL, pid = NULL){
         paste(
           "SELECT *
         FROM playerdata
-        WHERE pid = ", pid
+        WHERE pid = ", pid, " AND status_p = 1"
         )
       )
     }
   })
 }
 
-
+hasActivePlayer <- function(uid){
+  res <- 
+    portalQuery(
+      paste(
+        "SELECT *
+          FROM playerdata
+          WHERE uid =", uid, " AND status_p = 1"
+      )
+    ) 
+  
+  nrow(res) > 0
+}
 
 
 

@@ -231,12 +231,31 @@ server <- function(input, output, session) {
     tabItems(
       tabItem(
         "playerpage",
-        playerPageUI(id = "playerpage"),
-        class = "active"
+        playerPageUI(id = "playerpage")
       ),
       tabItem(
         "leagueindex",
         leagueIndexUI(id = "leagueindex")
+      ),
+      tabItem(
+        "createplayer",
+        createPlayerUI(id = "createplayer")
+      ),
+      tabItem(
+        "playerapprove",
+        playerApproveUI(id = "playerapprove")
+      ),
+      tabItem(
+        "teamView",
+        managerTeamUI(id = "managerteam")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
       # ),
       # tabItem(
       #   "teamindex",
@@ -253,11 +272,19 @@ server <- function(input, output, session) {
     
     sidebarMenu(
       id = "tabs",
-      menuItem(
-        "Your Player",
-        tabName = "playerpage",
-        selected = TRUE
-      ),
+      {
+        if(hasActivePlayer(authOutput()$uid)){
+          menuItem(
+            "Your Player",
+            tabName = "playerpage"
+          )
+        } else {
+          menuItem(
+            "Create",
+            tabName = "createplayer"
+          )
+        }
+      },
       menuItem(
         "Index",
         menuSubItem(
@@ -270,12 +297,29 @@ server <- function(input, output, session) {
         )
       ),
       {
+        # Manager (8)
         if(8 %in% authOutput()$usergroup){
           menuItem(
-            "Manager",
+            "Manager Tools",
             menuSubItem(
               "Your Team",
               tabName = "teamView"
+              # ),
+              # menuSubItem(
+              #   "Team Index",
+              #   tabName = "teamindex"
+            )
+          )
+        }
+      },
+      {
+        # BoD (3), Commissioner (4) or Intern (15)
+        if(any(c(3,4, 15) %in% authOutput()$usergroup)){
+          menuItem(
+            "BoD Tools",
+            menuSubItem(
+              "Player Approvals",
+              tabName = "playerapprove"
               # ),
               # menuSubItem(
               #   "Team Index",
@@ -337,6 +381,9 @@ server <- function(input, output, session) {
     ## Loads the different server modules
     playerPageServer("playerpage", userinfo = authOutput())
     leagueIndexServer("leagueindex")
+    createPlayerServer("createplayer")
+    playerApproveServer("playerapprove")
+    managerTeamServer("managerteam")
     # teamIndexServer("teamindex")
   }) %>% 
     bindEvent(
