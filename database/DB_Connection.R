@@ -174,6 +174,52 @@ tbl(portalcon, "playerdata") %>%
     overwrite = TRUE
   )
 
+## Regression run
+tbl(portalcon, "playerdata") %>%
+  collect() %>% 
+  mutate(
+    age = 
+      (currentSeason + 1 - 
+         (str_extract(class, pattern = "[0-9]+") %>% as.numeric())) %>% 
+      unlist()
+  ) %>% 
+  filter(
+    age > 8,
+    status_p == 1
+  ) %>% 
+  mutate(
+    perc = 
+      case_when(
+        # Regression scale based on age
+        age < 11 ~ 0.10,
+        age < 12 ~ 0.15,
+        age < 13 ~ 0.20,
+        age < 14 ~ 0.25,
+        age < 15 ~ 0.30,
+        TRUE ~ 0.40
+      ),
+    tpe = tpe - ((tpe * perc) %>% ceiling())
+  ) %>% 
+  select(
+    pid,
+    tpe
+  ) %>% 
+  dbWriteTable(
+    conn = portalcon,
+    name = "regression",
+    value = .,
+    row.names = FALSE,
+    overwrite = TRUE
+ )
+  
+dbExecute(portalcon,
+          "update playerdata q
+            inner join regression a
+          on q.pid = a.pid
+          set q.tpe = a.tpe
+          where q.pid = a.pid;")
+
+
 
 #################################################################
 ##              Duty and Role Matrix                           ##

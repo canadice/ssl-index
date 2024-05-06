@@ -130,12 +130,9 @@ playerPageUI <- function(id) {
               "Update"
             )
           )
-        )
-      ) %>% 
-        div(id = ns("attributeUpdate")) %>% 
-        hidden(),
-      box(
-        title = "Regress Player", collapsible = FALSE, width = NULL,
+        ) %>% 
+          div(id = ns("buttonsUpdating")) %>% 
+          hidden(),
         fluidRow(
           column(
             width = 12,
@@ -154,9 +151,11 @@ playerPageUI <- function(id) {
               "Regress"
             )
           )
-        )
+        ) %>% 
+          div(id = ns("buttonsRegression")) %>% 
+          hidden()
       ) %>% 
-        div(id = ns("attributeRegress")) %>% 
+        div(id = ns("attributeUpdate")) %>% 
         hidden(),
       box(
         title = "Updating History", collapsed = TRUE, collapsible = TRUE, width = NULL,
@@ -534,6 +533,7 @@ playerPageServer <- function(id, userinfo) {
         shinyjs::toggle("attributeOverview")
         shinyjs::toggle("attributeUpdate")
         shinyjs::toggle("tpeButtons")
+        shinyjs::show("buttonsUpdating")
         
         updating(TRUE)
         
@@ -586,7 +586,8 @@ playerPageServer <- function(id, userinfo) {
       
       observe({
         shinyjs::toggle("attributeOverview")
-        shinyjs::toggle("attributeRegress")
+        shinyjs::toggle("attributeUpdate")
+        shinyjs::show("buttonsRegression")
         shinyjs::toggle("tpeButtons")
         
         updating(TRUE)
@@ -734,6 +735,7 @@ playerPageServer <- function(id, userinfo) {
             
             shinyjs::toggle("attributeOverview")
             shinyjs::toggle("attributeUpdate")
+            shinyjs::hide("buttonsUpdating")
             shinyjs::toggle("tpeButtons")
             
             # print("Go back to overview from confirmation")
@@ -751,6 +753,8 @@ playerPageServer <- function(id, userinfo) {
         
         shinyjs::toggle("attributeOverview")
         shinyjs::toggle("attributeUpdate")
+        shinyjs::hide("buttonsUpdating")
+        shinyjs::hide("buttonsRegression")
         shinyjs::toggle("tpeButtons")
         
         updating(FALSE)
