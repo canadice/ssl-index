@@ -552,7 +552,8 @@ playerPageServer <- function(id, userinfo) {
                     session = session,
                     inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = data2[, x],
-                    min = data2[, x]
+                    min = data2[, x],
+                    max = 20
                   )
                 }
               )
@@ -607,7 +608,8 @@ playerPageServer <- function(id, userinfo) {
                     session = session,
                     inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = data2[, x],
-                    max = data2[, x]
+                    max = data2[, x],
+                    min = 5
                   )
                 }
               )
@@ -721,6 +723,34 @@ playerPageServer <- function(id, userinfo) {
           bank = tpeBanked()
         ) %...>%
           with({
+            if(bank < 0){
+              showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+            } else {
+              update <- updateSummary(current = current, inputs = input)
+              
+              if(nrow(update) > 0){
+                if(any((update$old - update$new) < 0)){
+                  showToast(type = "error", "You cannot have an attribute value larger than your current build.")
+                } else {
+                  modalVerify(update, session = session)
+                }
+              } else {
+                showToast(type = "warning", "You have not changed your build yet, there is nothing to update.")
+              }
+            }
+          })
+      }) %>% 
+        bindEvent(
+          input$verifyRegression,
+          ignoreInit = TRUE
+        )
+      
+      observe({
+        promise_all(
+          current = playerData(),
+          bank = tpeBanked()
+        ) %...>%
+          with({
             removeModal()
             
             update <- updateSummary(current = current, inputs = input)
@@ -736,6 +766,7 @@ playerPageServer <- function(id, userinfo) {
             shinyjs::toggle("attributeOverview")
             shinyjs::toggle("attributeUpdate")
             shinyjs::hide("buttonsUpdating")
+            shinyjs::hide("buttonsRegression")
             shinyjs::toggle("tpeButtons")
             
             # print("Go back to overview from confirmation")
