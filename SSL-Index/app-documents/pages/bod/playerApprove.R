@@ -5,7 +5,7 @@ playerApproveUI <- function(id) {
   )
 }
 
-playerApproveServer <- function(id) {
+playerApproveServer <- function(id, userinfo) {
   moduleServer(
     id,
     function(input, output, session) {

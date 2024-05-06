@@ -6,8 +6,7 @@ createPlayerUI <- function(id) {
         width = 12,
         h3("How to use this tool?"),
         p("Welcome to the Player Creation Tool! This tool allows you to define all of the aspects of your player using
-            text and selection prompts before combining all of the information ready for submission."),
-        p("The cost for increasing an attribute is shown in the TPE table at the bottom of the page.")
+            text and selection prompts before combining all of the information ready for submission.")
       )
     ),
     ##### Player Details #####
@@ -17,6 +16,7 @@ createPlayerUI <- function(id) {
         box(
           title = "Player Details and Cosmetics",
           solidHeader = TRUE,
+          collapsible = TRUE,
           status = "info",
           width = NULL,
           h4("Player Details", align = "center"),
@@ -42,7 +42,7 @@ createPlayerUI <- function(id) {
             column(
               width = 4,
               selectInput(ns("nationality"), withTooltip("Select your nationality:", "Defines your international team affiliation"), 
-                          choices = c("--- Select your nationality ---", "Other", "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Côte d'Ivoire", "Democratic Republic of the Congo", "Republic of the Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czechia", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "East Timor", "England", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Faroe Islands", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Korea, North", "Korea, South", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Macedonia", "Northern Ireland", "Norway", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Scotland", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Wales", "Yemen", "Zambia", "Zimbabwe"))
+                          choices = sslNations)
             ),
             column(
               width = 4,
@@ -56,7 +56,7 @@ createPlayerUI <- function(id) {
             ),
             column(
               width = 4,
-              selectInput(ns("footedness"), "Select preferred foot:", choices = c("--- Select a side ---", "Left", "Right"))
+              selectInput(ns("footedness"), "Select preferred foot:", choices = c("", "Left", "Right"))
             ),
             column(
               width = 4,
@@ -70,15 +70,54 @@ createPlayerUI <- function(id) {
             ),
             column(
               width = 4,
-              selectInput(ns("hairColor"), "Select hair color:", choices = c("--- Select a color ---", "Light Brown 1", "Light Brown 2", "Light Brown 3", "Dark Brown 1", "Dark Brown 2", "Dark Brown 3", "Blond(e) 1", "Blond(e) 2", "Blond(e) 3", "Black 1", "Black 2", "Black 3", "Red 1", "Red 2", "Red 3"))
+              selectInput(ns("hairColor"), "Select hair color:", choices = c(
+                "",
+                "Light Brown 1" = "LBR1",
+                "Light Brown 2" = "LBR2",
+                "Light Brown 3" = "LBR3",
+                "Dark Brown 1" = "DBR1",
+                "Dark Brown 2" = "DBR2",
+                "Dark Brown 3" = "DBR3",
+                "Blond(e) 1" = "BLN1",
+                "Blond(e) 2" = "BLN2",
+                "Blond(e) 3" = "BLN3",
+                "Black 1" = "BLK1",
+                "Black 2" = "BLK2",
+                "Black 3" = "BLK3",
+                "Red 1" = "RED1",
+                "Red 2" = "RED2",
+                "Red 3" = "RED3"
+              ))
             ),
             column(
               width = 4,
-              selectInput(ns("hairLength"), "Select hair length:", choices = c("--- Select a length ---", "Bald", "Buzzcut", "Short", "Medium", "Long"))
+              selectInput(ns("hairLength"), "Select hair length:", choices = c("", "Bald", "Buzzcut", "Short", "Medium", "Long"))
             ),
             column(
               width = 4,
-              selectInput(ns("skinColor"), "Select skin tone:", choices = c("--- Select a skin tone ---", "Skin Tone 1 (lightest)", "Skin Tone 2", "Skin Tone 3", "Skin Tone 4", "Skin Tone 5", "Skin Tone 6", "Skin Tone 7", "Skin Tone 8", "Skin Tone 9", "Skin Tone 10", "Skin Tone 11", "Skin Tone 12", "Skin Tone 13", "Skin Tone 14", "Skin Tone 15", "Skin Tone 16", "Skin Tone 17", "Skin Tone 18", "Skin Tone 19", "Skin Tone 20 (darkest)"))
+              selectInput(ns("skinColor"), "Select skin tone:", choices = c(
+                "",
+                "Skin Tone 1 (lightest)" = "1",
+                "Skin Tone 2" = "2",
+                "Skin Tone 3" = "3",
+                "Skin Tone 4" = "4",
+                "Skin Tone 5" = "5",
+                "Skin Tone 6" = "6",
+                "Skin Tone 7" = "7",
+                "Skin Tone 8" = "8",
+                "Skin Tone 9" = "9",
+                "Skin Tone 10" = "10",
+                "Skin Tone 11" = "11",
+                "Skin Tone 12" = "12",
+                "Skin Tone 13" = "13",
+                "Skin Tone 14" = "14",
+                "Skin Tone 15" = "15",
+                "Skin Tone 16" = "16",
+                "Skin Tone 17" = "17",
+                "Skin Tone 18" = "18",
+                "Skin Tone 19" = "19",
+                "Skin Tone 20 (darkest)" = "20"
+              ))
             )
           )
         )
@@ -91,6 +130,7 @@ createPlayerUI <- function(id) {
         box(
           title = "General Information",
           status = "info",
+          collapsible = TRUE,
           solidHeader = TRUE,
           width = NULL,
           fluidRow(
@@ -124,10 +164,10 @@ createPlayerUI <- function(id) {
       box(
         title = "Player Attributes",
         solidHeader = TRUE,
-        status = "primary",
+        collapsible = TRUE,
+        status = "info",
         width = NULL,
         fluidRow(
-          
           ##---------------------
           ##  Physical Attributes  
           ##---------------------
@@ -174,75 +214,64 @@ createPlayerUI <- function(id) {
             h4("Technical " %>% strong(), align = "center"),
             uiOutput(ns("technical")),
           )
-        ),
-        hr(),
-        ##--------------------------
-        ##  Player Traits  
-        ##--------------------------
+        )
+      ) %>% column(width = 12)
+    ),
+    ##--------------------------
+    ##  Player Traits  
+    ##--------------------------
+    fluidRow(
+      box(
+        title = "Player Traits and Positions",
+        solidHeader = TRUE,
+        collapsible = TRUE,
+        status = "info",
+        width = NULL,
         fluidRow(
           column(
-            width = 6,
-            p("An outfield player may select one primary position and two secondary positions."),
+            width = 8,
+            offset = 2,
             uiOutput(
               outputId = ns("positionSelector")
             )
-          ),
+          )
+        ),
+        fluidRow(
           column(
-            width = 6,
+            width = 10,
+            offset = 1,
             p("An outfield player may select two traits to start off their career."),
             uiOutput(
               outputId = ns("traitSelector")
             )
           )
-        ) %>% 
-          div(id = ns("outfieldExtras"))
-      ) %>% column(width = 12)
-    ),
-    ##### Submission #####
-    fluidRow(
-      column(
-        width = 12,
-        box(
-          title = "Submission",
-          status = "info",
-          solidHeader = TRUE,
-          width = NULL,
-          h5("Update Scale" %>% strong(), align = "center"),
-          reactableOutput(
-            outputId = ns("costTPE"),
-            width = "80%"
-          ) %>% 
-            div(align = "center"),
-          actionButton(
-            inputId = ns("submitButton"),
-            label = "Submit Player",
-            width = "30%"
-          ) %>% 
-            div(align = "center")
         )
-      )
+      ) %>% 
+        column(width = 12)
+    ) %>% 
+      div(id = ns("outfieldExtras")),
+    fluidRow(
+      actionButton(
+        inputId = ns("submitButton"),
+        label = "Submit Player",
+        width = "30%"
+      ) %>% 
+        div(align = "center")
     )
   )
 }
 
-createPlayerServer <- function(id) {
+createPlayerServer <- function(id, userinfo) {
   moduleServer(
     id,
     function(input, output, session) {
-      editableAttributes <- 
-        attributes$attribute %>% 
-        .[!(. %in% c("Natural Fitness", "Stamina"))] %>% 
-        str_to_title() %>% 
-        str_remove_all(pattern = " ") 
-      
-      
       # Define position options
       positions <- c(
-        "Left Defender", "Central Defender", "Right Defender",
-        "Left Wing Back", "Defensive Midfielder", "Right Wing Back",
-        "Left Midfielder", "Central Midfielder", "Right Midfielder",
-        "Left Attacking Midfielder", "Central Attacking Midfielder", "Right Attacking Midfielder",
-        "Striker"
+        "LD" = "Left Defender", "CD" = "Central Defender", "RD" = "Right Defender",
+        "LWB" = "Left Wing Back", "CDM" = "Defensive Midfielder", "RWB" = "Right Wing Back",
+        "LM" = "Left Midfielder", "CM" = "Central Midfielder", "RM" = "Right Midfielder",
+        "LAM" = "Left Attacking Midfielder", "CAM" = "Central Attacking Midfielder", 
+        "RAM" = "Right Attacking Midfielder", "ST" = "Striker"
       )
       # Define trait options with optgroup
       traits <- list(
@@ -365,12 +394,16 @@ createPlayerServer <- function(id) {
                 ~ attributeInput(ns = session$ns, name = .x, value = NA)
             )
         } else {
-          c(
-            "Aerial Reach", "Command Of Area", "Communication", 
-            "Eccentricity", "Handling", "Kicking", "One On Ones", 
-            "Tendency To Punch", "Reflexes", "Tendency To Rush", "Throwing",
-            "Free Kick", "Penalty Taking", "Technique"
-          ) %>% 
+          attributes %>% 
+            filter(
+              group %in% c("Goalkeeper", "Technical"),
+              keeper == "TRUE"
+            ) %>% 
+            select(
+              attribute
+            ) %>% 
+            unlist() %>% 
+            unname() %>% 
             map(
               .x = .,
               .f = 
@@ -382,19 +415,88 @@ createPlayerServer <- function(id) {
       # Dynamic UI for position selector
       output$positionSelector <- renderUI({
         tagList(
-          selectInput(session$ns("posPrim"), withTooltip("Primary Position:", "Converts to 20 positional experience in the position"), choices = c("", positions)),
-          selectInput(session$ns("posSec1"), withTooltip("Secondary Position:", "Converts to 15 positional experience in the position"), choices = c("", positions)),
-          selectInput(session$ns("posSec2"), withTooltip("Secondary Position:", "Converts to 15 positional experience in the position"), choices = c("", positions))
+          
+          bucket_list(
+            header = "An outfield player may select one primary position and two secondary positions.",
+            group_name = session$ns("pos"),
+            orientation = "horizontal",
+            add_rank_list(
+              text = withTooltip("Select one primary position:", "Converts to 20 positional experience in the position"),
+              labels = NULL,
+              input_id = session$ns("primary")
+            ),
+            add_rank_list(
+              text = withTooltip("Select two secondary positions:", "Converts to 15 positional experience in the position"),
+              labels = NULL,
+              input_id = session$ns("secondary")
+            ),
+            add_rank_list(
+              text = "Drag from here",
+              labels = positions,
+              input_id = session$ns("unusedPositions")
+            )
+          )
         )
       })
       
       # Dynamic UI for trait selectors
       output$traitSelector <- renderUI({
         tagList(
-          selectInput(session$ns("trait1"), "Select Trait 1:", choices = traits),
-          selectInput(session$ns("trait2"), "Select Trait 2:", choices = traits)
+          checkboxGroupInput(session$ns("traits"), "Select two (2) traits:", choices = traits %>% unlist(use.names = FALSE)) %>% 
+            div(class = "multicol")
         )
       })
+      
+      observe({
+        if(checkIfAlreadyApproving(userinfo$uid)) {
+          showToast("error", "You already have a player waiting for approval. You cannot submit another one.")
+        } else if(sapply(c(input$lastName, input$nationality, input$footedness, input$hairColor, input$hairLength, input$skinTone), FUN = function(x) x == "", simplify = TRUE) %>% any() | 
+           (input$playerType == "Outfielder" & (input$traits %>% length() != 2 | input$primary %>% length() != 1 | input$secondary %>% length() != 2))){
+          
+          showToast("error", "You have missed to input some information. Please take a look at the highlighted inputs and correct the issues.")
+          
+          feedbackDanger("lastName", input$lastName == "", "Please enter at least a last name for your player. If you only want to use one name, please enter it here instead of as a first name.")
+          feedbackDanger("nationality", input$nationality == "", "Please enter the nationality of your player.")
+          feedbackDanger("footedness", input$footedness == "", "Please enter the footedness of your player.")
+          feedbackDanger("hairColor", input$hairColor == "", "Please enter the hair color for your player.")
+          feedbackDanger("hairLength", input$hairLength == "", "Please enter the hair length for your player.")
+          feedbackDanger("skinTone", input$skinTone == "", "Please enter the skin tone for your player.")
+          
+          if(input$traits %>% length() != 2){
+            showToast("error", "Please select two (2) traits.")
+          }
+          
+          if(input$primary %>% length() != 1){
+            showToast("error", "You can select one (1) primary position.")
+          }
+          
+          if(input$secondary %>% length() != 2){
+            showToast("error", "You can select two (2) secondary positions.")
+          }
+          
+        } else if(tpeBanked() < 0){
+          showToast("error", "You have spent too much TPE. Please adjust and resubmit.")
+        } else if(tpeBanked() > 100){
+          showToast("error", "Please allocate as much of the TPE you are given as possible. If you need help with your build, reach out to an Academy coach on Discord.")
+        } else {
+          checkBuild(input, session)
+        }
+      }) %>% 
+        bindEvent(
+          input$submitButton
+        )
+      
+      observe({
+        removeModal()
+        
+        submitBuild(input, userinfo)
+      }) %>% 
+        bindEvent(
+          input$confirmBuild,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
       
     }
   )

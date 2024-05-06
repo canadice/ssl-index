@@ -65,6 +65,8 @@ suppressMessages({
   require(shinyjs, quietly = FALSE)
   require(shinydashboard, quietly = FALSE)
   require(shinyBS, quietly = FALSE)
+  require(shinyFeedback, quietly = FALSE)
+  require(sortable, quietly = FALSE)
   
   require(fresh, quietly = FALSE)
   require(shiny.router, quietly = FALSE)
@@ -154,6 +156,7 @@ sapply(
 
 
 ui <- function(request){
+  
   dashboardPage(
     ##----------------------------------------------------------------
     ##                            Header                             -
@@ -200,6 +203,7 @@ ui <- function(request){
     dashboardBody(
       customTheme %>% use_theme(),
       includeCSS('style.css'),
+      useShinyFeedback(), # include shinyFeedback
       useShinyjs(),
       uiOutput("body")
     )
@@ -278,6 +282,10 @@ server <- function(input, output, session) {
             "Your Player",
             tabName = "playerpage"
           )
+        } else if(checkIfAlreadyApproving(authOutput()$uid)) {
+          menuItem(
+            "Player is awaiting approval"
+          )
         } else {
           menuItem(
             "Create",
@@ -345,7 +353,7 @@ server <- function(input, output, session) {
     )#,
     # extendShinyjs(text = jsResetCode, functions = "restart"), # Add the js code to the page
     # actionButton("reset_button", "Reload Page")
-  })
+  }) 
   
   ##----------------------------------------------------------------
   
@@ -380,10 +388,10 @@ server <- function(input, output, session) {
     # 
     ## Loads the different server modules
     playerPageServer("playerpage", userinfo = authOutput())
-    leagueIndexServer("leagueindex")
-    createPlayerServer("createplayer")
-    playerApproveServer("playerapprove")
-    managerTeamServer("managerteam")
+    leagueIndexServer("leagueindex", userinfo = authOutput())
+    createPlayerServer("createplayer", userinfo = authOutput())
+    playerApproveServer("playerapprove", userinfo = authOutput())
+    managerTeamServer("managerteam", userinfo = authOutput())
     # teamIndexServer("teamindex")
   }) %>% 
     bindEvent(

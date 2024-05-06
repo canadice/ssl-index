@@ -105,7 +105,6 @@ tbl(con, "Daily_Scrape") %>%
   select(
     uid,
     pid,
-    status_u,
     status_p,
     first = `First Name`,
     last = `Last Name`,
@@ -158,6 +157,18 @@ tbl(con, "Daily_Scrape") %>%
   dbWriteTable(
     conn = portalcon,
     name = "playerdata",
+    value = .,
+    row.names = FALSE,
+    overwrite = TRUE
+  )
+
+## Creates an empty approved player data for newly created players to go to
+tbl(portalcon, "playerdata") %>% 
+  collect() %>% 
+  filter(uid == 400) %>% 
+  dbWriteTable(
+    conn = portalcon,
+    name = "approvecreate",
     value = .,
     row.names = FALSE,
     overwrite = TRUE

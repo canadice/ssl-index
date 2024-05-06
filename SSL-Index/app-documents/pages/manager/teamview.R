@@ -5,7 +5,7 @@ managerTeamUI <- function(id) {
   )
 }
 
-managerTeamServer <- function(id) {
+managerTeamServer <- function(id, userinfo) {
   moduleServer(
     id,
     function(input, output, session) {

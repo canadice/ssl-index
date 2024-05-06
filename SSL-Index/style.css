@@ -98,6 +98,12 @@
     visibility: visible;
 }
 
+/* splits information into multiple columns */
+.multicol {
+  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+  -moz-column-count: 3; /* Firefox */
+  column-count: 3;
+}
 
 
 /* Allows for hovertext on reactable column headers */

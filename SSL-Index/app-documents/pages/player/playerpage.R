@@ -186,12 +186,6 @@ playerPageServer <- function(id, userinfo) {
     id,
     function(input, output, session) {
       
-      editableAttributes <- 
-        attributes$attribute %>% 
-        .[!(. %in% c("Natural Fitness", "Stamina"))] %>% 
-        str_to_title() %>% 
-        str_remove_all(pattern = " ") 
-      
       #### REACTIVES ####
       updating <- 
         reactiveVal({FALSE})
