@@ -36,12 +36,13 @@ regressionServer <- function(id) {
         select(
           Season
         ) %>% 
-        filter(
-          Season == max(Season, na.rm = TRUE)
-        ) %>% 
         collect() %>% 
+        filter(
+          Season == (Season %>% as.numeric() %>% max(na.rm = T))
+        ) %>% 
         unique() %>% 
-        unlist()
+        unlist() %>% 
+        as.numeric()
 
       
       
@@ -89,9 +90,6 @@ regressionServer <- function(id) {
         left_join(
           teamInfo,
           by = c("Team" = "team")
-        ) %>% 
-        mutate(
-          Team = factor(Team) %>% relevel("FA") %>% relevel("Prospect")
         ) %>% 
         arrange(Team %>% desc())
       
