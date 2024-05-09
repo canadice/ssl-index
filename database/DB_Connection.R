@@ -219,6 +219,12 @@ dbExecute(portalcon,
           set q.tpe = a.tpe
           where q.pid = a.pid;")
 
+dbExecute(portalcon,
+          "ALTER TABLE `portaldb`.`playerdata` 
+CHANGE COLUMN `pid` `pid` INT NOT NULL AUTO_INCREMENT ,
+ADD PRIMARY KEY (`pid`);
+;")
+
 
 
 #################################################################

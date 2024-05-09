@@ -162,5 +162,44 @@ checkIfAlreadyApproving <- function(uid){
   current %>% nrow() > 0
 }
 
+getPlayersForApproval <- function(){
+  portalQuery(
+    # print(
+    paste(
+      "SELECT uid, first, last, tpe FROM approvecreate;"
+    )
+  ) 
+}
+
+approvePlayer <- function(uid){
+  
+  portalBeginTransaction()
+  
+  portalQuery(
+    paste("CREATE TABLE approving AS SELECT * FROM approvecreate WHERE uid = ", uid, ";")
+  )
+  
+  portalQuery(
+    paste("UPDATE approving SET team = 'Academy', status_p = 1, name = concat(first, ' ', last),",
+          "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
+          "WHERE uid = ", uid, ";")
+  )
+  
+  portalQuery(
+    paste("INSERT INTO playerdata SELECT * FROM approving WHERE uid = ", uid, ";")
+  )
+  
+  portalQuery(
+    paste("DELETE FROM approvecreate WHERE uid = ", uid, ";")
+  )
+  
+  portalQuery(
+    paste("DROP TABLE approving;")
+  )
+  
+  portalEndTransaction()
+}
+
+
 
 

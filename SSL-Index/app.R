@@ -284,7 +284,7 @@ server <- function(input, output, session) {
           )
         } else if(checkIfAlreadyApproving(authOutput()$uid)) {
           menuItem(
-            "Player is awaiting approval"
+            "Your player is awaiting approval"
           )
         } else {
           menuItem(
