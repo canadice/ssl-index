@@ -63,37 +63,6 @@ portalQuery <- function(query){
   
 }
 
-portalBeginTransaction <- function(){
-  
-  con <- 
-    dbConnect(
-      MySQL(),
-      dbname = config$mysql$portal,
-      host = config$mysql$host,
-      port = config$mysql$port,
-      user = config$mysql$user,
-      password = config$mysql$pass
-    )
-  
-  dbBegin(con)
-  
-}
-
-portalEndTransaction <- function(){
-  
-  con <- 
-    dbConnect(
-      MySQL(),
-      dbname = config$mysql$portal,
-      host = config$mysql$host,
-      port = config$mysql$port,
-      user = config$mysql$user,
-      password = config$mysql$pass
-    )
-  
-  dbCommit(con)
-  
-}
 
 ## Function for queries to index
 indexQuery <- function(query){

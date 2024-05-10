@@ -1,9 +1,11 @@
-checkBuild <- function(input, session){
+checkBuild <- function(input, tpebank, session){
   playerInfo <- 
     tibble(
       first = input$firstName,
       last = input$lastName,
       tpe = 350,
+      tpeused = 350 - tpebank,
+      tpebank = tpebank,
       birthplace = input$birthplace,
       nationality = input$nationality,
       height = input$height,
@@ -56,7 +58,7 @@ checkBuild <- function(input, session){
   
 }
 
-submitBuild <- function(input, userinfo){
+submitBuild <- function(input, tpebank, userinfo){
   playerInfo <- 
     tibble(
       uid = userinfo$uid,
@@ -64,6 +66,8 @@ submitBuild <- function(input, userinfo){
       first = input$firstName,
       last = input$lastName,
       tpe = 350,
+      tpeused = 350 - tpebank,
+      tpebank = tpebank,
       birthplace = input$birthplace,
       nationality = input$nationality,
       height = input$height,
@@ -135,7 +139,7 @@ insertBuildForApproval <- function(playerInfo){
   portalQuery(
   # print(
     paste(
-      "INSERT INTO approvecreate (", paste("`", colnames(playerInfo), "`", sep = "", collapse = ", "), ")
+      "INSERT INTO playerdata (", paste("`", colnames(playerInfo), "`", sep = "", collapse = ", "), ")
                VALUES",
       paste(
         "(",
@@ -155,49 +159,38 @@ checkIfAlreadyApproving <- function(uid){
   current <- 
     portalQuery(
       paste(
-        "SELECT * FROM approvecreate WHERE uid = ", uid
+        "SELECT * FROM playerdata WHERE uid = ", uid, "AND status_p = -1;"
       )
     )
   
   current %>% nrow() > 0
 }
 
+checkDuplicatedName <- function(first, last){
+  portalQuery(
+    paste(
+      "SELECT * FROM playerdata WHERE first = '", first, "' AND last = '", last, "';", sep = ""
+    )
+  ) %>% 
+    nrow() > 0
+}
+
 getPlayersForApproval <- function(){
   portalQuery(
     # print(
     paste(
-      "SELECT uid, first, last, tpe FROM approvecreate;"
+      "SELECT uid, first, last, tpe, tpeused, tpebank FROM playerdata WHERE status_p = -1;"
     )
   ) 
 }
 
 approvePlayer <- function(uid){
   
-  portalBeginTransaction()
-  
   portalQuery(
-    paste("CREATE TABLE approving AS SELECT * FROM approvecreate WHERE uid = ", uid, ";")
-  )
-  
-  portalQuery(
-    paste("UPDATE approving SET team = 'Academy', status_p = 1, name = concat(first, ' ', last),",
+    paste("UPDATE playerdata SET team = 'Academy', status_p = 1, name = concat(first, ' ', last),",
           "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
-          "WHERE uid = ", uid, ";")
+          "WHERE uid = ", uid, "AND status_p = -1;")
   )
-  
-  portalQuery(
-    paste("INSERT INTO playerdata SELECT * FROM approving WHERE uid = ", uid, ";")
-  )
-  
-  portalQuery(
-    paste("DELETE FROM approvecreate WHERE uid = ", uid, ";")
-  )
-  
-  portalQuery(
-    paste("DROP TABLE approving;")
-  )
-  
-  portalEndTransaction()
 }
 
 

@@ -3,8 +3,11 @@ playerApproveUI <- function(id) {
   tagList(
     fluidRow(
       column(width = 12,
-             reactableOutput(ns("needApproval")) %>%
-               box(title = "Players to approve", width = NULL, solidHeader = TRUE)
+             box(title = "Players to approve", width = NULL, solidHeader = TRUE,
+                 reactableOutput(ns("needApproval")),
+                 actionButton(ns("goApprove"), "Approve selected player")
+             )
+               
       )
     )
   )
@@ -17,32 +20,21 @@ playerApproveServer <- function(id, userinfo) {
       
       output$needApproval <- renderReactable({
         getPlayersForApproval() %>% 
-          mutate(
-            Approval = actionButton(session$ns(paste("approve", uid, sep = "")), label = "Approve!") %>% as.character()
-          ) %>% 
           reactable(
-            columns = 
-              list(
-                Approval = colDef(html = TRUE)
-              )
+            selection = "single",
+            onClick = "select"
           )
       })
       
-      lapply(getPlayersForApproval()$uid, function(i) {
-        
-        observe({
-          
-          approvePlayer(i)
-          
-          updateReactable(session$ns("needApproval"), 
-                          data = getPlayersForApproval())
-          
-        }) %>% 
-          bindEvent(
-            input[[paste("approve", i, sep = "")]]
-          )
-      })
-      
+      observe({
+        selected <- getReactableState("needApproval", "selected")
+          req(selected)
+          approvePlayer(getPlayersForApproval()[selected,"uid"])
+          updateReactable("needApproval", getPlayersForApproval())
+      }) %>% 
+        bindEvent(
+          input$goApprove
+        )
     }
   )
 }

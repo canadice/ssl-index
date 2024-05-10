@@ -474,12 +474,14 @@ createPlayerServer <- function(id, userinfo) {
             showToast("error", "You can select two (2) secondary positions.")
           }
           
+        } else if(checkDuplicatedName(input$firstName, input$lastName)){
+          showToast("error", "Another player in the league's history have used this name. Please change it to something else.")
         } else if(tpeBanked() < 0){
           showToast("error", "You have spent too much TPE. Please adjust and resubmit.")
         } else if(tpeBanked() > 100){
           showToast("error", "Please allocate as much of the TPE you are given as possible. If you need help with your build, reach out to an Academy coach on Discord.")
         } else {
-          checkBuild(input, session)
+          checkBuild(input, tpeBanked(), session)
         }
       }) %>% 
         bindEvent(
@@ -489,7 +491,7 @@ createPlayerServer <- function(id, userinfo) {
       observe({
         removeModal()
         
-        submitBuild(input, userinfo)
+        submitBuild(input, tpeBanked(), userinfo)
       }) %>% 
         bindEvent(
           input$confirmBuild,

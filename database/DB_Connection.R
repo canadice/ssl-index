@@ -40,11 +40,15 @@ dbConnect(SQLite(), "database/SSL_Database.db")
 
 dbListTables(con)
 
+tpeTable <- tbl(portalcon, "tpetable") %>% 
+  collect()
+
 #################################################################
 ##              Insert Daily Scrape into DB                    ##
 #################################################################
 
-tbl(con, "Daily_Scrape") %>% 
+playerdata <- 
+  tbl(con, "Daily_Scrape") %>% 
   collect() %>% 
   mutate(
     uid = Userlink %>% str_extract(pattern = "uid=[0-9]+") %>% str_split(pattern = "=", simplify = TRUE) %>% .[,2] %>% as.integer(),
@@ -58,6 +62,7 @@ tbl(con, "Daily_Scrape") %>%
     Height = Height %>% as.integer(),
     Weight = Weight %>% as.integer(),
     TPE = TPE %>% as.integer(),
+    tpeBank = `TPE Available`,
     position = 
       case_when(
         `Preferred Position` == "Striker"                  ~ "ST",
@@ -95,7 +100,7 @@ tbl(con, "Daily_Scrape") %>%
         `Preferred Position` == "Winger"                   ~ "RAM",
         TRUE ~ `Preferred Position`
       ),
-    skintone = `Skin Tone` %>% as.integer(),
+    skintone = `Skin Tone` %>% str_extract(pattern = "\\d+") %>% as.integer(),
     status_p = if_else(Team == "Retired", 0, 1),
     status_u = if_else(Active == "IA", 0, 1),
     render = if_else(`Player Render` %>% is.na(), Render, `Player Render`)
@@ -112,6 +117,7 @@ tbl(con, "Daily_Scrape") %>%
     Class,
     Created,
     TPE,
+    tpeBank,
     Team,
     Birthplace,
     Nationality,
@@ -148,8 +154,33 @@ tbl(con, "Daily_Scrape") %>%
     ),
     across(
       Acceleration:Throwing,
-      ~ as.integer(.x) 
+      ~ as.integer(.x) %>% 
+        replace_na(5)
     )
+  ) 
+
+playerdata <- 
+  playerdata %>% 
+  left_join(
+    playerdata %>% select(pid, TPE, Acceleration:Throwing) %>% 
+      pivot_longer(!c(pid, TPE)) %>% 
+      left_join(tpeTable, by = "value") %>% 
+      group_by(pid) %>% 
+      summarize(
+        tpeUsed = sum(cumCost) - 2*156
+      ) %>% 
+      ungroup(),
+    by = "pid"
+  )
+  
+
+playerdata %>% 
+  mutate(
+    tpeBank = TPE - tpeUsed
+  ) %>% 
+  relocate(
+    tpeUsed,
+    .after = TPE
   ) %>% 
   rename_with(
     tolower
@@ -162,24 +193,12 @@ tbl(con, "Daily_Scrape") %>%
     overwrite = TRUE
   )
 
-## Creates an empty approved player data for newly created players to go to
-tbl(portalcon, "playerdata") %>% 
-  collect() %>% 
-  filter(uid == 400) %>% 
-  dbWriteTable(
-    conn = portalcon,
-    name = "approvecreate",
-    value = .,
-    row.names = FALSE,
-    overwrite = TRUE
-  )
-
 ## Regression run
 tbl(portalcon, "playerdata") %>%
   collect() %>% 
   mutate(
     age = 
-      (currentSeason + 1 - 
+      (currentSeason$season + 1 - 
          (str_extract(class, pattern = "[0-9]+") %>% as.numeric())) %>% 
       unlist()
   ) %>% 
@@ -216,7 +235,7 @@ dbExecute(portalcon,
           "update playerdata q
             inner join regression a
           on q.pid = a.pid
-          set q.tpe = a.tpe
+          set q.tpe = a.tpe, q.tpebank = q.tpebank - q.tpe + a.tpe
           where q.pid = a.pid;")
 
 dbExecute(portalcon,
@@ -457,8 +476,13 @@ data.frame(
 data.frame(
   season = 13,
   startDate = "2024-01-08",
-  ended = 0
+  ended = 1
 ) %>% 
+  add_row(
+    season = 14,
+    startDate = "2024-03-11",
+    ended = 0
+  ) %>% 
   dbWriteTable(
     indexcon,
     name = "seasoninfo",
