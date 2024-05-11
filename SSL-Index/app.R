@@ -252,10 +252,10 @@ server <- function(input, output, session) {
       tabItem(
         "teamView",
         managerTeamUI(id = "managerteam")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "welcome",
+        managerTeamUI(id = "teamindex")
       # ),
       # tabItem(
       #   "teamindex",
@@ -276,23 +276,12 @@ server <- function(input, output, session) {
     
     sidebarMenu(
       id = "tabs",
-      {
-        if(hasActivePlayer(authOutput()$uid)){
-          menuItem(
-            "Your Player",
-            tabName = "playerpage"
-          )
-        } else if(checkIfAlreadyApproving(authOutput()$uid)) {
-          menuItem(
-            "Your player is awaiting approval"
-          )
-        } else {
-          menuItem(
-            "Create",
-            tabName = "createplayer"
-          )
-        }
-      },
+      menuItem(
+        "Welcome",
+        tabName = "welcome",
+        selected = TRUE
+      ),
+      menuItemOutput("playerTabs"),
       menuItem(
         "Index",
         menuSubItem(
@@ -380,6 +369,29 @@ server <- function(input, output, session) {
     }
   })
   
+  output$playerTabs <- renderMenu({
+    if(hasActivePlayer(authOutput()$uid)){
+      menuItem(
+        "Your Player",
+        tabName = "playerpage"
+      )
+    } else if(checkIfAlreadyApproving(authOutput()$uid)) {
+      menuItem(
+        "Your player is awaiting approval"
+      )
+    } else {
+      menuItem(
+        "Create",
+        tabName = "createplayer"
+      )
+    }
+  }) %>% 
+    bindEvent(
+      input$tabs,
+      ignoreInit = FALSE,
+      ignoreNULL = FALSE
+    )
+  
   observe({
     req(authOutput()$uid)
     
@@ -389,14 +401,23 @@ server <- function(input, output, session) {
     ## Loads the different server modules
     playerPageServer("playerpage", userinfo = authOutput())
     leagueIndexServer("leagueindex", userinfo = authOutput())
-    createPlayerServer("createplayer", userinfo = authOutput())
-    playerApproveServer("playerapprove", userinfo = authOutput())
+    createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
     managerTeamServer("managerteam", userinfo = authOutput())
     # teamIndexServer("teamindex")
   }) %>% 
     bindEvent(
       authOutput(),
       ignoreInit = FALSE
+    )
+  
+  observe({
+    if(input$tabs == "playerapprove"){
+      req(authOutput()$uid)
+      playerApproveServer("playerapprove", userinfo = authOutput())  
+    } 
+  }) %>% 
+    bindEvent(
+      input$tabs
     )
   
 }

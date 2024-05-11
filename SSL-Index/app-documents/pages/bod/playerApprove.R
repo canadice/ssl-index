@@ -17,9 +17,12 @@ playerApproveServer <- function(id, userinfo) {
   moduleServer(
     id,
     function(input, output, session) {
+      playerForApproval <- reactiveVal({
+        getPlayersForApproval()
+      })
       
       output$needApproval <- renderReactable({
-        getPlayersForApproval() %>% 
+        playerForApproval() %>% 
           reactable(
             selection = "single",
             onClick = "select"
@@ -29,8 +32,11 @@ playerApproveServer <- function(id, userinfo) {
       observe({
         selected <- getReactableState("needApproval", "selected")
           req(selected)
-          approvePlayer(getPlayersForApproval()[selected,"uid"])
-          updateReactable("needApproval", getPlayersForApproval())
+          approvePlayer(playerForApproval()[selected,"uid"])
+          
+          playerForApproval(getPlayersForApproval())
+          
+          updateReactable("needApproval", playerForApproval())
       }) %>% 
         bindEvent(
           input$goApprove

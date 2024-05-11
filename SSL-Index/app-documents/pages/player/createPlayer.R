@@ -261,7 +261,7 @@ createPlayerUI <- function(id) {
   )
 }
 
-createPlayerServer <- function(id, userinfo) {
+createPlayerServer <- function(id, userinfo, parent) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -489,9 +489,13 @@ createPlayerServer <- function(id, userinfo) {
         )
       
       observe({
+        showToast("success", "Your player has been submitted for approval. You will be notified via the forum or Discord by a member of the BoD when the approval has been completed or if there are any issues.")        
+        
         removeModal()
         
         submitBuild(input, tpeBanked(), userinfo)
+        
+        updateTabItems(parent, "tabs", "welcome")
       }) %>% 
         bindEvent(
           input$confirmBuild,
