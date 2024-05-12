@@ -399,7 +399,7 @@ server <- function(input, output, session) {
     # print(authOutput())
     # 
     ## Loads the different server modules
-    playerPageServer("playerpage", userinfo = authOutput())
+    playerPageServer("playerpage", uid = authOutput()$uid)
     leagueIndexServer("leagueindex", userinfo = authOutput())
     createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
     managerTeamServer("managerteam", userinfo = authOutput())

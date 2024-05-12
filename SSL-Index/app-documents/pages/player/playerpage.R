@@ -180,7 +180,7 @@ playerPageUI <- function(id) {
   )
 }
 
-playerPageServer <- function(id, userinfo) {
+playerPageServer <- function(id, uid) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -193,9 +193,11 @@ playerPageServer <- function(id, userinfo) {
       
       playerData <- 
         reactive({
-          # print("Getting data through first")
+          print("Getting data through first")
+          print(uid)
           
-          getPlayerDataAsync(uid = userinfo$uid)
+          getPlayerDataAsync(uid = uid)
+          
         }) %>% 
         bindEvent(
           updated()
@@ -755,7 +757,7 @@ playerPageServer <- function(id, userinfo) {
             
             update <- updateSummary(current = current, inputs = input)
             
-            updateLog(uid = userinfo$uid, pid = current$pid, updates = update)
+            updateLog(uid = uid, pid = current$pid, updates = update)
             
             updateBuild(pid = current$pid, updates = update)
             
@@ -805,7 +807,7 @@ playerPageServer <- function(id, userinfo) {
                   tpe = 6
                 )
               
-              tpeLog(uid = userinfo$uid, pid = value$pid, tpe = tpeSummary)
+              tpeLog(uid = uid, pid = value$pid, tpe = tpeSummary)
               
               shinyjs::disable(session$ns("activityCheck"))
               
@@ -847,7 +849,7 @@ playerPageServer <- function(id, userinfo) {
                   )
                 )
               
-              tpeLog(uid = userinfo$uid, pid = value$pid, tpe = tpeSummary)
+              tpeLog(uid = uid, pid = value$pid, tpe = tpeSummary)
               
               shinyjs::disable(session$ns("trainingCamp"))
               

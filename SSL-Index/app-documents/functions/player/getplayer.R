@@ -61,7 +61,21 @@ hasActivePlayer <- function(uid){
 }
 
 
-
+getPlayersFromTeam <- function(uid){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT name, class, tpe, tpebank, footedness, position, affiliate, uid
+      FROM playerdata
+      WHERE team IN (
+        SELECT team
+        FROM playerdata
+        WHERE uid = ", uid, " AND status_p = 1
+      )"
+      )
+    )
+  })
+}
 
 
 

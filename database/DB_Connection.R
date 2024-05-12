@@ -103,7 +103,22 @@ playerdata <-
     skintone = `Skin Tone` %>% str_extract(pattern = "\\d+") %>% as.integer(),
     status_p = if_else(Team == "Retired", 0, 1),
     status_u = if_else(Active == "IA", 0, 1),
-    render = if_else(`Player Render` %>% is.na(), Render, `Player Render`)
+    render = if_else(`Player Render` %>% is.na(), Render, `Player Render`),
+    Affiliate = case_when(
+      Team %in% c("Athênai F.C.", "Seoul MFC", "F.C. Kaapstad", "Cairo City", "North Shore United", "Inter London", "Montréal United", "AS Paris") ~ "Minor",
+      TRUE ~ "Major"
+    ),
+    Team = case_when(
+      Team == "Athênai F.C." ~ "CA Buenos Aires",
+      Team == "Seoul MFC" ~ "CF Catalunya",
+      Team == "F.C. Kaapstad" ~ "Hollywood FC",
+      Team == "Cairo City" ~ "Tokyo S.C.",
+      Team == "North Shore United" ~ "Reykjavik United",
+      Team == "Inter London" ~ "A.C. Romana",
+      Team == "Montréal United" ~ "Schwarzwälder FV",
+      Team == "AS Paris" ~ "União São Paulo",
+      TRUE ~ Team
+    )
     # foot_left = if_else(`Preferred Foot` == "Left", 20, 10),
     # foot_right = if_else(`Preferred Foot` == "Right", 20, 10)
   ) %>% 
@@ -119,6 +134,7 @@ playerdata <-
     TPE,
     tpeBank,
     Team,
+    Affiliate,
     Birthplace,
     Nationality,
     Height,
