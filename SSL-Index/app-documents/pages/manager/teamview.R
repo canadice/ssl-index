@@ -3,10 +3,11 @@ managerTeamUI <- function(id) {
   tagList(
     fluidRow(
       column(width = 12,
-             box(title = "Players to approve", width = NULL, solidHeader = TRUE,
+             box(title = "Your Team Overview", width = NULL, solidHeader = TRUE,
                  reactableOutput(ns("teamOverview")) %>% 
                    withSpinnerMedium(),
-                 actionButton(ns("goApprove"), "Approve selected player")
+                 br(),
+                 actionButton(ns("goRegress"), "Regress Player")
              )
              
       )
@@ -14,8 +15,9 @@ managerTeamUI <- function(id) {
     fluidRow(
       column(
         width = 12,
+        playerPageUI(ns("teamOverviewPlayer")),
         box(title = "Regress player", width = NULL, solidHeader = TRUE,
-          playerPageUI(ns("teamOverviewPlayer"))
+          "TEST"
         )
       )
     ) %>% 
@@ -53,18 +55,24 @@ managerTeamServer <- function(id, userinfo) {
         selected <- getReactableState("teamOverview", "selected")
         req(selected)
         
-        shinyjs::show("selectedPlayer")
-        
         playerData() %>% 
           then(
             onFulfilled = function(value){
-              playerPageServer("teamOverviewPlayer", uid = value[selected,"uid"])      
+              
+              if(value[selected,"tpebank"] < 0){
+                shinyjs::show("selectedPlayer")
+                playerPageServer("teamOverviewPlayer", uid = value[selected,"uid"])      
+              } else {
+                shinyjs::hide("selectedPlayer")
+                showToast(type = "error", "The chosen player does not need to regress.")
+              }
+                    
             }
           )
         
       }) %>% 
         bindEvent(
-          input$goApprove
+          input$goRegress
         )
     }
   )

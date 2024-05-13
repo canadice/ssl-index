@@ -1,79 +1,109 @@
 playerPageUI <- function(id) {
   ns <- NS(id)
   tagList(
-    fluidRow(
-      column(
-        width = 8,
-        textOutput(
-          outputId = ns("playerInfo")
-        ) %>% 
-          withSpinnerMedium()
-      )
-    ),
-    fluidRow(
-      box(
-        title = "TPE", collapsible = TRUE, width = NULL,
-        fluidRow(
-          column(
-            width = 12, align = "center", style = "display: flex; justify-content: center;",
-            valueBox(
-              subtitle = "Total Earned TPE",
-              value = textOutput(ns("tpeTotal"), inline = TRUE) %>% 
+    column(
+      width = 12,
+      fluidRow(
+        column(
+          width = 8,
+          uiOutput(outputId = ns("playerInfo")) %>% 
+            withSpinnerMedium()
+        )
+      ),
+      fluidRow(
+        box(
+          title = "TPE", collapsible = TRUE, width = NULL,
+          fluidRow(
+            column(
+              width = 12, align = "center", style = "display: flex; justify-content: center;",
+              valueBox(
+                subtitle = "Total Earned TPE",
+                value = textOutput(ns("tpeTotal"), inline = TRUE) %>% 
+                  withSpinnerSmall(),
+                width = 3
+              ),
+              valueBox(
+                subtitle = "Available TPE",
+                value = textOutput(ns("tpeRemaining"), inline = TRUE) %>% 
+                  withSpinnerSmall(), 
+                width = 3
+              )
+            )
+          ),
+          fluidRow(
+            column(
+              width = 12, align = "center", style = "display: flex; justify-content: center;",
+              uiOutput(ns("buttonAC")),
+              uiOutput(ns("buttonTrainingCamp"))
+            )
+          ) %>% 
+            div(id = ns("tpeButtons"))
+        ),
+        box(
+          title = "Player Overview", collapsible = TRUE, width = NULL,
+          fluidRow(
+            column(
+              width = 12,
+              plotOutput(ns("playerOverview")) %>% 
+                withSpinnerMedium()
+            )
+          ),
+          fluidRow(
+            column(
+              width = 12,
+              align = "center", 
+              style = "display: flex; justify-content: center;",
+              uiOutput(
+                outputId = ns("buttonRegression")
+              ) %>% 
                 withSpinnerSmall(),
-              width = 3
-            ),
-            valueBox(
-              subtitle = "Available TPE",
-              value = textOutput(ns("tpeRemaining"), inline = TRUE) %>% 
-                withSpinnerSmall(), 
-              width = 3
+              uiOutput(
+                outputId = ns("buttonUpdate")
+              ) %>% 
+                withSpinnerSmall()
             )
           )
-        ),
-        fluidRow(
-          column(
-            width = 12, align = "center", style = "display: flex; justify-content: center;",
-            uiOutput(ns("buttonAC")),
-            uiOutput(ns("buttonTrainingCamp"))
-          )
         ) %>% 
-          div(id = ns("tpeButtons"))
-      ),
-      box(
-        title = "Player Overview", collapsible = TRUE, width = NULL,
-        fluidRow(
-          column(
-            width = 12,
-            plotOutput(ns("playerOverview")) %>% 
-              withSpinnerMedium()
-          )
-        ),
-        fluidRow(
-          column(
-            width = 12,
-            align = "center", 
-            style = "display: flex; justify-content: center;",
-            uiOutput(
-              outputId = ns("buttonRegression")
-            ) %>% 
-              withSpinnerSmall(),
-            uiOutput(
-              outputId = ns("buttonUpdate")
-            ) %>% 
-              withSpinnerSmall()
-          )
-        )
-      ) %>% 
-        div(id = ns("attributeOverview")),
-      box(
-        title = "Update Player", collapsible = FALSE, width = NULL,
-        fluidRow(
-          column(
-            width = 4,
-            tagList(
+          div(id = ns("attributeOverview")),
+        box(
+          title = "Update Player", collapsible = FALSE, width = NULL,
+          fluidRow(
+            column(
+              width = 4,
+              tagList(
+                c(
+                  "acceleration", "agility", "balance", "jumping reach", 
+                  "natural fitness", "pace", "stamina", "strength"
+                ) %>% 
+                  map(
+                    .x = .,
+                    .f = 
+                      ~ attributeInput(ns = ns, name = .x, value = NA)
+                  )
+              )
+            ),
+            column(
+              width = 4,
               c(
-                "acceleration", "agility", "balance", "jumping reach", 
-                "natural fitness", "pace", "stamina", "strength"
+                "aggression", "anticipation", "bravery", "composure", "concentration", 
+                "decisions", "determination", "flair", "leadership", "off the ball", 
+                "positioning", "teamwork", "vision", "work rate"
+              ) %>% 
+                map(
+                  .x = .,
+                  .f = 
+                    ~ attributeInput(ns = ns, name = .x, value = NA)
+                )
+            ),
+            column(
+              width = 4,
+              c(
+                "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
+                "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
+                "Passing", "Penalty Taking", "Tackling", "Technique", "Aerial Reach",
+                "Command Of Area", "Communication", "Eccentricity", "Handling",
+                "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
+                "Tendency To Rush", "Throwing"
               ) %>% 
                 map(
                   .x = .,
@@ -82,100 +112,71 @@ playerPageUI <- function(id) {
                 )
             )
           ),
-          column(
-            width = 4,
-            c(
-              "aggression", "anticipation", "bravery", "composure", "concentration", 
-              "decisions", "determination", "flair", "leadership", "off the ball", 
-              "positioning", "teamwork", "vision", "work rate"
-            ) %>% 
-              map(
-                .x = .,
-                .f = 
-                  ~ attributeInput(ns = ns, name = .x, value = NA)
+          fluidRow(
+            column(
+              width = 12,
+              align = "center", 
+              style = "display: flex; justify-content: center;",
+              actionButton(
+                inputId = ns("backUpdate"),
+                "Go back"
+              ),
+              actionButton(
+                inputId = ns("resetUpdate"),
+                "Reset"
+              ),
+              actionButton(
+                inputId = ns("verifyUpdate"),
+                "Update"
               )
-          ),
-          column(
-            width = 4,
-            c(
-              "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
-              "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
-              "Passing", "Penalty Taking", "Tackling", "Technique", "Aerial Reach",
-              "Command Of Area", "Communication", "Eccentricity", "Handling",
-              "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
-              "Tendency To Rush", "Throwing"
-            ) %>% 
-              map(
-                .x = .,
-                .f = 
-                  ~ attributeInput(ns = ns, name = .x, value = NA)
+            )
+          ) %>% 
+            div(id = ns("buttonsUpdating")) %>% 
+            hidden(),
+          fluidRow(
+            column(
+              width = 12,
+              align = "center", 
+              style = "display: flex; justify-content: center;",
+              actionButton(
+                inputId = ns("backRegression"),
+                "Go back"
+              ),
+              actionButton(
+                inputId = ns("resetRegression"),
+                "Reset"
+              ),
+              actionButton(
+                inputId = ns("verifyRegression"),
+                "Regress"
               )
+            )
+          ) %>% 
+            div(id = ns("buttonsRegression")) %>% 
+            hidden()
+        ) %>% 
+          div(id = ns("attributeUpdate")) %>% 
+          hidden(),
+        box(
+          title = "Updating History", collapsed = TRUE, collapsible = TRUE, width = NULL,
+          fluidRow(
+            column(width = 12,
+                   reactableOutput(ns("historyUpdates")) %>% 
+                     withSpinnerMedium()
+            )
           )
         ),
-        fluidRow(
-          column(
-            width = 12,
-            align = "center", 
-            style = "display: flex; justify-content: center;",
-            actionButton(
-              inputId = ns("backUpdate"),
-              "Go back"
-            ),
-            actionButton(
-              inputId = ns("resetUpdate"),
-              "Reset"
-            ),
-            actionButton(
-              inputId = ns("verifyUpdate"),
-              "Update"
+        box(title = "TPE History", collapsed = TRUE, collapsible = TRUE,width = NULL,
+            fluidRow(
+              column(
+                width = 12,
+                reactableOutput(ns("historyTPE"))
+              )
             )
-          )
-        ) %>% 
-          div(id = ns("buttonsUpdating")) %>% 
-          hidden(),
-        fluidRow(
-          column(
-            width = 12,
-            align = "center", 
-            style = "display: flex; justify-content: center;",
-            actionButton(
-              inputId = ns("backRegression"),
-              "Go back"
-            ),
-            actionButton(
-              inputId = ns("resetRegression"),
-              "Reset"
-            ),
-            actionButton(
-              inputId = ns("verifyRegression"),
-              "Regress"
-            )
-          )
-        ) %>% 
-          div(id = ns("buttonsRegression")) %>% 
-          hidden()
-      ) %>% 
-        div(id = ns("attributeUpdate")) %>% 
-        hidden(),
-      box(
-        title = "Updating History", collapsed = TRUE, collapsible = TRUE, width = NULL,
-        fluidRow(
-          column(width = 12,
-            reactableOutput(ns("historyUpdates")) %>% 
-              withSpinnerMedium()
-          )
-        )
-      ),
-      box(title = "TPE History", collapsed = TRUE, collapsible = TRUE,width = NULL,
-        fluidRow(
-          column(
-            width = 12,
-            reactableOutput(ns("historyTPE"))
-          )
-        )
-      ),
-      br(),
-      br()
+        ),
+        br(),
+        br()
+      )
     )
   )
 }
@@ -193,8 +194,6 @@ playerPageServer <- function(id, uid) {
       
       playerData <- 
         reactive({
-          print("Getting data through first")
-          print(uid)
           
           getPlayerDataAsync(uid = uid)
           
@@ -271,14 +270,16 @@ playerPageServer <- function(id, uid) {
       
       
       #### OUTPUTS ####
-      output$playerInfo <- renderText({
+      output$playerInfo <- renderUI({
         playerData() %>% 
           then(
             onFulfilled = function(value) {
-              value$name
+              playerInfoBoxUI(id = session$ns(paste("playerInfo", value$pid, sep = "-")))
+              
+              playerInfoBoxServer(id = session$ns(paste("playerInfo", value$pid, sep = "-")), pid = value$pid)
             },
             onRejected = function(reason) {
-              "An error occurred."
+              showToast("error", "An error occurred when loading your player. Please notify the BoD.")
             }
           )
       })

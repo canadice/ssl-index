@@ -170,8 +170,7 @@ playerdata <-
     ),
     across(
       Acceleration:Throwing,
-      ~ as.integer(.x) %>% 
-        replace_na(5)
+      ~ as.integer(.x)
     )
   ) 
 
@@ -183,7 +182,7 @@ playerdata <-
       left_join(tpeTable, by = "value") %>% 
       group_by(pid) %>% 
       summarize(
-        tpeUsed = sum(cumCost) - 2*156
+        tpeUsed = sum(cumCost, na.rm = TRUE) - 2*156
       ) %>% 
       ungroup(),
     by = "pid"

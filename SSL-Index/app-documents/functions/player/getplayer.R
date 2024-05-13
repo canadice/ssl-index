@@ -60,6 +60,29 @@ hasActivePlayer <- function(uid){
   nrow(res) > 0
 }
 
+getPlayerName <- function(pid){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT name
+          FROM playerdata
+          WHERE pid =", pid, ";"
+      )
+    )
+  })
+}
+
+getPlayerTeam <- function(pid){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT team
+          FROM playerdata
+          WHERE pid =", pid, ";"
+      )
+    )
+  })
+}
 
 getPlayersFromTeam <- function(uid){
   future_promise({
