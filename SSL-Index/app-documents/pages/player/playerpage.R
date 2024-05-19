@@ -4,11 +4,7 @@ playerPageUI <- function(id) {
     column(
       width = 12,
       fluidRow(
-        column(
-          width = 8,
-          uiOutput(outputId = ns("playerInfo")) %>% 
-            withSpinnerMedium()
-        )
+        playerInfoBoxUI(id = ns("playerInfo"))
       ),
       fluidRow(
         box(
@@ -270,19 +266,18 @@ playerPageServer <- function(id, uid) {
       
       
       #### OUTPUTS ####
-      output$playerInfo <- renderUI({
+      observe({
         playerData() %>% 
           then(
             onFulfilled = function(value) {
-              playerInfoBoxUI(id = session$ns(paste("playerInfo", value$pid, sep = "-")))
-              
-              playerInfoBoxServer(id = session$ns(paste("playerInfo", value$pid, sep = "-")), pid = value$pid)
+              playerInfoBoxServer(id = "playerInfo", pid = value$pid)
             },
             onRejected = function(reason) {
               showToast("error", "An error occurred when loading your player. Please notify the BoD.")
             }
           )
-      })
+      }) %>% 
+        bindEvent(playerData(), ignoreNULL = FALSE)
       
       output$tpeTotal <- renderText({
         tpeTotal()

@@ -1,8 +1,20 @@
 playerInfoBoxUI <- function(id) {
   ns <- NS(id)
   tagList(
-     textOutput(ns("name")),
-     imageOutput(ns("team"))
+    column(
+      width = 12,
+      fluidRow(
+        column(
+          width = 10,
+          uiOutput(ns("name"))
+        ),
+        column(
+          width = 2,
+          imageOutput(ns("team"), height = NULL)
+        )  
+      ) %>% 
+        withSpinnerSmall()
+    )
   )
 }
 
@@ -10,25 +22,33 @@ playerInfoBoxServer <- function(id, pid) {
   moduleServer(
     id,
     function(input, output, session) {
-      output$name <- renderText({
+      
+      output$name <- renderUI({
         getPlayerName(pid) %>% 
           then(
             onFulfilled = function(value){
-              value$name
+              h3(value$name)
+            },
+            onRejected = function(error){
+              print("something is wrong")
             }
           )
       })
       
       output$team <- renderImage({
-        getPlayerTeam(pid) %>% 
+        getPlayerTeam(pid) %>%
           then(
             onFulfilled = function(value){
-              # value$team %>% paste(".png", sep = "")
-              img(src = sprintf("%s.png", value$team))
+              list(
+                src = normalizePath(file.path("./www", sprintf("%s.png", value$team))),
+                width = 100,
+                height = 100,
+                alt = value$team
+              )
             }
           )
-      }, 
-      deleteFile = TRUE)
+      },
+      deleteFile = FALSE)
     }
   )
 }

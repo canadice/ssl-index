@@ -88,7 +88,7 @@ getPlayersFromTeam <- function(uid){
   future_promise({
     portalQuery(
       paste(
-        "SELECT name, class, tpe, tpebank, footedness, position, affiliate, uid
+        "SELECT name, class, tpe, tpebank, footedness, position, affiliate, pid
       FROM playerdata
       WHERE team IN (
         SELECT team

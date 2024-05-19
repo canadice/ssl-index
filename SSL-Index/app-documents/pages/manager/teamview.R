@@ -15,10 +15,7 @@ managerTeamUI <- function(id) {
     fluidRow(
       column(
         width = 12,
-        playerPageUI(ns("teamOverviewPlayer")),
-        box(title = "Regress player", width = NULL, solidHeader = TRUE,
-          "TEST"
-        )
+        playerInfoBoxUI(ns("playerInfo")),
       )
     ) %>% 
       div(id = ns("selectedPlayer")) %>% 
@@ -40,7 +37,7 @@ managerTeamServer <- function(id, userinfo) {
           then(
             onFulfilled = function(value){
               value %>% 
-                select(!uid) %>% 
+                select(!pid) %>% 
                 reactable(
                   selection = "single",
                   onClick = "select",
@@ -58,10 +55,12 @@ managerTeamServer <- function(id, userinfo) {
         playerData() %>% 
           then(
             onFulfilled = function(value){
+              selection <- value[selected,]
               
-              if(value[selected,"tpebank"] < 0){
+              if(selection$tpebank < 0){
                 shinyjs::show("selectedPlayer")
-                playerPageServer("teamOverviewPlayer", uid = value[selected,"uid"])      
+                
+                playerInfoBoxServer(id = "playerInfo", pid = selection$pid)
               } else {
                 shinyjs::hide("selectedPlayer")
                 showToast(type = "error", "The chosen player does not need to regress.")
