@@ -15,7 +15,10 @@ managerTeamUI <- function(id) {
     fluidRow(
       column(
         width = 12,
-        playerInfoBoxUI(ns("playerInfo")),
+        box(title = "Regress player", collapsible = TRUE, width = NULL,
+            playerInfoBoxUI(ns("playerInfo")),
+            playerAttributeBoxUI(ns("playerAttributes"))
+        )
       )
     ) %>% 
       div(id = ns("selectedPlayer")) %>% 
@@ -28,9 +31,17 @@ managerTeamServer <- function(id, userinfo) {
     id,
     function(input, output, session) {
       
+      rv <- reactiveValues(
+        bank = 0
+      )
+      
       playerData <- reactive({
         getPlayersFromTeam(userinfo$uid)
-      })
+      }) %>% 
+        bindEvent(
+          rv$bank,
+          ignoreInit = FALSE
+        )
       
       output$teamOverview <- renderReactable({
          playerData() %>% 
@@ -41,12 +52,24 @@ managerTeamServer <- function(id, userinfo) {
                 reactable(
                   selection = "single",
                   onClick = "select",
-                  groupBy = "affiliate"
+                  groupBy = "affiliate",
+                  rowStyle = function(index){
+                    if(.[index, "tpebank"] < 0){
+                      list(background = "#FFCCCB")
+                    }
+                  }
                 )
             }
           ) 
-          
       })
+      
+      observe({
+        shinyjs::hide("selectedPlayer")
+      }) %>% 
+        bindEvent(
+          rv$bank,
+          ignoreInit = FALSE
+        )
       
       observe({
         selected <- getReactableState("teamOverview", "selected")
@@ -61,6 +84,15 @@ managerTeamServer <- function(id, userinfo) {
                 shinyjs::show("selectedPlayer")
                 
                 playerInfoBoxServer(id = "playerInfo", pid = selection$pid)
+                
+                playerAttributeBoxServer(
+                  id = "playerAttributes", 
+                  parent = session, 
+                  pid = selection$pid, 
+                  uid = userinfo$uid,
+                  rv = rv
+                ) 
+                
               } else {
                 shinyjs::hide("selectedPlayer")
                 showToast(type = "error", "The chosen player does not need to regress.")

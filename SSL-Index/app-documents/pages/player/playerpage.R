@@ -190,9 +190,7 @@ playerPageServer <- function(id, uid) {
       
       playerData <- 
         reactive({
-          
           getPlayerDataAsync(uid = uid)
-          
         }) %>% 
         bindEvent(
           updated()
@@ -723,6 +721,9 @@ playerPageServer <- function(id, uid) {
           with({
             if(bank < 0){
               showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+            } else if(bank > 24){
+              # Error shown if user has regressed too much
+              showToast("error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.", session = parent) 
             } else {
               update <- updateSummary(current = current, inputs = input)
               
@@ -755,7 +756,7 @@ playerPageServer <- function(id, uid) {
             
             updateLog(uid = uid, pid = current$pid, updates = update)
             
-            updateBuild(pid = current$pid, updates = update)
+            updateBuild(pid = current$pid, updates = update, bank = bank)
             
             updated(updated() + 1)
             

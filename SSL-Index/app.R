@@ -256,10 +256,10 @@ server <- function(input, output, session) {
       tabItem(
         "welcome",
         managerTeamUI(id = "teamindex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "bodoverview",
+        bodTeamUI(id = "bodoverview")
       # ),
       # tabItem(
       #   "teamindex",
@@ -317,10 +317,10 @@ server <- function(input, output, session) {
             menuSubItem(
               "Player Approvals",
               tabName = "playerapprove"
-              # ),
-              # menuSubItem(
-              #   "Team Index",
-              #   tabName = "teamindex"
+            ),
+            menuSubItem(
+              "Organizational Overview",
+              tabName = "bodoverview"
             )
           )
         }
@@ -403,6 +403,7 @@ server <- function(input, output, session) {
     leagueIndexServer("leagueindex", userinfo = authOutput())
     createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
     managerTeamServer("managerteam", userinfo = authOutput())
+    bodTeamServer("bodoverview", userinfo = authOutput())
     # teamIndexServer("teamindex")
   }) %>% 
     bindEvent(

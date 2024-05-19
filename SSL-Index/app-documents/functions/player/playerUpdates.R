@@ -26,7 +26,7 @@ updateLog <- function(uid, pid, updates){
 }
 
 ## Updates build on player
-updateBuild <- function(pid, updates){
+updateBuild <- function(pid, updates, bank){
   portalQuery(
     paste(
       "UPDATE playerdata
@@ -36,7 +36,7 @@ updateBuild <- function(pid, updates){
         "=",
         updates$new,
         collapse = ", "
-      ),
+      ), ", tpebank = ", bank,
       "WHERE pid =", pid
     )
   )

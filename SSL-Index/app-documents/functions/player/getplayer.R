@@ -100,6 +100,19 @@ getPlayersFromTeam <- function(uid){
   })
 }
 
+getPlayersFromAllTeams <- function(){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT name, class, tpe, tpebank, footedness, position, team, affiliate, pid
+      FROM playerdata
+      WHERE status_p = 1 AND team NOT IN ('FA', 'Prospect');
+      "
+      )
+    )
+  })
+}
+
 
 
 
