@@ -255,7 +255,7 @@ server <- function(input, output, session) {
       ),
       tabItem(
         "welcome",
-        managerTeamUI(id = "teamindex")
+        # managerTeamUI(id = "teamindex")
       ),
       tabItem(
         "bodoverview",
@@ -401,7 +401,7 @@ server <- function(input, output, session) {
     ## Loads the different server modules
     playerPageServer("playerpage", uid = authOutput()$uid)
     leagueIndexServer("leagueindex", userinfo = authOutput())
-    createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
+    
     managerTeamServer("managerteam", userinfo = authOutput())
     bodTeamServer("bodoverview", userinfo = authOutput())
     # teamIndexServer("teamindex")
@@ -415,7 +415,9 @@ server <- function(input, output, session) {
     if(input$tabs == "playerapprove"){
       req(authOutput()$uid)
       playerApproveServer("playerapprove", userinfo = authOutput())  
-    } 
+    } else if(input$tabs == "createplayer"){
+      createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
+    }
   }) %>% 
     bindEvent(
       input$tabs

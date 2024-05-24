@@ -521,6 +521,41 @@ playerPageServer <- function(id, uid) {
           ignoreInit = TRUE
         )
       
+      # Updates the banked tpe when changing attributes
+      observe({
+        if(updating()){
+          editableAttributes %>% 
+          map(
+            .x = .,
+            .f = function(x){
+              if(input[[x]] %>% is.null()){
+                
+              } else {
+                updateNumericInput(
+                  session = session,
+                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  value = if_else(input[[x]] > 20, 20, if_else(input[[x]] < 5, 5, input[[x]]))
+                )  
+              }
+            }
+          )
+        }
+      }) %>% 
+        bindEvent(
+          # Changes in any input slider
+          {
+            editableAttributes %>% 
+              lapply(
+                X = .,
+                FUN = function(x){
+                  input[[x]]
+                }
+              )
+          },
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
       # Set attribute UI to current build and 
       # fixes minimum value when updating
       # fixes maximum value when regressing
@@ -540,6 +575,7 @@ playerPageServer <- function(id, uid) {
           with({
             data1 %>% 
               select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
               colnames() %>% 
               map(
                 .x = .,
@@ -554,8 +590,9 @@ playerPageServer <- function(id, uid) {
                 }
               )
             
-            data1 %>%
-              select(acceleration:throwing) %>%
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
               select(
                 where(is.na)
               ) %>%
@@ -596,6 +633,7 @@ playerPageServer <- function(id, uid) {
           with({
             data1 %>% 
               select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
               colnames() %>% 
               map(
                 .x = .,
@@ -610,8 +648,9 @@ playerPageServer <- function(id, uid) {
                 }
               )
             
-            data1 %>%
-              select(acceleration:throwing) %>%
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
               select(
                 where(is.na)
               ) %>%
@@ -693,6 +732,8 @@ playerPageServer <- function(id, uid) {
           with({
             if(bank < 0){
               modalOverdraft()
+            } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
+              showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
             } else {
               update <- updateSummary(current = current, inputs = input)
               
@@ -721,9 +762,11 @@ playerPageServer <- function(id, uid) {
           with({
             if(bank < 0){
               showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+            } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
+              showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
             } else if(bank > 24){
               # Error shown if user has regressed too much
-              showToast("error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.", session = parent) 
+              showToast("error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
             } else {
               update <- updateSummary(current = current, inputs = input)
               
@@ -787,6 +830,36 @@ playerPageServer <- function(id, uid) {
         shinyjs::hide("buttonsRegression")
         shinyjs::toggle("tpeButtons")
         
+        tpeBanked(playerData() %>% 
+                    then(
+                      onFulfilled = function(value) {
+                        value %>% 
+                          select(acceleration:throwing) %>% 
+                          select(!`natural fitness` & !stamina) %>% 
+                          pivot_longer(
+                            cols = everything(),
+                            names_to = "attribute",
+                            values_to = "value"
+                          ) %>%
+                          left_join(
+                            tpeCost %>% 
+                              select(
+                                value,
+                                cumCost
+                              ),
+                            by = "value"
+                          ) %>% 
+                          select(cumCost) %>% 
+                          sum(na.rm = TRUE) %>% 
+                          {
+                            value$tpe - .
+                          }
+                      },
+                      onRejected = function(reason) {
+                        NaN
+                      }
+                    ))
+        
         updating(FALSE)
       }) %>% 
         bindEvent(
@@ -810,7 +883,16 @@ playerPageServer <- function(id, uid) {
               
               updateTPE(pid = value$pid, tpe = tpeSummary)
               
-              modalAC()
+              showToast(type = "success", "You have successfully claimed your Activity Check for the week!")
+              
+              tpeBanked(
+                tpeBanked() %>% 
+                  then(
+                    onFulfilled = function(res){
+                      res + 6
+                    }
+                  )
+              )  
               
               updated(updated() + 1)
               
@@ -852,7 +934,16 @@ playerPageServer <- function(id, uid) {
               
               updateTPE(pid = value$pid, tpe = tpeSummary)
               
-              modalTC(tpe = tpeSummary)
+              showToast(type = "success", "You have successfully claimed your Training Camp for the season.")
+              
+              tpeBanked(
+                tpeBanked() %>% 
+                  then(
+                    onFulfilled = function(res){
+                      res + tpeSummary$tpe
+                    }
+                  )
+              )    
               
               updated(updated() + 1)
               

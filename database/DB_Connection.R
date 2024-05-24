@@ -259,6 +259,12 @@ CHANGE COLUMN `pid` `pid` INT NOT NULL AUTO_INCREMENT ,
 ADD PRIMARY KEY (`pid`);
 ;")
 
+dbExecute(portalcon,
+          "ALTER TABLE `portaldb`.`regression` 
+CHANGE COLUMN `pid` `pid` DOUBLE NOT NULL ,
+ADD PRIMARY KEY (`pid`);
+;")
+
 
 
 #################################################################
@@ -468,6 +474,17 @@ data.frame(
     overwrite = TRUE
   )
 
+dbExecute(portalcon,
+          "ALTER TABLE `portaldb`.`updatehistory` 
+CHANGE COLUMN `time` `time` DOUBLE NOT NULL ,
+CHANGE COLUMN `uid` `uid` DOUBLE NULL ,
+CHANGE COLUMN `pid` `pid` DOUBLE NOT NULL ,
+CHANGE COLUMN `attribute` `attribute` VARCHAR(32) NOT NULL ,
+ADD PRIMARY KEY (`time`, `pid`, `attribute`);
+;")
+
+
+
 data.frame(
   time = now() %>% force_tz("US/Pacific") %>% as.numeric(),
   uid = 1,
@@ -483,6 +500,15 @@ data.frame(
     overwrite = TRUE
   )
 
+dbExecute(portalcon,
+          "ALTER TABLE `portaldb`.`tpehistory` 
+CHANGE COLUMN `time` `time` DOUBLE NOT NULL ,
+CHANGE COLUMN `uid` `uid` DOUBLE NOT NULL ,
+CHANGE COLUMN `pid` `pid` DOUBLE NOT NULL ,
+CHANGE COLUMN `source` `source` VARCHAR(32) NOT NULL ,
+ADD PRIMARY KEY (`time`, `pid`, `source`);
+;
+")
 
 
 #################################################################
@@ -496,6 +522,11 @@ data.frame(
   add_row(
     season = 14,
     startDate = "2024-03-11",
+    ended = 1
+  ) %>% 
+  add_row(
+    season = 15, 
+    startDate = "2024-05-13",
     ended = 0
   ) %>% 
   dbWriteTable(
@@ -586,6 +617,13 @@ tpeCost %>%
     row.names = FALSE,
     overwrite = TRUE
   )
+
+dbExecute(portalcon,
+          "ALTER TABLE `portaldb`.`tpetable` 
+CHANGE COLUMN `value` `value` BIGINT NOT NULL ,
+ADD PRIMARY KEY (`value`);
+;
+")
 
 #################################################################
 ##                    Updating a table                    ##

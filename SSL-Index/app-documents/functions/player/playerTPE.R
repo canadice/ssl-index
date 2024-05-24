@@ -36,6 +36,7 @@ completedTrainingCamp <- function(pid){
 ## Adds tpe updates to the log
 tpeLog <- function(uid, pid, tpe){
   portalQuery(
+  # print(
     paste(
       "INSERT INTO tpehistory ( uid, pid, time, source, tpe )
                 VALUES
@@ -45,7 +46,7 @@ tpeLog <- function(uid, pid, tpe){
         paste(
           uid,
           pid,
-          paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(),"'"),
+          paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric() %>% round(0), "'"),
           paste0("'", tpe$source, "'"),
           tpe$tpe,
           sep = ","

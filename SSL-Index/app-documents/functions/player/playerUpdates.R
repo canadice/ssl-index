@@ -11,7 +11,7 @@ updateLog <- function(uid, pid, updates){
         paste(
           uid,
           pid,
-          paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(),"'"),
+          paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric() %>% round(0), "'"),
           paste0("'", updates$attribute, "'"),
           updates$old,
           updates$new,

@@ -447,6 +447,8 @@ createPlayerServer <- function(id, userinfo, parent) {
         )
       })
       
+      
+      
       observe({
         if(checkIfAlreadyApproving(userinfo$uid)) {
           showToast("error", "You already have a player waiting for approval. You cannot submit another one.")
@@ -476,6 +478,8 @@ createPlayerServer <- function(id, userinfo, parent) {
           
         } else if(checkDuplicatedName(input$firstName, input$lastName)){
           showToast("error", "Another player in the league's history have used this name. Please change it to something else.")
+        } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
+          showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
         } else if(tpeBanked() < 0){
           showToast("error", "You have spent too much TPE. Please adjust and resubmit.")
         } else if(tpeBanked() > 100){
