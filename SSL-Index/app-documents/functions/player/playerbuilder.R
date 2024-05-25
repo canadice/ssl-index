@@ -183,7 +183,6 @@ getPlayersForApproval <- function(){
 }
 
 approvePlayer <- function(uid){
-  
   portalQuery(
     paste("UPDATE playerdata SET team = 'Academy', status_p = 1, name = concat(first, ' ', last),",
           "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 

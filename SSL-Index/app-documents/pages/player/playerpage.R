@@ -346,17 +346,22 @@ playerPageServer <- function(id, uid) {
           FUN = function(x){
             output[[paste0("cost", x)]] <- 
               renderUI({
-                nextcost <- tpeCost[tpeCost$value == (session$input[[x]] + 1), "sinCost"]
-                
-                if(length(nextcost) == 0) nextcost <- ""
-                
-                paste(
-                  "Next: ",
-                  nextcost,
-                  "Total: ",
-                  tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
-                )
-                
+                if(session$input[[x]] %>% is.na() | session$input[[x]] < 5 | session$input[[x]] > 20){
+                  paste(
+                    "You need to input a value between 5 and 20."
+                  )
+                } else {
+                  nextcost <- tpeCost[tpeCost$value == (session$input[[x]] + 1), "sinCost"]
+                  
+                  if(length(nextcost) == 0) nextcost <- ""
+                  
+                  paste(
+                    "Next: ",
+                    nextcost,
+                    "Total: ",
+                    tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
+                  )
+                }
               })
           }
         )
@@ -521,20 +526,24 @@ playerPageServer <- function(id, uid) {
           ignoreInit = TRUE
         )
       
-      # Updates the banked tpe when changing attributes
+      # Fixes moving away from locked 20 in stamina and natural fitness
       observe({
         if(updating()){
-          editableAttributes %>% 
+          c("natural fitness", "stamina") %>% 
           map(
             .x = .,
             .f = function(x){
               if(input[[x]] %>% is.null()){
-                
+                updateNumericInput(
+                  session = session,
+                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  value = 20
+                ) 
               } else {
                 updateNumericInput(
                   session = session,
                   inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                  value = if_else(input[[x]] > 20, 20, if_else(input[[x]] < 5, 5, input[[x]]))
+                  value = if_else(input[[x]] != 20, 20, input[[x]])
                 )  
               }
             }
@@ -544,7 +553,9 @@ playerPageServer <- function(id, uid) {
         bindEvent(
           # Changes in any input slider
           {
-            editableAttributes %>% 
+            c("Natural Fitness", "Stamina") %>% 
+              stringr::str_to_title() %>% 
+              str_remove_all(pattern = " ") %>% 
               lapply(
                 X = .,
                 FUN = function(x){
@@ -552,8 +563,7 @@ playerPageServer <- function(id, uid) {
                 }
               )
           },
-          ignoreInit = TRUE,
-          once = TRUE
+          ignoreInit = TRUE
         )
       
       # Set attribute UI to current build and 
@@ -733,13 +743,14 @@ playerPageServer <- function(id, uid) {
             if(bank < 0){
               modalOverdraft()
             } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
-              showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
+              showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
             } else {
               update <- updateSummary(current = current, inputs = input)
               
               if(nrow(update) > 0){
                 if(any((update$old - update$new) > 0)){
-                  modalReduction(update)
+                  showToast("error", paste("You cannot reduce attributes in a regular update.",
+                            paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")))
                 } else {
                   modalVerify(update, session = session)
                 }
@@ -772,7 +783,8 @@ playerPageServer <- function(id, uid) {
               
               if(nrow(update) > 0){
                 if(any((update$old - update$new) < 0)){
-                  showToast(type = "error", "You cannot have an attribute value larger than your current build.")
+                  showToast("error", paste("You cannot increase attributes in a regression update.",
+                                           paste("Return ", paste0(update$attribute[(update$old - update$new) < 0], collapse = ", "), " to their original values.")))
                 } else {
                   modalVerify(update, session = session)
                 }

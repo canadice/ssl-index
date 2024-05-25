@@ -322,18 +322,23 @@ createPlayerServer <- function(id, userinfo, parent) {
           FUN = function(x){
             output[[paste0("cost", x)]] <- 
               renderUI({
-                nextcost <- tpeCost[tpeCost$value == (session$input[[x]] + 1), "sinCost"]
-                
-                if(length(nextcost) == 0) nextcost <- ""
-                
-                paste(
-                  "Next: ",
-                  nextcost,
-                  "Total: ",
-                  tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
-                )
-                
-              })
+                if(session$input[[x]] %>% is.na() | session$input[[x]] < 5 | session$input[[x]] > 20){
+                  paste(
+                    "You need to input a value between 5 and 20."
+                  )
+                } else {
+                  nextcost <- tpeCost[tpeCost$value == (session$input[[x]] + 1), "sinCost"]
+                  
+                  if(length(nextcost) == 0) nextcost <- ""
+                  
+                  paste(
+                    "Next: ",
+                    nextcost,
+                    "Total: ",
+                    tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
+                  )
+                }
+            })
           }
         )
       
@@ -358,6 +363,46 @@ createPlayerServer <- function(id, userinfo, parent) {
           # Changes in any input slider
           {
             editableAttributes %>% 
+              lapply(
+                X = .,
+                FUN = function(x){
+                  input[[x]]
+                }
+              )
+          },
+          ignoreInit = TRUE
+        )
+      
+      # Fixes moving away from locked 20 in stamina and natural fitness
+      observe({
+        if(updating()){
+          c("natural fitness", "stamina") %>% 
+            map(
+              .x = .,
+              .f = function(x){
+                if(input[[x]] %>% is.null()){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = 20
+                  ) 
+                } else {
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = if_else(input[[x]] != 20, 20, input[[x]])
+                  )  
+                }
+              }
+            )
+        }
+      }) %>% 
+        bindEvent(
+          # Changes in any input slider
+          {
+            c("Natural Fitness", "Stamina") %>% 
+              stringr::str_to_title() %>% 
+              str_remove_all(pattern = " ") %>% 
               lapply(
                 X = .,
                 FUN = function(x){
@@ -450,10 +495,12 @@ createPlayerServer <- function(id, userinfo, parent) {
       
       
       observe({
+        # editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% print()
+        
         if(checkIfAlreadyApproving(userinfo$uid)) {
           showToast("error", "You already have a player waiting for approval. You cannot submit another one.")
-        } else if(sapply(c(input$lastName, input$nationality, input$footedness, input$hairColor, input$hairLength, input$skinTone), FUN = function(x) x == "", simplify = TRUE) %>% any() | 
-           (input$playerType == "Outfielder" & (input$traits %>% length() != 2 | input$primary %>% length() != 1 | input$secondary %>% length() != 2))){
+        } else if(sapply(c(input$lastName, input$nationality, input$footedness, input$hairColor, input$hairLength, input$skinColor), FUN = function(x) x == "", simplify = TRUE) %>% any() | 
+           (input$playerType == "Outfield" & (input$traits %>% length() != 2 | input$primary %>% length() != 1 | input$secondary %>% length() != 2))){
           
           showToast("error", "You have missed to input some information. Please take a look at the highlighted inputs and correct the issues.")
           
@@ -462,7 +509,7 @@ createPlayerServer <- function(id, userinfo, parent) {
           feedbackDanger("footedness", input$footedness == "", "Please enter the footedness of your player.")
           feedbackDanger("hairColor", input$hairColor == "", "Please enter the hair color for your player.")
           feedbackDanger("hairLength", input$hairLength == "", "Please enter the hair length for your player.")
-          feedbackDanger("skinTone", input$skinTone == "", "Please enter the skin tone for your player.")
+          feedbackDanger("skinColor", input$skinColor == "", "Please enter the skin tone for your player.")
           
           if(input$traits %>% length() != 2){
             showToast("error", "Please select two (2) traits.")
@@ -478,7 +525,7 @@ createPlayerServer <- function(id, userinfo, parent) {
           
         } else if(checkDuplicatedName(input$firstName, input$lastName)){
           showToast("error", "Another player in the league's history have used this name. Please change it to something else.")
-        } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
+        } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
           showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
         } else if(tpeBanked() < 0){
           showToast("error", "You have spent too much TPE. Please adjust and resubmit.")
