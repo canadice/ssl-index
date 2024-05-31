@@ -111,36 +111,54 @@ submitPTServer <- function(id, userinfo) {
         gradedTask() %>% 
           then(
             onFulfilled = function(data){
-              data %>% 
-                mutate(
-                  source = input$taskName
-                ) %>% 
-                ptGradingVerify(session = session)
+              if(any(data$pid == -99)){
+                showToast("error", "At least one user in the submitted csv cannot be found on the forum. Please check the spelling.")
+              } else if(data$pid %>% duplicated() %>% any()){
+                showToast("error", "You hav duplicated player ids in the submitted csv. Please check that you don't have the same user listed twice.")
+              } else {
+                data %>% 
+                  mutate(
+                    source = input$taskName
+                  ) %>% 
+                  ptGradingVerify(session = session)
+              }
             }
-          )
+          )  
       }) %>% 
         bindEvent(
-          input$submitTask
+          input$submitTask,
+          ignoreInit = TRUE
         )
       
       observe({
         
-        data <- 
-          gradedTask() %>% 
-            mutate(
-              uid = userinfo$uid
-            )
-          
-        
-        tpeLog(uid = userinfo$uid, pid = value$pid, tpe = tpeSummary)
-        
-        updateTPE(pid = value$pid, tpe = tpeSummary)
-        
-        showToast(type = "success", "You have successfully submitted a graded PT task.")
-        
+        gradedTask() %>% 
+          then(
+            onFulfilled = function(data){
+              removeModal()
+              
+              data %>% 
+                mutate(
+                  source = input$taskName
+                ) %>% 
+                apply(
+                  X = .,
+                  MARGIN = 1,
+                  FUN = function(row){
+                    tpeSummary <- tibble(tpe = row["tpe"], source = row["source"])
+                    
+                    tpeLog(uid = userinfo$uid, pid = row["pid"], tpe = tpeSummary)
+                    updateTPE(pid = row["pid"], tpe = tpeSummary)
+                  }
+                )
+              
+              showToast(type = "success", "You have successfully submitted a graded PT task.")
+            }
+          )
       }) %>% 
         bindEvent(
-          input$confirmSubmission
+          input$confirmSubmission,
+          ignoreInit = TRUE
         )
       
     }

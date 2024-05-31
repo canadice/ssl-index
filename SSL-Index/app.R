@@ -423,7 +423,6 @@ server <- function(input, output, session) {
     # print(authOutput())
     # 
     ## Loads the different server modules
-    playerPageServer("playerpage", uid = authOutput()$uid)
     leagueIndexServer("leagueindex", userinfo = authOutput())
     
     managerTeamServer("managerteam", userinfo = authOutput())
@@ -442,7 +441,11 @@ server <- function(input, output, session) {
     } else if(input$tabs == "createplayer"){
       createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
     } else if(input$tabs == "submitPT"){
+      req(authOutput()$uid)
       submitPTServer("submitPT", userinfo = authOutput())
+    } else if(input$tabs == "playerpage"){
+      req(authOutput()$uid)
+      playerPageServer("playerpage", uid = authOutput()$uid)
     }
   }) %>% 
     bindEvent(
