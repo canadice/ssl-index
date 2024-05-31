@@ -1,27 +1,27 @@
-
-getPlayerData <- function(uid = NULL, pid = NULL){
-  if(pid %>% is.null()){
-    portalQuery(
-      paste(
-        "SELECT *
-      FROM playerdata
-      WHERE uid =", uid, " AND status_p = 1",
-        "ORDER BY pid DESC LIMIT 1;"
-      )
-      # ORDER BY pid DESC
-      
-      ## NEED TO ADD SOMETHING THAT ONLY TAKES BACK ONE PLAYER IF SOMEONE HAS RECREATED
-    )
-  } else {
-    portalQuery(
-      paste(
-        "SELECT *
-      FROM playerdata
-      WHERE pid = ", pid
-      )
-    )
-  }
-}
+# 
+# getPlayerData <- function(uid = NULL, pid = NULL){
+#   if(pid %>% is.null()){
+#     portalQuery(
+#       paste(
+#         "SELECT *
+#       FROM playerdata
+#       WHERE uid =", uid, " AND status_p = 1",
+#         "ORDER BY pid DESC LIMIT 1;"
+#       )
+#       # ORDER BY pid DESC
+#       
+#       ## NEED TO ADD SOMETHING THAT ONLY TAKES BACK ONE PLAYER IF SOMEONE HAS RECREATED
+#     )
+#   } else {
+#     portalQuery(
+#       paste(
+#         "SELECT *
+#       FROM playerdata
+#       WHERE pid = ", pid
+#       )
+#     )
+#   }
+# }
 
 getPlayerDataAsync <- function(uid = NULL, pid = NULL){
   future_promise({
@@ -62,15 +62,29 @@ hasActivePlayer <- function(uid){
   nrow(res) > 0
 }
 
-getPlayerName <- function(pid){
+getPlayerName <- function(uid = NULL, pid = NULL){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT name
-          FROM playerdata
-          WHERE pid =", pid, ";"
+    if(pid %>% is.null()){
+      portalQuery(
+        paste(
+          "SELECT pid, name
+        FROM playerdata
+        WHERE uid =", uid, " AND status_p = 1",
+          "ORDER BY pid DESC LIMIT 1;"
+        )
+        # ORDER BY pid DESC
+        
+        ## NEED TO ADD SOMETHING THAT ONLY TAKES BACK ONE PLAYER IF SOMEONE HAS RECREATED
       )
-    )
+    } else {
+      portalQuery(
+        paste(
+          "SELECT pid, name
+        FROM playerdata
+        WHERE pid = ", pid, " AND status_p = 1"
+        )
+      )
+    }
   })
 }
 

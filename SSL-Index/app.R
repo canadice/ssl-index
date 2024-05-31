@@ -260,6 +260,18 @@ server <- function(input, output, session) {
       tabItem(
         "bodoverview",
         bodTeamUI(id = "bodoverview")
+      ),
+      tabItem(
+        "submitPT",
+        submitPTUI(id = "submitPT")
+      # ),
+      # tabItem(
+      #   "bodoverview",
+      #   bodTeamUI(id = "bodoverview")
+      # ),
+      # tabItem(
+      #   "bodoverview",
+      #   bodTeamUI(id = "bodoverview")
       # ),
       # tabItem(
       #   "teamindex",
@@ -294,8 +306,20 @@ server <- function(input, output, session) {
         )
       ),
       {
+        # PT (11), Commissioner (4)
+        if(any(c(4, 11) %in% authOutput()$usergroup)){
+          menuItem(
+            "PT Tools",
+            menuSubItem(
+              "Submit Graded PT",
+              tabName = "submitPT"
+            )
+          )
+        }
+      },
+      {
         # Manager (8)
-        if(8 %in% authOutput()$usergroup){
+        if(any(c(4, 8) %in% authOutput()$usergroup)){
           menuItem(
             "Manager Tools",
             menuSubItem(
@@ -417,6 +441,8 @@ server <- function(input, output, session) {
       playerApproveServer("playerapprove", userinfo = authOutput())  
     } else if(input$tabs == "createplayer"){
       createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
+    } else if(input$tabs == "submitPT"){
+      submitPTServer("submitPT", userinfo = authOutput())
     }
   }) %>% 
     bindEvent(

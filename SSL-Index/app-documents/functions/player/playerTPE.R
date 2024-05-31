@@ -2,7 +2,10 @@
 getTpeHistory <- function(pid){
   portalQuery(
     paste("SELECT * FROM tpehistory WHERE pid = ", pid, "ORDER BY time DESC")
-  )
+  ) %>% 
+    mutate(
+      time = time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
+    )
 }
 
 completedActivityCheck <- function(pid){
@@ -63,7 +66,8 @@ tpeLog <- function(uid, pid, tpe){
 updateTPE <- function(pid, tpe){
   portalQuery(
     paste(
-      "UPDATE playerdata SET tpe = tpe + ", tpe$tpe,
+      "UPDATE playerdata SET tpe = tpe + ", tpe$tpe, 
+      ", tpebank = tpebank + ", tpe$tpe,
       "WHERE pid =", pid
     )
   )

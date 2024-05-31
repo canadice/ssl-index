@@ -46,7 +46,10 @@ updateBuild <- function(pid, updates, bank){
 getUpdateHistory <- function(pid){
   portalQuery(
     paste("SELECT * FROM updatehistory WHERE pid = ", pid, "ORDER BY time DESC")
-  )
+  ) %>% 
+    mutate(
+      time = time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
+    )
 }
 
 ## Summarizes updated attributes in a tibble

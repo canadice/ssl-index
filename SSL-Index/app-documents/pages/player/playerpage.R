@@ -315,7 +315,7 @@ playerPageServer <- function(id, uid) {
                   ) %>% factor()
                 ) %>% 
                 ggplot() + aes(x = Attribute, y = Value, fill = ValueFill) + 
-                geom_bar(stat = "identity") +
+                geom_bar(stat = "identity", color = "black") +
                 facet_wrap(. ~ group, scales = "free") + 
                 scale_y_continuous(expand = c(0,0), limits = c(0, 20), minor_breaks = seq(0, 20, 1)) +
                 scale_fill_manual(
@@ -327,6 +327,8 @@ playerPageServer <- function(id, uid) {
                 theme(
                   panel.grid.major.y = element_blank(),
                   panel.grid.minor.y = element_blank(),
+                  panel.grid.major.x = element_line(color = "gray50"),
+                  panel.grid.minor.x = element_line(color = "gray75"),
                   axis.text = element_text(size = 14),
                   strip.text = element_text(size = 16),
                   plot.margin = unit(margin(r = 10), "pt"),
