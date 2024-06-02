@@ -67,7 +67,7 @@ getPlayerName <- function(uid = NULL, pid = NULL){
     if(pid %>% is.null()){
       portalQuery(
         paste(
-          "SELECT pid, name
+          "SELECT pid, name, class
         FROM playerdata
         WHERE uid =", uid, " AND status_p = 1",
           "ORDER BY pid DESC LIMIT 1;"
@@ -79,12 +79,44 @@ getPlayerName <- function(uid = NULL, pid = NULL){
     } else {
       portalQuery(
         paste(
-          "SELECT pid, name
+          "SELECT pid, name, class
         FROM playerdata
         WHERE pid = ", pid, " AND status_p = 1"
         )
       )
     }
+  })
+}
+
+getPlayerTraits <- function(pid){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT traits
+        FROM playerdata
+        WHERE pid =", pid, ";"
+      )
+    ) %>% 
+      str_split(
+        pattern = " \\\\ "
+      ) %>% 
+      unlist()
+  })
+}
+
+getPlayerPositions <- function(pid){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT pos_st, pos_lam, pos_cam, pos_ram, pos_lm, pos_cm, pos_rm, pos_lwb, pos_cdm, pos_rwb, pos_ld, pos_cd, pos_rd, pos_gk
+        FROM playerdata
+        WHERE pid =", pid, ";"
+      )
+    ) %>% 
+      pivot_longer(everything()) %>% 
+      mutate(
+        name = str_remove(name, pattern = "pos_") %>% str_to_upper()
+      )
   })
 }
 

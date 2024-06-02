@@ -56,6 +56,14 @@ playerPageUI <- function(id) {
               uiOutput(
                 outputId = ns("buttonUpdate")
               ) %>% 
+                withSpinnerSmall(),
+              uiOutput(
+                outputId = ns("buttonReroll")
+              ) %>% 
+                withSpinnerSmall(),
+              uiOutput(
+                outputId = ns("buttonRedistribution")
+              ) %>% 
                 withSpinnerSmall()
             )
           )
@@ -121,10 +129,7 @@ playerPageUI <- function(id) {
                 inputId = ns("resetUpdate"),
                 "Reset"
               ),
-              actionButton(
-                inputId = ns("verifyUpdate"),
-                "Update"
-              )
+              uiOutput(ns("verifyButton"))
             )
           ) %>% 
             div(id = ns("buttonsUpdating")) %>% 
@@ -184,6 +189,12 @@ playerPageServer <- function(id, uid) {
       
       #### REACTIVES ####
       updating <- 
+        reactiveVal({FALSE})
+      
+      redistributing <- 
+        reactiveVal({FALSE})
+      
+      rerolling <- 
         reactiveVal({FALSE})
       
       updated <- reactiveVal({0})
@@ -447,6 +458,65 @@ playerPageServer <- function(id, uid) {
           )
       })
       
+      output$buttonReroll <- renderUI({
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              
+              # Rerolls can be made by users in their first two seasons in the SSL League proper
+              check <- 
+                ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 2)) & 
+                (data$rerollused == 0)
+              
+              if(check) {
+                actionButton(
+                  inputId = session$ns("goToReroll"),
+                  "Reroll"
+                )
+              } else {
+                # actionButton(
+                #   inputId = session$ns("goToReroll"),
+                #   "Reroll",
+                #   disabled = ""
+                # )
+              }
+            }
+          )
+      })
+      
+      output$buttonRedistribution <- renderUI({
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              
+              # Redistributions can be made by users in their first season in the SSL League proper
+              check <- 
+                ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 1)) & 
+                (data$redistused == 0)
+              
+              if(check) {
+                actionButton(
+                  inputId = session$ns("goToRedist"),
+                  "Redistribute"
+                )
+              } else {
+                # actionButton(
+                #   inputId = session$ns("goToRedist"),
+                #   "Redistribute",
+                #   disabled = ""
+                # )
+              }
+            }
+          )
+      })
+      
+      output$verifyButton <- renderUI({
+        actionButton(
+          inputId = session$ns("verifyUpdate"),
+          if_else(updating(), "Update", if_else(redistributing(), "Redistribute", "Reroll"))
+        )
+      })
+      
       output$buttonAC <- renderUI({
         playerData() %>% 
           then(
@@ -489,7 +559,7 @@ playerPageServer <- function(id, uid) {
       
       # Updates the banked tpe when changing attributes
       observe({
-        if(updating()){
+        if(updating() | redistributing() | rerolling()){
           tpeBanked(
             playerData() %>% 
               then(
@@ -516,6 +586,7 @@ playerPageServer <- function(id, uid) {
       }) %>% 
         bindEvent(
           # Changes in any input slider
+          rerolling(),
           {
             editableAttributes %>% 
               lapply(
@@ -530,7 +601,7 @@ playerPageServer <- function(id, uid) {
       
       # Fixes moving away from locked 20 in stamina and natural fitness
       observe({
-        if(updating()){
+        if(updating() | redistributing() | rerolling()){
           c("natural fitness", "stamina") %>% 
           map(
             .x = .,
@@ -553,7 +624,7 @@ playerPageServer <- function(id, uid) {
         }
       }) %>% 
         bindEvent(
-          # Changes in any input slider
+          # Changes in only Natural Fitness and Stamina to lock it at 20
           {
             c("Natural Fitness", "Stamina") %>% 
               stringr::str_to_title() %>% 
@@ -688,6 +759,140 @@ playerPageServer <- function(id, uid) {
           ignoreInit = TRUE
         )
       
+      observe({
+        shinyjs::toggle("attributeOverview")
+        shinyjs::toggle("attributeUpdate")
+        shinyjs::toggle("tpeButtons")
+        shinyjs::show("buttonsUpdating")
+        
+        redistributing(TRUE)
+        
+        showModal(
+          modalDialog(
+            "You may only submit one redistribution in your career. If you only want to update, please click the Back button.",
+            title="Redistribution warning",
+            footer = modalButton("I understand!"),
+            easyClose = FALSE
+          )
+        )
+        
+        promise_all(
+          data1 = playerData(), 
+          data2 = playerData()
+        ) %...>% 
+          with({
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
+              colnames() %>% 
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = data2[, x],
+                    min = 5,
+                    max = 20
+                  )
+                }
+              )
+            
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
+              select(
+                where(is.na)
+              ) %>%
+              colnames() %>%
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = 5,
+                    min = 5,
+                    max = 5
+                  )
+                  
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
+                }
+              )
+          })
+      }) %>% 
+        bindEvent(
+          input$goToRedist,
+          ignoreInit = TRUE
+        )
+      
+      observe({
+        shinyjs::toggle("attributeOverview")
+        shinyjs::toggle("attributeUpdate")
+        shinyjs::toggle("tpeButtons")
+        shinyjs::show("buttonsUpdating")
+        
+        rerolling(TRUE)
+        
+        showModal(
+          modalDialog(
+            "You may only submit one reroll in your career. If you only want to update, please click the Back button.",
+            title="Reroll warning",
+            footer = modalButton("I understand!"),
+            easyClose = FALSE
+          )
+        )
+        
+        promise_all(
+          data1 = playerData(), 
+          data2 = playerData()
+        ) %...>% 
+          with({
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
+              colnames() %>% 
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = 5,
+                    min = 5,
+                    max = 20
+                  )
+                }
+              )
+            
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
+              select(
+                where(is.na)
+              ) %>%
+              colnames() %>%
+              map(
+                .x = .,
+                .f = function(x){
+                  updateNumericInput(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    value = 5,
+                    min = 5,
+                    max = 5
+                  )
+                  
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
+                }
+              )
+          })
+      }) %>% 
+        bindEvent(
+          input$goToReroll,
+          ignoreInit = TRUE
+        )
+      
       # Resets the player build 
       observe({
         promise_all(
@@ -747,12 +952,40 @@ playerPageServer <- function(id, uid) {
             } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
               showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
             } else {
-              update <- updateSummary(current = current, inputs = input)
+              update <- updateSummary(current = current, inputs = input) %>% 
+                left_join(
+                  tpeCost %>% 
+                    select(value, cumCost),
+                  by = c("old" = "value")
+                ) %>% 
+                left_join(
+                  tpeCost %>% 
+                    select(value, cumCost),
+                  by = c("new" = "value"),
+                  suffix = c("_old", "_new")
+                ) %>% 
+                mutate(
+                  change = cumCost_old - cumCost_new
+                ) 
+              
+              changes <- 
+                update %>% 
+                mutate(
+                  direction = sign(change)
+                ) %>% 
+                group_by(direction) %>% 
+                summarize(
+                  tpeChange = sum(change) %>% abs()
+                ) %>% 
+                ungroup()
               
               if(nrow(update) > 0){
-                if(any((update$old - update$new) > 0)){
+                if(!(redistributing() | rerolling()) & any((update$old - update$new) > 0) ){
                   showToast("error", paste("You cannot reduce attributes in a regular update.",
                             paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")))
+                # Checks for the total sum of reduced attributes
+                } else if(redistributing() & (changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+                  showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")
                 } else {
                   modalVerify(update, session = session)
                 }
@@ -815,9 +1048,19 @@ playerPageServer <- function(id, uid) {
             
             updateBuild(pid = current$pid, updates = update, bank = bank)
             
+            if(redistributing()){
+              completeRedistribution(current$pid)
+            }
+            
+            if(rerolling()){
+              completeReroll(current$pid)
+            }
+            
             updated(updated() + 1)
             
             updating(FALSE)
+            redistributing(FALSE)
+            rerolling(FALSE)
             
             shinyjs::toggle("attributeOverview")
             shinyjs::toggle("attributeUpdate")
@@ -875,6 +1118,8 @@ playerPageServer <- function(id, uid) {
                     ))
         
         updating(FALSE)
+        redistributing(FALSE)
+        rerolling(FALSE)
       }) %>% 
         bindEvent(
           combineTriggers(input$backUpdate, input$backRegression),

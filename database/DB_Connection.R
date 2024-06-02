@@ -118,7 +118,9 @@ playerdata <-
       Team == "Montréal United" ~ "Schwarzwälder FV",
       Team == "AS Paris" ~ "União São Paulo",
       TRUE ~ Team
-    )
+    ),
+    rerollused = 0,
+    redistused = 0
     # foot_left = if_else(`Preferred Foot` == "Left", 20, 10),
     # foot_right = if_else(`Preferred Foot` == "Right", 20, 10)
   ) %>% 
@@ -160,7 +162,9 @@ playerdata <-
     pos_rd = `Defense [R]`,
     pos_gk = Goalkeeper,
     Acceleration:Throwing,
-    traits = `All Traits`
+    traits = `All Traits`,
+    rerollused,
+    redistused
   ) %>% 
   mutate(
     across(

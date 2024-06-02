@@ -42,6 +42,26 @@ updateBuild <- function(pid, updates, bank){
   )
 }
 
+completeRedistribution <- function(pid){
+  portalQuery(
+    paste(
+      "UPDATE playerdata
+      SET redistused = 1 
+      WHERE pid =", pid
+    )
+  )
+}
+
+completeReroll <- function(pid){
+  portalQuery(
+    paste(
+      "UPDATE playerdata
+      SET rerollused = 1 
+      WHERE pid =", pid
+    )
+  )
+}
+
 ## Gets update history
 getUpdateHistory <- function(pid){
   portalQuery(
