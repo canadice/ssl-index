@@ -11,7 +11,8 @@ submitPTUI <- function(id) {
     column(
       width = 12,
       p("Rows marked in red have usernames that cannot be found on the forum. Check the spelling of the username and reupload the file."),
-      reactableOutput(outputId = ns("checkImport"))
+      reactableOutput(outputId = ns("checkImport")) %>% 
+        withSpinnerMedium()
     ) %>% 
       fluidRow(),
     column(
@@ -34,7 +35,9 @@ submitPTServer <- function(id, userinfo) {
           
           file <- read.csv(file$datapath, header = TRUE)
           
-          if(all(c("username", "tpe") %in% colnames(file))){
+          if(all(c("username", "tpe") %in% (colnames(file) %>% str_to_lower()))){
+            colnames(file) <- colnames(file) %>% str_to_lower()
+            
             pids <- 
               promise_map(
                 .x = file$username, 
@@ -51,7 +54,20 @@ submitPTServer <- function(id, userinfo) {
                             pid = -99
                           )
                         } else {
-                          getPlayerName(uid = x)
+                          res <- getPlayerName(uid = x)
+                          
+                          res %>% 
+                            then(
+                              onFulfilled = function(name){
+                                if(name %>% nrow() == 0){
+                                  tibble(
+                                    pid = -99
+                                  )
+                                } else {
+                                  name
+                                }
+                              }
+                            )
                         }
                       } 
                     ) %>% 
