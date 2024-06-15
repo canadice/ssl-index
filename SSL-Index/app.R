@@ -262,6 +262,10 @@ server <- function(input, output, session) {
         bodTeamUI(id = "bodoverview")
       ),
       tabItem(
+        "assignManager",
+        assignManagerUI("assignManager")
+      ),
+      tabItem(
         "submitPT",
         submitPTUI(id = "submitPT")
       # ),
@@ -341,6 +345,10 @@ server <- function(input, output, session) {
             menuSubItem(
               "Player Approvals",
               tabName = "playerapprove"
+            ),
+            menuSubItem(
+              "Assign Managers",
+              tabName = "assignManager"
             ),
             menuSubItem(
               "Organizational Overview",
@@ -426,6 +434,7 @@ server <- function(input, output, session) {
     leagueIndexServer("leagueindex", userinfo = authOutput())
     
     managerTeamServer("managerteam", userinfo = authOutput())
+    assignManagerServer("assignManager", userinfo = authOutput())
     bodTeamServer("bodoverview", userinfo = authOutput())
     # teamIndexServer("teamindex")
   }) %>% 

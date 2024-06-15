@@ -23,3 +23,15 @@ getUserName <- function(uid){
   })
 }
 
+getUsers <- function(){
+  future_promise({
+    mybbQuery(
+      paste(
+        "SELECT uid, username
+          FROM mybb_users;
+          "
+      )
+    )
+  })
+}
+
