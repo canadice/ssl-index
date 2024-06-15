@@ -139,9 +139,13 @@ getPlayersFromTeam <- function(uid){
         "SELECT name, class, tpe, tpebank, footedness, position, affiliate, pid
       FROM playerdata
       WHERE team IN (
-        SELECT team
-        FROM playerdata
-        WHERE uid = ", uid, " AND status_p = 1
+        SELECT name
+        FROM teams
+        WHERE orgID IN (
+          SELECT orgID
+        FROM managers
+        WHERE orgManager = ", uid, " OR assManager1 = ", uid, "OR assManager2 = ", uid, "
+        )
       )"
       )
     )
