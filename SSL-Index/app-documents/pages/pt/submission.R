@@ -17,7 +17,8 @@ submitPTUI <- function(id) {
       fluidRow(),
     column(
       width = 12,
-      actionButton(inputId = ns("submitTask"), label = "Submit")
+      actionButton(inputId = ns("submitTask"), label = "Submit"),
+      downloadButton(ns("downloadData"),label = "Fake", style = "visibility: hidden;")
     )
   )
 }
@@ -99,7 +100,6 @@ submitPTServer <- function(id, userinfo) {
         }
       })
       
-      
       output$checkImport <- renderReactable({
         if(gradedTask() %>% is.null()){
           NULL
@@ -123,12 +123,46 @@ submitPTServer <- function(id, userinfo) {
         }
       })
       
+      # DOWNLOAD BUTTON 
+      output$downloadData <- downloadHandler(
+        filename = function() { 
+          paste(input$taskName, " Unprocessed ", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+          gradedTask() %>% 
+            then(
+              onFulfilled = function(data){
+                data %>% 
+                  filter(
+                    pid == -99
+                  ) %>% 
+                  select(!pid) %>% 
+                  write.csv(file, row.names = FALSE)
+              }
+            )
+        })
+      
       observe({
         gradedTask() %>% 
           then(
             onFulfilled = function(data){
               if(any(data$pid == -99)){
-                showToast("error", "At least one user in the submitted csv cannot be found on the forum. Please check the spelling.")
+                showToast("warning", "At least one user in the submitted csv cannot be found on the forum. They are found in the downloaded csv file for checking and re-import.")
+                
+                click("downloadData")
+                
+                processed <- 
+                  data %>% 
+                  filter(
+                    pid != -99
+                  )
+                
+                processed %>% 
+                  mutate(
+                    source = input$taskName
+                  ) %>% 
+                  ptGradingVerify(session = session)
+                
               } else if(data$pid %>% duplicated() %>% any()){
                 showToast("error", "You hav duplicated player ids in the submitted csv. Please check that you don't have the same user listed twice.")
               } else {
