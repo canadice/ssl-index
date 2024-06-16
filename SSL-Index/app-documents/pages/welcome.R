@@ -8,7 +8,20 @@ welcomeUI <- function(id) {
         ) %>% 
       column(width = 12),
     
-    box(title = "News", width = NULL) %>% 
+    box(title = "News", width = NULL,
+        column(
+          width = 6,
+          h4("Weekly top earners"),
+          reactableOutput(ns("weeklyLeaders")) %>% 
+            withSpinnerMedium()
+        ),
+        column(
+          width = 6,
+          h4("Recent creates"),
+          reactableOutput(ns("created")) %>% 
+            withSpinnerMedium()
+        )
+      ) %>% 
       column(width = 8),
     
     box(title = "Current Standings", width = NULL,
@@ -61,9 +74,6 @@ welcomeServer <- function(id, userinfo) {
       
       
       #### Latest results ####
-      
-
-      
       output$schedule <- renderUI({
         schedule <- getSchedule()
         
@@ -104,6 +114,31 @@ welcomeServer <- function(id, userinfo) {
           )
         )
         
+      })
+      #### Weekly TPE Leaders ####
+      output$weeklyLeaders <- renderReactable({
+        data <- topEarners()
+        
+        data %>% 
+          then(
+            onFulfilled = function(data){
+              data %>% 
+                reactable()
+            }
+          )
+      })
+      
+      #### Recently created ####
+      output$created <- renderReactable({
+        data <- getRecentCreates()
+        
+        data %>% 
+          then(
+            onFulfilled = function(data){
+              data %>% 
+                reactable()
+            }
+          )
       })
     }
   )

@@ -165,6 +165,25 @@ getPlayersFromAllTeams <- function(){
   })
 }
 
+getRecentCreates <- function(){
+  portalQuery(
+    paste(
+      "SELECT 
+            pd.name AS Name,
+            mbb.username AS Username
+        FROM 
+            playerData pd
+        LEFT JOIN
+            mybbdb.mybb_users mbb ON pd.uid = mbb.uid
+        WHERE 
+            pd.status_p = 1
+        ORDER BY 
+            created DESC
+        LIMIT 5;"
+    )
+  ) %>% 
+    future_promise()
+}
 
 
 

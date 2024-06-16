@@ -10,7 +10,8 @@ customCheckCredentials <- function(){
           WHERE username = '", user, "'",
           sep = ""
           )
-      )
+      ) %>% 
+      suppressWarnings()
     
     if(nrow(res) == 1){
       saltedPASS <- 
