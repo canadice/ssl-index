@@ -123,7 +123,9 @@ welcomeServer <- function(id, userinfo) {
           then(
             onFulfilled = function(data){
               data %>% 
-                reactable()
+                reactable(
+                  defaultColDef = colDef(minWidth = 75)
+                )
             }
           )
       })
