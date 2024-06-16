@@ -7,7 +7,7 @@ topEarners <- function(){
         FROM 
             tpehistory ph
         JOIN 
-            playerData pd ON ph.pid = pd.pid
+            playerdata pd ON ph.pid = pd.pid
         WHERE 
             YEARWEEK(FROM_UNIXTIME(ph.time), 1) = YEARWEEK(CURDATE(), 1)
         GROUP BY 

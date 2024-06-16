@@ -172,7 +172,7 @@ getRecentCreates <- function(){
             pd.name AS Name,
             mbb.username AS Username
         FROM 
-            playerData pd
+            playerdata pd
         LEFT JOIN
             mybbdb.mybb_users mbb ON pd.uid = mbb.uid
         WHERE 
