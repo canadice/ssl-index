@@ -327,7 +327,7 @@ playerPageServer <- function(id, uid) {
                 ) %>% 
                 ggplot() + aes(x = Attribute, y = Value, fill = ValueFill) + 
                 geom_bar(stat = "identity", color = "black") +
-                facet_wrap(. ~ group, scales = "free") + 
+                facet_wrap(. ~ group, scales = "free", nrow = 1) + 
                 scale_y_continuous(expand = c(0,0), limits = c(0, 20), minor_breaks = seq(0, 20, 1)) +
                 scale_fill_manual(
                   guide = NULL,
@@ -984,8 +984,12 @@ playerPageServer <- function(id, uid) {
                   showToast("error", paste("You cannot reduce attributes in a regular update.",
                             paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")))
                 # Checks for the total sum of reduced attributes
-                } else if(redistributing() & (changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
-                  showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")
+                } else if(redistributing()){
+                  if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+                    showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                  } else {
+                    modalVerify(update, session = session)
+                  }
                 } else {
                   modalVerify(update, session = session)
                 }

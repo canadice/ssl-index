@@ -194,7 +194,8 @@ ui <- function(request){
           # tags$style(".main-header .navbar {margin-left: 300px}"),
           # tags$style(type="text/css", "text {font-family: sans-serif, courier}"),
           # 
-        )
+        ),
+        dropdownMenuOutput("notifications")
       )
     ),
     dashboardSidebar(
@@ -255,7 +256,8 @@ server <- function(input, output, session) {
       ),
       tabItem(
         "welcome",
-        # managerTeamUI(id = "teamindex")
+        welcomeUI(id = "welcome"),
+        active = TRUE
       ),
       tabItem(
         "bodoverview",
@@ -282,6 +284,25 @@ server <- function(input, output, session) {
       #   teamIndexUI(id = "teamindex")
       )
       
+    )
+  })
+  
+  output$notifications <- renderMenu({
+    dropdownMenu(type = "notifications",
+                 notificationItem(
+                   text = "5 new users today",
+                   icon("users")
+                 ),
+                 notificationItem(
+                   text = "12 items delivered",
+                   icon("truck"),
+                   status = "success"
+                 ),
+                 notificationItem(
+                   text = "Server load at 86%",
+                   icon = icon("exclamation-triangle"),
+                   status = "warning"
+                 )
     )
   })
   
@@ -401,6 +422,13 @@ server <- function(input, output, session) {
     }
   })
   
+  observe({
+    updateTabItems(session, "tabs", selected = "welcome")
+  }) %>% 
+    bindEvent(
+      authOutput()
+    )
+  
   output$playerTabs <- renderMenu({
     if(hasActivePlayer(authOutput()$uid)){
       menuItem(
@@ -455,6 +483,9 @@ server <- function(input, output, session) {
     } else if(input$tabs == "playerpage"){
       req(authOutput()$uid)
       playerPageServer("playerpage", uid = authOutput()$uid)
+    } else if(input$tabs == "welcome"){
+      req(authOutput()$uid)
+      welcomeServer("welcome", userinfo = authOutput())
     }
   }) %>% 
     bindEvent(

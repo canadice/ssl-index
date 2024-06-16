@@ -82,7 +82,7 @@ leagueIndexServer <- function(id, userinfo) {
                           )
                         
                       } else {
-                        file.exists(sprintf("%s.png", Club)) %>% print()
+                        # file.exists(sprintf("%s.png", Club)) %>% print()
                         
                         image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
                         
