@@ -8,7 +8,8 @@ getUserID <- function(name){
         sep = ""
       )
     )
-  })
+  }) %>% 
+    suppressWarnings()
 }
 
 getUserName <- function(uid){

@@ -85,7 +85,8 @@ getPlayerName <- function(uid = NULL, pid = NULL){
         )
       )
     }
-  })
+  }) %>% 
+    suppressWarnings()
 }
 
 getPlayerTraits <- function(pid){
