@@ -10,7 +10,7 @@ ptGradingVerify <- function(task, session){
         width = 8,
         offset = 2,
         reactable(
-          head(task)
+          task
         ) %>% 
           div(
             style = "background: #f0f0f0; border: #656565"
