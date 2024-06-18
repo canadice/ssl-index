@@ -62,10 +62,8 @@ playerPageUI <- function(id) {
                 uiOutput(
                   outputId = ns("buttonRedistribution")
                 ),
-                uiOutput(
-                  outputId = ns("buttonRetire")
-                ),
-                placement = "bottom-end"
+                actionButton(ns("goToRetire"), label = "Retire"),
+                placement = "left-end"
               )
             )
           )
@@ -1219,6 +1217,43 @@ playerPageServer <- function(id, uid) {
       }) %>% 
         bindEvent(
           input$trainingCamp,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
+      # Retires player
+      observe({
+        modalRetire(session)
+      }) %>% 
+        bindEvent(
+          input$goToRetire,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
+      observe({
+        modalRetire2(session)
+      }) %>% 
+        bindEvent(
+          input$confirmRetirement1,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
+      observe({
+        removeModal()
+        
+        playerData() %>%
+          then(
+            onFulfilled = function(value){
+              completeRetirement(pid = value$pid)
+              
+              showToast(type = "success", "You have now retired your player. Please go back to the welcome tab.")
+            }
+          )
+      }) %>% 
+        bindEvent(
+          input$confirmRetirement2,
           ignoreInit = TRUE,
           once = TRUE
         )

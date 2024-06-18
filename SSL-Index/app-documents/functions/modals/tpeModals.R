@@ -70,6 +70,40 @@ modalVerify <- function(update, session){
   )
 }
 
+modalRetire <- function(session){
+  showModal(
+    modalDialog(
+      "Are you sure you want to retire? This is a permanent decision and you may not un-retire after going through with the retirement.",
+      title="Retirement",
+      footer = tagList(
+        modalButton("No, go back"),
+        actionButton(
+          inputId = session$ns("confirmRetirement1"),
+          label = "Yes, I am fully aware of the results of this decision and want to continue!"
+        )
+      ),
+      easyClose = FALSE
+    )
+  )
+}
+
+modalRetire2 <- function(session){
+  showModal(
+    modalDialog(
+      "Are you really sure? You cannot revert this decision after clicking confirm.",
+      title="Retirement",
+      footer = tagList(
+        modalButton("No, go back"),
+        actionButton(
+          inputId = session$ns("confirmRetirement2"),
+          label = "Yes, I want to permanently retire!"
+        )
+      ),
+      easyClose = FALSE
+    )
+  )
+}
+
 modalNothing <- function(){
   showModal(
     modalDialog(

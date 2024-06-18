@@ -62,6 +62,16 @@ completeReroll <- function(pid){
   )
 }
 
+completeRetirement <- function(pid){
+  portalQuery(
+    paste(
+      "UPDATE playerdata
+      SET status_p = 2 
+      WHERE pid =", pid
+    )
+  )
+}
+
 ## Gets update history
 getUpdateHistory <- function(pid){
   portalQuery(
