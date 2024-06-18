@@ -138,7 +138,12 @@ welcomeServer <- function(id, userinfo) {
           then(
             onFulfilled = function(data){
               data %>% 
-                reactable()
+                reactable(
+                  defaultColDef = colDef(minWidth = 25),
+                  columns = list(
+                    Pos = colDef(maxWidth = 50)
+                  )
+                )
             }
           )
       })

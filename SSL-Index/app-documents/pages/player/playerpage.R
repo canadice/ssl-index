@@ -47,24 +47,26 @@ playerPageUI <- function(id) {
           fluidRow(
             column(
               width = 12,
-              align = "center", 
-              style = "display: flex; justify-content: center;",
-              uiOutput(
-                outputId = ns("buttonRegression")
-              ) %>% 
-                withSpinnerSmall(),
-              uiOutput(
-                outputId = ns("buttonUpdate")
-              ) %>% 
-                withSpinnerSmall(),
-              uiOutput(
-                outputId = ns("buttonReroll")
-              ) %>% 
-                withSpinnerSmall(),
-              uiOutput(
-                outputId = ns("buttonRedistribution")
-              ) %>% 
-                withSpinnerSmall()
+              align = "right", 
+              dropMenu(
+                actionButton("go0", label = NULL, icon = icon("chevron-down")),
+                uiOutput(
+                  outputId = ns("buttonRegression")
+                ),
+                uiOutput(
+                  outputId = ns("buttonUpdate")
+                ),
+                uiOutput(
+                  outputId = ns("buttonReroll")
+                ),
+                uiOutput(
+                  outputId = ns("buttonRedistribution")
+                ),
+                uiOutput(
+                  outputId = ns("buttonRetire")
+                ),
+                placement = "bottom-end"
+              )
             )
           )
         ) %>% 
@@ -341,7 +343,8 @@ playerPageServer <- function(id, uid) {
                   panel.grid.major.x = element_line(color = "gray50"),
                   panel.grid.minor.x = element_line(color = "gray75"),
                   axis.text = element_text(size = 14),
-                  strip.text = element_text(size = 16),
+                  axis.text.y = element_text(hjust = 0, margin = ggplot2::margin(l = 20, r = -110, unit = "pt"), color = "black", face = "bold"),
+                  strip.text = element_text(size = 16, face = "bold"),
                   plot.margin = unit(margin(r = 10), "pt"),
                   plot.background = element_rect(fill = "transparent", color = NA)
                 ) + 

@@ -67,6 +67,7 @@ suppressMessages({
   require(shinyBS, quietly = FALSE)
   require(shinyFeedback, quietly = FALSE)
   require(sortable, quietly = FALSE)
+  require(shinyWidgets, quietly = FALSE)
   
   require(fresh, quietly = FALSE)
   require(shiny.router, quietly = FALSE)

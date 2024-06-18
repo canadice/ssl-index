@@ -170,6 +170,7 @@ getRecentCreates <- function(){
   portalQuery(
     paste(
       "SELECT 
+            pd.position AS Pos,
             pd.name AS Name,
             mbb.username AS Username
         FROM 
