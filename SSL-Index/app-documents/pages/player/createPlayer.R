@@ -265,48 +265,6 @@ createPlayerServer <- function(id, userinfo, parent) {
   moduleServer(
     id,
     function(input, output, session) {
-      # Define position options
-      positions <- c(
-        "LD" = "Left Defender", "CD" = "Central Defender", "RD" = "Right Defender",
-        "LWB" = "Left Wing Back", "CDM" = "Defensive Midfielder", "RWB" = "Right Wing Back",
-        "LM" = "Left Midfielder", "CM" = "Central Midfielder", "RM" = "Right Midfielder",
-        "LAM" = "Left Attacking Midfielder", "CAM" = "Central Attacking Midfielder", 
-        "RAM" = "Right Attacking Midfielder", "ST" = "Striker"
-      )
-      # Define trait options with optgroup
-      traits <- list(
-        "Movement - On the Ball" = list(
-          "Cuts Inside From Both Wings", "Knocks Ball Past Opponent", "Runs With Ball Rarely",
-          "Runs With Ball Often", "Runs With Ball Down Left", "Runs With Ball Down Right",
-          "Runs With Ball Through Centre", "Stops Play", "Brings Ball Out Of Defense"
-        ),
-        "Movement - Off the Ball" =list(
-          "Arrives Late In Opponent's Area", "Comes Deep To Get Ball", "Gets Forward Whenever Possible",
-          "Gets Into Opposition Area", "Hugs Line", "Likes To Try To Beat Offside Trap",
-          "Moves Into Channels", "Plays One-Twos", "Plays With Back To Goal",
-          "Does Not Move Into Channels", "Stays Back At All Times"
-        ),
-        "Passing" = list(
-          "Dictates Tempo", "Likes To Switch Ball To Other Flank", "Looks For Pass Rather Than Attempting To Score",
-          "Plays No Through Balls", "Plays Short Simple Passes", "Tries Killer Balls Often",
-          "Tries Long Range Passes", "Crossing Early"
-        ),
-        "Finishing" = list(
-          "Attempts Overhead Kicks", "Hits Free Kicks With Power",
-          "Likes To Lob Keeper", "Likes To Round Keeper", "Places Shots", "Refrains From Taking Long Shots",
-          "Shoots From Distance", "Shoots With Power", "Tries First Time Shots", "Tries Long Range Free Kicks"
-        ),
-        "Discipline" = list(
-          "Argues With Officials", "Winds Up Opponents", "Gets Crowd Going"
-        ),
-        "Defending" = list(
-          "Dives Into Tackles", "Does Not Dive Into Tackles", "Marks Opponent Tightly"
-        ),
-        "Technique" = list(
-          "Avoids Using Weaker Foot", "Uses Outside Of Foot", "Tries Tricks", "Likes To Beat Opponent Repeatedly",
-          "Curls Ball", "Possess Long Flat Throw", "Tries To Play Way Out Of Trouble"
-        )
-      )
       
       tpeBanked <- 
         reactiveVal({350}) 

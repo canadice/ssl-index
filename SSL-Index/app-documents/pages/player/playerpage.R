@@ -71,6 +71,16 @@ playerPageUI <- function(id) {
           div(id = ns("attributeOverview")),
         box(
           title = "Update Player", collapsible = FALSE, width = NULL,
+          radioButtons(
+            inputId = ns("playerType"),
+            label = "Outfield or Goalkeeper",
+            choices = c("Outfield", "Goalkeeper"),
+            selected = "Outfield"
+          ) %>% 
+            column(width = 12) %>% 
+            fluidRow() %>% 
+            div(align = "center", id = ns("playerSelector"))  %>% 
+            hidden(),
           fluidRow(
             column(
               width = 4,
@@ -116,6 +126,37 @@ playerPageUI <- function(id) {
                 )
             )
           ),
+          fluidRow(
+            box(
+              title = "Player Traits and Positions",
+              solidHeader = TRUE,
+              collapsible = TRUE,
+              status = "info",
+              width = NULL,
+              fluidRow(
+                column(
+                  width = 8,
+                  offset = 2,
+                  uiOutput(
+                    outputId = ns("positionSelector")
+                  )
+                )
+              ),
+              fluidRow(
+                column(
+                  width = 10,
+                  offset = 1,
+                  p("An outfield player may select two traits to start off their career."),
+                  uiOutput(
+                    outputId = ns("traitSelector")
+                  )
+                )
+              )
+            ) %>% 
+              column(width = 12)
+          ) %>% 
+            div(id = ns("outfieldExtras")) %>% 
+            hidden(),
           fluidRow(
             column(
               width = 12,
@@ -275,6 +316,77 @@ playerPageServer <- function(id, uid) {
       
       
       #### OUTPUTS ####
+      # Dynamic UI for position selector
+      output$positionSelector <- renderUI({
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              
+              posPrim <- positions[names(positions) %in% (data %>% 
+                                     select(pos_st:pos_gk) %>% 
+                                     pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                     filter(xp == 20) %>% 
+                                     mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                       select(pos) %>% unlist())
+              ]
+              
+              posSec <- positions[names(positions) %in% (data %>% 
+                                    select(pos_st:pos_gk) %>% 
+                                    pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                    filter(xp <= 15, xp >= 10) %>% 
+                                    mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                      select(pos) %>% unlist())
+              ]
+              
+              posRem <- positions[!(positions %in% c(posPrim, posSec))]
+              
+              tagList(
+                bucket_list(
+                  header = paste("You may select", length(posPrim), "primary position(s) and ", length(posSec), "secondary positions."),
+                  group_name = session$ns("pos"),
+                  orientation = "horizontal",
+                  add_rank_list(
+                    text = withTooltip("Select one primary position:", "Converts to 20 positional experience in the position"),
+                    labels = posPrim,
+                    input_id = session$ns("primary")
+                  ),
+                  add_rank_list(
+                    text = withTooltip("Select two secondary positions:", "Converts to 15 positional experience in the position"),
+                    labels = posSec,
+                    input_id = session$ns("secondary")
+                  ),
+                  add_rank_list(
+                    text = "Drag from here",
+                    labels = posRem,
+                    input_id = session$ns("unusedPositions")
+                  )
+                )
+              )
+            }
+          )
+      })
+      
+      # Dynamic UI for trait selectors
+      output$traitSelector <- renderUI({
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              currentTraits <- data$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
+              nrTraits <- length(currentTraits)
+              
+              tagList(
+                checkboxGroupInput(
+                  session$ns("traits"), 
+                  paste("Select", nrTraits,"traits:"), 
+                  choices = traits %>% unlist(use.names = FALSE), 
+                  selected = currentTraits
+                  ) %>% 
+                  div(class = "multicol")
+              )
+            }
+          )
+      })
+      
       observe({
         playerData() %>% 
           then(
@@ -761,10 +873,11 @@ playerPageServer <- function(id, uid) {
         )
       
       observe({
-        shinyjs::toggle("attributeOverview")
-        shinyjs::toggle("attributeUpdate")
-        shinyjs::toggle("tpeButtons")
+        shinyjs::hide("attributeOverview")
+        shinyjs::show("attributeUpdate")
+        shinyjs::hide("tpeButtons")
         shinyjs::show("buttonsUpdating")
+        shinyjs::show("outfieldExtras")
         
         redistributing(TRUE)
         
@@ -828,10 +941,12 @@ playerPageServer <- function(id, uid) {
         )
       
       observe({
-        shinyjs::toggle("attributeOverview")
-        shinyjs::toggle("attributeUpdate")
-        shinyjs::toggle("tpeButtons")
+        shinyjs::hide("attributeOverview")
+        shinyjs::show("attributeUpdate")
+        shinyjs::hide("tpeButtons")
         shinyjs::show("buttonsUpdating")
+        shinyjs::show("outfieldExtras")
+        shinyjs::show("playerSelector")
         
         rerolling(TRUE)
         
@@ -1006,6 +1121,18 @@ playerPageServer <- function(id, uid) {
         )
       
       observe({
+        if(input$playerType == "Outfield"){
+          shinyjs::show("outfieldExtras")
+        } else {
+          shinyjs::hide("outfieldExtras")
+        }
+      }) %>% 
+        bindEvent(
+          input$playerType,
+          ignoreInit = TRUE
+        )
+      
+      observe({
         promise_all(
           current = playerData(),
           bank = tpeBanked()
@@ -1067,11 +1194,13 @@ playerPageServer <- function(id, uid) {
             redistributing(FALSE)
             rerolling(FALSE)
             
-            shinyjs::toggle("attributeOverview")
-            shinyjs::toggle("attributeUpdate")
+            shinyjs::show("attributeOverview")
+            shinyjs::hide("attributeUpdate")
             shinyjs::hide("buttonsUpdating")
             shinyjs::hide("buttonsRegression")
-            shinyjs::toggle("tpeButtons")
+            shinyjs::show("tpeButtons")
+            shinyjs::hide("outfieldExtras")
+            shinyjs::hide("playerSelector")
             
             # print("Go back to overview from confirmation")
           })
@@ -1086,11 +1215,11 @@ playerPageServer <- function(id, uid) {
       observe({
         # print(paste("Going back to overview", combineTriggers(input$backUpdate, input$backRegression)))
         
-        shinyjs::toggle("attributeOverview")
-        shinyjs::toggle("attributeUpdate")
+        shinyjs::show("attributeOverview")
+        shinyjs::hide("attributeUpdate")
         shinyjs::hide("buttonsUpdating")
         shinyjs::hide("buttonsRegression")
-        shinyjs::toggle("tpeButtons")
+        shinyjs::show("tpeButtons")
         
         tpeBanked(playerData() %>% 
                     then(
