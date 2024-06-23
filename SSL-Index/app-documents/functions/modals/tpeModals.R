@@ -70,6 +70,7 @@ modalVerify <- function(update, session){
   )
 }
 
+
 modalRetire <- function(session){
   showModal(
     modalDialog(

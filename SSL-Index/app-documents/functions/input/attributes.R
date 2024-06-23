@@ -10,8 +10,8 @@ attributeInput <- function(ns, name, value){
           name %>% paste("*", sep = ""),
           name
         ),
-      value = if_else(name %>% str_detect(pattern = "Fitness|Stamina"), 20, 5),
-      min = if_else(name %>% str_detect(pattern = "Fitness|Stamina"), 20, 5),
+      value = if_else(name %>% str_detect(pattern = "Fitness|Stamina"), 20, if_else(value %>% is.na(), 5, value)),
+      min = if_else(name %>% str_detect(pattern = "Fitness|Stamina"), 20, if_else(value %>% is.na(), 5, value)),
       max = 20,
       width = NULL
     ) %>% 

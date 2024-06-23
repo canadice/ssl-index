@@ -40,13 +40,6 @@ playerPageUI <- function(id) {
           fluidRow(
             column(
               width = 12,
-              plotOutput(ns("playerOverview")) %>% 
-                withSpinnerMedium()
-            )
-          ),
-          fluidRow(
-            column(
-              width = 12,
               align = "right", 
               dropMenu(
                 actionButton("go0", label = NULL, icon = icon("chevron-down")),
@@ -66,64 +59,60 @@ playerPageUI <- function(id) {
                 placement = "left-end"
               )
             )
+          ),
+          fluidRow(
+            column(
+              width = 12,
+              plotOutput(ns("playerOverview")) %>% 
+                withSpinnerMedium()
+            )
           )
         ) %>% 
           div(id = ns("attributeOverview")),
+        # playerUpdateBoxUI(id = ns("playerUpdate")),
         box(
           title = "Update Player", collapsible = FALSE, width = NULL,
-          radioButtons(
-            inputId = ns("playerType"),
-            label = "Outfield or Goalkeeper",
-            choices = c("Outfield", "Goalkeeper"),
-            selected = "Outfield"
+          fluidRow(
+            column(width = 12,
+                   uiOutput(ns("selectPlayer"))
+            )
           ) %>% 
-            column(width = 12) %>% 
-            fluidRow() %>% 
-            div(align = "center", id = ns("playerSelector"))  %>% 
+            div(align = "center", id = ns("playerSelector"))  %>%
             hidden(),
           fluidRow(
             column(
               width = 4,
+              h4("Physical " %>% strong(), align = "center"),
               tagList(
                 c(
-                  "acceleration", "agility", "balance", "jumping reach", 
+                  "acceleration", "agility", "balance", "jumping reach",
                   "natural fitness", "pace", "stamina", "strength"
-                ) %>% 
+                ) %>%
                   map(
                     .x = .,
-                    .f = 
+                    .f =
                       ~ attributeInput(ns = ns, name = .x, value = NA)
                   )
               )
             ),
             column(
               width = 4,
+              h4("Mental " %>% strong(), align = "center"),
               c(
-                "aggression", "anticipation", "bravery", "composure", "concentration", 
-                "decisions", "determination", "flair", "leadership", "off the ball", 
+                "aggression", "anticipation", "bravery", "composure", "concentration",
+                "decisions", "determination", "flair", "leadership", "off the ball",
                 "positioning", "teamwork", "vision", "work rate"
-              ) %>% 
+              ) %>%
                 map(
                   .x = .,
-                  .f = 
+                  .f =
                     ~ attributeInput(ns = ns, name = .x, value = NA)
                 )
             ),
             column(
               width = 4,
-              c(
-                "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
-                "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
-                "Passing", "Penalty Taking", "Tackling", "Technique", "Aerial Reach",
-                "Command Of Area", "Communication", "Eccentricity", "Handling",
-                "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
-                "Tendency To Rush", "Throwing"
-              ) %>% 
-                map(
-                  .x = .,
-                  .f = 
-                    ~ attributeInput(ns = ns, name = .x, value = NA)
-                )
+              h4("Technical " %>% strong(), align = "center"),
+              uiOutput(ns("technical"))
             )
           ),
           fluidRow(
@@ -131,6 +120,7 @@ playerPageUI <- function(id) {
               title = "Player Traits and Positions",
               solidHeader = TRUE,
               collapsible = TRUE,
+              collapsed = TRUE,
               status = "info",
               width = NULL,
               fluidRow(
@@ -146,21 +136,20 @@ playerPageUI <- function(id) {
                 column(
                   width = 10,
                   offset = 1,
-                  p("An outfield player may select two traits to start off their career."),
                   uiOutput(
                     outputId = ns("traitSelector")
                   )
                 )
               )
-            ) %>% 
+            ) %>%
               column(width = 12)
-          ) %>% 
-            div(id = ns("outfieldExtras")) %>% 
+          ) %>%
+            div(id = ns("outfieldExtras")) %>%
             hidden(),
           fluidRow(
             column(
               width = 12,
-              align = "center", 
+              align = "center",
               style = "display: flex; justify-content: center;",
               actionButton(
                 inputId = ns("backUpdate"),
@@ -172,13 +161,13 @@ playerPageUI <- function(id) {
               ),
               uiOutput(ns("verifyButton"))
             )
-          ) %>% 
-            div(id = ns("buttonsUpdating")) %>% 
+          ) %>%
+            div(id = ns("buttonsUpdating")) %>%
             hidden(),
           fluidRow(
             column(
               width = 12,
-              align = "center", 
+              align = "center",
               style = "display: flex; justify-content: center;",
               actionButton(
                 inputId = ns("backRegression"),
@@ -193,11 +182,11 @@ playerPageUI <- function(id) {
                 "Regress"
               )
             )
-          ) %>% 
-            div(id = ns("buttonsRegression")) %>% 
+          ) %>%
+            div(id = ns("buttonsRegression")) %>%
             hidden()
-        ) %>% 
-          div(id = ns("attributeUpdate")) %>% 
+        ) %>%
+          div(id = ns("attributeUpdate")) %>%
           hidden(),
         box(
           title = "Updating History", collapsed = TRUE, collapsible = TRUE, width = NULL,
@@ -223,7 +212,7 @@ playerPageUI <- function(id) {
   )
 }
 
-playerPageServer <- function(id, uid) {
+playerPageServer <- function(id, uid, parent) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -316,6 +305,106 @@ playerPageServer <- function(id, uid) {
       
       
       #### OUTPUTS ####
+      # Player selector output
+      output$selectPlayer <- renderUI({
+        
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              if(data$pos_gk == 20){
+                radioButtons(
+                  inputId = session$ns("playerType"),
+                  label = "Outfield or Goalkeeper",
+                  choices = c("Outfield", "Goalkeeper"),
+                  selected = "Goalkeeper"
+                )
+              } else {
+                radioButtons(
+                  inputId = session$ns("playerType"),
+                  label = "Outfield or Goalkeeper",
+                  choices = c("Outfield", "Goalkeeper"),
+                  selected = "Outfield"
+                )
+              }
+            }
+          )
+        
+      })
+      
+      # Dynamic technical attributes 
+      output$technical <- renderUI({
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){ 
+              if(input$playerType %>% is.null()){
+                if(data$pos_gk != 20){
+                  c(
+                    "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
+                    "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
+                    "Passing", "Penalty Taking", "Tackling", "Technique"
+                  ) %>% 
+                    str_to_lower() %>% 
+                    map(
+                      .x = .,
+                      .f = 
+                        ~ attributeInput(ns = session$ns, name = .x, value = data[,.x])
+                    )
+                } else {
+                  attributes %>% 
+                    filter(
+                      group %in% c("Goalkeeper", "Technical"),
+                      keeper == "TRUE"
+                    ) %>% 
+                    select(
+                      attribute
+                    ) %>% 
+                    unlist() %>% 
+                    unname() %>% 
+                    str_to_lower() %>% 
+                    map(
+                      .x = .,
+                      .f = 
+                        ~ attributeInput(ns = session$ns, name = .x, value = data[,.])
+                    )
+                }
+              } else {
+                if(input$playerType == "Outfield"){
+                  c(
+                    "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
+                    "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
+                    "Passing", "Penalty Taking", "Tackling", "Technique"
+                  ) %>% 
+                    str_to_lower() %>% 
+                    map(
+                      .x = .,
+                      .f = 
+                        ~ attributeInput(ns = session$ns, name = .x, value = data[,.x])
+                    )
+                } else {
+                  attributes %>% 
+                    filter(
+                      group %in% c("Goalkeeper", "Technical"),
+                      keeper == "TRUE"
+                    ) %>% 
+                    select(
+                      attribute
+                    ) %>% 
+                    unlist() %>% 
+                    unname() %>% 
+                    str_to_lower() %>% 
+                    map(
+                      .x = .,
+                      .f = 
+                        ~ attributeInput(ns = session$ns, name = .x, value = data[,.])
+                    )
+                }
+              }
+              
+            }
+          )
+      })
+      
+      
       # Dynamic UI for position selector
       output$positionSelector <- renderUI({
         playerData() %>% 
@@ -386,19 +475,6 @@ playerPageServer <- function(id, uid) {
             }
           )
       })
-      
-      observe({
-        playerData() %>% 
-          then(
-            onFulfilled = function(value) {
-              playerInfoBoxServer(id = "playerInfo", pid = value$pid)
-            },
-            onRejected = function(reason) {
-              showToast("error", "An error occurred when loading your player. Please notify the BoD.")
-            }
-          )
-      }) %>% 
-        bindEvent(playerData(), ignoreNULL = FALSE)
       
       output$tpeTotal <- renderText({
         tpeTotal()
@@ -670,6 +746,21 @@ playerPageServer <- function(id, uid) {
       
       #### OBSERVERS ####
       
+      # Observer for the player info
+      
+      observe({
+        playerData() %>% 
+          then(
+            onFulfilled = function(value) {
+              playerInfoBoxServer(id = "playerInfo", pid = value$pid)
+            },
+            onRejected = function(reason) {
+              showToast("error", "An error occurred when loading your player. Please notify the BoD.")
+            }
+          )
+      }) %>% 
+        bindEvent(playerData(), ignoreNULL = FALSE)
+      
       # Updates the banked tpe when changing attributes
       observe({
         if(updating() | redistributing() | rerolling()){
@@ -878,13 +969,14 @@ playerPageServer <- function(id, uid) {
         shinyjs::hide("tpeButtons")
         shinyjs::show("buttonsUpdating")
         shinyjs::show("outfieldExtras")
+        shinyjs::show("playerSelector")
         
         redistributing(TRUE)
         
         showModal(
           modalDialog(
             "You may only submit one redistribution in your career. If you only want to update, please click the Back button.",
-            title="Redistribution warning",
+            title="Redistribution limit!",
             footer = modalButton("I understand!"),
             easyClose = FALSE
           )
@@ -953,7 +1045,7 @@ playerPageServer <- function(id, uid) {
         showModal(
           modalDialog(
             "You may only submit one reroll in your career. If you only want to update, please click the Back button.",
-            title="Reroll warning",
+            title="Reroll limit!",
             footer = modalButton("I understand!"),
             easyClose = FALSE
           )
@@ -1101,8 +1193,86 @@ playerPageServer <- function(id, uid) {
                             paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")))
                 # Checks for the total sum of reduced attributes
                 } else if(redistributing()){
-                  if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
-                    showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                  if(input$playerType == "Outfield"){
+                    posPrim <- positions[names(positions) %in% (current %>% 
+                                                                  select(pos_st:pos_gk) %>% 
+                                                                  pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                  filter(xp == 20) %>% 
+                                                                  mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                  select(pos) %>% unlist())
+                    ]
+                    
+                    posSec <- positions[names(positions) %in% (current %>% 
+                                                                 select(pos_st:pos_gk) %>% 
+                                                                 pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                 filter(xp <= 15, xp >= 10) %>% 
+                                                                 mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                 select(pos) %>% unlist())
+                    ]
+                    
+                    currentTraits <- current$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
+                    nrTraits <- length(currentTraits)
+                    
+                    if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
+                      showToast("error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
+                    } else if(input$traits %>% length() != nrTraits) {
+                      showToast("error", "You have selected the wrong number of traits.")
+                    } else if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+                      showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                    } else {
+                      update <- 
+                        update %>% 
+                        add_row(
+                          attribute = "traits",
+                          old = current$traits,
+                          new = paste0(input$traits, collapse = " \\ ")
+                        )
+                      
+                      modalVerify(update, session = session)
+                    }
+                  } else {
+                    if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+                      showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                    } else {
+                      modalVerify(update, session = session)
+                    }
+                  }
+                } else if(rerolling()){
+                  if(input$playerType == "Outfield"){
+                    posPrim <- positions[names(positions) %in% (current %>% 
+                                                                  select(pos_st:pos_gk) %>% 
+                                                                  pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                  filter(xp == 20) %>% 
+                                                                  mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                  select(pos) %>% unlist())
+                    ]
+                    
+                    posSec <- positions[names(positions) %in% (current %>% 
+                                                                 select(pos_st:pos_gk) %>% 
+                                                                 pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                 filter(xp <= 15, xp >= 10) %>% 
+                                                                 mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                 select(pos) %>% unlist())
+                    ]
+                    
+                    currentTraits <- current$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
+                    nrTraits <- length(currentTraits)
+                    
+                    if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
+                      showToast("error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
+                    } else if(input$traits %>% length() != nrTraits) {
+                      showToast("error", "You have selected the wrong number of traits.")
+                    } else {
+                      update <- 
+                        update %>% 
+                        add_row(
+                          attribute = "traits",
+                          old = current$traits,
+                          new = paste0(input$traits, collapse = " \\ ")
+                        )
+                      
+                      modalVerify(update, session = session)                    
+                    } 
                   } else {
                     modalVerify(update, session = session)
                   }
@@ -1377,7 +1547,9 @@ playerPageServer <- function(id, uid) {
             onFulfilled = function(value){
               completeRetirement(pid = value$pid)
               
-              showToast(type = "success", "You have now retired your player. Please go back to the welcome tab.")
+              showToast(type = "success", "You have now retired your player.")
+              
+              updateTabItems(parent, "tabs", "welcome")
             }
           )
       }) %>% 

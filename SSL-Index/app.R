@@ -483,7 +483,7 @@ server <- function(input, output, session) {
       submitPTServer("submitPT", userinfo = authOutput())
     } else if(input$tabs == "playerpage"){
       req(authOutput()$uid)
-      playerPageServer("playerpage", uid = authOutput()$uid)
+      playerPageServer("playerpage", uid = authOutput()$uid, parent = session)
     } else if(input$tabs == "welcome"){
       req(authOutput()$uid)
       welcomeServer("welcome", userinfo = authOutput())
