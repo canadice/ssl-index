@@ -329,6 +329,12 @@ outfieldFunction <- function(season){
     ) %>%
     collect()
   
+  # aggregateOutfield %>% 
+  #   filter(
+  #     Name == "Berocka Aloisi", Club == "Seoul MFC"
+  #   ) %>% 
+  #   write.csv2(paste("Aloisi","Reset.csv"), row.names = FALSE)
+  
   teamReset <- function(name, teams){
     data <- read.csv2(paste(name,"Reset.csv"))
 
@@ -348,6 +354,7 @@ outfieldFunction <- function(season){
     return(aggregateOutfield)
   }
   
+  aggregateOutfield <- teamReset("Aloisi", "Seoul MFC")
   
   FMOutfield <- 
     {
@@ -594,6 +601,7 @@ outfieldFunction <- function(season){
           Club = 
             case_when(
               Club == "Football Club de Rio" ~ "FC Rio",
+              
               TRUE ~ Club
             )
         ) %>% 
@@ -831,7 +839,7 @@ outfieldOutput <- function(season, matchday){
 
 season <- "15"
 
-date <- "2024-08-20" %>% as.Date()
+date <- "2024-08-27" %>% as.Date()
 
 {
   ## Adding a deauthorization for reading of Google Sheets that are still being used. 
