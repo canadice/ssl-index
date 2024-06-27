@@ -7,69 +7,8 @@ playerPageUI <- function(id) {
         playerInfoBoxUI(id = ns("playerInfo"))
       ),
       fluidRow(
-        box(
-          title = "TPE", collapsible = TRUE, width = NULL,
-          fluidRow(
-            column(
-              width = 12, align = "center", style = "display: flex; justify-content: center;",
-              valueBox(
-                subtitle = "Total Earned TPE",
-                value = textOutput(ns("tpeTotal"), inline = TRUE) %>% 
-                  withSpinnerSmall(),
-                width = 3
-              ),
-              valueBox(
-                subtitle = "Available TPE",
-                value = textOutput(ns("tpeRemaining"), inline = TRUE) %>% 
-                  withSpinnerSmall(), 
-                width = 3
-              )
-            )
-          ),
-          fluidRow(
-            column(
-              width = 12, align = "center", style = "display: flex; justify-content: center;",
-              uiOutput(ns("buttonAC")),
-              uiOutput(ns("buttonTrainingCamp"))
-            )
-          ) %>% 
-            div(id = ns("tpeButtons"))
-        ),
-        box(
-          title = "Player Overview", collapsible = TRUE, width = NULL,
-          fluidRow(
-            column(
-              width = 12,
-              align = "right", 
-              dropMenu(
-                actionButton("go0", label = NULL, icon = icon("chevron-down")),
-                uiOutput(
-                  outputId = ns("buttonRegression")
-                ),
-                uiOutput(
-                  outputId = ns("buttonUpdate")
-                ),
-                uiOutput(
-                  outputId = ns("buttonReroll")
-                ),
-                uiOutput(
-                  outputId = ns("buttonRedistribution")
-                ),
-                actionButton(ns("goToRetire"), label = "Retire"),
-                placement = "left-end"
-              )
-            )
-          ),
-          fluidRow(
-            column(
-              width = 12,
-              plotOutput(ns("playerOverview")) %>% 
-                withSpinnerMedium()
-            )
-          )
-        ) %>% 
-          div(id = ns("attributeOverview")),
-        # playerUpdateBoxUI(id = ns("playerUpdate")),
+        playerTPEBoxUI(id = ns("playerBuild")),
+        playerOverviewBoxUI(id = ns("playerBuild")),
         box(
           title = "Update Player", collapsible = FALSE, width = NULL,
           fluidRow(
@@ -237,51 +176,6 @@ playerPageServer <- function(id, uid, parent) {
           updated()
         )
       
-      tpeTotal <- 
-        reactive({
-          playerData() %>% 
-            then(
-              onFulfilled = function(value) {
-                value$tpe
-              },
-              onRejected = function(reason) {
-                NaN
-              }
-            )
-        })
-      
-      tpeBanked <- 
-        reactiveVal({
-          playerData() %>% 
-            then(
-              onFulfilled = function(value) {
-                value %>% 
-                  select(acceleration:throwing) %>% 
-                  select(!`natural fitness` & !stamina) %>% 
-                  pivot_longer(
-                    cols = everything(),
-                    names_to = "attribute",
-                    values_to = "value"
-                  ) %>%
-                  left_join(
-                    tpeCost %>% 
-                      select(
-                        value,
-                        cumCost
-                      ),
-                    by = "value"
-                  ) %>% 
-                  select(cumCost) %>% 
-                  sum(na.rm = TRUE) %>% 
-                  {
-                    value$tpe - .
-                  }
-              },
-              onRejected = function(reason) {
-                NaN
-              }
-            )
-        }) 
       
       historyTPE <- 
         reactive({
@@ -476,70 +370,6 @@ playerPageServer <- function(id, uid, parent) {
           )
       })
       
-      output$tpeTotal <- renderText({
-        tpeTotal()
-      })
-      
-      output$tpeRemaining <- renderText({
-        tpeBanked()
-      })
-      
-      output$playerOverview <- renderPlot({
-        playerData() %>% 
-          then(
-            onFulfilled = function(value){
-              p <- 
-                value %>% 
-                select(acceleration:throwing) %>% 
-                select(where(~ !is.na(.x))) %>% 
-                pivot_longer(
-                  cols = everything(),
-                  values_to = "Value",
-                  names_to = "Attribute"
-                ) %>% 
-                mutate(
-                  Attribute = str_to_title(Attribute)
-                ) %>% 
-                left_join(
-                  attributes,
-                  by = c("Attribute" = "attribute") 
-                ) %>% 
-                mutate(
-                  Attribute = factor(Attribute, levels = sort(Attribute %>% unique(), decreasing = TRUE)),
-                  group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
-                  ValueFill = case_when(
-                    Value >= 15 ~ 1,
-                    Value >= 10 ~ 2,
-                    TRUE ~ 3
-                  ) %>% factor()
-                ) %>% 
-                ggplot() + aes(x = Attribute, y = Value, fill = ValueFill) + 
-                geom_bar(stat = "identity", color = "black") +
-                facet_wrap(. ~ group, scales = "free", nrow = 1) + 
-                scale_y_continuous(expand = c(0,0), limits = c(0, 20), minor_breaks = seq(0, 20, 1)) +
-                scale_fill_manual(
-                  guide = NULL,
-                  values = c("#008450", "#EFB700", "#B81D13")
-                ) +
-                coord_flip() + 
-                theme_bw() +
-                theme(
-                  panel.grid.major.y = element_blank(),
-                  panel.grid.minor.y = element_blank(),
-                  panel.grid.major.x = element_line(color = "gray50"),
-                  panel.grid.minor.x = element_line(color = "gray75"),
-                  axis.text = element_text(size = 14),
-                  axis.text.y = element_text(hjust = 0, margin = ggplot2::margin(l = 20, r = -110, unit = "pt"), color = "black", face = "bold"),
-                  strip.text = element_text(size = 16, face = "bold"),
-                  plot.margin = unit(margin(r = 10), "pt"),
-                  plot.background = element_rect(fill = "transparent", color = NA)
-                ) + 
-                labs(x = NULL, y = NULL)
-              
-              print(p)
-            }
-          )
-      }, bg="transparent")
       
       ## All the cost outputs
       editableAttributes %>% 
@@ -607,97 +437,7 @@ playerPageServer <- function(id, uid, parent) {
           )
       })
       
-      output$buttonRegression <- renderUI({
-        tpeBanked() %>% 
-          then(
-            onFulfilled = function(value){
-              if(value < 0) {
-                actionButton(
-                  inputId = session$ns("goToRegression"),
-                  "Regress"
-                )
-              } else {
-                actionButton(
-                  inputId = session$ns("goToRegression"),
-                  "Regress",
-                  disabled = ""
-                )
-              }
-            }
-          )
-      })
       
-      output$buttonUpdate <- renderUI({
-        tpeBanked() %>% 
-          then(
-            onFulfilled = function(value){
-              if(value > 0) {
-                actionButton(
-                  inputId = session$ns("goToUpdate"),
-                  "Update"
-                )
-              } else {
-                actionButton(
-                  inputId = session$ns("goToUpdate"),
-                  "Update",
-                  disabled = ""
-                )
-              }
-            }
-          )
-      })
-      
-      output$buttonReroll <- renderUI({
-        playerData() %>% 
-          then(
-            onFulfilled = function(data){
-              
-              # Rerolls can be made by users in their first two seasons in the SSL League proper
-              check <- 
-                ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 2)) & 
-                (data$rerollused == 0)
-              
-              if(check) {
-                actionButton(
-                  inputId = session$ns("goToReroll"),
-                  "Reroll"
-                )
-              } else {
-                # actionButton(
-                #   inputId = session$ns("goToReroll"),
-                #   "Reroll",
-                #   disabled = ""
-                # )
-              }
-            }
-          )
-      })
-      
-      output$buttonRedistribution <- renderUI({
-        playerData() %>% 
-          then(
-            onFulfilled = function(data){
-              
-              # Redistributions can be made by users in their first season in the SSL League proper
-              check <- 
-                ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 1)) & 
-                (data$redistused == 0)
-              
-              if(check) {
-                actionButton(
-                  inputId = session$ns("goToRedist"),
-                  "Redistribute"
-                )
-              } else {
-                # actionButton(
-                #   inputId = session$ns("goToRedist"),
-                #   "Redistribute",
-                #   disabled = ""
-                # )
-              }
-            }
-          )
-      })
       
       output$verifyButton <- renderUI({
         actionButton(
@@ -706,53 +446,17 @@ playerPageServer <- function(id, uid, parent) {
         )
       })
       
-      output$buttonAC <- renderUI({
-        playerData() %>% 
-          then(
-            onFulfilled = function(value){
-              if(completedActivityCheck(value$pid)){
-                actionButton(
-                  session$ns("activityCheck"),
-                  "Activity Check",
-                  disabled = ""
-                )  
-              } else {
-                actionButton(
-                  session$ns("activityCheck"),
-                  "Activity Check"
-                )
-              }
-            },
-            onRejected = NULL
-          )
-      })
-      
-      output$buttonTrainingCamp <- renderUI({
-        playerData() %>% 
-          then(
-            onFulfilled = function(value){
-              if(completedTrainingCamp(value$pid)){
-                # Show no button if TC is completed
-              } else {
-                actionButton(
-                  session$ns("trainingCamp"),
-                  "Seasonal Training Camp"
-                )
-              }
-            },
-            onRejected = NULL
-          )
-      })
-      
       #### OBSERVERS ####
       
-      # Observer for the player info
+      # Observer for the player boxes
       
       observe({
         playerData() %>% 
           then(
             onFulfilled = function(value) {
               playerInfoBoxServer(id = "playerInfo", pid = value$pid)
+              tpe <- playerTPEBoxServer(id = "playerBuild", data = value)
+              playerOverviewBoxServer(id = "playerBuild", data = value, tpe = tpe)
             },
             onRejected = function(reason) {
               showToast("error", "An error occurred when loading your player. Please notify the BoD.")
