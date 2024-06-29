@@ -86,6 +86,30 @@ suppressMessages({
 ## Sets up that evaluating futures is done in parallell
 plan(multisession)
 
+shinyDashboardLogoDIY <- 
+  function(boldText, 
+           mainText, 
+           textSize = 15, 
+           badgeText, 
+           badgeTextColor,
+           badgeTextSize = 2, 
+           badgeBackColor, 
+           badgeBorderRadius = 3) {
+    htmlCode <- 
+      htmltools::HTML(
+        text = paste0("<p style=\"font-size:",
+                      textSize, "px\">\n      <b> ", boldText, " </b>", mainText, 
+                      "<span> &nbsp; </span>\n      <span style=\"background-color: ", 
+                      badgeBackColor, ";\n      border-radius: ", badgeBorderRadius, 
+                      "px; \"> &nbsp;\n      <font color=\"", badgeTextColor, 
+                      "\" size=\"", badgeTextSize, "\">", badgeText, "  </font> &nbsp; </span> </p>")
+        )
+    htmlCode <- gsub(pattern = "\n", replacement = "", x = htmlCode)
+    htmlCode <- gsub(pattern = "[[:space:]]{2,3}", replacement = "", 
+                     x = htmlCode)
+    return(htmlCode)
+}
+
 
 ##################################################################
 ##                      SSL Logo and Theme                      ##
@@ -98,6 +122,19 @@ plan(multisession)
 sslBlueL <- "#324f7e"
 sslBlueD <- "#4b8dad"
 sslGold <- "#BD9523"
+
+customLogo <- 
+  shinyDashboardLogoDIY(
+    boldText = "",
+    mainText = tags$a(
+      href='https://forum.simulationsoccer.com',
+      target="_blank",
+      tags$img(src='portallogo.png', height = "70"),
+    ),
+    badgeText = "v0.8",
+    badgeTextColor = "white",
+    badgeBackColor = sslBlueL
+  )
 
 customTheme <- 
   create_theme(
@@ -162,9 +199,9 @@ ui <- function(request){
     ##----------------------------------------------------------------
     ##                            Header                             -
     ##----------------------------------------------------------------
-    
+    title = "SSL Portal",
     dashboardHeader(
-      title = "TESTING GROUND",
+      title = customLogo,
       tags$li(
         tags$head(
           tags$link(
@@ -185,11 +222,7 @@ ui <- function(request){
           tags$style(
             type="text/css",
             "#playerComparison-fieldImage img {max-width: 480px; width: inherit; max-height: 600px;}"
-          )
-          # ## Increases the size of the logo box at the top left
-          # tags$style(".main-header {max-height: 80px}"),
-          # tags$style(".main-header .logo {height: 80px}"),
-          # tags$style(".main-header .logo {width: 300px}"),
+          ),
           # 
           # ## Changes the margin of the sidebar
           # tags$style(".main-header .navbar {margin-left: 300px}"),
@@ -200,6 +233,8 @@ ui <- function(request){
       )
     ),
     dashboardSidebar(
+      # Adjust the sidebar in accordance with the higher header
+      tags$style(".left-side, .main-sidebar {padding-top: 100px}"),
       uiOutput("sidebarpanel")
     ),
     dashboardBody(

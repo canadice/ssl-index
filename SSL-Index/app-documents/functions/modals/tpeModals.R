@@ -29,42 +29,43 @@ modalReduction <- function(update){
 modalVerify <- function(update, session){
   showModal(
     modalDialog(
-      span(
-        "Are you sure you want to update these attributes?" %>% strong(),
-        style = "color: red;"
-      ),
-      br(),
-      column(
-        width = 8,
-        offset = 2,
-        helpText(
-          paste(
-            paste(
-              update$attribute,
-              paste(
-                update$old,
-                update$new,
-                sep = " -> "
-              )
-            ),
-            collapse = "<br>"
-          ) %>% 
-            HTML()
-        ) %>% 
-          div(
-            style = "background: #f0f0f0; border: #656565"
-          )
-      ),
-      br(),
       tagList(
+        span(
+          "Are you sure you want to update these attributes?" %>% strong(),
+          style = "color: red;"
+        ),
+        br(),
+        column(
+          width = 8,
+          offset = 2,
+          helpText(
+            paste(
+              paste(
+                update$attribute,
+                paste(
+                  update$old,
+                  update$new,
+                  sep = " -> "
+                )
+              ),
+              collapse = "<br>"
+            ) %>% 
+              HTML()
+          ) %>% 
+            div(
+              style = "background: #f0f0f0; border: #656565"
+            )
+        ),
+        br()
+      ),
+      title="Update output",
+      footer = tagList(
         modalButton("No, go back"),
         actionButton(
           inputId = session$ns("confirmUpdate"),
           label = "Yes, confirm update!"
         )
       ),
-      title="Update output",
-      footer = NULL,
       easyClose = FALSE
     )
   )

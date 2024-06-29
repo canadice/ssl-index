@@ -32,45 +32,41 @@ playerTPEBoxUI <- function(id) {
   )
 }
 
-playerTPEBoxServer <- function(id, data) {
+playerTPEBoxServer <- function(id, data, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked) {
   moduleServer(
     id,
     function(input, output, session) {
       #### TOTAL TPE ####
-      tpeTotal <- 
-        reactive({
-          data$tpe
-        })
+      tpeTotal(data$tpe)
       
       output$tpeTotal <- renderText({
         tpeTotal()
       })
       
       #### REMAINING TPE ####
-      tpeBanked <- 
-        reactiveVal({
-            data %>% 
-              select(acceleration:throwing) %>% 
-              select(!`natural fitness` & !stamina) %>% 
-              pivot_longer(
-                cols = everything(),
-                names_to = "attribute",
-                values_to = "value"
-              ) %>%
-              left_join(
-                tpeCost %>% 
-                  select(
-                    value,
-                    cumCost
-                  ),
-                by = "value"
-              ) %>% 
-              select(cumCost) %>% 
-              sum(na.rm = TRUE) %>% 
-              {
-                data$tpe - .
-              }
-        }) 
+      tpeBanked(
+        data %>% 
+          select(acceleration:throwing) %>% 
+          select(!`natural fitness` & !stamina) %>% 
+          pivot_longer(
+            cols = everything(),
+            names_to = "attribute",
+            values_to = "value"
+          ) %>%
+          left_join(
+            tpeCost %>% 
+              select(
+                value,
+                cumCost
+              ),
+            by = "value"
+          ) %>% 
+          select(cumCost) %>% 
+          sum(na.rm = TRUE) %>% 
+          {
+            data$tpe - .
+          }
+        )
       
       output$tpeRemaining <- renderText({
         tpeBanked()
@@ -103,12 +99,72 @@ playerTPEBoxServer <- function(id, data) {
         }
       })
       
-      return(
-        list(
-          total = tpeTotal(),
-          banked = tpeBanked()
+      #### OBSERVERS ####
+      observe({
+        tpeEarned <- 6
+        
+        tpeSummary <- 
+          tibble(
+            source = "Activity Check",
+            tpe = tpeEarned
+          )
+        
+        tpeLog(uid = uid, pid = data$pid, tpe = tpeSummary)
+        
+        shinyjs::disable(session$ns("activityCheck"))
+        
+        updateTPE(pid = data$pid, tpe = tpeSummary)
+        
+        showToast(type = "success", "You have successfully claimed your Activity Check for the week!")
+        
+        tpeBanked(tpeBanked() + tpeEarned)
+        
+        updated(updated() + 1)
+      }) %>% 
+        bindEvent(
+          input$activityCheck,
+          ignoreInit = TRUE,
+          once = TRUE
         )
-      )
+      
+      observe({
+        class <- 
+          data$class %>% 
+          str_extract_all(pattern = "[0-9]+") %>% 
+          as.numeric()
+        
+        age <- currentSeason$season - class
+        
+        tpeSummary <- 
+          tibble(
+            source = paste("S", currentSeason$season, " Training Camp", sep = ""),
+            tpe = case_when(
+              age <= 2 ~ 40,
+              age <= 5 ~ 30,
+              age <= 8 ~ 20,
+              TRUE ~ 10
+            )
+          )
+        
+        tpeLog(uid = uid, pid = data$pid, tpe = tpeSummary)
+        
+        shinyjs::disable(session$ns("trainingCamp"))
+        
+        updateTPE(pid = data$pid, tpe = tpeSummary)
+        
+        showToast(type = "success", "You have successfully claimed your Training Camp for the season.")
+        
+        tpeBanked(tpeBanked() + tpeSummary$tpe)
+        
+        updated(updated() + 1)
+        
+      }) %>% 
+        bindEvent(
+          input$trainingCamp,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
     }
   )
 }

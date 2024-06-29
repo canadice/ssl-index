@@ -38,7 +38,7 @@ playerOverviewBoxUI <- function(id) {
   )
 }
 
-playerOverviewBoxServer <- function(id, data, tpe) {
+playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = tpeBanked, mainSession) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -46,7 +46,7 @@ playerOverviewBoxServer <- function(id, data, tpe) {
       #### BUTTONS ####
       
       output$buttonRegression <- renderUI({
-        if(tpe$banked < 0) {
+        if(tpeBanked() < 0) {
           actionButton(
             inputId = session$ns("goToRegression"),
             "Regress"
@@ -61,7 +61,7 @@ playerOverviewBoxServer <- function(id, data, tpe) {
       })
       
       output$buttonUpdate <- renderUI({
-        if(tpe$banked > 0) {
+        if(tpeBanked() > 0) {
           actionButton(
             inputId = session$ns("goToUpdate"),
             "Update"
@@ -171,6 +171,41 @@ playerOverviewBoxServer <- function(id, data, tpe) {
         
         print(p)
       }, bg="transparent")
+      
+      #### OBSERVERS ####
+      # Retires player
+      observe({
+        modalRetire(session)
+      }) %>% 
+        bindEvent(
+          input$goToRetire,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
+      observe({
+        modalRetire2(session)
+      }) %>% 
+        bindEvent(
+          input$confirmRetirement1,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
+      
+      observe({
+        removeModal()
+        
+        completeRetirement(pid = data$pid)
+        
+        showToast(type = "success", "You have now retired your player.")
+        
+        updateTabItems(mainSession, "tabs", "welcome")
+      }) %>% 
+        bindEvent(
+          input$confirmRetirement2,
+          ignoreInit = TRUE,
+          once = TRUE
+        )
     }
   )
 }

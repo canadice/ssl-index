@@ -140,3 +140,14 @@
 .tippy-popper button{
   width: -webkit-fill-available;
 }
+
+/* Header navbar with logo */
+.main-header {
+  max-height: 80px;
+}
+
+.main-header .logo {
+  padding-top: 5px;
+  padding-right: 30px;
+  height: 80px; 
+}
