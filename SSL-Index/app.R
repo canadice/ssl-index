@@ -324,23 +324,27 @@ server <- function(input, output, session) {
   })
   
   output$notifications <- renderMenu({
-    dropdownMenu(type = "notifications",
-                 notificationItem(
-                   text = "5 new users today",
-                   icon("users")
-                 ),
-                 notificationItem(
-                   text = "12 items delivered",
-                   icon("truck"),
-                   status = "success"
-                 ),
-                 notificationItem(
-                   text = "Server load at 86%",
-                   icon = icon("exclamation-triangle"),
-                   status = "warning"
-                 )
-    )
-  })
+    if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
+      dropdownMenu(type = "notifications",
+                   badgeStatus = "warning",
+                   notificationItem(
+                     text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
+                     icon("users"),
+                     href = "/#playerapprove"
+                   )
+      )
+    } else {
+      dropdownMenu(type = "notifications",
+                   badgeStatus = "warning",
+                   notificationItem(
+                     text = "Placeholder",
+                     icon("truck"),
+                     status = "success"
+                   )
+      )
+    }
+  }) %>% 
+    bindEvent(input$tabs, ignoreInit = FALSE)
   
   ##---------------------------------------------------------------
   ##                            Sidebar                           -
@@ -382,7 +386,7 @@ server <- function(input, output, session) {
         # Fileworker (14), Commissioner (4)
         if(any(c(4, 3, 14) %in% authOutput()$usergroup)){
           menuItem(
-            "File work",
+            "File Work Tools",
             menuSubItem(
               "Export Builds",
               tabName = "exportBuild"

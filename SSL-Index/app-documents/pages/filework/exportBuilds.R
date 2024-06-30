@@ -4,8 +4,8 @@ exportBuildUI <- function(id) {
     fluidRow(
       column(width = 4,
              p(
-               "The following tool creates a downloadable JSON file for the selected player based on their 
-                  current build. Using FMRTE, you can then import the updated build for the chosen player."
+               "The tool packages all updated builds from the last week into a zip-file. Each player is summarized in their own
+               JSON file which can be imported using FMRTE. NOTE THAT NATIONALITIES ARE NOT INCLUDED IN THE JSON."
              )
            ),
       column(
@@ -147,8 +147,9 @@ exportBuildServer <- function(id) {
             onFulfilled = function(data){
               data %>% 
                 select(
-                  name,
-                  team
+                  Name = name,
+                  Team = team,
+                  Nationality = nationality
                 ) %>% 
                 reactable()
             }
