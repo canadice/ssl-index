@@ -187,6 +187,37 @@ getRecentCreates <- function(){
     future_promise()
 }
 
+getChangedBuilds <- function(){
+  ## Gets date of the start of the week in Pacific
+  weekEnd <- 
+    lubridate::now() %>% 
+    with_tz("US/Pacific") %>% 
+    floor_date("week", week_start = "Monday") %>% 
+    as.numeric() %>% 
+    {. - 1}
+  
+  weekStart <- 
+    lubridate::now() %>% 
+    with_tz("US/Pacific") %>% 
+    floor_date("week", week_start = "Monday") %>% 
+    as.numeric() %>% 
+    {. - 604800}
+  
+  portalQuery(
+    paste(
+      "SELECT pd.*
+        FROM playerdata pd
+        JOIN updatehistory uh ON pd.pid = uh.pid
+        WHERE uh.Time < ", weekEnd, " AND uh.Time > ", weekStart,";"
+    )
+  ) %>% 
+    future_promise()
+}
+
+
+
+
+
 
 
 

@@ -306,10 +306,10 @@ server <- function(input, output, session) {
       tabItem(
         "submitPT",
         submitPTUI(id = "submitPT")
-      # ),
-      # tabItem(
-      #   "bodoverview",
-      #   bodTeamUI(id = "bodoverview")
+      ),
+      tabItem(
+        "exportBuild",
+        exportBuildUI(id = "exportBuild")
       # ),
       # tabItem(
       #   "bodoverview",
@@ -374,6 +374,18 @@ server <- function(input, output, session) {
             menuSubItem(
               "Submit Graded PT",
               tabName = "submitPT"
+            )
+          )
+        }
+      },
+      {
+        # Fileworker (14), Commissioner (4)
+        if(any(c(4, 3, 14) %in% authOutput()$usergroup)){
+          menuItem(
+            "File work",
+            menuSubItem(
+              "Export Builds",
+              tabName = "exportBuild"
             )
           )
         }
@@ -500,6 +512,8 @@ server <- function(input, output, session) {
     managerTeamServer("managerteam", userinfo = authOutput())
     assignManagerServer("assignManager", userinfo = authOutput())
     bodTeamServer("bodoverview", userinfo = authOutput())
+    exportBuildServer("exportBuild")
+    
     # teamIndexServer("teamindex")
   }) %>% 
     bindEvent(
