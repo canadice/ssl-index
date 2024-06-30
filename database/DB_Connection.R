@@ -174,7 +174,8 @@ playerdata <-
     ),
     across(
       Acceleration:Throwing,
-      ~ as.integer(.x)
+      ~ as.integer(.x) %>% 
+        replace_na(5)
     )
   ) 
 
@@ -342,9 +343,9 @@ attributes %>%
         "The ability to keep control of the ball when catching it.",
         "The maximum length of a kick.",
         "The ability to perform well when alone with an opponent.",
+        "The likelihood to punch instead of catching the ball.",
         "The ability to react to shots.",
         "The ability to assess when to rush out.",
-        "The likelihood to punch instead of catching the ball.",
         "The ability to hit the intended target when throwing the ball."
       )
   ) %>% 
