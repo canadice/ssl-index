@@ -88,12 +88,12 @@ playerPageServer <- function(id, uid, parent) {
             onFulfilled = function(value){
               value %>% 
               mutate(
-                time = as_datetime(time)
+                Time = as_datetime(Time)
               ) %>% 
               reactable(
                 columns = 
                   list(
-                    time = colDef(format = colFormat(datetime = TRUE))
+                    Time = colDef(format = colFormat(datetime = TRUE))
                   )
               )
             },
@@ -108,12 +108,12 @@ playerPageServer <- function(id, uid, parent) {
             onFulfilled = function(value){
               value %>% 
                 mutate(
-                  time = as_datetime(time)
+                  Time = as_datetime(Time)
                 ) %>% 
                 reactable(
                   columns = 
                     list(
-                      time = colDef(format = colFormat(datetime = TRUE))
+                      Time = colDef(format = colFormat(datetime = TRUE))
                     )
                 )
             },
@@ -130,7 +130,7 @@ playerPageServer <- function(id, uid, parent) {
           then(
             onFulfilled = function(value) {
               playerInfoBoxServer(id = "playerInfo", pid = value$pid)
-              playerTPEBoxServer(id = "playerBuild", data = value, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked)
+              playerTPEBoxServer(id = "playerBuild", uid = uid, data = value, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked)
               playerOverviewBoxServer(id = "playerBuild", data = value, tpeTotal = tpeTotal, tpeBanked = tpeBanked, mainSession = parent)
               playerUpdateBoxServer(id = "playerBuild", uid = uid, data = value, tpeTotal = tpeTotal, tpeBanked = tpeBanked, updating = updating, updated = updated)
             },

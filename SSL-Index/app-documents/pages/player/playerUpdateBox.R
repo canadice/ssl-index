@@ -315,9 +315,10 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       # fixes maximum value when regressing
       # only resets value when resetting
       observe({
-        shinyjs::toggle("attributeOverview")
-        shinyjs::toggle("attributeUpdate")
-        shinyjs::toggle("tpeButtons")
+        
+        shinyjs::hide("attributeOverview")
+        shinyjs::show("attributeUpdate")
+        shinyjs::show("tpeButtons")
         shinyjs::show("buttonsUpdating")
         
         updating("updating")
@@ -514,11 +515,15 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
             }
           } else {
-            if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+            if(updating() == "redistributing" & (changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
               showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
             } else {
               update <- 
                 update %>% 
+                mutate(
+                  old = as.character(old),
+                  new = as.character(new)
+                ) %>% 
                 add_row(
                   attribute = "traits",
                   old = data$traits,
@@ -531,8 +536,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 update <- update %>%
                   add_row(
                     attribute = paste0("pos_", tolower(pos)),
-                    old = data[paste0("pos_", tolower(pos))],
-                    new = 0
+                    old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                    new = 0 %>% as.character()
                   )
               }
               
@@ -540,8 +545,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 update %>% 
                 add_row(
                   attribute = "pos_gk",
-                  old = data$pos_gk,
-                  new = 20
+                  old = data$pos_gk %>% as.character(),
+                  new = 20 %>% as.character()
                 )
               
               update <- 
@@ -871,6 +876,10 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
           } else {
             update <- 
               update %>% 
+              mutate(
+                old = as.character(old),
+                new = as.character(new)
+              ) %>%
               add_row(
                 attribute = "traits",
                 old = paste("'", data$traits, "'", sep = ""),
@@ -883,8 +892,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               update <- update %>%
                 add_row(
                   attribute = paste0("pos_", tolower(pos)),
-                  old = data[paste0("pos_", tolower(pos))],
-                  new = 0
+                  old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                  new = 0 %>% as.character()
                 )
             }
             
@@ -892,8 +901,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               update %>% 
               add_row(
                 attribute = "pos_gk",
-                old = data$pos_gk,
-                new = 20
+                old = data$pos_gk %>% as.character(),
+                new = 20 %>% as.character()
               )
           }
         }

@@ -75,38 +75,63 @@ completeRetirement <- function(pid){
 ## Gets update history
 getUpdateHistory <- function(pid){
   portalQuery(
-    paste("SELECT * FROM updatehistory WHERE pid = ", pid, "ORDER BY time DESC")
+    paste("SELECT 
+            uh.time AS Time,
+            mbb.username AS Username,
+            uh.attribute AS `Changed attribute`,
+            uh.old AS `From`,
+            uh.new AS `To`
+        FROM 
+            updatehistory uh
+        LEFT JOIN
+            mybbdb.mybb_users mbb ON uh.uid = mbb.uid
+        WHERE 
+            pid = ", pid, "
+        ORDER BY Time DESC")
   ) %>% 
     mutate(
-      time = time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
+      Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
     )
 }
 
 ## Summarizes updated attributes in a tibble
 updateSummary <- function(current, inputs){
-  tibble(
-    attribute = 
-      current %>% 
-      select(acceleration:throwing) %>% 
-      select(!where(is.na)) %>% 
-      colnames() %>%
-      str_to_title(),
-    old = current %>% 
-      select(acceleration:throwing) %>% 
-      select(!where(is.na)) %>% 
-      t() %>% 
-      c(),
-    new = 
-      attribute %>%
-      str_remove_all(pattern = " ") %>% 
-      sapply(
-        X = .,
-        FUN = function(x) inputs[[x]],
-        simplify = TRUE
-      ) %>% 
-      unlist()
-  ) %>% 
-    filter(old != new) 
+  updates <- 
+    tibble(
+      attribute = 
+        current %>% 
+        select(acceleration:throwing) %>% 
+        # select(!where(is.na)) %>% 
+        colnames() %>%
+        str_to_title(),
+      old = current %>% 
+        select(acceleration:throwing) %>% 
+        # select(!where(is.na)) %>% 
+        t() %>% 
+        c(),
+      new = 
+        attribute %>%
+        str_remove_all(pattern = " ") %>% 
+        sapply(
+          X = .,
+          FUN = function(x) {
+            if(inputs[[x]] %>% is.null()){
+              5
+            } else {
+              inputs[[x]]
+            }
+          },
+          simplify = TRUE
+        ) %>% 
+        unlist()
+    ) %>% 
+    mutate(
+      old = if_else(old %>% is.na(), 5, old)
+    ) %>% 
+      filter(old != new) 
+  
+  
+  return(updates)
 }
 
 # updateCheck <- function(tpe, updates)

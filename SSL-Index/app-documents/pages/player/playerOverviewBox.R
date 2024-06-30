@@ -29,7 +29,7 @@ playerOverviewBoxUI <- function(id) {
       fluidRow(
         column(
           width = 12,
-          plotOutput(ns("playerOverview")) %>% 
+          uiOutput(ns("playerOverview")) %>% 
             withSpinnerMedium()
         )
       )
@@ -119,58 +119,81 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
         }
       })
       
-      #### PLOT ####
-      output$playerOverview <- renderPlot({
-        p <- 
-          data %>% 
-          select(acceleration:throwing) %>% 
-          select(where(~ !is.na(.x))) %>% 
-          pivot_longer(
-            cols = everything(),
-            values_to = "Value",
-            names_to = "Attribute"
-          ) %>% 
-          mutate(
-            Attribute = str_to_title(Attribute)
-          ) %>% 
-          left_join(
-            attributes,
-            by = c("Attribute" = "attribute") 
-          ) %>% 
-          mutate(
-            Attribute = factor(Attribute, levels = sort(Attribute %>% unique(), decreasing = TRUE)),
-            group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
-            ValueFill = case_when(
-              Value >= 15 ~ 1,
-              Value >= 10 ~ 2,
-              TRUE ~ 3
-            ) %>% factor()
-          ) %>% 
-          ggplot() + aes(x = Attribute, y = Value, fill = ValueFill) + 
-          geom_bar(stat = "identity", color = "black") +
-          facet_wrap(. ~ group, scales = "free", nrow = 1) + 
-          scale_y_continuous(expand = c(0,0), limits = c(0, 20), minor_breaks = seq(0, 20, 1)) +
-          scale_fill_manual(
-            guide = NULL,
-            values = c("#008450", "#EFB700", "#B81D13")
-          ) +
-          coord_flip() + 
-          theme_bw() +
-          theme(
-            panel.grid.major.y = element_blank(),
-            panel.grid.minor.y = element_blank(),
-            panel.grid.major.x = element_line(color = "gray50"),
-            panel.grid.minor.x = element_line(color = "gray75"),
-            axis.text = element_text(size = 14),
-            axis.text.y = element_text(hjust = 0, margin = ggplot2::margin(l = 20, r = -110, unit = "pt"), color = "black", face = "bold"),
-            strip.text = element_text(size = 16, face = "bold"),
-            plot.margin = unit(margin(r = 10), "pt"),
-            plot.background = element_rect(fill = "transparent", color = NA)
-          ) + 
-          labs(x = NULL, y = NULL)
-        
-        print(p)
-      }, bg="transparent")
+      #### TABLES ####
+      visData <- 
+        data %>% 
+        select(acceleration:throwing) %>% 
+        select(where(~ !is.na(.x))) %>% 
+        pivot_longer(
+          cols = everything(),
+          values_to = "Value",
+          names_to = "Attribute"
+        ) %>% 
+        mutate(
+          Attribute = str_to_title(Attribute)
+        ) %>% 
+        left_join(
+          attributes,
+          by = c("Attribute" = "attribute") 
+        ) %>% 
+        mutate(
+          Attribute = factor(Attribute, levels = sort(Attribute %>% unique(), decreasing = TRUE)),
+          group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
+          ValueFill = case_when(
+            Value >= 15 ~ 1,
+            Value >= 10 ~ 2,
+            TRUE ~ 3
+          ) %>% factor()
+        ) %>% 
+        {
+          if(data$pos_gk == 20){
+            filter(
+              ., 
+              (group %in% c("Goalkeeper", "Technical") & keeper == "TRUE") | (group %in% c("Physical", "Mental"))
+            )
+          } else {
+            filter(
+              .,
+              group %in% c("Physical", "Mental", "Technical")
+            )
+          }
+        }
+      
+      output$playerOverview <- renderUI({
+        map(.x = visData$group %>% unique(),
+            .f = function(group){
+              column(width = 12 / length(visData$group %>% unique()),
+                     h4(group),
+                     reactableOutput(session$ns(group))
+                     )
+            }) %>% 
+          tagList()
+      })
+      
+      map(.x = visData$group,
+          .f = function(chosenGroup){
+            output[[chosenGroup]] <- renderReactable({
+              temp <- 
+                visData %>% 
+                filter(
+                  group == chosenGroup
+                )
+              
+              temp %>% 
+                select(Attribute, Value) %>% 
+                reactable(
+                  defaultColDef = colDef(
+                    minWidth = 50,
+                    style = function(value, index){
+                      color <- if_else(temp$ValueFill[index] == 1, "#008450", if_else(temp$ValueFill[index] == 2, "#EFB700", "#B81D13")) 
+                      list(background = color, color = "white")
+                    }
+                  ),
+                  pagination = FALSE,
+                  sortable = FALSE
+                )
+            })
+          })
       
       #### OBSERVERS ####
       # Retires player

@@ -32,7 +32,7 @@ playerTPEBoxUI <- function(id) {
   )
 }
 
-playerTPEBoxServer <- function(id, data, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked) {
+playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked) {
   moduleServer(
     id,
     function(input, output, session) {

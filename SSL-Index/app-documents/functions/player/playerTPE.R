@@ -1,10 +1,21 @@
 ## Gets TPE history from the log
 getTpeHistory <- function(pid){
   portalQuery(
-    paste("SELECT * FROM tpehistory WHERE pid = ", pid, "ORDER BY time DESC")
+    paste("SELECT 
+            tpeh.time AS Time,
+            mbb.username AS Username,
+            tpeh.source AS Source,
+            tpeh.tpe AS `TPE Change`
+        FROM 
+            tpehistory tpeh
+        LEFT JOIN
+            mybbdb.mybb_users mbb ON tpeh.uid = mbb.uid
+        WHERE 
+            pid = ", pid, "
+        ORDER BY time DESC")
   ) %>% 
     mutate(
-      time = time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
+      Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
     )
 }
 
