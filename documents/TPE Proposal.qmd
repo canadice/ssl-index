@@ -1,0 +1,1189 @@
+---
+title: "PT and TPE Progression"
+format: 
+  pdf:
+    toc: true
+    number-sections: true
+    toc-level: 2
+header-includes:
+- \usepackage{float}
+- \usepackage{caption}
+- \usepackage{multirow}
+- \renewcommand{\and}{\\}
+editor_options: 
+  chunk_output_type: console
+  
+---
+```{r setup, include=FALSE}
+
+require(googlesheets4)
+require(tidyverse)
+require(knitr)
+require(kableExtra)
+
+gs4_deauth()
+
+seasonLength <- 9
+
+maxProjection <- 
+  tibble(
+    Age = 0:20,
+    Weeks = c(10, rep(9, 20)),
+    `Capped TPE` = 12*c(10, rep(9, 20)),
+    `Weekly Predictions` = 2.5*6,
+    `Training Camp` = 
+      c(
+        rep(40, 4),
+        rep(30, 3),
+        rep(20, 3),
+        rep(10, 11)
+      ),
+    Standings = c(0, rep(2*4, 20)),
+    Statistics = c(0, rep(2*5, 20)),
+    # `Theme Week` = 6,
+    `Career PT` = c(10,rep(10, 3), 0, rep(10, 2), 0,10,10, rep(0, 11)),
+    Regression = c(rep(0, 9), rep(0.1, 2), 0.15, 0.2, 0.25, 0.3, rep(0.4, 6))
+  ) %>% 
+  mutate(
+    `Earned TPE` = 
+      rowSums(
+        across(
+          `Capped TPE`:`Career PT`
+          )
+      ),
+    `Remaining Max` = max(cumsum(`Earned TPE`)) - cumsum(`Earned TPE`),
+    laggedTPE = lag(`Earned TPE`) %>% replace_na(350), 
+    laggedRegression = lag(`Regression`) %>% replace_na(0), 
+    Max = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2) * (1-..3)) %>% round(0),
+    # No = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0) * (1-..3)) %>% round(0),
+    # Low = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.33) * (1-..3)) %>% round(0),
+    # Mid = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.66) * (1-..3)) %>% round(0)
+    Salary = 
+      case_when(
+        Max <= 350 ~ 1E6,
+        Max > 1700 ~ 6E6,
+        Max > 1550 ~ 5.5E6,
+        Max > 1400 ~ 5E6,
+        Max > 1250 ~ 4.5E6,
+        Max > 1100 ~ 4E6,
+        Max > 950  ~ 3.5E6,
+        Max > 800  ~ 3E6,
+        Max > 650  ~ 2.5E6,
+        Max > 500  ~ 2E6,
+        TRUE       ~ 1.5E6
+      )
+  ) %>% 
+  select(
+    !contains("lagged")
+  ) 
+  
+knitr::opts_chunk$set(echo = FALSE, results = "asis", fig.height=3, fig.width=6, fig.align='center', fig.pos = "H")
+
+tableVis <- function(data){
+  data %>% 
+    select(
+      `Age`:`Earned TPE`,
+      `TPE Start of Season` = Max
+    ) %>% 
+    mutate(
+      `TPE End of Season` = `TPE Start of Season` + `Earned TPE`,
+      Regression = paste(Regression*100, "\\%", sep = "")
+    ) %>% 
+    kable(
+      format = "latex",
+      longtable = TRUE,
+      booktabs = TRUE,
+      escape = FALSE,
+      caption = "The projections of a max earner and their TPE sources."
+      # table.attr = 'data-quarto-disable-processing="true"',
+    ) %>% 
+    kable_styling(
+      full_width = FALSE,
+      latex_options = c("HOLD_position")
+    ) %>% 
+    landscape() %>% 
+    column_spec(1:13, width = "3.3em")
+}
+
+options(scipen = 999)
+
+```
+
+# Current PT/TPE Progression
+In the past couple of seasons we have seen an increase in the amount of total points earned (TPE) a player can earn in their career. With the addition of teams+divisions and the implementation of the first season in the SSL Academy, players created after the class of S4 has around 100 more TPE available to them compared to the earlier classes. With the league stabilizing for a while it is pertinent to look at a new TPE progression system to limit the TPE inflation.
+
+The following point tasks are currently available for players:
+
+- 12 Capped TPE per week
+- 6 weekly prediction tasks (1 participation + 1 $\cdot$ 4 correct TPE)
+- Seasonal Training Camp (40 reduced to 10 TPE with age)
+- Seasonal Standings Predictions for two divisions (2 participation + 1 $\cdot$ 8 correct TPE each)
+- Seasonal Statistics Predictions for two divisions (2 participation + 2 $\cdot$ 6 correct TPE each)
+- Theme Week (6 TPE)
+- Career Point Tasks ($\approx 10$ TPE per season until season 9)
+
+When projecting what the max earning player would earn throughout their career, the prediction TPE earnings are based on an average. The average is calculated based on the recent averages at the time of writing, which would be 2.5 TPE for weekly predictions, 4 TPE each for standings, and 5 TPE each for statistics predictions. 
+
+This can all be summarized in the following table where the TPE calculations at the start of every season takes into account any regression that needs to be made on earned TPE prior to the start.
+
+```{r}
+
+maxProjection %>% 
+  tableVis()
+
+```
+
+Focusing only on the TPE trends for the player we get the following figure.
+
+```{r fig.cap = "TPE progression for a max earning player."}
+
+visProjection <- 
+  maxProjection %>% 
+  select(
+    `Age`,`Earned TPE`,
+    `TPE Start of Season` = Max
+  ) %>% 
+  mutate(
+    `TPE End of Season` = `TPE Start of Season` + `Earned TPE`
+  ) %>% 
+  select(
+    -`Earned TPE`
+  ) %>% 
+  pivot_longer(
+    -Age,
+    names_to = "Time",
+    values_to = "TPE"
+  )
+
+visProjection %>% 
+  ggplot() + 
+  aes(x = Age, y = TPE, group = Time, color = Time) + 
+  geom_line(
+    linewidth = 0.75
+  ) + 
+  theme_bw() + 
+  scale_color_manual(
+    "Time",
+    labels = c("Peak", "Start"),
+    values =
+      c("#070B51", "#BD9523")
+  ) + 
+  scale_y_continuous(
+    limits = c(0, 2250),
+    breaks = seq(0, 2250, by = 200)
+  ) + 
+  scale_x_continuous(
+    breaks = seq(0, 20, 4)
+  ) + 
+  geom_hline(yintercept = 2000, color = "black", linetype = 2)
+
+```
+
+We can see in the figure that the peak TPE of a max earning player with the current PT progression is way above 2000 TPE, reaching just over 2200. We do not have the same numbers specifically for the first classes of players in the league, but their peak can be assumed to be just above 2000 TPE. This is a big problem caused by TPE inflation.
+
+## Proposal #1 (Point Task)
+In order to reduce the peak of the max earning player to just above 2000 TPE, I propose the following changes to the current PT structure. In this proposal I have weighed engagement and earnings specifically for the first Academy season as well as the remaining seasons in the league.
+
+The proposal has the following summarized changes:
+
+- Training Camp starts with only three seasons of 40 TPE, reducing to 30 in S3 instead of S4. All subsequent TPE are shifted one season earlier. This is in line with the initial Training Camp earnings that was shifted with the introduction of the Academy season.
+- Reduce the TPE from correct guesses in Standings and Statistic predictions to 0.5 and 1 TPE respectively. This reduces the average from 4 to 3 and from 5 to 3.5 respectively. 
+
+```{r fig.cap="Proposed TPE progression for a max earner compared to current peak."}
+
+maxProposal <- 
+  tibble(
+    Age = 0:20,
+    Weeks = c(10, rep(9, 20)),
+    `Capped TPE` = 12*c(10, rep(9, 20)),
+    `Weekly Predictions` = 2.5*6,
+    `Training Camp` = 
+      c(
+        rep(40, 3),
+        rep(30, 3),
+        rep(20, 3),
+        rep(10, 12)
+      ),
+    Standings = c(0, rep(2*3, 20)),
+    Statistics = c(0, rep(2*3.5, 20)),
+    `Career PT` = c(10,rep(10, 3), 0, rep(10, 2), 0,10,10, rep(0, 11)),
+    Regression = c(rep(0, 9), rep(0.1, 2), 0.15, 0.2, 0.25, 0.3, rep(0.4, 6))
+  ) %>% 
+  mutate(
+    `Earned TPE` = 
+      rowSums(
+        across(
+          `Capped TPE`:`Career PT`
+          )
+      ),
+    `Remaining Max` = max(cumsum(`Earned TPE`)) - cumsum(`Earned TPE`),
+    laggedTPE = lag(`Earned TPE`) %>% replace_na(350), 
+    laggedRegression = lag(`Regression`) %>% replace_na(0), 
+    Max = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2) * (1-..3)) %>% round(0),
+    # No = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0) * (1-..3)) %>% round(0),
+    # Low = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.33) * (1-..3)) %>% round(0),
+    # Mid = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.66) * (1-..3)) %>% round(0)
+    Salary = 
+      case_when(
+        Max <= 350 ~ 1E6,
+        Max > 1700 ~ 6E6,
+        Max > 1550 ~ 5.5E6,
+        Max > 1400 ~ 5E6,
+        Max > 1250 ~ 4.5E6,
+        Max > 1100 ~ 4E6,
+        Max > 950  ~ 3.5E6,
+        Max > 800  ~ 3E6,
+        Max > 650  ~ 2.5E6,
+        Max > 500  ~ 2E6,
+        TRUE       ~ 1.5E6
+      )
+  ) %>% 
+  select(
+    !contains("lagged")
+  ) 
+
+maxProposal %>% 
+  tableVis()
+
+visProposal <-
+  maxProposal %>% 
+  select(
+    `Age`,`Earned TPE`,
+    `TPE Start of Season` = Max
+  ) %>% 
+  mutate(
+    `TPE End of Season` = `TPE Start of Season` + `Earned TPE`
+  ) %>% 
+  select(
+    -`Earned TPE`
+  ) %>% 
+  pivot_longer(
+    -Age,
+    names_to = "Time",
+    values_to = "TPE"
+  ) %>% 
+  rbind(
+    visProjection %>% 
+      filter(
+        str_detect(Time, pattern = "End")
+      ) %>% 
+      mutate(
+        Time = "Current End of Season"
+      )
+  )
+
+visProposal %>% 
+  ggplot() + 
+  aes(x = Age, y = TPE, group = Time, color = Time, linetype = Time) + 
+  geom_line(
+    linewidth = 0.75
+  ) +
+  theme_bw() + 
+  scale_color_manual(
+    "Time",
+    labels = c("Current Peak", "Proposed Peak", "Proposed Start"),
+    values =
+      c("red", "#070B51", "#BD9523")
+  ) + 
+  scale_y_continuous(
+    limits = c(0, 2250),
+    breaks = seq(0, 2250, by = 200)
+  ) + 
+  scale_x_continuous(
+    breaks = seq(0, 20, 4)
+  ) + 
+  geom_hline(yintercept = c(1600, 2000), color = "black", linetype = 2) +
+  scale_linetype_manual(
+    values = c(2, 1, 1),
+    guide = "none"
+  )
+
+peakLength <- visProposal %>% filter(str_detect(Time, "Start") & TPE > 1600) %>% nrow()
+
+```
+
+We can see in the figure that this proposal reduces the peak of a max earning player to just above 2000 TPE in their tenth season (age 9) in the league. This corresponds to about `r (cumsum(maxProposal$Weeks)[10]/52.25) %>% round(2)` calendar years. This could be argued is way too long for a player to have to earn at max to reach the peak. For comparison this proposal would have `r peakLength` seasons (`r ((peakLength * seasonLength)/52.25) %>% round(2)` calendar years) where the player starts the season with more than 1600 TPE\footnote{A 1600 TPE player is defined as an elite player in the league.}.
+
+\newpage
+## Proposal #2 (Stricter Point Task)
+A stricter point task reduction could also include reducing the weekly capped TPE. This proposal does not touch on the prediction TPE rewards.
+
+The proposal has the following summarized changes:
+
+- Training Camp starts with only three seasons of 40 TPE, reducing to 30 in S3 instead of S4. All subsequent TPE are shifted one season earlier. This is in line with the initial Training Camp earnings that was shifted with the introduction of the Academy season.
+- Reduce the weekly capped TPE to 10 TPE (5+5).
+
+```{r fig.cap="Proposed TPE progression for a max earner compared to current peak."}
+
+maxProposal2 <- 
+  tibble(
+    Age = 0:20,
+    Weeks = c(10, rep(9, 20)),
+    `Capped TPE` = 10*c(10, rep(9, 20)),
+    `Weekly Predictions` = 2.5*6,
+    `Training Camp` = 
+      c(
+        rep(40, 3),
+        rep(30, 3),
+        rep(20, 3),
+        rep(10, 12)
+      ),
+    Standings = c(0, rep(2*4, 20)),
+    Statistics = c(0, rep(2*5, 20)),
+    `Career PT` = c(10,rep(10, 3), 0, rep(10, 2), 0,10,10, rep(0, 11)),
+    Regression = c(rep(0, 9), rep(0.1, 2), 0.15, 0.2, 0.25, 0.3, rep(0.4, 6))
+  ) %>% 
+  mutate(
+    `Earned TPE` = 
+      rowSums(
+        across(
+          `Capped TPE`:`Career PT`
+          )
+      ),
+    `Remaining Max` = max(cumsum(`Earned TPE`)) - cumsum(`Earned TPE`),
+    laggedTPE = lag(`Earned TPE`) %>% replace_na(350), 
+    laggedRegression = lag(`Regression`) %>% replace_na(0), 
+    Max = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2) * (1-..3)) %>% round(0),
+    # No = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0) * (1-..3)) %>% round(0),
+    # Low = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.33) * (1-..3)) %>% round(0),
+    # Mid = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.66) * (1-..3)) %>% round(0)
+    Salary = 
+      case_when(
+        Max <= 350 ~ 1E6,
+        Max > 1700 ~ 6E6,
+        Max > 1550 ~ 5.5E6,
+        Max > 1400 ~ 5E6,
+        Max > 1250 ~ 4.5E6,
+        Max > 1100 ~ 4E6,
+        Max > 950  ~ 3.5E6,
+        Max > 800  ~ 3E6,
+        Max > 650  ~ 2.5E6,
+        Max > 500  ~ 2E6,
+        TRUE       ~ 1.5E6
+      )
+  ) %>% 
+  select(
+    !contains("lagged")
+  ) 
+
+maxProposal2 %>% 
+  tableVis()
+
+visProposal2 <-
+  maxProposal2 %>% 
+  select(
+    `Age`,`Earned TPE`,
+    `TPE Start of Season` = Max
+  ) %>% 
+  mutate(
+    `TPE End of Season` = `TPE Start of Season` + `Earned TPE`
+  ) %>% 
+  select(
+    -`Earned TPE`
+  ) %>% 
+  pivot_longer(
+    -Age,
+    names_to = "Time",
+    values_to = "TPE"
+  ) %>% 
+  rbind(
+    visProjection %>% 
+      filter(
+        str_detect(Time, pattern = "End")
+      ) %>% 
+      mutate(
+        Time = "Current End of Season"
+      )
+  )
+
+visProposal2 %>% 
+  ggplot() + 
+  aes(x = Age, y = TPE, group = Time, color = Time, linetype = Time) + 
+  geom_line(
+    linewidth = 0.75
+  ) +
+  theme_bw() + 
+  scale_color_manual(
+    "Time",
+    labels = c("Current Peak", "Proposed Peak", "Proposed Start"),
+    values =
+      c("red", "#070B51", "#BD9523")
+  ) + 
+  scale_y_continuous(
+    limits = c(0, 2250),
+    breaks = seq(0, 2250, by = 200)
+  ) + 
+  scale_x_continuous(
+    breaks = seq(0, 20, 4)
+  ) + 
+  geom_hline(yintercept = c(1600, 2000), color = "black", linetype = 2) +
+  scale_linetype_manual(
+    values = c(2, 1, 1),
+    guide = "none"
+  )
+
+peakLength2 <- visProposal2 %>% filter(str_detect(Time, "Start") & TPE > 1600) %>% nrow()
+
+```
+
+For the stricter PT proposal the peak of a player still falls in their 10th season (age 9) but the TPE is just under 2000. The peak is still achieved after about `r (cumsum(maxProposal2$Weeks)[10]/52.25) %>% round(2)` calendar years. For comparison this proposal would have `r peakLength2` seasons (`r ((peakLength2 * seasonLength)/52.25) %>% round(2)` calendar years) where the player starts the season with more than 1600 TPE.
+
+\newpage
+## Proposal #3 (Regression)
+If we want to focus on shortening a player's career and/or peak seasons
+
+- Shift the regression season to start one season earlier, with the same percentages. This would account for the Academy season and put regression in line with what it was at the start of the league. 
+
+```{r fig.cap="Alternative proposed TPE progression for a max earner compared to current peak."}
+
+maxProposal3 <- 
+  tibble(
+    Age = 0:20,
+    Weeks = c(10, rep(9, 20)),
+    `Capped TPE` = 12*c(10, rep(9, 20)),
+    `Weekly Predictions` = 2.5*6,
+    `Training Camp` = 
+      c(
+        rep(40, 4),
+        rep(30, 3),
+        rep(20, 3),
+        rep(10, 11)
+      ),
+    Standings = c(0, rep(2*4, 20)),
+    Statistics = c(0, rep(2*5, 20)),
+    `Career PT` = c(10,rep(10, 3), 0, rep(10, 2), 0,10,10, rep(0, 11)),
+    Regression = c(rep(0, 8), rep(0.1, 2), 0.15, 0.2, 0.25, 0.3, rep(0.4, 7))
+  ) %>% 
+  mutate(
+    `Earned TPE` = 
+      rowSums(
+        across(
+          `Capped TPE`:`Career PT`
+          )
+      ),
+    `Remaining Max` = max(cumsum(`Earned TPE`)) - cumsum(`Earned TPE`),
+    laggedTPE = lag(`Earned TPE`) %>% replace_na(350), 
+    laggedRegression = lag(`Regression`) %>% replace_na(0), 
+    Max = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2) * (1-..3)) %>% round(0),
+    # No = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0) * (1-..3)) %>% round(0),
+    # Low = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.33) * (1-..3)) %>% round(0),
+    # Mid = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.66) * (1-..3)) %>% round(0)
+    Salary = 
+      case_when(
+        Max <= 350 ~ 1E6,
+        Max > 1700 ~ 6E6,
+        Max > 1550 ~ 5.5E6,
+        Max > 1400 ~ 5E6,
+        Max > 1250 ~ 4.5E6,
+        Max > 1100 ~ 4E6,
+        Max > 950  ~ 3.5E6,
+        Max > 800  ~ 3E6,
+        Max > 650  ~ 2.5E6,
+        Max > 500  ~ 2E6,
+        TRUE       ~ 1.5E6
+      )
+  ) %>% 
+  select(
+    !contains("lagged")
+  ) 
+
+maxProposal3 %>% 
+  tableVis()
+
+visProposal3 <-
+  maxProposal3 %>% 
+  select(
+    `Age`,`Earned TPE`,
+    `TPE Start of Season` = Max
+  ) %>% 
+  mutate(
+    `TPE End of Season` = `TPE Start of Season` + `Earned TPE`
+  ) %>% 
+  select(
+    -`Earned TPE`
+  ) %>% 
+  pivot_longer(
+    -Age,
+    names_to = "Time",
+    values_to = "TPE"
+  ) %>% 
+  rbind(
+    visProjection %>% 
+      filter(
+        str_detect(Time, pattern = "End")
+      ) %>% 
+      mutate(
+        Time = "Current End of Season"
+      )
+  )
+
+visProposal3 %>% 
+  ggplot() + 
+  aes(x = Age, y = TPE, group = Time, color = Time, linetype = Time) + 
+  geom_line(
+    linewidth = 0.75
+  ) +
+  theme_bw() + 
+  scale_color_manual(
+    "Time",
+    labels = c("Current Peak", "Proposed Peak", "Proposed Start"),
+    values =
+      c("red", "#070B51", "#BD9523")
+  ) + 
+  scale_y_continuous(
+    limits = c(0, 2250),
+    breaks = seq(0, 2250, by = 200)
+  ) + 
+  scale_x_continuous(
+    breaks = seq(0, 20, 4)
+  ) + 
+  geom_hline(yintercept = c(1600,2000), color = "black", linetype = 2) +
+  scale_linetype_manual(
+    values = c(2, 1, 1),
+    guide = "none"
+  )
+
+peakLength3 <- visProposal3 %>% filter(str_detect(Time, "Start") & TPE > 1600) %>% nrow()
+
+```
+
+In this alternative proposal, the player reaches its peak season at age 8 (`r (cumsum(maxProposal3$Weeks)[9]/52.25) %>% round(2)` calendar years) while the length of the peak (>1600) is still `r peakLength3` seasons.
+
+## Proposal Comparison
+
+Comparing the two proposals there are a couple of distinct differences. 
+
+```{r fig.cap="Comparison between the current and three proposals in a max earners peak TPE."}
+
+visComparison <- 
+  visProjection %>% 
+  filter(
+    str_detect(Time, "TPE End")
+  ) %>% 
+  mutate(
+    Time = "Current Peak"
+  ) %>% 
+  rbind(
+    visProposal %>% 
+      filter(
+        str_detect(Time, "TPE End")
+      ) %>% 
+      mutate(
+        Time = "PT Proposal Peak"
+      ),
+    visProposal2 %>% 
+      filter(
+        str_detect(Time, "TPE End")
+      ) %>% 
+      mutate(
+        Time = "PT Strict Proposal Peak"
+      ),
+    visProposal3 %>% 
+      filter(
+        str_detect(Time, "TPE End")
+      ) %>% 
+      mutate(
+        Time = "Regression Proposal Peak"
+      )
+  )
+
+visComparison %>% 
+  ggplot() + 
+  aes(x = Age, y = TPE, group = Time, color = Time, linetype = Time) + 
+  geom_line(
+    linewidth = 0.75
+  ) +
+  theme_bw() + 
+  scale_color_manual(
+    "Time",
+    values =
+      c("gray50", "#070B51", "#BD9523", "red")
+  ) + 
+  scale_y_continuous(
+    limits = c(0, 2250),
+    breaks = seq(0, 2250, by = 200)
+  ) + 
+  scale_x_continuous(
+    breaks = seq(0, 20, 4)
+  ) + 
+  geom_hline(yintercept = c(1600,2000), color = "black", linetype = 2) +
+  scale_linetype_manual(
+    values = c(2, 1, 1, 1),
+    guide = "none"
+  )
+
+
+```
+
+From the figure it is clear that using the regression proposal a player's career becomes around one season shorter. There is also a distinct difference in the absolute peak of the two proposals, with regression not reaching 2000 TPE at all at the end of the ninth season. It is important to note that these calculations **do not** include any extra TPE purchased through the Player Store. 
+
+
+\newpage
+<!-- # New Transfer Value Formula -->
+
+<!-- We have an issue with the current transfer value calculation in that it does not properly take into account the Academy season we have added, resulting in max earning players having a value of over 100 million past their third season and cannot sign elsewhere in FA. The current system also has a relatively reduced cost of a max earner in their peak. -->
+
+<!-- I want to find a new valuation formula that is both simple and gives a decent valuation of a player in all different eras of their career. -->
+
+<!-- ## Variables -->
+<!-- The two variables that a transfer value formula should include are *potential* value and *current* value. There are many different ways to measure both of these properties of a player, especially potential, but I will focus on finding ways to measure these in the simplest way possible. -->
+
+<!-- The first definition of potential can be defined by the max earners number of seasons remaining playing at 1200 TPE or higher. By this point in a player's career they will be a solid first string player for any team. The table shows the current TPE progression and how many seasons above the TPE limit the player would have. -->
+
+<!-- ```{r include = FALSE} -->
+
+<!-- valueData <-  -->
+<!--   maxProjection %>%  -->
+<!--   select( -->
+<!--     Age,  -->
+<!--     `Earned TPE`, -->
+<!--     Regression, -->
+<!--     `Remaining Max`, -->
+<!--     Max -->
+<!--   ) %>%  -->
+<!--   left_join( -->
+<!--     maxProposal %>%  -->
+<!--       select( -->
+<!--         Age,  -->
+<!--         `Earned TPE`, -->
+<!--         `Remaining Max`, -->
+<!--         Regression, -->
+<!--         Max -->
+<!--       ), -->
+<!--     by = "Age", -->
+<!--     suffix = c("_Current", "") -->
+<!--   ) %>%  -->
+<!--   left_join( -->
+<!--     maxProposal3 %>%  -->
+<!--       select( -->
+<!--         Age,  -->
+<!--         `Earned TPE`, -->
+<!--         `Remaining Max`, -->
+<!--         Regression, -->
+<!--         Max -->
+<!--       ), -->
+<!--     by = "Age", -->
+<!--     suffix = c("_Prop 1", "_Prop 2") -->
+<!--   ) %>%  -->
+<!--   pivot_longer( -->
+<!--     -Age,  -->
+<!--     names_to = c("variable", "Proposal"), -->
+<!--     names_sep = "_" -->
+<!--   ) %>%  -->
+<!--   pivot_wider( -->
+<!--     id_cols = c(Age, Proposal), -->
+<!--     names_from = variable, -->
+<!--     names_glue = "{variable}", -->
+<!--     values_from = value -->
+<!--   ) %>%  -->
+<!--   group_by(Proposal) %>%  -->
+<!--   mutate( -->
+<!--     `Remaining Max` = max(cumsum(`Earned TPE`)) - cumsum(`Earned TPE`), -->
+<!--     laggedTPE = lag(`Earned TPE`) %>% replace_na(350), -->
+<!--     laggedRegression = lag(`Regression`) %>% replace_na(0), -->
+<!--     No = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0) * (1-..3)) %>% round(0), -->
+<!--     Low = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.33) * (1-..3)) %>% round(0), -->
+<!--     Mid = accumulate2(laggedTPE, laggedRegression[-1], ~(..1  + ..2*0.66) * (1-..3)) %>% round(0) -->
+<!--   ) %>%  -->
+<!--   select( -->
+<!--     !contains("lagged") -->
+<!--   ) %>%  -->
+<!--   pivot_longer( -->
+<!--     Max:Mid, -->
+<!--     names_to = "Earner", -->
+<!--     values_to = "TPE" -->
+<!--   ) %>% -->
+<!--   mutate( -->
+<!--     Salary = -->
+<!--       case_when( -->
+<!--         TPE <= 350 ~ 1E6, -->
+<!--         TPE > 1700 ~ 6E6, -->
+<!--         TPE > 1550 ~ 5.5E6, -->
+<!--         TPE > 1400 ~ 5E6, -->
+<!--         TPE > 1250 ~ 4.5E6, -->
+<!--         TPE > 1100 ~ 4E6, -->
+<!--         TPE > 950  ~ 3.5E6, -->
+<!--         TPE > 800  ~ 3E6, -->
+<!--         TPE > 650  ~ 2.5E6, -->
+<!--         TPE > 500  ~ 2E6, -->
+<!--         TRUE       ~ 1.5E6 -->
+<!--       ), -->
+<!--     Earner = factor(Earner, levels = c("No", "Low", "Mid", "Max")) -->
+<!--   ) %>%  -->
+<!--   ungroup() -->
+
+<!-- ``` -->
+
+<!-- ```{r} -->
+
+<!-- data <- -->
+<!--   valueData %>% -->
+<!--   filter( -->
+<!--     Earner == "Max", -->
+<!--     Proposal == "Current" -->
+<!--   ) %>% -->
+<!--   mutate( -->
+<!--     Over = `TPE` > 1200, -->
+<!--     `Seasons Above 1.2k` = abs(cumsum(Over) - Over - max(cumsum(Over))) -->
+<!--   ) %>% -->
+<!--   select( -->
+<!--     -Over -->
+<!--   ) -->
+
+<!-- data %>% -->
+<!--   select( -->
+<!--     `Age`, -->
+<!--     `TPE`, -->
+<!--     `Seasons Above 1.2k` -->
+<!--   ) %>% -->
+<!--   kable( -->
+<!--     format = "latex", -->
+<!--     # longtable = TRUE, -->
+<!--     booktabs = TRUE, -->
+<!--     # escape = FALSE, -->
+<!--     caption = "The potential number of seasons left starting at above 1200 TPE for a max earning player.", -->
+<!--     # table.attr = 'data-quarto-disable-processing="true"' -->
+<!--   ) %>% -->
+<!--   kable_styling( -->
+<!--     full_width = FALSE, -->
+<!--     latex_options = c("HOLD_position") -->
+<!--   ) -->
+
+
+<!-- ``` -->
+
+<!-- For instance an S0 player would have 10 seasons at potentially over 1200, reaching it for the first time in S5 and playing its last season in S14. The variable is very simple in its definition but only for a max earner. It is much harder to project this variable later on in a player's career. -->
+
+<!-- Another way to measure potential that is easily calculated for any type of earner is by using the remaining potential TPE that a max earning player can gain from that season and onward. This definition of potential has a benefit of being very easy to calculate and use throughout a player's career. -->
+
+<!-- ```{r} -->
+
+<!-- data %>% -->
+<!--   select( -->
+<!--     `Age`, -->
+<!--     `TPE`, -->
+<!--     `Remaining Max` -->
+<!--   ) %>% -->
+<!--   kable( -->
+<!--     format = "latex", -->
+<!--     # longtable = TRUE, -->
+<!--     booktabs = TRUE, -->
+<!--     # escape = FALSE, -->
+<!--     caption = "The potential remaining TPE earnings for a max earning player.", -->
+<!--     # table.attr = 'data-quarto-disable-processing="true"' -->
+<!--   ) %>% -->
+<!--   kable_styling( -->
+<!--     full_width = FALSE, -->
+<!--     latex_options = c("HOLD_position") -->
+<!--   ) -->
+
+
+<!-- ``` -->
+
+<!-- Next I wanted to find a definition of the current value of a player, as potential only shows something uncertain. In the current formula we already make use of the minimum salary based on TPE tiers, so we can use that again as a definition of the current value. An S0 player starts off at 1 million and is earning 6 million in S8. -->
+
+
+<!-- ```{r} -->
+
+<!-- data %>% -->
+<!--   select( -->
+<!--     `Age`, -->
+<!--     `TPE`, -->
+<!--     `Salary` -->
+<!--   ) %>% -->
+<!--   kable( -->
+<!--     format = "latex", -->
+<!--     # longtable = TRUE, -->
+<!--     booktabs = TRUE, -->
+<!--     # escape = FALSE, -->
+<!--     caption = "The minimum salary based on the TPE at the start of the season for a max earner.", -->
+<!--     # table.attr = 'data-quarto-disable-processing="true"' -->
+<!--   ) %>% -->
+<!--   kable_styling( -->
+<!--     full_width = FALSE, -->
+<!--     latex_options = c("HOLD_position") -->
+<!--   ) -->
+
+<!-- ``` -->
+
+<!-- Another option would be similar to potential, using the Earned TPE of the player directly instead of the TPE Tiers. An issue with this approach is that the TPE that is recorded and easily tracked is the claimed TPE which does not necessarily correspond to the total of earned TPE. As such, any valuation based on TPE directly would risk being further from the true value compared to using the tiered approach. -->
+
+<!-- ## Transfer Value Formula -->
+<!-- The current Transfer Value is calculated using the following formula: -->
+
+<!-- \begin{align*} -->
+<!-- Value = \frac{Salary \cdot 114}{Age} -->
+<!-- \end{align*} -->
+
+<!-- As the value is calculated for the beginning of the season, the first season (`Age = 0`) would produce an error (divide by 0) so the minimum Age used for the calculations is 1. -->
+
+<!-- ```{r, fig.cap = "Current formula for transfer value over time for a max earner."} -->
+<!-- #| fig-pos: H -->
+<!-- data %>% -->
+<!--   mutate( -->
+<!--     Value = 114*Salary/(if_else(Age == 0, 1, Age)) -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = Value) + -->
+<!--   geom_line(linewidth = 0.75, color = "#BD9523")+ -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar() -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) -->
+
+<!-- ``` -->
+
+<!-- The figure clearly shows the issued presented earlier, a max earning player has a transfer value exceeding the current maximum transfer budget for a team during a lot of their early career. -->
+
+<!-- Instead I want to find an alternative solution that combines the potential and current value of a player using the variables defined earlier. The formula should be able to provide the following: -->
+
+<!-- - An S0 player would have low value but high potential, -->
+<!-- - a peak player (S7-S12) would have high value and mid potential, -->
+<!-- - A regressing player (S10+) would have mid-high value and low potential. -->
+<!-- - No value above $100,000,000. -->
+
+<!-- ### First Proposal Using 1200 TPE -->
+<!-- Splitting up the two variables could produce a simple yet effective formula. For instance considering the base transfer value of the player being `5*Potential` million, a S0 player would, solely based on potential, be worth $50 million. -->
+
+<!-- ```{r fig.cap = "Transfer value based solely on the potential of the, max earning, player."} -->
+
+<!-- data %>% -->
+<!--   mutate( -->
+<!--     baseFormula = Salary * `Seasons Above 1.2k`, -->
+<!--     formula = `Seasons Above 1.2k` * 5E6 -->
+<!--   ) %>% -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = formula) + -->
+<!--   geom_line(linewidth = 0.75, color = "#BD9523") + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar() -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) -->
+
+<!-- ``` -->
+
+<!-- Factoring (factor 10) the current value of the player using the minimum salary, the value of the max earner follows a curved trend with the player's age. -->
+
+<!-- ```{r fig.cap = "Transfer value based solely on the minimum salary of the, max earning, player."} -->
+
+<!-- data %>% -->
+<!--   mutate( -->
+<!--     formula = Salary*10 -->
+<!--   ) %>% -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = formula) + -->
+<!--   geom_line(linewidth = 0.75, color = "#BD9523") + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar() -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) -->
+
+<!-- ``` -->
+
+<!-- We can combine the two factorizations of the variables as: -->
+
+<!-- \begin{align*} -->
+<!--   Value = 5 \cdot Potential + 10 * Salary -->
+<!-- \end{align*} -->
+
+<!-- ```{r fig.cap = "Proposed formula for transfer value for a max earning player compared to the current."} -->
+<!-- data %>% -->
+<!--   mutate( -->
+<!--     current = 114*Salary/(if_else(Age == 0, 1, Age)), -->
+<!--     formula = (`Seasons Above 1.2k` * 5E6 + Salary * 1E1) %>% as.numeric() -->
+<!--   ) %>% -->
+<!--   pivot_longer( -->
+<!--     cols = c(current, formula) -->
+<!--   ) %>% -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = value, group = name, color = name) + -->
+<!--   geom_line(linewidth = 0.75) + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar() -->
+<!--   ) + -->
+<!--   scale_color_manual( -->
+<!--     "Formulas", -->
+<!--     labels = -->
+<!--       c("Current", "Proposal"), -->
+<!--     values = -->
+<!--       c("#070B51", "#BD9523") -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) -->
+<!-- ``` -->
+
+<!-- When comparing this to the current valuation formula we see that the lowest valuation of a player is \$60 million, increasing to just under \$100 million in S5 and finally reducing more slowly than the simple formula. -->
+
+<!-- ### Projections -->
+<!-- If we were to take this formula and look at four types of earners: -->
+
+<!-- - No: Nothing earned at all. -->
+<!-- - Low: Earning at 33% a season, corresponding to around 3/12 capped TPE and no uncapped TPE. -->
+<!-- - Mid: Earning at 66% a season, corresponding to around 8/12 capped TPE and some uncapped TPE. -->
+<!-- - Max: Earning everything. -->
+
+<!-- ```{r fig.cap="Transfer value over time for different types of earners."} -->
+
+<!-- visValueProject <-  -->
+<!--   valueData %>%  -->
+<!--   filter( -->
+<!--     Proposal == "Current" -->
+<!--   ) %>%  -->
+<!--   group_by(Earner) %>% -->
+<!--   mutate( -->
+<!--     Over = `TPE` > 1200, -->
+<!--     `Seasons Above 1.2k` = abs(cumsum(Over) - Over - max(cumsum(Over))) -->
+<!--   ) %>% -->
+<!--   select( -->
+<!--     -Over -->
+<!--   ) %>% -->
+<!--   ungroup() %>% -->
+<!--   group_by(Age) %>% -->
+<!--   mutate( -->
+<!--     `Seasons Above 1.2k` = max(`Seasons Above 1.2k`) -->
+<!--   ) -->
+
+<!-- visValueProject %>%  -->
+<!--   mutate( -->
+<!--     formula = (`Seasons Above 1.2k` * 5E6 + Salary * 1E1) %>% as.numeric() -->
+<!--   ) %>% -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = formula, group = Earner, color = Earner) + -->
+<!--   geom_line( -->
+<!--     linewidth = 0.75 -->
+<!--   ) + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar(), -->
+<!--     limits = c(0, 1E8) -->
+<!--   ) + -->
+<!--   scale_color_manual( -->
+<!--     "Earner", -->
+<!--     values = -->
+<!--       c("black", "#070B51", "#BD9523", "red") -->
+<!--   )  +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) -->
+
+<!-- ``` -->
+
+<!-- The figure shows that different types of earnes will be valued differently throughout their career but one of the biggest restrictions with this proposed formula using seasons above 1200 TPE is the fact that a low earner's value is not properly reflected in the early seasons of a career. For instance a low earner would in S2 according to the formula still have 10 potential seasons of over 1200 TPE (using the max earner values) but in reality they would not have the same amount of potential. -->
+
+<!-- ### Second Proposal Using Remaining TPE -->
+<!-- The calculations for adapting the Potential variable as previously defined becomes irritatingly complex very fast. Instead we calculate the player's potential using their remaining TPE earnings if they were to max earn from this point on.Using only the new variable for the potential, the trend would look like this: -->
+
+<!-- ```{r fig.cap = "Transfer value based solely on the potential of the, max earning, player."} -->
+
+<!-- data %>% -->
+<!--   mutate( -->
+<!--     formula = `Remaining Max`*2E4 -->
+<!--   ) %>% -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = formula) + -->
+<!--   geom_line(linewidth = 0.75, color = "#BD9523") + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar() -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) -->
+
+<!-- ``` -->
+
+<!-- The new proposed formula would be calculated as: -->
+
+<!-- \begin{align*} -->
+<!-- Value = 2000 \cdot Potential + 10 \cdot Salary -->
+<!-- \end{align*} -->
+
+<!-- which would result in the following trend over time. -->
+
+<!-- ```{r fig.cap = "Proposed formula for transfer value for a max earning player compared to the current."} -->
+<!-- data %>% -->
+<!--   mutate( -->
+<!--     current = 114*Salary/(if_else(Age == 0, 1, Age)), -->
+<!--     formula = (`Remaining Max` * 2E4 + Salary * 1E1) %>% as.numeric() -->
+<!--   ) %>% -->
+<!--   pivot_longer( -->
+<!--     cols = c(current, formula) -->
+<!--   ) %>% -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = value, group = name, color = name) + -->
+<!--   geom_line(linewidth = 0.75) + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar() -->
+<!--   ) + -->
+<!--   scale_color_manual( -->
+<!--     "Formulas", -->
+<!--     labels = -->
+<!--       c("Current", "Proposal"), -->
+<!--     values = -->
+<!--       c("#070B51", "#BD9523") -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) -->
+<!-- ``` -->
+
+<!-- This formula has a slightly higher initial valuation of a player which continues until S8 when the player is beginning to regress.  -->
+
+<!-- ### Projection -->
+<!-- The formula projected over the different types of earners sees a diminishing return for No or Low TPE earners almost from the start, while the Mid and Max earners increase their value during their first 7-8 seasons. -->
+
+<!-- ```{r fig.cap="Transfer value over time for different types of earners."} -->
+
+<!-- visValueProject %>%  -->
+<!--   mutate( -->
+<!--     formula = (`Remaining Max` * 2E4 + Salary * 1E1) %>% as.numeric() -->
+<!--   ) %>% -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = formula, group = Earner, color = Earner) + -->
+<!--   geom_line( -->
+<!--     linewidth = 0.75 -->
+<!--   ) + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar(), -->
+<!--     limits = c(0, 1E8) -->
+<!--   ) + -->
+<!--   scale_color_manual( -->
+<!--     "Earner", -->
+<!--     values = -->
+<!--       c("black", "#070B51", "#BD9523", "red") -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) -->
+
+<!-- ``` -->
+
+<!-- ### Comparison -->
+
+<!-- ```{r} -->
+
+<!-- visValueProject %>%  -->
+<!--   mutate( -->
+<!--     formula1 = (`Seasons Above 1.2k` * 5E6 + Salary * 1E1) %>% as.numeric(), -->
+<!--     formula2 = (`Remaining Max` * 2E4 + Salary * 1E1) %>% as.numeric() -->
+<!--   ) %>% -->
+<!--   pivot_longer( -->
+<!--     cols = c(formula1, formula2), -->
+<!--     names_to = "Formula", -->
+<!--     values_to = "Value" -->
+<!--   ) %>%  -->
+<!--   mutate( -->
+<!--     group = paste(Earner, Formula) %>%  -->
+<!--       factor( -->
+<!--         levels = c("No formula1", "No formula2", "Low formula1", "Low formula2", "Mid formula1", "Mid formula2", "Max formula1", "Max formula2") -->
+<!--           ) -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = Value, group = group, color = group, linetype = group) + -->
+<!--   geom_line( -->
+<!--     linewidth = 0.75 -->
+<!--   ) + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar(), -->
+<!--     limits = c(0, 1E8) -->
+<!--   ) + -->
+<!--   scale_color_manual( -->
+<!--     "Earner", -->
+<!--     labels =  -->
+<!--       paste( -->
+<!--         rep(c("No", "Low", "Mid", "Max"), each = 2), -->
+<!--         rep(c("1200", "Remaining"), times = 4) -->
+<!--       ), -->
+<!--     values = -->
+<!--       c("grey40", "black","#8a8ff5",  "#070B51", "#ebd493", "#BD9523", "#ff8080", "red") -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) +  -->
+<!--   scale_linetype_manual( -->
+<!--     values = rep(2:1, times = 4), -->
+<!--     guide = "none" -->
+<!--   ) -->
+
+<!-- ``` -->
+
+
+<!-- # Combining the Proposals -->
+
+<!-- Since the transfer value proposal is directly tied to the earned TPE of a player it is important to look at the two proposals combined. Prop 1 is the proposal reducing the TPE progression from tasks while Prop 2 is the proposal with the shifted regression.  -->
+
+<!-- ```{r, fig.height = 6} -->
+
+<!-- visValueProject <-  -->
+<!--   valueData %>%  -->
+<!--   group_by(Proposal, Earner) %>% -->
+<!--   mutate( -->
+<!--     Over = `TPE` > 1200, -->
+<!--     `Seasons Above 1.2k` = abs(cumsum(Over) - Over - max(cumsum(Over))) -->
+<!--   ) %>% -->
+<!--   select( -->
+<!--     -Over -->
+<!--   ) %>% -->
+<!--   ungroup() %>% -->
+<!--   group_by(Proposal, Age) %>% -->
+<!--   mutate( -->
+<!--     `Seasons Above 1.2k` = max(`Seasons Above 1.2k`) -->
+<!--   ) -->
+
+
+<!-- visValueProject %>%  -->
+<!--   mutate( -->
+<!--     formula1 = (`Seasons Above 1.2k` * 5E6 + Salary * 1E1) %>% as.numeric(), -->
+<!--     formula2 = (`Remaining Max` * 2E4 + Salary * 1E1) %>% as.numeric() -->
+<!--   ) %>% -->
+<!--   pivot_longer( -->
+<!--     cols = c(formula1, formula2), -->
+<!--     names_to = "Formula", -->
+<!--     values_to = "Value" -->
+<!--   ) %>%  -->
+<!--   mutate( -->
+<!--     group = paste(Earner, Formula) %>%  -->
+<!--       factor( -->
+<!--         levels = c("No formula1", "No formula2", "Low formula1", "Low formula2", "Mid formula1", "Mid formula2", "Max formula1", "Max formula2") -->
+<!--           ) -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   aes(x = Age, y = Value, group = group, color = group, linetype = group) + -->
+<!--   geom_line( -->
+<!--     linewidth = 0.75 -->
+<!--   ) + -->
+<!--   theme_bw() + -->
+<!--   labs(x = "Age", y = "Value") + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::label_dollar(), -->
+<!--     limits = c(0, 1E8) -->
+<!--   ) + -->
+<!--   scale_color_manual( -->
+<!--     "Earner", -->
+<!--     labels =  -->
+<!--       paste( -->
+<!--         rep(c("No", "Low", "Mid", "Max"), each = 2), -->
+<!--         rep(c("1200", "Remaining"), times = 4) -->
+<!--       ), -->
+<!--     values = -->
+<!--       c("grey40", "black","#8a8ff5",  "#070B51", "#ebd493", "#BD9523", "#ff8080", "red") -->
+<!--   ) +  -->
+<!--   geom_hline(yintercept = 1E8, color = "black", linetype = 2) +  -->
+<!--   scale_linetype_manual( -->
+<!--     values = rep(2:1, times = 4), -->
+<!--     guide = "none" -->
+<!--   ) +  -->
+<!--   facet_grid( -->
+<!--     rows = vars(Proposal) -->
+<!--   ) -->
+
+<!-- ``` -->
+
+<!-- For each subfigure, using the 1200 TPE threshold (dotted line with pale colors) produces more variability in transfer value for the first couple of seasons. Each type of earner starts at a lower value and diverges until around season 5 with the max earner seeing the steeper increase in value. Using the remaining TPE of a max earner (solid line with strong colors), each type of player starts at a higher value and diverges to opposite ends, the No and Low earner seeing a diminishing value while the Mid and Max earner increases their value until around season 8. -->
+
+
