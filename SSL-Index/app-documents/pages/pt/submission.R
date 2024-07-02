@@ -3,7 +3,11 @@ submitPTUI <- function(id) {
   tagList(
     column(
       width = 12,
-      p("The .csv file should contain the username and the tpe gained. The encoding of the file should be UTF-8. If you are not sure how to do this, follow the instructions in this "), a("link", href = "https://stackoverflow.com/questions/18693139/how-to-convert-csv-files-encoding-to-utf-8"),
+      paste("The .csv file should contain the username and the tpe gained. The encoding of the file should be UTF-8. 
+            If you are not sure how to do this, follow the instructions in this ", 
+            a("link", href = "https://stackoverflow.com/questions/18693139/how-to-convert-csv-files-encoding-to-utf-8"),
+            ".", sep = ""
+      ) %>% HTML(), 
       br(),
       fileInput(inputId = ns("gradedTask"),label = "Upload a , separated .csv file", accept = ".csv"),
       textInput(inputId = ns("taskName"), label = "What is the task name?")

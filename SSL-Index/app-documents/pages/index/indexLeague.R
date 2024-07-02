@@ -43,7 +43,7 @@ leagueIndexUI <- function(id) {
   )
 }
 
-leagueIndexServer <- function(id, userinfo) {
+leagueIndexServer <- function(id) {
   moduleServer(
     id,
     function(input, output, session) {

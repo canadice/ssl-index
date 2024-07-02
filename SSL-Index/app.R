@@ -521,7 +521,7 @@ server <- function(input, output, session) {
       )
     } else {
       menuItem(
-        "Create",
+        "Create a player",
         tabName = "createplayer"
       )
     }
@@ -539,15 +539,10 @@ server <- function(input, output, session) {
     # print(authOutput())
     # 
     ## Loads the different server modules
-    leagueIndexServer("leagueindex", userinfo = authOutput())
-    
     managerTeamServer("managerteam", userinfo = authOutput())
     assignManagerServer("assignManager", userinfo = authOutput())
     bodTeamServer("bodoverview", userinfo = authOutput())
     exportBuildServer("exportBuild")
-    
-    playerPageServer("playerpage", uid = authOutput()$uid, parent = session)
-    createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
     
     # teamIndexServer("teamindex")
   }) %>% 
@@ -555,6 +550,14 @@ server <- function(input, output, session) {
       authOutput(),
       ignoreInit = FALSE
     )
+  
+  loadedPage <- 
+    reactiveValues(
+      create = FALSE,
+      player = FALSE,
+      index = FALSE
+    )
+  
   
   observe({
     if(input$tabs == "playerapprove"){
@@ -566,6 +569,17 @@ server <- function(input, output, session) {
     } else if(input$tabs == "welcome"){
       req(authOutput()$uid)
       welcomeServer("welcome", userinfo = authOutput())
+    } else if(!loadedPage$create & input$tabs == "createplayer"){
+      req(authOutput()$uid)
+      createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
+      loadedPage$create <- TRUE
+    } else if(!loadedPage$player & input$tabs == "playerpage"){
+      req(authOutput()$uid)
+      playerPageServer("playerpage", uid = authOutput()$uid, parent = session)
+      loadedPage$player <- TRUE
+    } else if(!loadedPage$index & input$tabs == "leagueindex"){
+      leagueIndexServer("leagueindex")
+      loadedPage$index <- TRUE
     }
   }) %>% 
     bindEvent(
