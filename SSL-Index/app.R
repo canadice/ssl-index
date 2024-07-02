@@ -166,7 +166,6 @@ customTheme <-
       info_box_bg = "#e4eef3"
     )
   )
-  
 
 
 #################################################################
@@ -251,6 +250,31 @@ ui <- function(request){
 ui <- 
   secure_app(
     ui,
+    status = "primary",
+    tags_top = 
+      list(
+        tags$div(
+          tags$h4("SSL Portal", style = "align:center"),
+          tags$img(
+            src = "FA.png", width = 100
+          ),
+          tags$br(),
+          tags$p(paste("Enter your", 
+                       toString(tags$a("SSL Forum", href = "https://forum.simulationsoccer.com", target = "_blank")), "login credentials") %>% HTML())
+        ),
+        tags$style(
+          type="text/css",
+          "body {font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;}
+          h1, h2, h3, h4, h5 {
+            font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+            font-weight: 800; font-style: normal;
+          }"
+        )
+      ),
+    tags_bottom = tags$div(
+      tags$a("Register a new user!", href = "https://forum.simulationsoccer.com/member.php?action=register", target = "_blank", style = "float: left;"),
+      tags$a("Forgot password?", href = "https://forum.simulationsoccer.com/member.php?action=lostpw", target = "_blank", style = "float:right;")
+    ),
     fab_position = "bottom-left"
   )
 
