@@ -228,8 +228,9 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                           defaultColDef = colDef(
                             minWidth = 50,
                             style = function(value, index){
-                              color <- if_else(temp$ValueFill[index] == 1, "#008450", if_else(temp$ValueFill[index] == 2, "#EFB700", "#B81D13")) 
-                              list(background = color, color = "white")
+                              color <- if_else(temp$ValueFill[index] == 1, "#66B38C", if_else(temp$ValueFill[index] == 2, "#F5D17E", "#D96F68"))
+                              # color <- if_else(temp$ValueFill[index] == 1, "#008450", if_else(temp$ValueFill[index] == 2, "#EFB700", "#B81D13")) 
+                              list(background = color, color = "black")
                             }
                           ),
                           pagination = FALSE,
