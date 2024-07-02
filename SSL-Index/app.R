@@ -376,7 +376,7 @@ server <- function(input, output, session) {
       # ),
       {
         # PT (11), Commissioner (4)
-        if(any(c(4, 11) %in% authOutput()$usergroup)){
+        if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
           menuItem(
             "PT Tools",
             menuSubItem(
@@ -400,7 +400,7 @@ server <- function(input, output, session) {
       },
       {
         # Manager (8)
-        if(any(c(4, 8) %in% authOutput()$usergroup)){
+        if(any(c(3, 4, 8) %in% authOutput()$usergroup)){
           menuItem(
             "Manager Tools",
             menuSubItem(
@@ -416,7 +416,7 @@ server <- function(input, output, session) {
       },
       {
         # BoD (3), Commissioner (4) or Intern (15)
-        if(any(c(3,4, 15) %in% authOutput()$usergroup)){
+        if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
           menuItem(
             "BoD Tools",
             menuSubItem(
