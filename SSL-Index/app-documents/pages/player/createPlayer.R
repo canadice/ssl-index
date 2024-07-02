@@ -333,27 +333,25 @@ createPlayerServer <- function(id, userinfo, parent) {
       
       # Fixes moving away from locked 20 in stamina and natural fitness
       observe({
-        if(updating()){
-          c("natural fitness", "stamina") %>% 
-            map(
-              .x = .,
-              .f = function(x){
-                if(input[[x]] %>% is.null()){
-                  updateNumericInput(
-                    session = session,
-                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                    value = 20
-                  ) 
-                } else {
-                  updateNumericInput(
-                    session = session,
-                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                    value = if_else(input[[x]] != 20, 20, input[[x]])
-                  )  
-                }
+        c("natural fitness", "stamina") %>% 
+          map(
+            .x = .,
+            .f = function(x){
+              if(input[[x]] %>% is.null()){
+                updateNumericInput(
+                  session = session,
+                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  value = 20
+                ) 
+              } else {
+                updateNumericInput(
+                  session = session,
+                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  value = if_else(input[[x]] != 20, 20, input[[x]])
+                )  
               }
-            )
-        }
+            }
+          )
       }) %>% 
         bindEvent(
           # Changes in any input slider

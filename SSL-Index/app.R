@@ -324,24 +324,28 @@ server <- function(input, output, session) {
   })
   
   output$notifications <- renderMenu({
-    if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
-      dropdownMenu(type = "notifications",
-                   badgeStatus = "warning",
-                   notificationItem(
-                     text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
-                     icon("users"),
-                     href = "/#playerapprove"
-                   )
-      )
-    } else {
-      dropdownMenu(type = "notifications",
-                   badgeStatus = "warning",
-                   notificationItem(
-                     text = "Placeholder",
-                     icon("truck"),
-                     status = "success"
-                   )
-      )
+    if(any(
+      getPlayersForApproval() %>% nrow() > 0
+    )){
+      if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
+        dropdownMenu(type = "notifications",
+                     badgeStatus = "warning",
+                     notificationItem(
+                       text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
+                       icon("users"),
+                       href = "/#playerapprove"
+                     )
+        )
+      } else {
+        dropdownMenu(type = "notifications",
+                     badgeStatus = "warning",
+                     notificationItem(
+                       text = "Placeholder",
+                       icon("truck"),
+                       status = "success"
+                     )
+        )
+      }
     }
   }) %>% 
     bindEvent(input$tabs, ignoreInit = FALSE)
@@ -518,6 +522,9 @@ server <- function(input, output, session) {
     bodTeamServer("bodoverview", userinfo = authOutput())
     exportBuildServer("exportBuild")
     
+    playerPageServer("playerpage", uid = authOutput()$uid, parent = session)
+    createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
+    
     # teamIndexServer("teamindex")
   }) %>% 
     bindEvent(
@@ -529,14 +536,9 @@ server <- function(input, output, session) {
     if(input$tabs == "playerapprove"){
       req(authOutput()$uid)
       playerApproveServer("playerapprove", userinfo = authOutput())  
-    } else if(input$tabs == "createplayer"){
-      createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
     } else if(input$tabs == "submitPT"){
       req(authOutput()$uid)
       submitPTServer("submitPT", userinfo = authOutput())
-    } else if(input$tabs == "playerpage"){
-      req(authOutput()$uid)
-      playerPageServer("playerpage", uid = authOutput()$uid, parent = session)
     } else if(input$tabs == "welcome"){
       req(authOutput()$uid)
       welcomeServer("welcome", userinfo = authOutput())

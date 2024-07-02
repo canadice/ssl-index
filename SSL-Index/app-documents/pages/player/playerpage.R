@@ -130,9 +130,6 @@ playerPageServer <- function(id, uid, parent) {
           then(
             onFulfilled = function(value) {
               playerInfoBoxServer(id = "playerInfo", pid = value$pid)
-              playerTPEBoxServer(id = "playerBuild", uid = uid, data = value, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked)
-              playerOverviewBoxServer(id = "playerBuild", data = value, tpeTotal = tpeTotal, tpeBanked = tpeBanked, mainSession = parent)
-              playerUpdateBoxServer(id = "playerBuild", uid = uid, data = value, tpeTotal = tpeTotal, tpeBanked = tpeBanked, updating = updating, updated = updated)
             },
             onRejected = function(reason) {
               showToast("error", "An error occurred when loading your player. Please notify the BoD.")
@@ -141,6 +138,12 @@ playerPageServer <- function(id, uid, parent) {
       }) %>% 
         bindEvent(playerData(), ignoreNULL = FALSE)
       
+      ## Loading server functions once
+      playerTPEBoxServer(id = "playerBuild", uid = uid, data = playerData, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked)
+      
+      playerUpdateBoxServer(id = "playerBuild", uid = uid, data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, updating = updating, updated = updated)
+      
+      playerOverviewBoxServer(id = "playerBuild", data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, mainSession = parent)
       
     }
   )
