@@ -363,17 +363,17 @@ server <- function(input, output, session) {
         selected = TRUE
       ),
       menuItemOutput("playerTabs"),
-      menuItem(
-        "Index",
-        menuSubItem(
-          "League Index",
-          tabName = "leagueindex"
-        # ),
-        # menuSubItem(
-        #   "Team Index",
-        #   tabName = "teamindex"
-        )
-      ),
+      # menuItem(
+      #   "Index",
+      #   menuSubItem(
+      #     "League Index",
+      #     tabName = "leagueindex"
+      #   # ),
+      #   # menuSubItem(
+      #   #   "Team Index",
+      #   #   tabName = "teamindex"
+      #   )
+      # ),
       {
         # PT (11), Commissioner (4)
         if(any(c(4, 11) %in% authOutput()$usergroup)){
