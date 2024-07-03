@@ -1,11 +1,14 @@
 /* General styles */
 body {
   font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+  color: white;
 }
 
 h1, h2, h3, h4, h5 {
   font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
-  font-weight: 800; font-style: normal;
+  font-weight: 800; 
+  font-style: normal;
+  color: white;
 }
 
 /* Display grid for the box container with 4 columns   */
@@ -58,16 +61,6 @@ h1, h2, h3, h4, h5 {
   flex-direction: column; /* Stack children vertically */
 }
 
-.attribute,
-.attributeCost {
-  background-color: #e0e0e0;
-  border: 1px solid grey;
-  border-radius: 5px;
-  padding: 4px;
-  flex: 1; /* Distribute remaining space evenly */
-  display: flex; /* Use Flexbox */
-  align-items: center; /* Align items vertically */
-}
 
 .attributeCost {
   justify-content: center; /* Center content horizontally */
@@ -293,18 +286,17 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
     Color: #b79020;
 }
 
-.rt-td-inner, .rt-th-inner {
-    overflow: hidden;
-    padding: 7px 8px;
-    width: 100%;
-    background-color: #333333;
-    color: #999999;
-}
-
 .Reactable .rt-table {
         background: inherit;
         border: 1px solid #b79020;
-    }
+}
+
+.Reactable .rt-tbody, 
+.Reactable .rt-tfoot, 
+.Reactable .rt-thead {
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    background-color: #333333;
 }
 
 .rt-th {
@@ -319,24 +311,14 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
     border-top: 1px solid #b79020
 }
 
-h1, h2, h3, h4, h5 {
-    font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
-    font-weight: 800;
-    font-style: normal;
-    color: #ffffff;
-}
-
-body {
-    font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
-    color: #ffffff;
-}
-
-attribute, .attributeCost {
+.attribute, .attributeCost {
     background-color: #333333;
     border: 1px solid grey;
     border-radius: 5px;
     padding: 4px;
-    flex: 1;
-    display: flex;
-    align-items: center;
+    flex: 1; /* Distribute remaining space evenly */
+    display: flex; /* Use Flexbox */
+    align-items: center; /* Align items vertically */
 }
+
+
