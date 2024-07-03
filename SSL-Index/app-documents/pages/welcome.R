@@ -118,6 +118,8 @@ welcomeServer <- function(id, userinfo) {
                 if (!score.match(/^\\d+-\\d+$/)) {
                   width = div.children[i].clientWidth * (i-6);
                   break;
+                } else {
+                  width = div.children[i].clientWidth * i
                 }
               }
               div.scrollLeft = width;
