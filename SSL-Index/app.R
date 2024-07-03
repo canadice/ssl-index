@@ -13,6 +13,7 @@ suppressMessages({
   require(tidyr, quietly = FALSE)
   require(purrr, quietly = FALSE)
   require(arsenal, quietly = FALSE)
+  require(rvest, quietly = FALSE)
   
   ## Visualizations
   require(ggplot2, quietly = FALSE)
@@ -129,7 +130,7 @@ customLogo <-
     mainText = tags$a(
       href='https://forum.simulationsoccer.com',
       target="_blank",
-      tags$img(src='portallogo.png', height = "70"),
+      tags$img(src='portalwhite.png', height = "70"),
     ),
     badgeText = "v0.8",
     badgeTextColor = "white",
@@ -334,6 +335,14 @@ server <- function(input, output, session) {
       tabItem(
         "exportBuild",
         exportBuildUI(id = "exportBuild")
+      ),
+      tabItem(
+        "uploadGame",
+        uploadGameUI(id = "uploadGame")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
       # ),
       # tabItem(
       #   "bodoverview",
@@ -418,6 +427,10 @@ server <- function(input, output, session) {
             menuSubItem(
               "Export Builds",
               tabName = "exportBuild"
+            ),
+            menuSubItem(
+              "Upload Game Stats",
+              tabName = "uploadGame"
             )
           )
         }
@@ -502,6 +515,7 @@ server <- function(input, output, session) {
     }
   })
   
+  # Goes to welcome tab after logging in successfully
   observe({
     updateTabItems(session, "tabs", selected = "welcome")
   }) %>% 
@@ -509,6 +523,7 @@ server <- function(input, output, session) {
       authOutput()
     )
   
+  # Different player menu based on if you have a current player or not
   output$playerTabs <- renderMenu({
     if(hasActivePlayer(authOutput()$uid)){
       menuItem(
@@ -555,31 +570,42 @@ server <- function(input, output, session) {
     reactiveValues(
       create = FALSE,
       player = FALSE,
-      index = FALSE
+      index = FALSE,
+      uploadGame = FALSE
     )
   
   
   observe({
     if(input$tabs == "playerapprove"){
       req(authOutput()$uid)
-      playerApproveServer("playerapprove", userinfo = authOutput())  
+      playerApproveServer("playerapprove", userinfo = authOutput())
+      
     } else if(input$tabs == "submitPT"){
       req(authOutput()$uid)
       submitPTServer("submitPT", userinfo = authOutput())
+      
     } else if(input$tabs == "welcome"){
       req(authOutput()$uid)
       welcomeServer("welcome", userinfo = authOutput())
+      
     } else if(!loadedPage$create & input$tabs == "createplayer"){
       req(authOutput()$uid)
       createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
       loadedPage$create <- TRUE
+      
     } else if(!loadedPage$player & input$tabs == "playerpage"){
       req(authOutput()$uid)
       playerPageServer("playerpage", uid = authOutput()$uid, parent = session)
       loadedPage$player <- TRUE
+      
     } else if(!loadedPage$index & input$tabs == "leagueindex"){
       leagueIndexServer("leagueindex")
       loadedPage$index <- TRUE
+      
+    } else if(!loadedPage$uploadGame & input$tabs == "uploadGame"){
+      uploadGameServer("uploadGame")
+      loadedPage$uploadGame <- TRUE
+      
     }
   }) %>% 
     bindEvent(
