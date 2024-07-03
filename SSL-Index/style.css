@@ -161,3 +161,182 @@ h1, h2, h3, h4, h5 {
   padding-right: 30px;
   height: 80px; 
 }
+
+.content-wrapper {
+    min-height: 100%;
+    background-color: #333333;
+    z-index: 800;
+}
+
+.skin-blue .main-header .navbar {
+    background-color: #090b4f;
+    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+}
+
+skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
+    background-color: #090b4f;
+    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+    border-right: 2px solid #b68f20;
+}
+
+.skin-blue .main-header .logo {
+    background-color: #090b4f;
+    color: #fff;
+    border-bottom: 0 solid rgba(0, 0, 0, 0);
+    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+    border-right: 2px solid #b68f20;
+}
+
+.skin-blue .sidebar-menu .treeview-menu>li.active>a, .skin-blue .sidebar-menu .treeview-menu>li>a:hover {
+    color: #090b4f;
+}
+
+.skin-blue .sidebar-menu>li>.treeview-menu {
+    margin: 0px;
+    background: #b79020;
+    }
+    
+.skin-blue .sidebar-menu>li:hover>a, .skin-blue .sidebar-menu>li.active>a, .skin-blue .sidebar-menu>li.menu-open>a {
+    color: #fff;
+    background: #b79020;
+    background-image: url(https://i.imgur.com/gVNA3OP.jpg);
+}
+
+.skin-blue .sidebar-menu>li.active>a {
+    border: none;
+}
+
+.skin-blue .main-header .navbar .sidebar-toggle:hover {
+    background-color: #b79020;
+}
+
+.skin-blue .sidebar-menu>li.active>a,.skin-blue .sidebar-menu>li:hover>a {
+    color: #fff;
+    background: #1e282c;
+    border-left-color: #b79020; 
+    
+}
+
+.content {
+    min-height: 250px;
+    padding: 15px;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    background-color: #333333;
+    background-image: url(https://i.imgur.com/9BuU3Op.jpeg);
+}
+
+.box-header {
+    color: #b79020;
+    display: block;
+    padding: 10px;
+    position: relative;
+    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+    border: 2px solid #b79020;
+    text-align: center;
+}
+
+.box.box-primary {
+    border-top-color: #b79020;
+}
+
+
+.box-footer {
+    border-top-left-radius: 0;
+   border-top-right-radius: 0;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top: 1px solid #b79020;
+    padding: 10px;
+    background-color: #b79020;
+    color: #ffffff;
+}
+
+.box {
+    position: relative;
+    border-radius: 3px;
+    background: #666666;
+    border-top: 1px solid #b79020;
+    margin-bottom: 20px;
+    width: 100%;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.results .box-header, .results .box-body {
+    text-align: center;
+    border: 2px solid #b79020;
+    color: #ffffff;
+    background-color: #333333;
+}
+
+.box-body {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 0px;
+    padding: 10px;
+    border: 2px solid #b79020;
+}
+
+.results {
+    overflow-x: scroll;
+    display: flex;
+    flex-direction: row;
+    scrollbar-color: #666666 #999999;
+}
+
+.rt-th, .rt-th-inner, .rt-text-content {
+    overflow: visible !important;
+    background-color: #333333;
+    Color: #b79020;
+}
+
+.rt-td-inner, .rt-th-inner {
+    overflow: hidden;
+    padding: 7px 8px;
+    width: 100%;
+    background-color: #333333;
+    color: #999999;
+}
+
+.Reactable .rt-table {
+        background: inherit;
+        border: 1px solid #b79020;
+    }
+}
+
+.rt-th {
+    border-bottom: 2px solid #b79020;
+    border-left-color: rgba(0,0,0,.05);
+    border-left-width: 1px
+}
+
+.rt-td {
+    border-left-color: rgba(0,0,0,.05);
+    border-left-width: 1px;
+    border-top: 1px solid #b79020
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+    font-weight: 800;
+    font-style: normal;
+    color: #ffffff;
+}
+
+body {
+    font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+    color: #ffffff;
+}
+
+attribute, .attributeCost {
+    background-color: #333333;
+    border: 1px solid grey;
+    border-radius: 5px;
+    padding: 4px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
