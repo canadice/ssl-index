@@ -92,7 +92,9 @@ welcomeServer <- function(id, userinfo) {
                        ),
                        width = NULL,
                        status = "primary",
-                       h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-")),
+                       h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") %>% 
+                         str_replace_all(pattern = "NA", replacement = " ")
+                         ),
                        footer = 
                          paste(
                            if_else(schedule[i, "MatchType"] == 0, 
@@ -101,17 +103,26 @@ welcomeServer <- function(id, userinfo) {
                                            "Major League",
                                            if_else(schedule[i, "MatchType"] == 2, "Minor League", "Pre-Season"))),
                            schedule[i, "MatchDay"], sep = ", "
-                         )
+                         ) %>% 
+                         div(align = "center")
                      )
                      
                    })
           ),
-          tags$script(
-            "$(document).ready(function() {
+          tags$script(HTML("
+            $(document).ready(function() {
               var div = document.getElementById('results-scroll');
-              div.scrollLeft = div.scrollWidth - div.clientWidth;
-            });"
-          )
+              var width = 0;
+              for (var i = 0; i < div.children.length; i++) {
+                var score = $(div.children[i]).find('h4').text().trim();
+                if (!score.match(/^\\d+-\\d+$/)) {
+                  width = div.children[i].clientWidth * (i-6);
+                  break;
+                }
+              }
+              div.scrollLeft = width;
+            });
+          "))
         )
         
       })
