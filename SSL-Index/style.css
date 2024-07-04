@@ -1,3 +1,19 @@
+:root {
+    --color: 0, 0%;
+    --sslBlue: #070b51ff;
+	  --sslBlueL: color-mix(in srgb, var(--sslBlue) 95%, white);
+	  --sslBlueD: color-mix(in srgb, var(--sslBlue) 95%, black);
+    --sslGold: #bd9523ff;
+    --lighterText: hsl(var(--color), 100%);
+    --darkerText: hsl(var(--color), 0%);
+    --amazon: #417b5aff;
+    --mountbatten-pink: #916c80ff;
+    --topBackground: hsl(var(--color), 10%);
+    --middleBackground: hsl(var(--color), 20%);
+    --bottomBackground: hsl(var(--color), 30%);
+    --borderColor: hsl(var(--color), 25%);
+}
+
 /* General styles */
 body {
   font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
@@ -173,7 +189,7 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
 }
 
 .skin-blue .main-header .logo {
-    background-color: #090b4f;
+    background-color: var(--topBackground);
     color: #fff;
     border-bottom: 0 solid rgba(0, 0, 0, 0);
     background-image: url(https://i.imgur.com/k7qNGB5.jpg);
