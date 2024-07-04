@@ -12,7 +12,7 @@ updateLog <- function(uid, pid, updates){
           uid,
           pid,
           paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
-          paste0("'", updates$attribute, "'"),
+          paste0("'", updates$attribute %>% str_to_upper(), "'"),
           updates$old,
           updates$new,
           sep = ","

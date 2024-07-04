@@ -184,6 +184,51 @@ getPlayersForApproval <- function(){
 
 approvePlayer <- function(uid){
   portalQuery(
+    paste(
+      "INSERT INTO tpehistory (time, uid, pid, source, tpe) 
+      SELECT ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), ", 1, pid, 'Initial TPE', 350
+      FROM playerdata
+      WHERE uid = ", uid, "AND status_p = -1;"
+    )
+  )
+  
+  data <- portalQuery(
+  paste(
+  "SELECT pid, `pos_st`, `pos_lam`, `pos_cam`, `pos_ram`, `pos_lm`, `pos_cm`, `pos_rm`, `pos_lwb`, 
+    `pos_cdm`, `pos_rwb`, `pos_ld`, `pos_cd`, `pos_rd`, `pos_gk`, `acceleration`, `agility`, 
+    `balance`, `jumping reach`, `natural fitness`, `pace`, `stamina`, `strength`, `corners`, 
+    `crossing`, `dribbling`, `finishing`, `first touch`, `free kick`, `heading`, `long shots`, 
+    `long throws`, `marking`, `passing`, `penalty taking`, `tackling`, `technique`, `aggression`, 
+    `anticipation`, `bravery`, `composure`, `concentration`, `decisions`, `determination`, `flair`, 
+    `leadership`, `off the ball`, `positioning`, `teamwork`, `vision`, `work rate`, `aerial reach`, 
+    `command of area`, `communication`, `eccentricity`, `handling`, `kicking`, `one on ones`, `reflexes`, 
+    `tendency to rush`, `tendency to punch`, `throwing`, `traits`
+     FROM playerdata WHERE uid = ", uid, "AND status_p = -1;")
+  ) %>% 
+    pivot_longer(!pid, values_transform = as.character)
+  
+  portalQuery(
+    paste(
+      "INSERT INTO updatehistory (time, uid, pid, attribute, old, new) VALUES",
+      paste(
+        "(",
+        paste(
+          paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
+          1,
+          data$pid,
+          paste0("'", data$name %>% str_to_upper(), "'"),
+          if_else(data$name %>% str_detect("POS"), '0', if_else(data$name == "TRAITS", 'NO TRAITS', '5')),
+          paste0("'", data$value, "'"),
+          sep = ","
+        ),
+        ")",
+        collapse = ","
+      ),
+      ";"
+    )
+  )
+  
+  portalQuery(
     paste("UPDATE playerdata SET team = 'Academy', status_p = 1, name = concat(first, ' ', last),",
           "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
           "WHERE uid = ", uid, "AND status_p = -1;")
