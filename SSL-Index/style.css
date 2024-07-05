@@ -173,19 +173,19 @@ h1, h2, h3, h4, h5 {
 
 .content-wrapper {
     min-height: 100%;
-    background-color: #333333;
+    background-color: var(--middleBackground);
     z-index: 800;
 }
 
 .skin-blue .main-header .navbar {
-    background-color: #090b4f;
+    background-color: var(--sslBlueD);
     background-image: url(https://i.imgur.com/k7qNGB5.jpg);
 }
 
-skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
-    background-color: #090b4f;
-    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
-    border-right: 2px solid #b68f20;
+.skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
+    background-color: var(--topBackground);
+    /*background-image: url(https://i.imgur.com/k7qNGB5.jpg);*/
+    border-right: 2px solid var(--sslGold);
 }
 
 .skin-blue .main-header .logo {
@@ -193,21 +193,21 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
     color: #fff;
     border-bottom: 0 solid rgba(0, 0, 0, 0);
     background-image: url(https://i.imgur.com/k7qNGB5.jpg);
-    border-right: 2px solid #b68f20;
+    border-right: 2px solid var(--sslGold);
 }
 
 .skin-blue .sidebar-menu .treeview-menu>li.active>a, .skin-blue .sidebar-menu .treeview-menu>li>a:hover {
-    color: #090b4f;
+    color: var(--sslBlueD);
 }
 
 .skin-blue .sidebar-menu>li>.treeview-menu {
     margin: 0px;
-    background: #b79020;
+    background: var(--sslGold);
     }
     
 .skin-blue .sidebar-menu>li:hover>a, .skin-blue .sidebar-menu>li.active>a, .skin-blue .sidebar-menu>li.menu-open>a {
     color: #fff;
-    background: #b79020;
+    background: var(--sslGold);
     background-image: url(https://i.imgur.com/gVNA3OP.jpg);
 }
 
@@ -216,13 +216,13 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
 }
 
 .skin-blue .main-header .navbar .sidebar-toggle:hover {
-    background-color: #b79020;
+    background-color: var(--sslGold);
 }
 
 .skin-blue .sidebar-menu>li.active>a,.skin-blue .sidebar-menu>li:hover>a {
     color: #fff;
-    background: #1e282c;
-    border-left-color: #b79020; 
+    background: var(--bottomBackground);
+    border-left-color: var(--sslGold); 
     
 }
 
@@ -233,22 +233,22 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
-    background-color: #333333;
+    background-color: var(--middleBackground);
     background-image: url(https://i.imgur.com/9BuU3Op.jpeg);
 }
 
 .box-header {
-    color: #b79020;
+    color: var(--sslGold);
     display: block;
     padding: 10px;
     position: relative;
     background-image: url(https://i.imgur.com/k7qNGB5.jpg);
-    border: 2px solid #b79020;
+    border: 2px solid var(--sslGold);
     text-align: center;
 }
 
 .box.box-primary {
-    border-top-color: #b79020;
+    border-top-color: var(--sslGold);
 }
 
 
@@ -257,9 +257,9 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
    border-top-right-radius: 0;
     border-bottom-right-radius: 3px;
     border-bottom-left-radius: 3px;
-    border-top: 1px solid #b79020;
+    border-top: 1px solid var(--sslGold);
     padding: 10px;
-    background-color: #b79020;
+    background-color: var(--sslGold);
     color: #ffffff;
 }
 
@@ -267,7 +267,7 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
     position: relative;
     border-radius: 3px;
     background: #666666;
-    border-top: 1px solid #b79020;
+    border-top: 1px solid var(--sslGold);
     margin-bottom: 20px;
     width: 100%;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
@@ -275,9 +275,9 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
 
 .results .box-header, .results .box-body {
     text-align: center;
-    border: 2px solid #b79020;
+    border: 2px solid var(--sslGold);
     color: #ffffff;
-    background-color: #333333;
+    background-color: var(--middleBackground);
 }
 
 .box-body {
@@ -286,7 +286,7 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
     border-bottom-right-radius: 0px;
 	border-bottom-left-radius: 0px;
     padding: 10px;
-    border: 2px solid #b79020;
+    border: 2px solid var(--sslGold);
 }
 
 .results {
@@ -298,13 +298,13 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
 
 .rt-th, .rt-th-inner, .rt-text-content {
     overflow: visible !important;
-    background-color: #333333;
-    Color: #b79020;
+    background-color: var(--middleBackground);
+    Color: var(--sslGold);
 }
 
 .Reactable .rt-table {
         background: inherit;
-        border: 1px solid #b79020;
+        border: 1px solid var(--sslGold);
 }
 
 .Reactable .rt-tbody, 
@@ -312,11 +312,11 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
 .Reactable .rt-thead {
     -ms-flex-negative: 0;
     flex-shrink: 0;
-    background-color: #333333;
+    background-color: var(--middleBackground);
 }
 
 .rt-th {
-    border-bottom: 2px solid #b79020;
+    border-bottom: 2px solid var(--sslGold);
     border-left-color: rgba(0,0,0,.05);
     border-left-width: 1px
 }
@@ -324,11 +324,11 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
 .rt-td {
     border-left-color: rgba(0,0,0,.05);
     border-left-width: 1px;
-    border-top: 1px solid #b79020
+    border-top: 1px solid var(--sslGold)
 }
 
 .attribute, .attributeCost {
-    background-color: #333333;
+    background-color: var(--middleBackground);
     border: 1px solid grey;
     border-radius: 5px;
     padding: 4px;
@@ -338,3 +338,12 @@ skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
 }
 
 
+.rank-list-item {
+  color: var(--darkerText);
+}
+
+.modal-content {
+  background-color: var(--bottomBackground);
+  border: var(--topBackground);
+  border-radius: 4px;
+}
