@@ -37,4 +37,19 @@ getUsers <- function(){
 }
 
 
+getUserStatus <- function(pid){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT status.desc
+        FROM playerdata pd
+        JOIN useractivity activity ON pd.uid = activity.uid
+        JOIN userstatuses status ON activity.status_u = status.status
+        WHERE pd.pid =", pid, ";"
+      )
+    )
+  })
+}
+
+
 
