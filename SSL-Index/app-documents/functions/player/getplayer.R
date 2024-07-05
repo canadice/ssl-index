@@ -137,7 +137,7 @@ getPlayersFromTeam <- function(uid){
   future_promise({
     portalQuery(
       paste(
-        "SELECT name, class, tpe, tpebank, footedness, position, affiliate, pid
+        "SELECT name, class, tpe, tpebank, `left foot`, `right foot`, position, affiliate, pid
       FROM playerdata
       WHERE team IN (
         SELECT name
@@ -212,6 +212,19 @@ getChangedBuilds <- function(){
     )
   ) %>% 
     future_promise()
+}
+
+getPlayerStatus <- function(pid){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT status.desc
+        FROM playerdata pd
+        JOIN playerstatuses status ON pd.status_p = status.status
+        WHERE pd.pid =", pid, ";"
+      )
+    )
+  })
 }
 
 
