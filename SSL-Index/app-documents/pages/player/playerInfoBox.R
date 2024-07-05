@@ -11,11 +11,11 @@ playerInfoBoxUI <- function(id) {
           ),
           fluidRow(
             column(
-              width = 5,
+              width = 4,
               uiOutput(ns("traits"))
             ),
             column(
-              width = 5,
+              width = 4,
               uiOutput(ns("positions"))
             )
           )
@@ -36,15 +36,19 @@ playerInfoBoxServer <- function(id, pid) {
     function(input, output, session) {
       
       output$name <- renderUI({
-        getPlayerName(pid = pid) %>% 
-          then(
-            onFulfilled = function(value){
-              h2(value$name %>% paste(paste("(", value$class, ")", sep = ""), sep = ", "))
-            },
-            onRejected = function(error){
-              print("something is wrong")
-            }
+        promise_all(
+          name = getPlayerName(pid = pid),
+          player = getPlayerStatus(pid = pid),
+          user = getUserStatus(pid = pid)
+        ) %...>% 
+          with(
+            tagList(
+              h2(name$name %>% paste(paste("(", name$class, ")", sep = ""), sep = ", ")),
+              h4(paste("Player: "), player$desc),
+              h4(paste("User: "), user$desc)
+            )
           )
+        
       })
       
       output$traits <- renderUI({
