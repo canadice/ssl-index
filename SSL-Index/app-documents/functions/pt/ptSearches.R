@@ -12,7 +12,7 @@ topEarners <- function(){
         LEFT JOIN
             mybbdb.mybb_users mbb ON pd.uid = mbb.uid
         WHERE 
-            YEARWEEK(FROM_UNIXTIME(ph.time), 1) = YEARWEEK(CURDATE(), 1)
+            YEARWEEK(FROM_UNIXTIME(ph.time), 1) = YEARWEEK(CURDATE(), 1) AND ph.source <> 'Initial TPE'
         GROUP BY 
             ph.pid
         ORDER BY 
