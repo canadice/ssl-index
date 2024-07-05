@@ -120,9 +120,9 @@ playerdata <-
       TRUE ~ Team
     ),
     rerollused = 0,
-    redistused = 0
-    # foot_left = if_else(`Preferred Foot` == "Left", 20, 10),
-    # foot_right = if_else(`Preferred Foot` == "Right", 20, 10)
+    redistused = 0,
+    `left foot` = `footedness` %>% str_split("\\|", simplify = TRUE) %>% .[,1] %>% str_squish() %>% as.numeric(),
+    `right foot` = `footedness` %>% str_split("\\|", simplify = TRUE) %>% .[,2] %>% str_squish() %>% as.numeric()
   ) %>% 
   select(
     uid,
@@ -145,7 +145,8 @@ playerdata <-
     hair_length = `Hair Length`,
     skintone,
     render,
-    footedness,
+    `left foot`,
+    `right foot`,
     position,
     pos_st = Striker,
     pos_lam = `Attacking Midfielder [L]`,
@@ -213,6 +214,60 @@ playerdata %>%
     overwrite = TRUE
   )
 
+dbExecute(portalcon,
+          "ALTER TABLE `portaldb`.`playerdata` 
+CHANGE COLUMN `pid` `pid` INT NOT NULL AUTO_INCREMENT ,
+ADD PRIMARY KEY (`pid`);
+;")
+
+## Adds current TPE to the tpe log
+portalQuery(paste("INSERT INTO tpehistory (time, uid, pid, source, tpe) SELECT ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), ", 1, pid, 'Initial TPE', tpe FROM playerdata WHERE status_p = 1;"))
+
+data <- portalQuery(
+  paste(
+    "SELECT pid, `pos_st`, `pos_lam`, `pos_cam`, `pos_ram`, `pos_lm`, `pos_cm`, `pos_rm`, `pos_lwb`, 
+    `pos_cdm`, `pos_rwb`, `pos_ld`, `pos_cd`, `pos_rd`, `pos_gk`, `acceleration`, `agility`, 
+    `balance`, `jumping reach`, `natural fitness`, `pace`, `stamina`, `strength`, `corners`, 
+    `crossing`, `dribbling`, `finishing`, `first touch`, `free kick`, `heading`, `long shots`, 
+    `long throws`, `marking`, `passing`, `penalty taking`, `tackling`, `technique`, `aggression`, 
+    `anticipation`, `bravery`, `composure`, `concentration`, `decisions`, `determination`, `flair`, 
+    `leadership`, `off the ball`, `positioning`, `teamwork`, `vision`, `work rate`, `aerial reach`, 
+    `command of area`, `communication`, `eccentricity`, `handling`, `kicking`, `one on ones`, `reflexes`, 
+    `tendency to rush`, `tendency to punch`, `throwing`, `traits`, `left foot`, `right foot`
+     FROM playerdata;")
+) %>% 
+  pivot_longer(!pid, values_transform = as.character) %>% 
+  mutate(
+    value = case_when(
+      value == "" ~ "NO TRAITS",
+      TRUE ~ value
+    )
+  )
+
+portalQuery(
+  paste(
+    "INSERT INTO updatehistory (time, uid, pid, attribute, old, new) VALUES",
+    paste(
+      "(",
+      paste(
+        paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
+        1,
+        data$pid,
+        paste0("'", data$name %>% str_to_upper(), "'"),
+        if_else(data$name %>% str_detect("pos_"), '0', if_else(data$name == "traits", "'NO TRAITS'", '5')),
+        paste0("'", data$value %>% str_replace_all(pattern = "'", replacement = "''"), "'"),
+        sep = ","
+      ),
+      ")",
+      collapse = ","
+    ),
+    ";"
+  )
+)
+
+
+
+
 ## Regression run
 tbl(portalcon, "playerdata") %>%
   collect() %>% 
@@ -257,12 +312,6 @@ dbExecute(portalcon,
           on q.pid = a.pid
           set q.tpe = a.tpe, q.tpebank = q.tpebank - q.tpe + a.tpe
           where q.pid = a.pid;")
-
-dbExecute(portalcon,
-          "ALTER TABLE `portaldb`.`playerdata` 
-CHANGE COLUMN `pid` `pid` INT NOT NULL AUTO_INCREMENT ,
-ADD PRIMARY KEY (`pid`);
-;")
 
 dbExecute(portalcon,
           "ALTER TABLE `portaldb`.`regression` 
@@ -594,6 +643,52 @@ gameData <-
   dbWriteTable(
     conn = indexcon,
     name = "gamedataoutfield",
+    value = .,
+    row.names = FALSE,
+    overwrite = TRUE
+  )
+
+gameData <-
+  tbl(con, "gameDataKeeper") %>%
+  collect() %>% 
+  select(
+    Name,
+    Club,
+    Position,
+    Result:Division,
+    Apps:`xSave%`,
+    `xG Prevented`
+  ) %>% 
+  mutate(
+    across(
+      c(
+        `Player of the Match`:`Saves Tipped`, 
+        `Penalties Faced`:`Penalties Saved`
+      ),
+      ~ as.integer(.x)
+    ),
+    Division = 
+      case_when(
+        str_detect(Season, pattern = "WSFC") ~ "WSFC",
+        Division == "0" ~ "Cup",
+        TRUE ~ Division
+      ),
+    Season = 
+      case_when(
+        str_detect(Season, pattern = "WSFC") ~ 12,
+        TRUE ~ Season %>% as.numeric()
+      ),
+    across(
+      where(is.numeric),
+      ~ round(.x, 3)
+    )
+  ) %>% 
+  rename_with(
+    tolower
+  ) %>% 
+  dbWriteTable(
+    conn = indexcon,
+    name = "gamedatakeeper",
     value = .,
     row.names = FALSE,
     overwrite = TRUE
