@@ -75,11 +75,11 @@ submitBuild <- function(input, tpebank, userinfo){
       hair_color = input$hairColor,
       hair_length = input$hairLength,
       skintone = input$skinColor,
-      render = input$render,
-      footedness = input$footedness
+      render = input$render
     ) %>% 
     mutate(
-      footedness = if_else(footedness == "Right", "10 | 20", "20 | 10")
+      `left foot` = if_else(footedness == "Right", 10, 20),
+      `right foot` = if_else(footedness == "Left", 10, 20)
     )
   
   
@@ -202,7 +202,7 @@ approvePlayer <- function(uid){
     `anticipation`, `bravery`, `composure`, `concentration`, `decisions`, `determination`, `flair`, 
     `leadership`, `off the ball`, `positioning`, `teamwork`, `vision`, `work rate`, `aerial reach`, 
     `command of area`, `communication`, `eccentricity`, `handling`, `kicking`, `one on ones`, `reflexes`, 
-    `tendency to rush`, `tendency to punch`, `throwing`, `traits`
+    `tendency to rush`, `tendency to punch`, `throwing`, `traits`, `left foot`, `right foot`
      FROM playerdata WHERE uid = ", uid, "AND status_p = -1;")
   ) %>% 
     pivot_longer(!pid, values_transform = as.character)
@@ -217,7 +217,7 @@ approvePlayer <- function(uid){
           1,
           data$pid,
           paste0("'", data$name %>% str_to_upper(), "'"),
-          if_else(data$name %>% str_detect("POS"), '0', if_else(data$name == "TRAITS", 'NO TRAITS', '5')),
+          if_else(data$name %>% str_detect("pos"), '0', if_else(data$name == "traits", "'NO TRAITS'", '5')),
           paste0("'", data$value, "'"),
           sep = ","
         ),
