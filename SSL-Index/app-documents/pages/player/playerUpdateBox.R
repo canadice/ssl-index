@@ -215,11 +215,153 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   choices = traits %>% unlist(use.names = FALSE), 
                   selected = currentTraits
                 ) %>% 
-                  div(class = "multicol")
+                  div(class = "multicol"),
+                tags$script(paste("
+                    Shiny.addCustomMessageHandler('disableCheckbox', function(checkboxId) {
+                      if (typeof checkboxId === 'string') {
+                        checkboxId = [checkboxId]; // Convert single string to array
+                      }
+                      var checkboxes = document.getElementsByName('", session$ns('traits'), "');
+                      for (var i = 0; i < checkboxes.length; i++) {
+                        checkboxes[i].disabled = false; // Disable specific checkboxes
+                      }
+                      for (var i = 0; i < checkboxes.length; i++) {
+                        for (var j = 0; j < checkboxId.length; j++) {
+                          if(checkboxes[i].value == checkboxId[j]){
+                            checkboxes[i].disabled = true; // Disable specific checkboxes
+                          } else {
+                            
+                          }
+                        }
+                      }
+                    });
+                  ", sep = "") %>% HTML())
               )
             }
           )
       })
+      
+      observe({
+        selected <- input$traits
+        
+        disable_list <- character()
+        if ("Cuts Inside From Both Wings" %in% selected) {
+          disable_list <- c(disable_list, "Avoids Using Weaker Foot")
+        }
+        if ("Knocks Ball Past Opponent" %in% selected) {
+          disable_list <- c(disable_list, "Runs With Ball Rarely")
+        }
+        if ("Runs With Ball Rarely" %in% selected) {
+          disable_list <- c(disable_list, "Knocks Ball Past Opponent", "Runs With Ball Often", "Runs With Ball Down Left", "Runs With Ball Down Right", "Runs With Ball Through Centre")
+        }
+        if ("Runs With Ball Often" %in% selected) {
+          disable_list <- c(disable_list, "Runs With Ball Rarely")
+        }
+        if ("Runs With Ball Down Left" %in% selected) {
+          disable_list <- c(disable_list, "Runs With Ball Down Right", "Runs With Ball Through Centre", "Runs With Ball Rarely")
+        }
+        if ("Runs With Ball Down Right" %in% selected) {
+          disable_list <- c(disable_list, "Runs With Ball Down Left", "Runs With Ball Through Centre", "Runs With Ball Rarely")
+        }
+        if ("Runs With Ball Through Centre" %in% selected) {
+          disable_list <- c(disable_list, "Runs With Ball Down Left", "Runs With Ball Down Right", "Runs With Ball Rarely")
+        }
+        if ("Arrives Late In Opponent's Area" %in% selected) {
+          disable_list <- c(disable_list, "Stays Back At All Times", "Gets Into Opposition Area")
+        }
+        if ("Gets Into Opposition Area" %in% selected) {
+          disable_list <- c(disable_list, "Arrives Late In Opponent's Area", "Hugs Line", "Stays Back At All Times")
+        }
+        if ("Comes Deep To Get Ball" %in% selected) {
+          disable_list <- c(disable_list, "Gets Forward Whenever Possible", "Likes To Try To Beat Offside Trap")
+        }
+        if ("Gets Forward Whenever Possible" %in% selected) {
+          disable_list <- c(disable_list, "Comes Deep To Get Ball", "Stays Back At All Times", "Hugs Line")
+        }
+        if ("Likes To Try To Beat Offside Trap" %in% selected) {
+          disable_list <- c(disable_list, "Comes Deep To Get Ball", "Does Not Move Into Channels", "Plays With Back To Goal")
+        }
+        if ("Hugs Line" %in% selected) {
+          disable_list <- c(disable_list, "Gets Into Opposition Area")
+        }
+        if ("Plays With Back To Goal" %in% selected) {
+          disable_list <- c(disable_list, "Likes To Try To Beat Offside Trap")
+        }
+        if ("Does Not Move Into Channels" %in% selected) {
+          disable_list <- c(disable_list, "Moves Into Channels", "Likes To Try To Beat Offside Trap")
+        }
+        if ("Moves Into Channels" %in% selected) {
+          disable_list <- c(disable_list, "Does Not Move Into Channels", "Stays Back At All Times")
+        }
+        if ("Stays Back At All Times" %in% selected) {
+          disable_list <- c(disable_list, "Arrives Late In Opponent's Area", "Gets Forward Whenever Possible", "Gets Into Opposition Area", "Moves Into Channels")
+        }
+        if ("Likes To Switch Ball To Other Flank" %in% selected) {
+          disable_list <- c(disable_list, "Plays Short Simple Passes")
+        }
+        if ("Looks For Pass Rather Than Attempting To Score" %in% selected) {
+          disable_list <- c(disable_list, "Tries First Time Shots")
+        }
+        if ("Plays No Through Balls" %in% selected) {
+          disable_list <- c(disable_list, "Tries Killer Balls Often")
+        }
+        if ("Plays Short Simple Passes" %in% selected) {
+          disable_list <- c(disable_list, "Likes To Switch Ball To Other Flank", "Tries Killer Balls Often", "Tries Long Range Passes")
+        }
+        if ("Tries Killer Balls Often" %in% selected) {
+          disable_list <- c(disable_list, "Plays Short Simple Passes", "Plays No Through Balls")
+        }
+        if ("Tries Long Range Passes" %in% selected) {
+          disable_list <- c(disable_list, "Plays Short Simple Passes")
+        }
+        if ("Hits Free Kicks With Power" %in% selected) {
+          disable_list <- c(disable_list, "Refrains From Taking Long Shots")
+        }
+        if ("Places Shots" %in% selected) {
+          disable_list <- c(disable_list, "Shoots With Power")
+        }
+        if ("Refrains From Taking Long Shots" %in% selected) {
+          disable_list <- c(disable_list, "Hits Free Kicks With Power", "Tries Long Range Free Kicks")
+        }
+        if ("Shoots From Distance" %in% selected) {
+          disable_list <- c(disable_list, "Looks For Pass Rather Than Attempting To Score", "Refrains From Taking Long Shots")
+        }
+        if ("Shoots With Power" %in% selected) {
+          disable_list <- c(disable_list, "Places Shots")
+        }
+        if ("Tries First Time Shots" %in% selected) {
+          disable_list <- c(disable_list, "Looks For Pass Rather Than Attempting To Score")
+        }
+        if ("Tries Long Range Free Kicks" %in% selected) {
+          disable_list <- c(disable_list, "Refrains From Taking Long Shots")
+        }
+        if ("Shoots From Distance" %in% selected) {
+          disable_list <- c(disable_list, "Refrains From Taking Long Shots")
+        }
+        if ("Dives Into Tackles" %in% selected) {
+          disable_list <- c(disable_list, "Does Not Dive Into Tackles")
+        }
+        if ("Does Not Dive Into Tackles" %in% selected) {
+          disable_list <- c(disable_list, "Dives Into Tackles")
+        }
+        if ("Avoids Using Weaker Foot" %in% selected) {
+          disable_list <- c(disable_list, "Cuts Inside From Both Wings")
+        }
+        if ("Tries To Play Way Out Of Trouble" %in% selected) {
+          disable_list <- c(disable_list, "Runs With Ball Rarely")
+        }
+        
+        # if(length(disable_list) == 0){
+        #   disable_list <- "none"
+        # }
+        
+        session$sendCustomMessage("disableCheckbox", disable_list %>% unique())
+      }) %>% 
+        bindEvent(
+          input$traits,
+          ignoreInit = FALSE,
+          ignoreNULL = FALSE
+        )
       
       #### COST OUTPUT ####
       # All the cost outputs
@@ -515,7 +657,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                       add_row(
                         attribute = "traits",
                         old = data$traits,
-                        new = paste0(input$traits, collapse = " \\ ")
+                        new = paste0(input$traits, collapse = " \\\\ ")
                       )
                     
                     # Add pos_ variables for each position
@@ -856,7 +998,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     add_row(
                       attribute = "traits",
                       old = paste("'", data$traits, "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = " \\ "), "'", sep = "")
+                      new = paste("'", paste0(input$traits, collapse = " \\\\ "), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
@@ -918,7 +1060,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     add_row(
                       attribute = "traits",
                       old = paste("'", data$traits, "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = " \\ "), "'", sep = "")
+                      new = paste("'", paste0(input$traits, collapse = " \\\\ "), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
