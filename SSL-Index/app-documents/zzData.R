@@ -1,4 +1,6 @@
 
+options(scipen = 999)
+
 ## Loads common and small tables
 tpeCost <- 
   portalQuery("SELECT * FROM tpetable")
