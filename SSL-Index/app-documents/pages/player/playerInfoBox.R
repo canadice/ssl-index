@@ -5,21 +5,13 @@ playerInfoBoxUI <- function(id) {
       width = 12,
       fluidRow(
         column(
-          width = 10,
-          fluidRow(
-            uiOutput(ns("name"))
-          ),
-          fluidRow(
-            column(
-              width = 4,
-              uiOutput(ns("traits"))
-            ),
-            column(
-              width = 4,
-              uiOutput(ns("positions"))
-            )
-          )
+          width = 5,
+          uiOutput(ns("name")),
+          uiOutput(ns("bank"))
         ),
+        column(width = 5, 
+               uiOutput(ns("traits")),
+               uiOutput(ns("positions"))),
         column(
           width = 2,
           imageOutput(ns("team"), height = NULL)
@@ -30,7 +22,7 @@ playerInfoBoxUI <- function(id) {
   )
 }
 
-playerInfoBoxServer <- function(id, pid) {
+playerInfoBoxServer <- function(id, pid, mainSession) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -50,6 +42,28 @@ playerInfoBoxServer <- function(id, pid) {
           )
         
       })
+      
+      output$bank <- renderUI({
+        getBankTotal(pid = pid) %>% 
+          then(
+            onFulfilled = function(bank){
+              tagList(
+                h4(paste("Bank Balance: ") %>% HTML()),
+                actionLink(inputId = session$ns("gotobank"), label = bank$balance %>% dollar())  
+              )
+            }
+          )
+      })
+      
+      observe({
+        if(mainSession$input$tabs != "bankOverview"){
+          updateTabItems(session = mainSession, "tabs", selected = "bankOverview")  
+        }
+      }) %>% 
+        bindEvent(
+          input$gotobank
+        )
+      
       
       output$traits <- renderUI({
         getPlayerTraits(pid = pid) %>% 

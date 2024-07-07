@@ -27,6 +27,14 @@ playerPageUI <- function(id) {
               )
             )
         ),
+        box(title = "Bank History", collapsed = TRUE, collapsible = TRUE,width = NULL,
+            fluidRow(
+              column(
+                width = 12,
+                reactableOutput(ns("historyBank"))
+              )
+            )
+        ),
         br(),
         br()
       )
@@ -34,7 +42,7 @@ playerPageUI <- function(id) {
   )
 }
 
-playerPageServer <- function(id, uid, parent) {
+playerPageServer <- function(id, uid, parent, updated) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -42,8 +50,6 @@ playerPageServer <- function(id, uid, parent) {
       #### REACTIVES ####
       updating <- 
         reactiveVal({""})
-      
-      updated <- reactiveVal({0})
       
       tpeTotal <- 
         reactiveVal({0})
@@ -76,6 +82,16 @@ playerPageServer <- function(id, uid, parent) {
             then(
               onFulfilled = function(value){
                 getUpdateHistory(value$pid)
+              }
+            )
+        })
+      
+      historyBank <- 
+        reactive({
+          playerData() %>% 
+            then(
+              onFulfilled = function(value){
+                getBankTransactions(value$pid)
               }
             )
         })
@@ -121,6 +137,26 @@ playerPageServer <- function(id, uid, parent) {
           )
       })
       
+      output$historyBank <- renderReactable({
+        historyBank() %>% 
+          then(
+            onFulfilled = function(value){
+              value %>% 
+                mutate(
+                  Time = as_datetime(Time)
+                ) %>% 
+                reactable(
+                  columns = 
+                    list(
+                      Time = colDef(format = colFormat(datetime = TRUE)),
+                      Transaction = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
+                    )
+                )
+            },
+            onRejected = NULL
+          )
+      })
+      
       #### OBSERVERS ####
       
       # Observer for the player boxes
@@ -129,7 +165,7 @@ playerPageServer <- function(id, uid, parent) {
         playerData() %>% 
           then(
             onFulfilled = function(value) {
-              playerInfoBoxServer(id = "playerInfo", pid = value$pid)
+              playerInfoBoxServer(id = "playerInfo", pid = value$pid, mainSession = parent)
             },
             onRejected = function(reason) {
               showToast("error", "An error occurred when loading your player. Please notify the BoD.")
@@ -138,12 +174,18 @@ playerPageServer <- function(id, uid, parent) {
       }) %>% 
         bindEvent(playerData(), ignoreNULL = FALSE)
       
-      ## Loading server functions once
-      playerTPEBoxServer(id = "playerBuild", uid = uid, data = playerData, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked)
+      observe({
+        ## Loading server functions if an update to the build has happened
+        playerTPEBoxServer(id = "playerBuild", uid = uid, data = playerData, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked)
+        
+        playerUpdateBoxServer(id = "playerBuild", uid = uid, data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, updating = updating, updated = updated)
+        
+        playerOverviewBoxServer(id = "playerBuild", data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, mainSession = parent)
+      }) %>% 
+        bindEvent(
+          updated()
+        )
       
-      playerUpdateBoxServer(id = "playerBuild", uid = uid, data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, updating = updating, updated = updated)
-      
-      playerOverviewBoxServer(id = "playerBuild", data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, mainSession = parent)
       
     }
   )

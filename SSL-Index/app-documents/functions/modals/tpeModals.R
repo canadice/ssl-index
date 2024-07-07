@@ -31,8 +31,7 @@ modalVerify <- function(update, session){
     modalDialog(
       tagList(
         span(
-          "Are you sure you want to update these attributes?" %>% strong(),
-          style = "color: red;"
+          "Are you sure you want to update these attributes?" %>% strong()
         ),
         br(),
         column(
@@ -53,19 +52,24 @@ modalVerify <- function(update, session){
               HTML()
           ) %>% 
             div(
-              style = "background: #f0f0f0; border: #656565"
+              class = "verifyBox"
             )
         ),
-        br()
-      ),
-      title="Update output",
-      footer = tagList(
-        modalButton("No, go back"),
-        actionButton(
-          inputId = session$ns("confirmUpdate"),
-          label = "Yes, confirm update!"
+        br(),
+        fluidRow(
+          column(width = 4, offset = 1,
+                 modalButton("No, go back")
+          ),
+          column(width = 4,
+                 actionButton(
+                   inputId = session$ns("confirmUpdate"),
+                   label = "Yes, confirm update!"
+                 )
+          )
         )
       ),
+      title="Verify your Update",
+      footer = NULL,
       easyClose = FALSE
     )
   )
