@@ -13,12 +13,12 @@ checkBuild <- function(input, tpebank, session){
       hair_color = input$hairColor,
       hair_length = input$hairLength,
       skintone = input$skintone,
-      render = input$render,
-      footedness = input$footedness
+      render = input$render
     ) %>% 
-      mutate(
-        footedness = if_else(footedness == "Right", "10 | 20", "20 | 10")
-      )
+    mutate(
+      `left foot` = if_else(input$footedness == "Right", 10, 20),
+      `right foot` = if_else(input$footedness == "Left", 10, 20)
+    )
   
   
   if(input$playerType == "Outfield"){
@@ -78,8 +78,8 @@ submitBuild <- function(input, tpebank, userinfo){
       render = input$render
     ) %>% 
     mutate(
-      `left foot` = if_else(footedness == "Right", 10, 20),
-      `right foot` = if_else(footedness == "Left", 10, 20)
+      `left foot` = if_else(input$footedness == "Right", 10, 20),
+      `right foot` = if_else(input$footedness == "Left", 10, 20)
     )
   
   
