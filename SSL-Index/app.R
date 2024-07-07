@@ -14,6 +14,7 @@ suppressMessages({
   require(purrr, quietly = FALSE)
   require(arsenal, quietly = FALSE)
   require(rvest, quietly = FALSE)
+  require(scales, quietly = FALSE)
   
   ## Visualizations
   require(ggplot2, quietly = FALSE)
@@ -339,10 +340,10 @@ server <- function(input, output, session) {
       tabItem(
         "uploadGame",
         uploadGameUI(id = "uploadGame")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "bankOverview",
+        bankOverviewUI(id = "bankOverview")
       # ),
       # tabItem(
       #   "bodoverview",
@@ -407,6 +408,28 @@ server <- function(input, output, session) {
       #   #   tabName = "teamindex"
       #   )
       # ),
+      menuItem(
+        "SSL Bank",
+        menuSubItem(
+          "Bank Overview",
+          tabName = "bankOverview"
+        ),
+        {
+          # Banker (12), BoD (3), Commissioner (4)
+          if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
+            tagList(
+              menuSubItem(
+                "Bank Deposits",
+                tabName = "bankdeposit"
+              ),
+              menuSubItem(
+                "Process Transactions",
+                tabName = "banktransactions"
+              )
+            )
+          }
+        }
+      ),
       {
         # PT (11), Commissioner (4)
         if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
@@ -571,9 +594,12 @@ server <- function(input, output, session) {
       create = FALSE,
       player = FALSE,
       index = FALSE,
-      uploadGame = FALSE
+      uploadGame = FALSE,
+      bankOverview = FALSE
     )
   
+  ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
+  updated <- reactiveVal({0})
   
   observe({
     if(input$tabs == "playerapprove"){
@@ -595,7 +621,7 @@ server <- function(input, output, session) {
       
     } else if(!loadedPage$player & input$tabs == "playerpage"){
       req(authOutput()$uid)
-      playerPageServer("playerpage", uid = authOutput()$uid, parent = session)
+      playerPageServer("playerpage", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$player <- TRUE
       
     } else if(!loadedPage$index & input$tabs == "leagueindex"){
@@ -606,7 +632,12 @@ server <- function(input, output, session) {
       uploadGameServer("uploadGame")
       loadedPage$uploadGame <- TRUE
       
+    } else if(!loadedPage$bankOverview & input$tabs == "bankOverview"){
+      bankOverviewServer("bankOverview", uid = authOutput()$uid, parent = session, updated = updated)
+      loadedPage$bankOverview <- TRUE
+      
     }
+    
   }) %>% 
     bindEvent(
       input$tabs
