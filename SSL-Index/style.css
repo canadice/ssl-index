@@ -337,6 +337,17 @@ h1, h2, h3, h4, h5 {
     align-items: center; /* Align items vertically */
 }
 
+.frozen-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  text-align: center;
+  width: 100%;
+  background-color: var(--topBackground);
+  padding: 10px 0px 30px 0px;
+  border-top: 1px solid var(--sslGold); 
+}
+
 
 .rank-list-item {
   color: var(--darkerText);
@@ -346,4 +357,9 @@ h1, h2, h3, h4, h5 {
   background-color: var(--bottomBackground);
   border: var(--topBackground);
   border-radius: 4px;
+}
+
+.verifyBox {
+  background: var(--lighterText);
+  color: var(--darkerText);
 }
