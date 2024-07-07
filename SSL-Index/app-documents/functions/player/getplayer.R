@@ -121,6 +121,18 @@ getPlayerPositions <- function(pid){
   })
 }
 
+getPlayerFootedness <- function(pid){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT `left foot`, `right foot`
+        FROM playerdata
+        WHERE pid =", pid, ";"
+      )
+    ) 
+  })
+}
+
 getPlayerTeam <- function(pid){
   future_promise({
     portalQuery(
