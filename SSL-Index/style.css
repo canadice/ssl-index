@@ -227,7 +227,7 @@ h1, h2, h3, h4, h5 {
 }
 
 .content {
-    min-height: 250px;
+    min-height: 1000px;
     padding: 15px;
     padding-right: 15px;
     padding-left: 15px;
@@ -296,7 +296,7 @@ h1, h2, h3, h4, h5 {
     scrollbar-color: #666666 #999999;
 }
 
-.rt-th, .rt-th-inner, .rt-text-content {
+.rt-th, .rt-th-inner, .rt-text-content, .rt-pagination {
     overflow: visible !important;
     background-color: var(--middleBackground);
     Color: var(--sslGold);
@@ -326,6 +326,8 @@ h1, h2, h3, h4, h5 {
     border-left-width: 1px;
     border-top: 1px solid var(--sslGold)
 }
+
+
 
 .attribute, .attributeCost {
     background-color: var(--middleBackground);

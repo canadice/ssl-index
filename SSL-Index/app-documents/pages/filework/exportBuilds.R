@@ -20,6 +20,21 @@ exportBuildUI <- function(id) {
       column(width = 12,
              reactableOutput(ns("changes"))
            )
+    ),
+    br(),
+    fluidRow(
+      column(width = 6,
+             h4("Select a player and download a single build:"),
+             uiOutput(ns("singles")) %>% 
+               withSpinnerSmall(),
+             ),
+      column(
+        width =4, 
+        div(
+          id = ns("singlePlayerDownload"),
+          downloadButton(ns("singleDownloadData"), "Download Selected Player")
+        )
+      )
     )
   )
 }
@@ -30,6 +45,12 @@ exportBuildServer <- function(id) {
     function(input, output, session) {
       builds <- reactive({
         getChangedBuilds()
+      })
+      
+      build <- reactive({
+        pid <- getPlayerID(input$selectedPlayer)
+        
+        getPlayerDataAsync(pid = pid$pid)      
       })
       
       downloadPlayer <- function(temp){
@@ -74,28 +95,8 @@ exportBuildServer <- function(id) {
             paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
             str_replace_all(pattern = " ", replacement = "") %>% 
             str_replace(pattern = "JumpingReach", replacement = "Jumping"),
-          ',"LeftFoot":', 
-          if_else(temp$footedness %>% str_detect("\\|"), 
-                  temp$footedness %>% 
-                    str_split(" \\| ", simplify = TRUE) %>% 
-                    .[1],
-                  if_else(
-                    temp$footedness == "Left", 
-                    "20", 
-                    "10"
-                  )
-          ),
-          ',"RightFoot":', 
-          if_else(temp$footedness %>% str_detect("\\|"), 
-                  temp$footedness %>% 
-                    str_split(" \\| ", simplify = TRUE) %>% 
-                    .[2],
-                  if_else(
-                    temp$footedness == "Left", 
-                    "10", 
-                    "20"
-                  )
-          ),
+          ',"LeftFoot":', temp$`left foot`,
+          ',"RightFoot":', temp$`right foot`,
           '}', 
           ',"TechnicalAttributes":{',
           sapply(
@@ -135,12 +136,13 @@ exportBuildServer <- function(id) {
           ),
           ',"PreferredMoves":', traits,
           ',"Born":"', 
-          "2004-07-01" %>% as_date() - years(currentSeason$season - (temp$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
+          ("2004-07-01" %>% as_date()) - years(currentSeason$season - (temp$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
           '","DocumentType":"Player"}',
           sep = ""
         )
       }
       
+      #### ALL CHANGED BUILDS ####
       output$changes <- renderReactable({
          builds() %>% 
           then(
@@ -188,6 +190,38 @@ exportBuildServer <- function(id) {
             )
         },
         contentType = "application/zip"
+      )
+      
+      #### SINGLE PLAYER BUILD ####
+      output$singles <- renderUI({
+        getPlayersFromAllTeams() %>% 
+          then(
+            onFulfilled = function(data){
+              selectizeInput(
+                inputId = session$ns("selectedPlayer"), 
+                label = "Select a player to export", 
+                choices = c(data$name)
+              )      
+            }
+          )
+      })
+      
+      output$singleDownloadData <- downloadHandler(
+        filename = function(name) {
+          paste(input$selectedPlayer, " Build.json", sep = "")
+        },
+        content = function(file){
+          build() %>% 
+            then(
+              onFulfilled = function(data){
+                writeLines(
+                  downloadPlayer(data),
+                  file
+                )
+              }
+            )
+        },
+        contentType = "json"
       )
     }
   )

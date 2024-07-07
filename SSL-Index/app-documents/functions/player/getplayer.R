@@ -89,6 +89,17 @@ getPlayerName <- function(uid = NULL, pid = NULL){
     suppressWarnings()
 }
 
+getPlayerID <- function(name){
+  portalQuery(
+    paste(
+      "SELECT pid
+        FROM playerdata
+        WHERE name = '", name, "' AND status_p = 1;",
+      sep = ""
+    )
+  )
+}
+
 getPlayerTraits <- function(pid){
   future_promise({
     portalQuery(
@@ -169,7 +180,7 @@ getPlayersFromAllTeams <- function(){
   future_promise({
     portalQuery(
       paste(
-        "SELECT name, class, tpe, tpebank, footedness, position, team, affiliate, pid
+        "SELECT name, class, tpe, tpebank, `left foot`, `right foot`, position, team, affiliate, pid
       FROM playerdata
       WHERE status_p = 1 AND team NOT IN ('FA', 'Prospect');
       "

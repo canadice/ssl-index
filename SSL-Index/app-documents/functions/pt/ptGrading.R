@@ -2,8 +2,7 @@ ptGradingVerify <- function(task, session){
   showModal(
     modalDialog(
       span(
-        "Are you sure you want to submit this graded task?" %>% strong(),
-        style = "color: red;"
+        "Are you sure you want to submit this graded task?" %>% strong()
       ),
       br(),
       column(
@@ -13,7 +12,7 @@ ptGradingVerify <- function(task, session){
           task
         ) %>% 
           div(
-            style = "background: #f0f0f0; border: #656565"
+            class = "verifyBox"
           )
       ),
       br(),

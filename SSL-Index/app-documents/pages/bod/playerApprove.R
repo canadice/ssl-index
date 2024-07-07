@@ -35,6 +35,21 @@ playerApproveServer <- function(id, userinfo) {
           
           approvePlayer(playerForApproval()[selected,"uid"])
           
+          addBankTransaction(uid = 1, pid = playerForApproval()[selected,"pid"], source = "Academy Contract", transaction = 3000000, status = 1)
+          
+          
+          today <- (now() %>% as_date() %>% as.numeric())
+          start <- (currentSeason$startDate %>% as_date() - days(7)) %>% as.numeric()
+          
+          tpe <- 
+            tibble(
+              source = "Catch-up TPE",
+              tpe = floor((today - start)/7)*6
+            )
+          
+          tpeLog(uid = 1, pid = playerForApproval()[selected,"pid"], tpe = tpe)
+          updateTPE(pid = playerForApproval()[selected,"pid"], tpe = tpe)
+          
           showToast("success", "Player has successfully been approved.")
           
           playerForApproval(getPlayersForApproval())

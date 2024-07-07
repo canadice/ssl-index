@@ -177,7 +177,11 @@ getPlayersForApproval <- function(){
   portalQuery(
     # print(
     paste(
-      "SELECT uid, first, last, tpe, tpeused, tpebank FROM playerdata WHERE status_p = -1;"
+      "SELECT mybb.username, pd.pid, pd.first, pd.last, pd.tpe, pd.tpeused, pd.tpebank 
+      FROM playerdata pd
+      LEFT JOIN 
+          mybbdb.mybb_users mybb ON pd.uid = mybb.uid
+      WHERE status_p = -1;"
     )
   ) 
 }

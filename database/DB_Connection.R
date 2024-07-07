@@ -13,6 +13,7 @@ require(RSQLite)
 require(stringr)
 require(RMySQL)
 require(tidyverse)
+require(googlesheets4)
 
 con <- dbConnect(SQLite(), "database/SSL_Database.db")
 
@@ -319,7 +320,47 @@ CHANGE COLUMN `pid` `pid` DOUBLE NOT NULL ,
 ADD PRIMARY KEY (`pid`);
 ;")
 
+#################################################################
+##                BANK                                         ##
+#################################################################
 
+bankSheet <- 
+  read_sheet(
+    ss = "https://docs.google.com/spreadsheets/d/1hY1ArnfTICZx0lZF3PTGA922u49avs6X5hKNyldbAn0/edit?gid=1797607253#gid=1797607253",
+    sheet = "Shorrax Import Player Pool"
+  ) %>% 
+  left_join(
+    playerdata %>% 
+      select(
+        pid,
+        Name
+      ),
+    by = "Name"
+  ) %>% 
+  filter(
+    !(pid %>% is.na())
+  )
+
+portalQuery(
+  paste(
+    "INSERT INTO banktransactions (time, pid, source, transaction, status, uid) VALUES",
+    paste(
+      "(",
+      paste(
+        paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
+        bankSheet$pid,
+        paste0("'", "Initial Import", "'"),
+        bankSheet$Balance,
+        1,
+        1,
+        sep = ","
+      ),
+      ")",
+      collapse = ","
+    ),
+    ";"
+  )
+)
 
 #################################################################
 ##              Duty and Role Matrix                           ##

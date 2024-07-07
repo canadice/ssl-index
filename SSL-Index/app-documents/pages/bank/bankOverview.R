@@ -736,8 +736,6 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                 })
             }
           )
-        
-        
       }) %>% 
         bindEvent(
           input$confirmPurchase

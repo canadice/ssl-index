@@ -133,7 +133,7 @@ customLogo <-
       target="_blank",
       tags$img(src='portalwhite.png', height = "70"),
     ),
-    badgeText = "v0.8",
+    badgeText = "v0.9",
     badgeTextColor = "white",
     badgeBackColor = sslBlueL
   )
@@ -344,10 +344,38 @@ server <- function(input, output, session) {
       tabItem(
         "bankOverview",
         bankOverviewUI(id = "bankOverview")
+      ),
+      tabItem(
+        "bankDeposit",
+        bankDepositUI(id = "bankDeposit")
+      ),
+      tabItem(
+        "bankProcess",
+        bankProcessUI(id = "bankProcess")
       # ),
       # tabItem(
-      #   "bodoverview",
-      #   bodTeamUI(id = "bodoverview")
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
       # ),
       # tabItem(
       #   "teamindex",
@@ -411,21 +439,23 @@ server <- function(input, output, session) {
       menuItem(
         "SSL Bank",
         menuSubItem(
-          "Bank Overview",
+          "Player Store",
           tabName = "bankOverview"
         ),
         {
+          if(any(c(3, 4, 8, 11, 12) %in% authOutput()$usergroup)){
+            menuSubItem(
+              "Bank Deposits",
+              tabName = "bankDeposit"
+            )
+          }
+        },
+        {
           # Banker (12), BoD (3), Commissioner (4)
           if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
-            tagList(
-              menuSubItem(
-                "Bank Deposits",
-                tabName = "bankdeposit"
-              ),
-              menuSubItem(
-                "Process Transactions",
-                tabName = "banktransactions"
-              )
+            menuSubItem(
+              "Process Transactions",
+              tabName = "bankProcess"
             )
           }
         }
@@ -613,6 +643,14 @@ server <- function(input, output, session) {
     } else if(input$tabs == "welcome"){
       req(authOutput()$uid)
       welcomeServer("welcome", userinfo = authOutput())
+      
+    } else if(input$tabs == "bankDeposit"){
+      req(authOutput()$uid)
+      bankDepositServer("bankDeposit", userinfo = authOutput())
+      
+    } else if(input$tabs == "bankProcess"){
+      req(authOutput()$uid)
+      bankProcessServer("bankProcess", userinfo = authOutput())
       
     } else if(!loadedPage$create & input$tabs == "createplayer"){
       req(authOutput()$uid)

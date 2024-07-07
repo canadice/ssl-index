@@ -50,16 +50,47 @@ modalBankVerify <- function(update, cost, session){
 }
 
 
-addBankTransaction <- function(uid, pid, source, transaction){
-  portalQuery(
-    paste(
-      "INSERT INTO banktransactions (time, pid, source, transaction, status, uid) VALUES
-      (", paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),", ", 
-      pid, ", ", 
-      paste0("'", source, "'"),", ",
-      -transaction, ", ",
-      "1,",
-      uid, ");"
+addBankTransaction <- function(uid, pid, source, transaction, status = 1){
+  time <- lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric()
+  
+  for(i in 1:length(pid)){
+    portalQuery(
+      paste(
+        "INSERT INTO banktransactions (time, pid, source, transaction, status, uid) VALUES
+      (", paste0("'", time, "'"),", ", 
+        pid[i], ", ", 
+        paste0("'", source[i], "'"),", ",
+        -transaction[i], ", ",
+        status, ", ",
+        uid, ");"
+      )
     )
-  )
+  }
+  
+}
+
+approveTransaction <- function(data, uid){
+  for(i in 1:nrow(data)){
+    portalQuery(
+      paste(
+        "UPDATE banktransactions 
+        SET status = 1, approvedBy = ", uid, " 
+        WHERE status = 0 AND pid = ", data[i, "pid"], " AND source = '", data[i,"Source"], "';",
+        sep = ""
+      )
+    )
+  }
+}
+
+rejectTransaction <- function(data, uid){
+  for(i in 1:nrow(data)){
+    portalQuery(
+      paste(
+        "UPDATE banktransactions 
+        SET status = -1, approvedBy = ", uid, " 
+        WHERE status = 0 AND pid = ", data[i, "pid"], " AND source = '", data[i,"Source"], "';",
+        sep = ""
+      )
+    )
+  }
 }

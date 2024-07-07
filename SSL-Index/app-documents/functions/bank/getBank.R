@@ -23,8 +23,34 @@ getBankTransactions <- function(pid){
         LEFT JOIN
             mybbdb.mybb_users mbb ON bt.uid = mbb.uid
         WHERE 
-            pid = ", pid, "
-        ORDER BY Time DESC")
+            pid = ", pid, " AND status = 1
+        ORDER BY Time DESC;")
+    ) %>% 
+      mutate(
+        Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
+      )
+  })
+}
+
+getBankTransactionsForApproval <- function(){
+  future_promise({
+    portalQuery(
+      paste("SELECT 
+            bt.time AS Time,
+            mbb.username AS `Deposited by`,
+            bt.pid AS pid,
+            pd.name AS Player,
+            bt.source AS Source,
+            bt.transaction AS Amount
+        FROM 
+            banktransactions bt
+        LEFT JOIN
+            mybbdb.mybb_users mbb ON bt.uid = mbb.uid
+        LEFT JOIN
+            playerdata pd ON bt.pid = pd.pid
+        WHERE 
+            status = 0
+        ORDER BY Time DESC;")
     ) %>% 
       mutate(
         Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
