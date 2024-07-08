@@ -37,7 +37,7 @@ welcomeUI <- function(id) {
   )
 }
 
-welcomeServer <- function(id, userinfo) {
+welcomeServer <- function(id) {
   moduleServer(
     id,
     function(input, output, session) {

@@ -365,3 +365,30 @@ h1, h2, h3, h4, h5 {
   background: var(--lighterText);
   color: var(--darkerText);
 }
+
+.stickyFooter {
+    position:fixed;
+  bottom:0;
+  right:0;
+  left:60px;
+  padding:10px;
+  box-sizing:border-box;
+}
+
+.navbarHead {
+  position: fixed;
+  left: 300px;
+  display: flex;
+  padding: 20px 0px;
+  flex-direction: row;
+}
+
+.navbarHead button {
+      color: inherit;
+    background: inherit;
+    border: none;
+    font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+    font-weight: 800;
+    font-style: normal;
+    margin: 0px 20px;
+}

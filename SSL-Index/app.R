@@ -131,7 +131,7 @@ customLogo <-
     mainText = tags$a(
       href='https://forum.simulationsoccer.com',
       target="_blank",
-      tags$img(src='portalwhite.png', height = "70"),
+      tags$img(src='portalwhite.png', height = "70")
     ),
     badgeText = "v0.9",
     badgeTextColor = "white",
@@ -197,9 +197,6 @@ sapply(
 ui <- function(request){
   
   dashboardPage(
-    ##----------------------------------------------------------------
-    ##                            Header                             -
-    ##----------------------------------------------------------------
     title = "SSL Portal",
     dashboardHeader(
       title = customLogo,
@@ -212,23 +209,12 @@ ui <- function(request){
           tags$title("TESTING GROUND")
         ),
         class = "dropdown",
-        tags$head(
-          ## HTML code so that a href link inherits the text color, not the link color
-          tags$style(HTML("a, a:hover, a:visited, a:active {color: inherit}")),
-          tags$style(HTML('
-            thead th {
-              background-color:#00044d !important;
-              color:#ffffff !important;
-            }')),
-          tags$style(
-            type="text/css",
-            "#playerComparison-fieldImage img {max-width: 480px; width: inherit; max-height: 600px;}"
-          ),
-          # 
-          # ## Changes the margin of the sidebar
-          # tags$style(".main-header .navbar {margin-left: 300px}"),
-          # tags$style(type="text/css", "text {font-family: sans-serif, courier}"),
-          # 
+        div(
+          class = "navbarHead",
+          tags$p(actionButton(inputId = "gotoportal",
+                            label = "Portal")),
+          tags$p(actionButton(inputId = "gotoindex",
+                            label = "Index"))
         ),
         dropdownMenuOutput("notifications")
       )
@@ -259,10 +245,7 @@ ui <-
           tags$h4("SSL Portal", style = "align:center"),
           tags$img(
             src = "FA.png", width = 100
-          ),
-          tags$br(),
-          tags$p(paste("Enter your", 
-                       toString(tags$a("SSL Forum", href = "https://forum.simulationsoccer.com", target = "_blank")), "login credentials") %>% HTML())
+          )
         ),
         tags$style(
           type="text/css",
@@ -275,7 +258,13 @@ ui <-
       ),
     tags_bottom = tags$div(
       tags$a("Register a new user!", href = "https://forum.simulationsoccer.com/member.php?action=register", target = "_blank", style = "float: left;"),
-      tags$a("Forgot password?", href = "https://forum.simulationsoccer.com/member.php?action=lostpw", target = "_blank", style = "float:right;")
+      tags$a("Forgot password?", href = "https://forum.simulationsoccer.com/member.php?action=lostpw", target = "_blank", style = "float:right;"),
+      tags$br(),
+      div(
+        align = "center",
+        tags$p(actionButton(inputId = "login_guest",
+                          label = "Continue as guest"))
+      )
     ),
     fab_position = "bottom-left"
   )
@@ -286,6 +275,18 @@ server <- function(input, output, session) {
     check_credentials = customCheckCredentials(),
     session = session
   )
+  
+  # login as guest
+  observe({
+    token <- shinymanager:::.tok$generate("guest")
+    shinymanager:::.tok$add(token, list(user = "guest", role = "guest", usergroup = 0))
+    shinymanager:::addAuthToQuery(session, token, "en")
+    session$reload()
+  }) %>% 
+    bindEvent(
+      input$login_guest
+    )
+  
   
   authOutput <- reactive({
     reactiveValuesToList(resAuth)
@@ -415,130 +416,201 @@ server <- function(input, output, session) {
   ##---------------------------------------------------------------
   ##                            Sidebar                           -
   ##---------------------------------------------------------------
+  menuGroup <- reactiveVal({0})
+  
+  observe({
+    menuGroup(1)
+    if(input$tabs != "welcome"){
+      updateTabItems(session, "tabs", "welcome")  
+    }
+  }) %>% 
+    bindEvent(
+      input$gotoindex
+    )
+  
+  observe({
+    menuGroup(0)
+    if(input$tabs != "welcome"){
+      updateTabItems(session, "tabs", "welcome")  
+    }
+  }) %>% 
+    bindEvent(
+      input$gotoportal
+    )
+  
   output$sidebarpanel <- renderUI({
-    
-    sidebarMenu(
-      id = "tabs",
-      menuItem(
-        "Welcome",
-        tabName = "welcome",
-        selected = TRUE
-      ),
-      menuItemOutput("playerTabs"),
-      # menuItem(
-      #   "Index",
-      #   menuSubItem(
-      #     "League Index",
-      #     tabName = "leagueindex"
-      #   # ),
-      #   # menuSubItem(
-      #   #   "Team Index",
-      #   #   tabName = "teamindex"
-      #   )
-      # ),
-      menuItem(
-        "SSL Bank",
-        menuSubItem(
-          "Player Store",
-          tabName = "bankOverview"
+    if(menuGroup() %% 2 == 0){
+      sidebarMenu(
+        id = "tabs",
+        menuItem(
+          "Welcome",
+          tabName = "welcome",
+          selected = TRUE
         ),
         {
-          if(any(c(3, 4, 8, 11, 12) %in% authOutput()$usergroup)){
-            menuSubItem(
-              "Bank Deposits",
-              tabName = "bankDeposit"
+          if(!any(authOutput()$usergroup == 0)){
+            tagList(
+              menuItemOutput("playerTabs"),
+              menuItem(
+                "SSL Bank",
+                menuSubItem(
+                  "Player Store",
+                  tabName = "bankOverview"
+                ),
+                {
+                  if(any(c(3, 4, 8, 11, 12) %in% authOutput()$usergroup)){
+                    menuSubItem(
+                      "Bank Deposits",
+                      tabName = "bankDeposit"
+                    )
+                  }
+                },
+                {
+                  # Banker (12), BoD (3), Commissioner (4)
+                  if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
+                    menuSubItem(
+                      "Process Transactions",
+                      tabName = "bankProcess"
+                    )
+                  }
+                }
+              ),
+              {
+                # PT (11), Commissioner (4)
+                if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
+                  menuItem(
+                    "PT Tools",
+                    menuSubItem(
+                      "Submit Graded PT",
+                      tabName = "submitPT"
+                    )
+                  )
+                }
+              },
+              {
+                # Fileworker (14), Commissioner (4)
+                if(any(c(4, 3, 14) %in% authOutput()$usergroup)){
+                  menuItem(
+                    "File Work Tools",
+                    menuSubItem(
+                      "Export Builds",
+                      tabName = "exportBuild"
+                    ),
+                    menuSubItem(
+                      "Upload Game Stats",
+                      tabName = "uploadGame"
+                    )
+                  )
+                }
+              },
+              {
+                # Manager (8)
+                if(any(c(3, 4, 8) %in% authOutput()$usergroup)){
+                  menuItem(
+                    "Manager Tools",
+                    menuSubItem(
+                      "Your Team",
+                      tabName = "teamView"
+                      # ),
+                      # menuSubItem(
+                      #   "Team Index",
+                      #   tabName = "teamindex"
+                    )
+                  )
+                }
+              },
+              {
+                # BoD (3), Commissioner (4) or Intern (15)
+                if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
+                  menuItem(
+                    "BoD Tools",
+                    menuSubItem(
+                      "Player Approvals",
+                      tabName = "playerapprove"
+                    ),
+                    menuSubItem(
+                      "Assign Managers",
+                      tabName = "assignManager"
+                    ),
+                    menuSubItem(
+                      "Organizational Overview",
+                      tabName = "bodoverview"
+                    )
+                  )
+                }
+              }
             )
           }
         },
+        # menuItem(
+        #   "Index",
+        #   menuSubItem(
+        #     "League Index",
+        #     tabName = "leagueindex"
+        #   # ),
+        #   # menuSubItem(
+        #   #   "Team Index",
+        #   #   tabName = "teamindex"
+        #   )
+        # ),
         {
-          # Banker (12), BoD (3), Commissioner (4)
-          if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
-            menuSubItem(
-              "Process Transactions",
-              tabName = "bankProcess"
+          if(!any(authOutput()$usergroup == 0)){
+            menuItem(
+              "Your User",
+              href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
+            )
+          } else {
+            menuItem(
+              "Register a user",
+              href = paste("https://forum.simulationsoccer.com/member.php?action=register")
             )
           }
-        }
-      ),
-      {
-        # PT (11), Commissioner (4)
-        if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
-          menuItem(
-            "PT Tools",
-            menuSubItem(
-              "Submit Graded PT",
-              tabName = "submitPT"
-            )
-          )
-        }
-      },
-      {
-        # Fileworker (14), Commissioner (4)
-        if(any(c(4, 3, 14) %in% authOutput()$usergroup)){
-          menuItem(
-            "File Work Tools",
-            menuSubItem(
-              "Export Builds",
-              tabName = "exportBuild"
-            ),
-            menuSubItem(
-              "Upload Game Stats",
-              tabName = "uploadGame"
-            )
-          )
-        }
-      },
-      {
-        # Manager (8)
-        if(any(c(3, 4, 8) %in% authOutput()$usergroup)){
-          menuItem(
-            "Manager Tools",
-            menuSubItem(
-              "Your Team",
-              tabName = "teamView"
-              # ),
-              # menuSubItem(
-              #   "Team Index",
-              #   tabName = "teamindex"
-            )
-          )
-        }
-      },
-      {
-        # BoD (3), Commissioner (4) or Intern (15)
-        if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
-          menuItem(
-            "BoD Tools",
-            menuSubItem(
-              "Player Approvals",
-              tabName = "playerapprove"
-            ),
-            menuSubItem(
-              "Assign Managers",
-              tabName = "assignManager"
-            ),
-            menuSubItem(
-              "Organizational Overview",
-              tabName = "bodoverview"
-            )
-          )
-        }
-      },
-      menuItem(
-        "SSL Forum",
-        icon = icon("external-link-alt"),
-        href = "https://forum.simulationsoccer.com/"
-      ),
-      menuItem(
-        "Github", 
-        icon = icon("github"),
-        href = "https://github.com/canadice/ssl-index"
-      ),
-      menuItem(
-        "Your User",
-        href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
+        },
+        menuItem(
+          "SSL Forum",
+          icon = icon("external-link-alt"),
+          href = "https://forum.simulationsoccer.com/"
+        ),
+        div(class = "stickyFooter",
+            tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
       )
-    )#,
+    } else {
+      sidebarMenu(
+        id = "tabs",
+        menuItem(
+          "Welcome",
+          tabName = "welcome",
+          selected = TRUE
+        ),
+        {
+          menuItem(
+            "League Index",
+            tabName = "leagueindex"
+          )
+        },
+        {
+          if(!any(authOutput()$usergroup == 0)){
+            menuItem(
+              "Your User",
+              href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
+            )
+          } else {
+            menuItem(
+              "Register a user",
+              href = paste("https://forum.simulationsoccer.com/member.php?action=register")
+            )
+          }
+        },
+        menuItem(
+          "SSL Forum",
+          icon = icon("external-link-alt"),
+          href = "https://forum.simulationsoccer.com/"
+        ),
+        div(class = "stickyFooter",
+            tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
+      )
+    }
+    #,
     # extendShinyjs(text = jsResetCode, functions = "restart"), # Add the js code to the page
     # actionButton("reset_button", "Reload Page")
   }) 
@@ -612,7 +684,6 @@ server <- function(input, output, session) {
     bodTeamServer("bodoverview", userinfo = authOutput())
     exportBuildServer("exportBuild")
     
-    # teamIndexServer("teamindex")
   }) %>% 
     bindEvent(
       authOutput(),
@@ -641,8 +712,7 @@ server <- function(input, output, session) {
       submitPTServer("submitPT", userinfo = authOutput())
       
     } else if(input$tabs == "welcome"){
-      req(authOutput()$uid)
-      welcomeServer("welcome", userinfo = authOutput())
+      welcomeServer("welcome")
       
     } else if(input$tabs == "bankDeposit"){
       req(authOutput()$uid)
