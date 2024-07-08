@@ -37,7 +37,7 @@ updateBuild <- function(pid, updates, bank){
         updates$new,
         collapse = ", "
       ), 
-      if_else(bank %>% is.null(), "", ", tpebank = ", bank),
+      if_else(bank %>% is.null(), "", paste(", tpebank = ", bank)),
       "WHERE pid =", pid
     )
   )

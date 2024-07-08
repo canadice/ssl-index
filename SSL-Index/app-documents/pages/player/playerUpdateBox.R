@@ -1122,6 +1122,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               updating("")
               
+              showToast("success", "You have successfully updated your player!")
+              
               shinyjs::show("attributeOverview")
               shinyjs::hide("attributeUpdate")
               shinyjs::hide("buttonsUpdating")
