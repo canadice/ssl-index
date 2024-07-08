@@ -420,8 +420,10 @@ server <- function(input, output, session) {
   
   observe({
     menuGroup(1)
-    if(input$tabs != "welcome"){
-      updateTabItems(session, "tabs", "welcome")  
+    if(!(input$tabs %>% is.null())){
+      if(input$tabs != "welcome"){
+        updateTabItems(session, "tabs", "welcome")  
+      }  
     }
   }) %>% 
     bindEvent(
@@ -430,8 +432,10 @@ server <- function(input, output, session) {
   
   observe({
     menuGroup(0)
-    if(input$tabs != "welcome"){
-      updateTabItems(session, "tabs", "welcome")  
+    if(!(input$tabs %>% is.null())){
+      if(input$tabs != "welcome"){
+        updateTabItems(session, "tabs", "welcome")  
+      }  
     }
   }) %>% 
     bindEvent(

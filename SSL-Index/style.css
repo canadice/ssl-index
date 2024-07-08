@@ -303,8 +303,9 @@ h1, h2, h3, h4, h5 {
 }
 
 .Reactable .rt-table {
-        background: inherit;
-        border: 1px solid var(--sslGold);
+    background: inherit;
+    border: 1px solid var(--sslGold);
+    scrollbar-color: #666666 #999999;
 }
 
 .Reactable .rt-tbody, 
@@ -325,6 +326,13 @@ h1, h2, h3, h4, h5 {
     border-left-color: rgba(0,0,0,.05);
     border-left-width: 1px;
     border-top: 1px solid var(--sslGold)
+}
+
+.stickyReactableColumn, .stickyReactableHeader {
+  position: sticky !important; 
+  left: 0;
+  background: var(--sslGold);
+  z-index: 1;
 }
 
 
