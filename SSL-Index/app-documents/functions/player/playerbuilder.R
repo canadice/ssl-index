@@ -131,6 +131,8 @@ submitBuild <- function(input, tpebank, userinfo){
   
   ## SUBMIT BUILD TO A TEMPORARY TABLE FOR APPROVAL 
   insertBuildForApproval(playerInfo)
+  
+  sendNewCreate(playerInfo, username = userinfo$username)
 }
 
 insertBuildForApproval <- function(playerInfo){
