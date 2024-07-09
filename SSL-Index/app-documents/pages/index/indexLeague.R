@@ -43,7 +43,7 @@ leagueIndexUI <- function(id) {
                    reactableOutput(ns("keeperAdvanced")) %>% 
                      withSpinnerMedium()))
         )
-    ) %>% page_fluid() # close fluidpage
+    ) # close fluidpage
   ) # close tagList
 }
 
