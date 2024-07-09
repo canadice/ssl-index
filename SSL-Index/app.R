@@ -385,28 +385,20 @@ server <- function(input, output, session) {
   })
   
   output$notifications <- renderMenu({
-    if(any(
-      getPlayersForApproval() %>% nrow() > 0
-    )){
-      if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
+    if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
+      if(any(
+        getPlayersForApproval() %>% nrow() > 0
+      )){
         dropdownMenu(type = "notifications",
                      badgeStatus = "warning",
                      notificationItem(
                        text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
-                       icon("users"),
-                       href = "/#playerapprove"
-                     )
-        )
-      } else {
-        dropdownMenu(type = "notifications",
-                     badgeStatus = "warning",
-                     notificationItem(
-                       text = "Placeholder",
-                       icon("truck"),
-                       status = "success"
+                       icon("users")
                      )
         )
       }
+    } else {
+      
     }
   }) %>% 
     bindEvent(input$tabs, ignoreInit = FALSE)
