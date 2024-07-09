@@ -179,7 +179,7 @@ getPlayersForApproval <- function(){
   portalQuery(
     # print(
     paste(
-      "SELECT mybb.username, pd.pid, pd.first, pd.last, pd.tpe, pd.tpeused, pd.tpebank 
+      "SELECT mybb.username, pd.uid, pd.pid, pd.first, pd.last, pd.tpe, pd.tpeused, pd.tpebank 
       FROM playerdata pd
       LEFT JOIN 
           mybbdb.mybb_users mybb ON pd.uid = mybb.uid
@@ -234,11 +234,38 @@ approvePlayer <- function(uid){
     )
   )
   
+  data <- 
+    portalQuery(
+      paste(
+        "SELECT pd.pid, pd.first, pd.last, pd.tpebank, pd.tpe, pd.position, mybb.username AS username
+        FROM playerdata pd JOIN mybbdb.mybb_users mybb ON pd.uid = mybb.uid 
+        WHERE pd.uid = ", uid, "AND pd.status_p = -1;"
+      )
+    )
+  
+  addBankTransaction(uid = 1, pid = data$pid, source = "Academy Contract", transaction = 3000000, status = 1)
+  
+  today <- (now() %>% as_date() %>% as.numeric())
+  start <- (currentSeason$startDate %>% as_date() - days(7)) %>% as.numeric()
+  
+  tpe <- 
+    tibble(
+      source = "Catch-up TPE",
+      tpe = floor((today - start)/7)*6
+    )
+  
+  tpeLog(uid = 1, pid = data$pid, tpe = tpe)
+  updateTPE(pid = data$pid, tpe = tpe)
+  
+  sendApprovedCreate(data)
+  
   portalQuery(
     paste("UPDATE playerdata SET team = 'Academy', status_p = 1, name = concat(first, ' ', last),",
           "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
           "WHERE uid = ", uid, "AND status_p = -1;")
   )
+  
+  
 }
 
 
