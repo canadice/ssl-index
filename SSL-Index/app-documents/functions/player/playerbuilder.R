@@ -97,7 +97,7 @@ submitBuild <- function(input, tpebank, userinfo){
         ))
     }
     
-    playerInfo$traits <- paste0(input$traits, collapse = " \\ ")
+    playerInfo$traits <- paste0(input$traits, collapse = " \\\\ ")
   } else {
     playerInfo$position <- "GK"
     
