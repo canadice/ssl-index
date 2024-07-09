@@ -729,7 +729,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                     updateTPE(data$pid, tpe)
                   }
                   
-                  addBankTransaction(uid = uid, pid = data$pid, source = "Store Purchase", transaction = totalCost)
+                  addBankTransaction(uid = uid, pid = data$pid, source = "Store Purchase", transaction = -totalCost)
                   showToast("success", "You have successfully completed your purchase!")
                   purchased(purchased() + 1)
                   updated(updated() + 1)

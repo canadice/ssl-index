@@ -60,7 +60,7 @@ addBankTransaction <- function(uid, pid, source, transaction, status = 1){
       (", paste0("'", time, "'"),", ", 
         pid[i], ", ", 
         paste0("'", source[i], "'"),", ",
-        -transaction[i], ", ",
+        transaction[i], ", ",
         status, ", ",
         uid, ");"
       )
