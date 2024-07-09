@@ -450,7 +450,7 @@ server <- function(input, output, session) {
           selected = TRUE
         ),
         {
-          if(!any(authOutput()$usergroup == 0)){
+          if(!any(0 %in% authOutput()$usergroup)){
             tagList(
               menuItemOutput("playerTabs"),
               menuItem(
@@ -556,7 +556,7 @@ server <- function(input, output, session) {
         #   )
         # ),
         {
-          if(!any(authOutput()$usergroup == 0)){
+          if(!any(0 %in% authOutput()$usergroup)){
             menuItem(
               "Your User",
               href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
@@ -591,7 +591,7 @@ server <- function(input, output, session) {
           )
         },
         {
-          if(!any(authOutput()$usergroup == 0)){
+          if(!any(0 %in% authOutput()$usergroup))){
             menuItem(
               "Your User",
               href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
