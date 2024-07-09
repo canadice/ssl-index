@@ -70,6 +70,7 @@ suppressMessages({
   require(shinyFeedback, quietly = FALSE)
   require(sortable, quietly = FALSE)
   require(shinyWidgets, quietly = FALSE)
+  # require(bslib, quietly = FALSE) ## Incompatible with shinydashboard
   
   require(fresh, quietly = FALSE)
   require(shiny.router, quietly = FALSE)
@@ -168,7 +169,6 @@ customTheme <-
       info_box_bg = "#e4eef3"
     )
   )
-
 
 #################################################################
 ##               Running all modules for the app               ##
@@ -591,7 +591,7 @@ server <- function(input, output, session) {
           )
         },
         {
-          if(!any(0 %in% authOutput()$usergroup))){
+          if(!any(0 %in% authOutput()$usergroup)){
             menuItem(
               "Your User",
               href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")

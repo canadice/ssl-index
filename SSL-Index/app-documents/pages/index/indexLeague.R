@@ -43,7 +43,7 @@ leagueIndexUI <- function(id) {
                    reactableOutput(ns("keeperAdvanced")) %>% 
                      withSpinnerMedium()))
         )
-    ) # close fluidpage
+    ) %>% page_fluid() # close fluidpage
   ) # close tagList
 }
 
@@ -128,16 +128,14 @@ leagueIndexServer <- function(id) {
                     ..1 =
                       colDef(
                         header =
-                          withTooltip(
-                            ..1 %>% str_to_upper(),
-                            ..2),
+                          tippy(..1 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
                         html = TRUE
                       )
                   }
                 }) %>%
                   setNames(statisticsTooltips$statistic) %>%
                   Filter(Negate(is.null), .)
-              )
+              ) 
           )
       }
       
