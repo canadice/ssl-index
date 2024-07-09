@@ -215,8 +215,8 @@ ui <- function(request){
                             label = "Portal")),
           tags$p(actionButton(inputId = "gotoindex",
                             label = "Index"))
-        ),
-        dropdownMenuOutput("notifications")
+        )#,
+        # dropdownMenuOutput("notifications")
       )
     ),
     dashboardSidebar(
@@ -384,24 +384,30 @@ server <- function(input, output, session) {
     )
   })
   
-  output$notifications <- renderMenu({
-    if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
-      if(any(
-        getPlayersForApproval() %>% nrow() > 0
-      )){
-        dropdownMenu(type = "notifications",
-                     badgeStatus = "warning",
-                     notificationItem(
-                       text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
-                       icon("users")
-                     )
-        )
-      }
-    } else {
-      
-    }
-  }) %>% 
-    bindEvent(input$tabs, ignoreInit = FALSE)
+  # output$notifications <- renderMenu({
+  #   if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
+  #     if(any(
+  #       getPlayersForApproval() %>% nrow() > 0
+  #     )){
+  #       dropdownMenu(type = "notifications",
+  #                    badgeStatus = "warning",
+  #                    notificationItem(
+  #                      text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
+  #                      icon("users")
+  #                    )
+  #       )
+  #     }
+  #   } else {
+  #     dropdownMenu(type = "notifications",
+  #                  badgeStatus = "warning",
+  #                  notificationItem(
+  #                    text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
+  #                    icon("users")
+  #                  )
+  #     )
+  #   }
+  # }) %>% 
+  #   bindEvent(input$tabs, ignoreInit = FALSE)
   
   ##---------------------------------------------------------------
   ##                            Sidebar                           -
