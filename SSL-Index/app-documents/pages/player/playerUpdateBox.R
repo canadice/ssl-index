@@ -487,44 +487,25 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               updating("updating")
               
-              data %>% 
-                select(acceleration:throwing) %>% 
-                select(!c(`natural fitness`, stamina)) %>% 
-                colnames() %>% 
-                map(
-                  .x = .,
-                  .f = function(x){
-                    updateNumericInput(
-                      session = session,
-                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                      value = data[, x],
-                      min = data[, x],
-                      max = 20
-                    )
-                  }
-                )
+              delay(500, {
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!c(`natural fitness`, stamina)) %>% 
+                  colnames() %>% 
+                  map(
+                    .x = .,
+                    .f = function(x){
+                      updateNumericInput(
+                        session = session,
+                        inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                        value = data[, x],
+                        min = data[, x],
+                        max = 20
+                      )
+                    }
+                  )
+              })
               
-              data %>% 
-                select(acceleration:throwing) %>% 
-                select(!c(`natural fitness`, stamina)) %>% 
-                select(
-                  where(is.na)
-                ) %>%
-                colnames() %>%
-                map(
-                  .x = .,
-                  .f = function(x){
-                    updateNumericInput(
-                      session = session,
-                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                      value = 5,
-                      min = 5,
-                      max = 5
-                    )
-                    
-                    shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
-                  }
-                )
             }
           )
       }) %>% 
@@ -541,7 +522,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               if(bank < 0){
                 showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
-              } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist())){
+              } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
                 showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
               } else if(updating() == "updating"){
                 ##### UPDATING #####
@@ -891,44 +872,24 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               updating("updating")
               
-              data %>% 
-                select(acceleration:throwing) %>% 
-                select(!c(`natural fitness`, stamina)) %>% 
-                colnames() %>% 
-                map(
-                  .x = .,
-                  .f = function(x){
-                    updateNumericInput(
-                      session = session,
-                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                      value = data[, x],
-                      max = data[, x],
-                      min = 5
-                    )
-                  }
-                )
-              
-              data %>% 
-                select(acceleration:throwing) %>% 
-                select(!c(`natural fitness`, stamina)) %>% 
-                select(
-                  where(is.na)
-                ) %>%
-                colnames() %>%
-                map(
-                  .x = .,
-                  .f = function(x){
-                    updateNumericInput(
-                      session = session,
-                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                      value = 5,
-                      min = 5,
-                      max = 5
-                    )
-                    
-                    shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
-                  }
-                )
+              delay(500,{
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!c(`natural fitness`, stamina)) %>% 
+                  colnames() %>% 
+                  map(
+                    .x = .,
+                    .f = function(x){
+                      updateNumericInput(
+                        session = session,
+                        inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                        value = data[, x],
+                        max = data[, x],
+                        min = 5
+                      )
+                    }
+                  )
+              })
             }
           )
       }) %>% 
@@ -945,7 +906,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               if(bank < 0){
                 showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
-              } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
+              } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
                 showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
               } else if(bank > 24){
                 # Error shown if user has regressed too much
@@ -1138,7 +1099,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       }) %>% 
         bindEvent(
           input$confirmUpdate,
-          ignoreInit = TRUE
+          ignoreInit = TRUE,
+          once = TRUE
         )
       
       #### OBSERVERS ####
