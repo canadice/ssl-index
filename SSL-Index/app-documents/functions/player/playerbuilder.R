@@ -108,6 +108,8 @@ submitBuild <- function(input, tpebank, userinfo){
         mutate(!!paste0("pos_", tolower(pos)) := 0)
     }
     playerInfo$pos_gk <- 20
+    
+    playerInfo$traits <- "NO TRAITS"
   }
   
   # Add attributes variables for each position
