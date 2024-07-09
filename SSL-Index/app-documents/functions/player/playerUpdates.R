@@ -71,6 +71,12 @@ completeRetirement <- function(pid){
       WHERE pid =", pid
     )
   )
+  
+  data <- portalQuery(paste("SELECT pd.*, mybb.username 
+                            FROM playerdata pd JOIN mybbdb.mybb_users ON pd.uid = mybb.uid 
+                            WHERE pd.pid = ", pid))
+  
+  sendRetiredPlayer(data)
 }
 
 ## Gets update history

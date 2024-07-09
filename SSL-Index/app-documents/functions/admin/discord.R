@@ -65,3 +65,83 @@ sendNewCreate <- function(data, username){
   runjs(jscode)
 }
 
+sendApprovedCreate <- function(data){
+  jscode <- paste0("
+    function sendMessage() {
+      const request = new XMLHttpRequest();
+      request.open('POST', '", config$discord$approved, "');
+
+      request.setRequestHeader('Content-type', 'application/json');
+
+      var myEmbed = {
+        author: {
+          name: 'A new player has been approved'
+        },
+        title: '", paste0(data$first, " ", data$last) %>% str_remove_all(pattern = "'") , "',
+        fields: [
+                   {
+                      name: 'TPE Banked',
+                      value: ", data$tpebank,",
+                   },
+                   {
+                      name: 'Position',
+                      value: '", data$position,"',
+                   },
+                   { 
+                      name: 'Username',
+                      value: '", data$username, "',
+                   },
+        ]
+      }
+
+      var params = {
+        username: 'Captain Hook',
+        embeds: [ myEmbed ]
+      }
+
+      request.send(JSON.stringify(params));
+    }
+    sendMessage();
+  ")
+  
+  runjs(jscode)
+}
+
+sendRetiredPlayer <- function(data){
+  jscode <- paste0("
+    function sendMessage() {
+      const request = new XMLHttpRequest();
+      request.open('POST', '", config$discord$player, "');
+
+      request.setRequestHeader('Content-type', 'application/json');
+
+      var myEmbed = {
+        author: {
+          name: 'A player has retired'
+        },
+        title: '", paste0(data$first, " ", data$last) %>% str_remove_all(pattern = "'") , "',
+        fields: [
+                   {
+                      name: 'Team',
+                      value: '", data$team,"',
+                   },
+                   { 
+                      name: 'Username',
+                      value: '", data$username, "',
+                   },
+        ]
+      }
+
+      var params = {
+        username: 'Captain Hook',
+        embeds: [ myEmbed ]
+      }
+
+      request.send(JSON.stringify(params));
+    }
+    sendMessage();
+  ")
+  
+  runjs(jscode)
+}
+
