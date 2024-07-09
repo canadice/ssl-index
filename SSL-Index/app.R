@@ -133,7 +133,7 @@ customLogo <-
       target="_blank",
       tags$img(src='portalwhite.png', height = "70")
     ),
-    badgeText = "v0.9",
+    badgeText = "v0.9.1",
     badgeTextColor = "white",
     badgeBackColor = sslBlueL
   )
