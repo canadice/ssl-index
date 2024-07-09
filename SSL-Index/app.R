@@ -220,8 +220,6 @@ ui <- function(request){
       )
     ),
     dashboardSidebar(
-      # Adjust the sidebar in accordance with the higher header
-      tags$style(".left-side, .main-sidebar {padding-top: 100px}"),
       uiOutput("sidebarpanel")
     ),
     dashboardBody(

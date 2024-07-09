@@ -5,7 +5,7 @@ leagueIndexUI <- function(id) {
       ## First row
       fluidRow(
         column(
-          width = 2,
+          width = 4,
           selectInput(
             inputId = ns("selectedSeason"),
             label = "Select a season",
@@ -15,7 +15,7 @@ leagueIndexUI <- function(id) {
           )
         ),
         column(
-          width = 8
+          width = 6
         ),
         column(
           width = 2,
@@ -24,18 +24,27 @@ leagueIndexUI <- function(id) {
       ),
       ## Second row
       fluidRow(
+        h1("Outfield"),
         tabsetPanel(
-          tabPanel("TEST", 
+          tabPanel("Statistics",
                    reactableOutput(ns("outfieldBasic")) %>% 
                      withSpinnerMedium()),
-          tabPanel("Out", h4("TASTA"))
-        )
-      ),
+          tabPanel("Adv. Statistics",
+                   reactableOutput(ns("outfieldAdvanced")) %>% 
+                     withSpinnerMedium()))
+        ),
       fluidRow(
-        verbatimTextOutput(ns("user"))
-      )
-    )
-  )
+        h1("Keeper"),
+        tabsetPanel(
+          tabPanel("Statistics",
+                   reactableOutput(ns("keeperBasic")) %>% 
+                     withSpinnerMedium()),
+          tabPanel("Adv. Statistics",
+                   reactableOutput(ns("keeperAdvanced")) %>% 
+                     withSpinnerMedium()))
+        )
+    ) # close fluidpage
+  ) # close tagList
 }
 
 leagueIndexServer <- function(id) {
@@ -43,9 +52,104 @@ leagueIndexServer <- function(id) {
     id,
     function(input, output, session) {
       
+      #### REUSABLE REACTABLE FUNCTION ####
+      indexReactable <- function(currentData){
+        statisticsTooltips <- statisticsLegend[statisticsLegend$statistic %in% colnames(currentData),]
+        
+        currentData %>%
+          mutate(
+            across(
+              where(is.numeric),
+              ~ round(.x, 2)
+            )
+          ) %>% 
+          reactable(
+            pagination = TRUE,
+            searchable = TRUE,
+            defaultColDef = colDef(minWidth = 100, maxWidth = 250),
+            columns =
+              list(
+                name = colDef(
+                  name = "PLAYER",
+                  minWidth = 250,
+                  class = "stickyReactableColumn",
+                  headerClass = "stickyReactableHeader",
+                  cell = 
+                    function(value, index){
+                      Club <- currentData %>% 
+                        .$club %>% 
+                        .[index]
+                      
+                      if(Club %>% str_detect(",")){
+                        clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
+                        
+                        list <- 
+                          tagList(
+                            lapply(
+                              clubs,
+                              function(X){
+                                div(
+                                  style = "display: inline-block; width: 25px;", 
+                                  img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
+                                )
+                              }
+                            )
+                          )
+                        
+                      } else {
+                        # file.exists(sprintf("%s.png", Club)) %>% print()
+                        
+                        image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
+                        
+                        list <- 
+                          tagList(
+                            div(style = "display: inline-block; width: 25px;", image)
+                          )
+                      }
+                      
+                      tagList(
+                        div(
+                          class = "tableClubName",
+                          list,
+                          span(value)
+                        )
+                      )
+                    }
+                ),
+                club = 
+                  colDef(
+                    show = FALSE,
+                    searchable = TRUE
+                  )
+              ) %>% 
+              append(
+                pmap(statisticsTooltips, ~ {
+                  if((..1) %in% names(currentData)) {
+                    ..1 =
+                      colDef(
+                        header =
+                          withTooltip(
+                            ..1 %>% str_to_upper(),
+                            ..2),
+                        html = TRUE
+                      )
+                  }
+                }) %>%
+                  setNames(statisticsTooltips$statistic) %>%
+                  Filter(Negate(is.null), .)
+              )
+          )
+      }
+      
       #### DATA GENERATION ####
       outfieldData <- reactive({
+        req(input$selectedLeague)
         getOutfieldIndex(league = input$selectedLeague, season = input$selectedSeason) 
+      })
+      
+      keeperData <- reactive({
+        req(input$selectedLeague)
+        getKeeperIndex(league = input$selectedLeague, season = input$selectedSeason) 
       })
       
       #### UI OUTPUT ####
@@ -109,84 +213,74 @@ leagueIndexServer <- function(id) {
         outfieldData() %>% 
           then(
             onFulfilled = function(data){
-              data %>% 
-              reactable(
-                pagination = TRUE,
-                columns =
-                  list(
-                    name = colDef(
-                      minWidth = 250,
-                      class = "stickyReactableColumn",
-                      headerClass = "stickyReactableHeader",
-                      cell = 
-                        function(value, index){
-                          Club <- data %>% 
-                            .$club %>% 
-                            .[index]
-                          
-                          if(Club %>% str_detect(",")){
-                            clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
-                            
-                            list <- 
-                              tagList(
-                                lapply(
-                                  clubs,
-                                  function(X){
-                                    div(
-                                      style = "display: inline-block; width: 25px;", 
-                                      img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
-                                    )
-                                  }
-                                )
-                              )
-                            
-                          } else {
-                            # file.exists(sprintf("%s.png", Club)) %>% print()
-                            
-                            image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
-                            
-                            list <- 
-                              tagList(
-                                div(style = "display: inline-block; width: 25px;", image)
-                              )
-                          }
-                          
-                          tagList(
-                            div(style = "display: inline-block; width: 250px;", value),
-                            list
-                          )
-                        }
-                    ),
-                    club = 
-                      colDef(
-                        show = FALSE,
-                        searchable = TRUE
-                      )
-                  ) %>% 
-                  append(
-                    pmap(statisticsLegend, ~ {
-                      if((..1) %in% names(data)) {
-                        ..1 = 
-                          colDef(
-                            header = 
-                              withTooltip(
-                                ..1, 
-                                ..2),
-                            html = TRUE
-                          )
-                      }
-                    }) %>% 
-                      setNames(statisticsLegend$statistic) %>% 
-                      Filter(Negate(is.null), .)
-                  )
-              )
+              currentData <- 
+                data %>% 
+                select(
+                  name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
+                ) 
+              
+              currentData %>% 
+                indexReactable()
             }
           )
           
       })  
       
-      output$user <- renderPrint({ 
-      })
+      output$outfieldAdvanced <- renderReactable({
+        outfieldData() %>% 
+          then(
+            onFulfilled = function(data){
+              currentData <- 
+                data %>% 
+                select(
+                  name:club, 
+                  xg,
+                  xa:`fk shots`,
+                  `open play key passes`:`goals outside box`,
+                  `press%`:`pen adj xG`
+                ) 
+              
+              currentData %>% 
+                indexReactable()
+            }
+          )
+        
+      }) 
+      
+      output$keeperBasic <- renderReactable({
+        keeperData() %>% 
+          then(
+            onFulfilled = function(data){
+              currentData <- 
+                data %>% 
+                select(
+                  name:`save%`
+                ) 
+              
+              currentData %>% 
+                indexReactable()
+            }
+          )
+        
+      })  
+      
+      output$keeperAdvanced <- renderReactable({
+        keeperData() %>% 
+          then(
+            onFulfilled = function(data){
+              currentData <- 
+                data %>% 
+                select(
+                  name:club, 
+                  `penalties faced`:`xg prevented`
+                ) 
+              
+              currentData %>% 
+                indexReactable()
+            }
+          )
+        
+      }) 
       
     }
   )
