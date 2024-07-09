@@ -470,7 +470,20 @@ tibble(
       "division",
       "season",
       "result",
-      "opponent"
+      "opponent",
+      "won",
+      "lost",
+      "drawn",
+      "clean sheets",
+      "conceded",
+      "saves parried",
+      "saves held",
+      "saves tipped",
+      "save%",
+      "penalties faced",
+      "penalties saved",
+      "xsave%",
+      "xg prevented"
     )
   ,
   explanation = 
@@ -534,7 +547,20 @@ tibble(
       "Current division",
       "Current season",
       "Result of the match",
-      "Opponent club"
+      "Opponent club",
+      "Number of wins",
+      "Number of losses",
+      "Number of draws",
+      "Games with no conceded goals",
+      "Goals conceded",
+      "Saves where the ball has come back into play",
+      "Saves where the ball is held by the keeper",
+      "Saves where the ball is gone out of play",
+      "Save %",
+      "Penalties faced",
+      "Penalties saved",
+      "Expected save % based on opponent's strength of shot",
+      "Expected number of goals saved based on opponent's strength of shot"
     )
   ) %>% 
   rename_with(
