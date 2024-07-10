@@ -696,7 +696,8 @@ server <- function(input, output, session) {
       player = FALSE,
       index = FALSE,
       uploadGame = FALSE,
-      bankOverview = FALSE
+      bankOverview = FALSE,
+      welcome = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -711,8 +712,9 @@ server <- function(input, output, session) {
       req(authOutput()$uid)
       submitPTServer("submitPT", userinfo = authOutput())
       
-    } else if(input$tabs == "welcome"){
+    } else if(!loadedPage$welcome & input$tabs == "welcome"){
       welcomeServer("welcome")
+      loadedPage$welcome <- TRUE
       
     } else if(input$tabs == "bankDeposit"){
       req(authOutput()$uid)
