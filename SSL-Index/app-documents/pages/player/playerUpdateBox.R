@@ -56,6 +56,13 @@ playerUpdateBoxUI <- function(id) {
           width = NULL,
           fluidRow(
             column(
+              width = 6,
+              offset = 3,
+              uiOutput(ns("footednessSelector"))
+            )
+          ),
+          fluidRow(
+            column(
               width = 8,
               offset = 2,
               uiOutput(
@@ -363,6 +370,24 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
           ignoreNULL = FALSE
         )
       
+      # Dynamic UI for footedness selector
+      output$footednessSelector <- renderUI({
+        data() %>% 
+          then(
+            onFulfilled = function(data){
+              left <- data$`left foot` 
+              right <- data$`right foot` 
+              
+              tagList(
+                selectInput(session$ns("footedness"), 
+                            label = "Select your primary foot:", 
+                            choices = c("Left", "Right"), 
+                            selected = if_else(left >= right, "Left", "Right"))
+              )
+                
+            }
+          )
+      })
       #### COST OUTPUT ####
       # All the cost outputs
       editableAttributes %>% 
@@ -651,6 +676,19 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                           new = if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0)) %>% as.character()
                         )
                     }
+                    
+                    update <- 
+                      update %>% 
+                      add_row(
+                        attribute = c("left foot"),
+                        old = c(data$left) %>% as.character(),
+                        new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                      ) %>% 
+                      add_row(
+                        attribute = c("right foot"),
+                        old = c(data$right) %>% as.character(),
+                        new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                      )
                     
                     update <- 
                       update %>% 
@@ -975,6 +1013,19 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   
                   update <- 
                     update %>% 
+                    add_row(
+                      attribute = c("left foot"),
+                      old = c(data$left) %>% as.character(),
+                      new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                    ) %>% 
+                    add_row(
+                      attribute = c("right foot"),
+                      old = c(data$right) %>% as.character(),
+                      new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                    )
+                  
+                  update <- 
+                    update %>% 
                     filter(
                       old != new
                     )
@@ -1034,6 +1085,19 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                         new = if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0)) %>% as.character()
                       )
                   }
+                  
+                  update <- 
+                    update %>% 
+                    add_row(
+                      attribute = c("left foot"),
+                      old = c(data$left) %>% as.character(),
+                      new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                    ) %>% 
+                    add_row(
+                      attribute = c("right foot"),
+                      old = c(data$right) %>% as.character(),
+                      new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                    )
                   
                 } else {
                   update <- 
