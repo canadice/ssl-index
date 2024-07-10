@@ -231,10 +231,10 @@ getChangedBuilds <- function(){
   
   portalQuery(
     paste(
-      "SELECT pd.*
+      "SELECT DISTINCT pd.*
         FROM playerdata pd
         JOIN updatehistory uh ON pd.pid = uh.pid
-        WHERE uh.Time < ", weekEnd, " AND uh.Time > ", weekStart,";"
+        WHERE uh.Time < ", weekEnd, " AND uh.Time > ", weekStart," AND uh.uid <> 1;"
     )
   ) %>% 
     future_promise()
