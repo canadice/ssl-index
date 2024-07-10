@@ -422,3 +422,16 @@ h1, h2, h3, h4, h5 {
 .tableClubName span {
   padding-left: 10px;
 }
+
+/* Edit Schedule selects */
+.smallSelect .selectize-input{
+  overflow: hidden;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  text-indent: 1px;
+}
+
+.smallSelect .selectize-input::after{
+  display: none !important;
+}
+
