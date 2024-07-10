@@ -1,6 +1,6 @@
 ## Verifies the password from a response from the mybb db and the given password
-customCheckCredentials <- function(){
-  function(user, password) {
+customCheckCredentials <- function(session = shiny::getDefaultReactiveDomain()){
+  function(user, password, session = shiny::getDefaultReactiveDomain()) {
     res <- 
       mybbQuery(
         query = 
@@ -34,6 +34,16 @@ customCheckCredentials <- function(){
           return()
       } 
       
+      token <- paste0(replicate(n = 4, expr = stri_rand_strings(1, length = 4)), collapse = "-")
+      
+      setRefreshToken(uid = res$uid, token = token)
+      
+      msg <- list(
+        name = "token", value = token
+      )
+      
+      session$sendCustomMessage("cookie-set", msg)
+      
       list(
         result = TRUE, 
         ## user_info is hardcoded in the shinymanager auth function so cannot be renamed
@@ -55,6 +65,26 @@ customCheckCredentials <- function(){
         return()
     }
   }
+}
+
+getRefreshToken <- function(token){
+  portalQuery(
+    paste("SELECT rt.*, mb.username, mb.usergroup, mb.additionalgroups 
+              FROM refreshtokens rt 
+              JOIN mybbdb.mybb_users mb ON rt.uid = mb.uid 
+              WHERE rt.token = '", token, "';", sep = "")
+  ) %>% 
+    suppressWarnings()
+}
+
+setRefreshToken <- function(uid, token, session = shiny::getDefaultReactiveDomain()){
+  expires <- (now() + minutes(15)) %>% as.numeric()
+  
+  portalQuery({
+    paste("INSERT INTO refreshtokens (uid, expires_at, token)
+              VALUES (", uid, ",", expires, ", ", paste0("'", token, "'"), ")
+              ON DUPLICATE KEY UPDATE token=", paste0("'", token, "'"), ", expires_at=", expires)
+  })
 }
 
 
