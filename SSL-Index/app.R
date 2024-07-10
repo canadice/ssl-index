@@ -134,7 +134,7 @@ customLogo <-
       target="_blank",
       tags$img(src='portalwhite.png', height = "70")
     ),
-    badgeText = "v0.9.1",
+    badgeText = "v0.9.2",
     badgeTextColor = "white",
     badgeBackColor = sslBlueL
   )
@@ -201,6 +201,17 @@ ui <- function(request){
     dashboardHeader(
       title = customLogo,
       tags$li(
+        tags$script(
+          src = paste0(
+            "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
+            "dist/js.cookie.min.js"
+          )
+        ),
+        tags$script("Shiny.addCustomMessageHandler('cookie-remove', function(msg){
+                        Cookies.remove(msg.name);
+                        getCookies();
+                      })
+                    "),
         tags$head(
           tags$link(
             rel = "icon", 
@@ -239,6 +250,32 @@ ui <-
     status = "primary",
     tags_top = 
       list(
+        tags$script(
+          src = paste0(
+            "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
+            "dist/js.cookie.min.js"
+          )
+        ),
+        tags$script("// script.js
+                      function getCookies(){
+                        var res = Cookies.get();
+                        Shiny.setInputValue('cookies', res);
+                      }
+                    
+                    // script.js
+                      Shiny.addCustomMessageHandler('cookie-set', function(msg){
+                        Cookies.set(msg.name, msg.value);
+                        getCookies();
+                      })
+                      
+                      Shiny.addCustomMessageHandler('cookie-remove', function(msg){
+                        Cookies.remove(msg.name);
+                        getCookies();
+                      })
+                    
+                    $(document).on('shiny:connected', function(ev){
+                      getCookies();
+                    });"),
         tags$div(
           tags$h4("SSL Portal", style = "align:center"),
           tags$img(
@@ -285,6 +322,45 @@ server <- function(input, output, session) {
       input$login_guest
     )
   
+  # Checks saved cookie for automatic login
+  observe({
+    refreshtoken <- 
+      getRefreshToken(input$cookies$token)
+    
+    if(refreshtoken %>% nrow() > 0){
+      if((now() %>% as.numeric()) < refreshtoken$expires_at){
+        token <- shinymanager:::.tok$generate(refreshtoken$username)
+        shinymanager:::.tok$add(token, list(
+          uid = refreshtoken$uid, 
+          username = refreshtoken$username, 
+          usergroup = 
+            paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") %>% 
+            str_split(pattern = ",", simplify = TRUE) %>%
+            as.numeric() %>% 
+            as.list()
+        ))
+        shinymanager:::addAuthToQuery(session, token, "en")
+        
+        setRefreshToken(uid = refreshtoken$uid, token = refreshtoken$token)
+        
+        session$reload()
+      }
+    }
+  }) %>% 
+    bindEvent(
+      input$cookies$token,
+      ignoreNULL = TRUE
+    )
+  
+  observe({
+    msg <- list(
+      name = "token"
+    )
+    session$sendCustomMessage("cookie-remove", msg)
+  }) %>% 
+    bindEvent(
+      input$.shinymanager_logout
+    )
   
   authOutput <- reactive({
     reactiveValuesToList(resAuth)
@@ -351,10 +427,10 @@ server <- function(input, output, session) {
       tabItem(
         "bankProcess",
         bankProcessUI(id = "bankProcess")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "editSchedule",
+        editScheduleUI(id = "editSchedule")
       # ),
       # tabItem(
       #   "teamindex",
@@ -499,6 +575,10 @@ server <- function(input, output, session) {
                     menuSubItem(
                       "Upload Game Stats",
                       tabName = "uploadGame"
+                    ),
+                    menuSubItem(
+                      "Edit Schedule",
+                      tabName = "editSchedule"
                     )
                   )
                 }
@@ -643,7 +723,7 @@ server <- function(input, output, session) {
   # Goes to welcome tab after logging in successfully
   observe({
     updateTabItems(session, "tabs", selected = "welcome")
-  }) %>% 
+  }) %>%
     bindEvent(
       authOutput()
     )
@@ -723,6 +803,10 @@ server <- function(input, output, session) {
     } else if(input$tabs == "bankProcess"){
       req(authOutput()$uid)
       bankProcessServer("bankProcess", userinfo = authOutput())
+      
+    } else if(input$tabs == "editSchedule"){
+      req(authOutput()$uid)
+      editScheduleServer("editSchedule")
       
     } else if(!loadedPage$create & input$tabs == "createplayer"){
       req(authOutput()$uid)
