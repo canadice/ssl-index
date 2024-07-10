@@ -49,13 +49,15 @@ managerTeamServer <- function(id, userinfo) {
             onFulfilled = function(value){
               value %>% 
                 select(!pid) %>% 
+                arrange(affiliate, tpe %>% desc()) %>% 
                 reactable(
                   selection = "single",
                   onClick = "select",
                   groupBy = "affiliate",
+                  defaultColDef = colDef(header = function(value){str_to_upper(value)}),
                   rowStyle = function(index){
                     if(.[index, "tpebank"] < 0){
-                      list(background = "#FFCCCB")
+                      list(background = "#FFCCCB", color = "black")
                     }
                   }
                 )
