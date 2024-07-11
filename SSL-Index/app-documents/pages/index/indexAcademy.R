@@ -10,7 +10,7 @@ academyIndexUI <- function(id) {
             inputId = ns("selectedSeason"),
             label = "Select a season",
             choices = 
-              1:currentSeason$season %>% 
+              13:currentSeason$season %>% 
               sort(decreasing = TRUE)
           )
         )
