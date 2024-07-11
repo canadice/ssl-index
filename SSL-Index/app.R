@@ -311,6 +311,7 @@ server <- function(input, output, session) {
   
   resAuth <- secure_server(
     check_credentials = customCheckCredentials(),
+    timeout = 45,
     session = session
   )
   
