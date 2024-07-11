@@ -388,9 +388,9 @@ h1, h2, h3, h4, h5 {
 }
 
 .stickyFooter {
-  position:absolute;
+  position:fixed;
   bottom:0;
-  right:0;
+  right:90%;
   left:60px;
   padding:10px;
   box-sizing:border-box;

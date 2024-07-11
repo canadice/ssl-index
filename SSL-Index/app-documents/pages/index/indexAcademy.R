@@ -1,4 +1,4 @@
-leagueIndexUI <- function(id) {
+academyIndexUI <- function(id) {
   ns <- NS(id)
   tagList(
     fluidPage(
@@ -13,13 +13,6 @@ leagueIndexUI <- function(id) {
               1:currentSeason$season %>% 
               sort(decreasing = TRUE)
           )
-        ),
-        column(
-          width = 6
-        ),
-        column(
-          width = 2,
-          uiOutput(ns("leagueSelector"))
         )
       ),
       ## Second row
@@ -47,76 +40,26 @@ leagueIndexUI <- function(id) {
   ) # close tagList
 }
 
-leagueIndexServer <- function(id) {
+academyIndexServer <- function(id) {
   moduleServer(
     id,
     function(input, output, session) {
-      
+
       #### DATA GENERATION ####
       outfieldData <- reactive({
-        req(input$selectedLeague)
-        getOutfieldIndex(league = input$selectedLeague, season = input$selectedSeason) 
+        req(input$selectedSeason)
+        indexQuery(
+          paste("SELECT * FROM academyoutfield WHERE season = ", input$selectedSeason, ";")
+        ) %>% 
+          future_promise()
       })
       
       keeperData <- reactive({
-        req(input$selectedLeague)
-        getKeeperIndex(league = input$selectedLeague, season = input$selectedSeason) 
-      })
-      
-      #### UI OUTPUT ####
-      output$leagueSelector <- renderUI({
-        season <- input$selectedSeason %>% as.numeric()
-        if(season < 5){
-          selectInput(
-            inputId = session$ns("selectedLeague"),
-            label = "League",
-            choices = 
-              c(
-                "ALL",
-                "League" = "1",
-                "Cup"
-              )
-          )
-        } else if (season == 12){
-          selectInput(
-            inputId = session$ns("selectedLeague"),
-            label = "League",
-            choices = 
-              c(
-                "ALL",
-                "Major" = "1",
-                "Minor" = "2",
-                "Cup",
-                "WSFC"
-              )
-          )
-        } else if (season < 12){
-          selectInput(
-            inputId = session$ns("selectedLeague"),
-            label = "League",
-            choices = 
-              c(
-                "ALL",
-                "Division 1" = "1",
-                "Division 2" = "2",
-                "Cup"
-              )
-          )
-        } else {
-          selectInput(
-            inputId = session$ns("selectedLeague"),
-            label = "League",
-            choices = 
-              c(
-                "ALL",
-                "Major" = "1",
-                "Minor" = "2",
-                "Cup"
-              )
-          )
-        }
-        
-        
+        req(input$selectedSeason)
+        indexQuery(
+          paste("SELECT * FROM academykeeper WHERE season = ", input$selectedSeason, ";")
+        ) %>% 
+          future_promise()
       })
       
       #### REACTABLE OUTPUT ####

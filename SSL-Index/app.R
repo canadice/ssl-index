@@ -134,7 +134,7 @@ customLogo <-
       target="_blank",
       tags$img(src='portalwhite.png', height = "70")
     ),
-    badgeText = "v0.9.2",
+    badgeText = "v0.9.3",
     badgeTextColor = "white",
     badgeBackColor = sslBlueL
   )
@@ -431,14 +431,14 @@ server <- function(input, output, session) {
       tabItem(
         "editSchedule",
         editScheduleUI(id = "editSchedule")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "academyUpload",
+        academyUploadUI(id = "academyUpload")
+      ),
+      tabItem(
+        "academyIndex",
+        academyIndexUI(id = "academyIndex")
       # ),
       # tabItem(
       #   "teamindex",
@@ -577,6 +577,10 @@ server <- function(input, output, session) {
                       tabName = "uploadGame"
                     ),
                     menuSubItem(
+                      "Upload Academy Stats",
+                      tabName = "academyUpload"
+                    ),
+                    menuSubItem(
                       "Edit Schedule",
                       tabName = "editSchedule"
                     )
@@ -662,12 +666,14 @@ server <- function(input, output, session) {
           tabName = "welcome",
           selected = TRUE
         ),
-        {
-          menuItem(
-            "League Index",
-            tabName = "leagueindex"
-          )
-        },
+        menuItem(
+          "League Index",
+          tabName = "leagueindex"
+        ),
+        menuItem(
+          "Academy Index",
+          tabName = "academyIndex"
+        ),
         {
           if(!any(0 %in% authOutput()$usergroup)){
             menuItem(
@@ -775,6 +781,7 @@ server <- function(input, output, session) {
       create = FALSE,
       player = FALSE,
       index = FALSE,
+      academyIndex = FALSE,
       uploadGame = FALSE,
       bankOverview = FALSE,
       welcome = FALSE
@@ -808,6 +815,10 @@ server <- function(input, output, session) {
       req(authOutput()$uid)
       editScheduleServer("editSchedule")
       
+    } else if(input$tabs == "academyUpload"){
+      req(authOutput()$uid)
+      academyUploadServer("academyUpload")
+      
     } else if(!loadedPage$create & input$tabs == "createplayer"){
       req(authOutput()$uid)
       createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
@@ -817,6 +828,10 @@ server <- function(input, output, session) {
       req(authOutput()$uid)
       playerPageServer("playerpage", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$player <- TRUE
+      
+    } else if(!loadedPage$academyIndex & input$tabs == "academyIndex"){
+      academyIndexServer("academyIndex")
+      loadedPage$academyIndex <- TRUE
       
     } else if(!loadedPage$index & input$tabs == "leagueindex"){
       leagueIndexServer("leagueindex")
