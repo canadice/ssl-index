@@ -7,6 +7,8 @@
 ###########################################################################
 ###########################################################################
 
+version <- "0.9.4"
+
 suppressMessages({
   ## Data handling
   require(dplyr, quietly = FALSE)
@@ -134,7 +136,7 @@ customLogo <-
       target="_blank",
       tags$img(src='portalwhite.png', height = "70")
     ),
-    badgeText = "v0.9.3",
+    badgeText = version,
     badgeTextColor = "white",
     badgeBackColor = sslBlueL
   )

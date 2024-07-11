@@ -133,8 +133,8 @@ getOutfieldIndex <- function(league, season){
         `goals outside box`
       FROM `gamedataoutfield`",
       if_else(league == "ALL", 
-              paste("WHERE season = ", season),
-              paste("WHERE division = '", league, "' AND season = ", season)
+              paste("WHERE season = ", season, sep = ""),
+              paste("WHERE division = '", league, "' AND season = ", season, sep = "")
       ),
       ") `q01`
       GROUP BY `name`

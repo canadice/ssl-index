@@ -315,6 +315,10 @@ h1, h2, h3, h4, h5 {
   overflow: visible;
 }
 
+.Reactable {
+  background-color: var(--topBackground);
+}
+
 .Reactable .rt-table {
     background: inherit;
     border: 1px solid var(--sslGold);
@@ -341,6 +345,17 @@ h1, h2, h3, h4, h5 {
     border-top: 1px solid var(--sslGold)
 }
 
+.rt-search {
+  margin: 10px 20px 8px;
+  width: 100%;
+  width: -moz-available;          /* WebKit-based browsers will ignore this. */
+  width: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+  width: fill-available;
+  background-color: var(--bottomBackground);
+  color: var(--lighterText);
+}
+
+
 .stickyReactableColumn, .stickyReactableHeader {
   position: sticky !important; 
   left: 0;
@@ -348,6 +363,24 @@ h1, h2, h3, h4, h5 {
   z-index: 1;
 }
 
+.leaderTable {
+  padding-top: 20px
+}
+
+
+/* Navtabs */
+.nav-tabs {
+  border-bottom: 1px solid var(--sslGold);
+}
+
+.nav-tabs>li.active>a {
+  background-color: var(--topBackground);
+  color: var(--lighterText);
+}
+
+.nav-tabs>li>a {
+  color: var(--lighterText);
+}
 
 
 .attribute, .attributeCost {

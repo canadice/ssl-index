@@ -31,8 +31,13 @@ leagueIndexUI <- function(id) {
                      withSpinnerMedium()),
           tabPanel("Adv. Statistics",
                    reactableOutput(ns("outfieldAdvanced")) %>% 
-                     withSpinnerMedium()))
+                     withSpinnerMedium()),
+          tabPanel("Leaders",
+                   uiOutput(ns("outfieldLeaders")) %>% 
+                     withSpinnerMedium())
+          )
         ),
+      ## Third row
       fluidRow(
         h1("Keeper"),
         tabsetPanel(
@@ -41,8 +46,12 @@ leagueIndexUI <- function(id) {
                      withSpinnerMedium()),
           tabPanel("Adv. Statistics",
                    reactableOutput(ns("keeperAdvanced")) %>% 
-                     withSpinnerMedium()))
+                     withSpinnerMedium()),
+          tabPanel("Leaders",
+                   uiOutput(ns("keeperLeaders")) %>% 
+                     withSpinnerMedium())
         )
+      )
     ) # close fluidpage
   ) # close tagList
 }
@@ -66,6 +75,7 @@ leagueIndexServer <- function(id) {
       #### UI OUTPUT ####
       output$leagueSelector <- renderUI({
         season <- input$selectedSeason %>% as.numeric()
+        
         if(season < 5){
           selectInput(
             inputId = session$ns("selectedLeague"),
@@ -117,6 +127,78 @@ leagueIndexServer <- function(id) {
         }
         
         
+      })
+      
+      outstatistics <- c("goals", "assists", "player of the match", "distance run (km)", "successful passes", "chances created", "tackles won", "interceptions", "yellow cards", "red cards")
+      
+      output$outfieldLeaders <- renderUI({
+        # Split statistics into pairs
+        statisticPairs <- split(outstatistics, (seq_along(outstatistics) - 1) %/% 2)
+        
+        # Create fluidRows for each pair
+        lapply(statisticPairs, function(pair) {
+          fluidRow(
+            lapply(pair, function(stat) {
+              column(width = 6,
+                     reactableOutput(session$ns(paste0(stat, "_leader"))) %>% 
+                       div(class = "leaderTable")
+              )
+            })
+          )
+        })
+      })
+      
+      lapply(outstatistics, function(stat){
+        output[[paste0(stat, "_leader")]] <- renderReactable({
+          outfieldData() %>% 
+            then(
+              onFulfilled = function(data){
+                data %>% 
+                  select(
+                    name, club, !!sym(stat)
+                  ) %>% 
+                  arrange(!!sym(stat) %>% desc()) %>% 
+                  slice_head(n = 10) %>% 
+                  leaderReactable()
+              }
+            )
+        })
+      })
+      
+      keepstatistics <- c("won", "clean sheets", "conceded", "save%")
+      
+      output$keeperLeaders <- renderUI({
+        # Split statistics into pairs
+        statisticPairs <- split(keepstatistics, (seq_along(keepstatistics) - 1) %/% 2)
+        
+        # Create fluidRows for each pair
+        lapply(statisticPairs, function(pair) {
+          fluidRow(
+            lapply(pair, function(stat) {
+              column(width = 6,
+                     reactableOutput(session$ns(paste0(stat, "_leader"))) %>% 
+                       div(class = "leaderTable")
+              )
+            })
+          )
+        })
+      })
+      
+      lapply(keepstatistics, function(stat){
+        output[[paste0(stat, "_leader")]] <- renderReactable({
+          keeperData() %>% 
+            then(
+              onFulfilled = function(data){
+                data %>% 
+                  select(
+                    name, club, !!sym(stat)
+                  ) %>% 
+                  arrange(!!sym(stat) %>% desc()) %>% 
+                  slice_head(n = 10) %>% 
+                  leaderReactable()
+              }
+            )
+        })
       })
       
       #### REACTABLE OUTPUT ####

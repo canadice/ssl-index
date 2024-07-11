@@ -53,8 +53,8 @@ getKeeperIndex <- function(league, season){
         `xg prevented`
       FROM `gamedatakeeper`",
       if_else(league == "ALL", 
-              paste("WHERE season = ", season),
-              paste("WHERE division = '", league, "' AND season = ", season)
+              paste("WHERE season = ", season, sep = ""),
+              paste("WHERE division = '", league, "' AND season = ", season, sep = "")
       ),
       ") `q01`
       GROUP BY `name`
