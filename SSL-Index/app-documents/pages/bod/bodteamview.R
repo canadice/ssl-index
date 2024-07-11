@@ -37,7 +37,7 @@ bodTeamServer <- function(id, userinfo) {
                   groupBy = c("team"),
                   rowStyle = function(index){
                     if(.[index, "tpebank"] < 0){
-                      list(background = "#FFCCCB")
+                      list(background = "#FFCCCB", color = "black")
                     }
                   },
                   columns = list(
