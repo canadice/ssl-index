@@ -321,6 +321,8 @@ academyUploadServer <- function(id) {
           )
         )
         
+        sendAcademyIndexUpdate(input$season)
+        
         showToast("success", "You have successfully uploaded and replaced the Academy statistics!")
         
       }) %>% 

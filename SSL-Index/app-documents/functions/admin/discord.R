@@ -23,6 +23,34 @@ sendTest <- function(){
   runjs(jscode)
 }
 
+sendAcademyIndexUpdate <- function(season){
+  jscode <- paste0("
+    function sendMessage() {
+      const request = new XMLHttpRequest();
+      request.open('POST', '", config$discord$indexUpdate, "');
+
+      request.setRequestHeader('Content-type', 'application/json');
+
+      var myEmbed = {
+        author: {
+          name: 'The Academy Index has been updated!'
+        },
+        title: 'Season ", season, "'
+      }
+
+      var params = {
+        username: 'Index Update',
+        embeds: [ myEmbed ]
+      }
+
+      request.send(JSON.stringify(params));
+    }
+    sendMessage();
+  ")
+  
+  runjs(jscode)
+}
+
 sendNewCreate <- function(data, username){
   jscode <- paste0("
     function sendMessage() {
