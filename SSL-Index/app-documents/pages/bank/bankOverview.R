@@ -9,6 +9,15 @@ bankOverviewUI <- function(id) {
       )
     ),
     fluidRow(
+      column(
+        width = 12,
+        h5("Bank Transactions"),
+        reactableOutput(ns("historyBank")) %>% withSpinnerMedium()
+      )
+    ),
+    br(),
+    br(),
+    fluidRow(
       column(width = 12,
              uiOutput(ns("purchaseTraining")) %>% 
                withSpinnerMedium()
@@ -76,6 +85,36 @@ bankOverviewServer <- function(id, uid, parent, updated) {
             onFulfilled = function(data){
               playerInfoBoxServer(id = "playerInfo", pid = data$pid, mainSession = parent)
             }
+          )
+      })
+      
+      historyBank <- 
+        reactive({
+          player() %>% 
+            then(
+              onFulfilled = function(value){
+                getBankTransactions(value$pid)
+              }
+            )
+        })
+      
+      output$historyBank <- renderReactable({
+        historyBank() %>% 
+          then(
+            onFulfilled = function(value){
+              value %>% 
+                mutate(
+                  Time = as_datetime(Time)
+                ) %>% 
+                reactable(
+                  columns = 
+                    list(
+                      Time = colDef(format = colFormat(datetime = TRUE)),
+                      Transaction = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
+                    )
+                )
+            },
+            onRejected = NULL
           )
       })
       
