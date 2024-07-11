@@ -529,10 +529,14 @@ server <- function(input, output, session) {
               menuItemOutput("playerTabs"),
               menuItem(
                 "SSL Bank",
-                menuSubItem(
-                  "Player Store",
-                  tabName = "bankOverview"
-                ),
+                {
+                  if(hasActivePlayer(authOutput()$uid)){
+                    menuSubItem(
+                      "Player Store",
+                      tabName = "bankOverview"
+                    )
+                  }
+                },
                 {
                   if(any(c(3, 4, 8, 11, 12) %in% authOutput()$usergroup)){
                     menuSubItem(
