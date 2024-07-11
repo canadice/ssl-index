@@ -201,6 +201,7 @@ ui <- function(request){
     dashboardHeader(
       title = customLogo,
       tags$li(
+        ## Function that loads js-cookies for auto-login
         tags$script(
           src = paste0(
             "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
@@ -226,18 +227,18 @@ ui <- function(request){
                             label = "Portal")),
           tags$p(actionButton(inputId = "gotoindex",
                             label = "Index"))
-        )#,
-        # dropdownMenuOutput("notifications")
+        )
       )
     ),
     dashboardSidebar(
-      uiOutput("sidebarpanel")
+      uiOutput("sidebarpanel") %>% 
+        withSpinnerSmall()
     ),
     dashboardBody(
       customTheme %>% use_theme(),
       includeCSS('style.css'),
       useShinyFeedback(), # include shinyFeedback
-      useShinyjs(),
+      useShinyjs(), # include shinyjs
       uiOutput("body")
     )
   )
@@ -248,8 +249,10 @@ ui <-
   secure_app(
     ui,
     status = "primary",
+    ## Login page functionality
     tags_top = 
       list(
+        ## js function for storing cookies
         tags$script(
           src = paste0(
             "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
@@ -303,7 +306,7 @@ ui <-
     ),
     fab_position = "bottom-left"
   )
-
+  
 server <- function(input, output, session) {
   
   resAuth <- secure_server(
@@ -352,6 +355,8 @@ server <- function(input, output, session) {
       ignoreNULL = TRUE
     )
   
+  
+  ## Removes cookie when logging out
   observe({
     msg <- list(
       name = "token"
@@ -362,6 +367,7 @@ server <- function(input, output, session) {
       input$.shinymanager_logout
     )
   
+  ## Adds all authentication list to a reactive object
   authOutput <- reactive({
     reactiveValuesToList(resAuth)
   })
@@ -460,34 +466,11 @@ server <- function(input, output, session) {
     )
   })
   
-  # output$notifications <- renderMenu({
-  #   if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
-  #     if(any(
-  #       getPlayersForApproval() %>% nrow() > 0
-  #     )){
-  #       dropdownMenu(type = "notifications",
-  #                    badgeStatus = "warning",
-  #                    notificationItem(
-  #                      text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
-  #                      icon("users")
-  #                    )
-  #       )
-  #     }
-  #   } else {
-  #     dropdownMenu(type = "notifications",
-  #                  badgeStatus = "warning",
-  #                  notificationItem(
-  #                    text = paste(getPlayersForApproval() %>% nrow(), "new players awaiting approval."),
-  #                    icon("users")
-  #                  )
-  #     )
-  #   }
-  # }) %>% 
-  #   bindEvent(input$tabs, ignoreInit = FALSE)
-  
   ##---------------------------------------------------------------
   ##                            Sidebar                           -
   ##---------------------------------------------------------------
+  
+  ## Navigation between Portal and Index
   menuGroup <- reactiveVal({0})
   
   observe({
@@ -514,6 +497,7 @@ server <- function(input, output, session) {
       input$gotoportal
     )
   
+  ## Rendered menu in sidebar
   output$sidebarpanel <- renderUI({
     if(menuGroup() %% 2 == 0){
       sidebarMenu(
@@ -630,17 +614,6 @@ server <- function(input, output, session) {
             )
           }
         },
-        # menuItem(
-        #   "Index",
-        #   menuSubItem(
-        #     "League Index",
-        #     tabName = "leagueindex"
-        #   # ),
-        #   # menuSubItem(
-        #   #   "Team Index",
-        #   #   tabName = "teamindex"
-        #   )
-        # ),
         {
           if(!any(0 %in% authOutput()$usergroup)){
             menuItem(
@@ -700,9 +673,6 @@ server <- function(input, output, session) {
             tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
       )
     }
-    #,
-    # extendShinyjs(text = jsResetCode, functions = "restart"), # Add the js code to the page
-    # actionButton("reset_button", "Reload Page")
   }) 
   
   ##----------------------------------------------------------------
@@ -735,7 +705,8 @@ server <- function(input, output, session) {
     updateTabItems(session, "tabs", selected = "welcome")
   }) %>%
     bindEvent(
-      authOutput()
+      authOutput(),
+      once = TRUE
     )
   
   # Different player menu based on if you have a current player or not
@@ -858,4 +829,4 @@ server <- function(input, output, session) {
   
 }
 # Run the application 
-app <- shinyApp(ui = ui, server = server, enableBookmarking = "disable")
+app <- shinyApp(ui = ui, server = server, enableBookmarking = "url")
