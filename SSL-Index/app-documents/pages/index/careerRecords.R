@@ -137,7 +137,7 @@ careerRecordsServer <- function(id) {
                   width = NULL,
                   icon = tags$i(class = "fas fa-exclamation", style="font-size: 36px; color: white"),
                   fill = TRUE,
-                  value = tags$p(paste(leader$name, "with", leader[,stat], stat, sep = " "), style = "font-size: 75%;")
+                  value = tags$p(paste(leader$name, "with", leader[,stat] %>% round(2), stat, sep = " "), style = "font-size: 75%;")
                 ) 
               }
             )
@@ -164,7 +164,7 @@ careerRecordsServer <- function(id) {
                   width = NULL,
                   icon = tags$i(class = "fas fa-exclamation", style="font-size: 36px; color: white"),
                   fill = TRUE,
-                  value = tags$p(paste(leader$name, "with", leader[,stat], stat, sep = " "), style = "font-size: 75%;")
+                  value = tags$p(paste(leader$name, "with", leader[,stat] %>% round(2), stat, sep = " "), style = "font-size: 75%;")
                 ) 
               }
             )
