@@ -7,7 +7,7 @@
 ###########################################################################
 ###########################################################################
 
-version <- "0.9.4"
+version <- "0.9.5"
 
 suppressMessages({
   ## Data handling
@@ -375,9 +375,7 @@ server <- function(input, output, session) {
     reactiveValuesToList(resAuth)
   })
   
-  ##----------------------------------------------------------------
-  ##                              Body                             -
-  ##----------------------------------------------------------------
+  #### BODY ####
   output$body <- renderUI({
     tabItems(
       tabItem(
@@ -448,10 +446,10 @@ server <- function(input, output, session) {
       tabItem(
         "academyIndex",
         academyIndexUI(id = "academyIndex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "careerRecords",
+        careerRecordsUI(id = "careerRecords")
       # ),
       # tabItem(
       #   "teamindex",
@@ -469,9 +467,7 @@ server <- function(input, output, session) {
     )
   })
   
-  ##---------------------------------------------------------------
-  ##                            Sidebar                           -
-  ##---------------------------------------------------------------
+  #### SIDEBAR ####
   
   ## Navigation between Portal and Index
   menuGroup <- reactiveVal({0})
@@ -647,12 +643,16 @@ server <- function(input, output, session) {
           selected = TRUE
         ),
         menuItem(
+          "Academy Index",
+          tabName = "academyIndex"
+        ),
+        menuItem(
           "League Index",
           tabName = "leagueindex"
         ),
         menuItem(
-          "Academy Index",
-          tabName = "academyIndex"
+          "Career Records",
+          tabName = "careerRecords"
         ),
         {
           if(!any(0 %in% authOutput()$usergroup)){
@@ -762,7 +762,8 @@ server <- function(input, output, session) {
       academyIndex = FALSE,
       uploadGame = FALSE,
       bankOverview = FALSE,
-      welcome = FALSE
+      welcome = FALSE,
+      records = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -814,6 +815,10 @@ server <- function(input, output, session) {
     } else if(!loadedPage$index & input$tabs == "leagueindex"){
       leagueIndexServer("leagueindex")
       loadedPage$index <- TRUE
+      
+    } else if(!loadedPage$records & input$tabs == "careerRecords"){
+      careerRecordsServer("careerRecords")
+      loadedPage$careerRecords <- TRUE
       
     } else if(!loadedPage$uploadGame & input$tabs == "uploadGame"){
       uploadGameServer("uploadGame")
