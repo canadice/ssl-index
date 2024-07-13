@@ -6,7 +6,11 @@ createPlayerUI <- function(id) {
         width = 12,
         h3("How to use this tool?"),
         p("Welcome to the Player Creation Tool! This tool allows you to define all of the aspects of your player using
-            text and selection prompts before combining all of the information ready for submission.")
+            text and selection prompts before combining all of the information ready for submission."),
+        paste("To help you in your process, we have also created a", 
+              tags$a("Player Compendium", href = "https://docs.google.com/document/d/1cp4OdU43nX8A7kbQVmOl89xZRD3l13voHcqLNrxFL4Q/edit?usp=sharing"), 
+              "that includes detailed descriptions of the player attributes, which are important for different player positions and roles,",
+              "as well as descriptions of player traits.") %>% HTML() %>% p()
       )
     ),
     ##### Player Details #####
@@ -132,6 +136,7 @@ createPlayerUI <- function(id) {
           status = "info",
           collapsible = TRUE,
           solidHeader = TRUE,
+          collapsed = TRUE,
           width = NULL,
           fluidRow(
             column(
@@ -165,6 +170,7 @@ createPlayerUI <- function(id) {
         title = "Player Attributes",
         solidHeader = TRUE,
         collapsible = TRUE,
+        collapsed = TRUE,
         status = "info",
         width = NULL,
         fluidRow(
@@ -225,6 +231,7 @@ createPlayerUI <- function(id) {
         title = "Player Traits and Positions",
         solidHeader = TRUE,
         collapsible = TRUE,
+        collapsed = TRUE,
         status = "info",
         width = NULL,
         fluidRow(
@@ -270,13 +277,19 @@ createPlayerUI <- function(id) {
           }
         });
       ", sep = "") %>% HTML()),
+    div(style = "min-height: 100px;"),
     fluidRow(
-      actionButton(
-        inputId = ns("submitButton"),
-        label = "Submit Player",
-        width = "30%"
-      ) %>% 
-        div(align = "center")
+      div(
+        class = "frozen-bottom",
+        div(h4("TPE Remaining: "), 
+        textOutput(ns("tpeRemaining2"), inline = TRUE) %>% 
+          h4()
+        ),
+        actionButton(
+          inputId = ns("submitButton"),
+          label = "Submit Player"
+        )
+      )
     )
   )
 }
@@ -289,7 +302,7 @@ createPlayerServer <- function(id, userinfo, parent) {
       tpeBanked <- 
         reactiveVal({350}) 
       
-      output$tpeRemaining <- renderText({
+      output$tpeRemaining <- output$tpeRemaining2 <- renderText({
         tpeBanked()
       })
       

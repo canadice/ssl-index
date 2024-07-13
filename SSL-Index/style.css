@@ -400,8 +400,13 @@ h1, h2, h3, h4, h5 {
   text-align: center;
   width: 100%;
   background-color: var(--topBackground);
-  padding: 10px 0px 30px 0px;
-  border-top: 1px solid var(--sslGold); 
+    padding: 10px 20% 30px 30%;
+    border-top: 1px solid var(--sslGold);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap; 
 }
 
 
