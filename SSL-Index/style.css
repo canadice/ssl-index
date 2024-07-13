@@ -275,7 +275,7 @@ h1, h2, h3, h4, h5 {
 .box {
     position: relative;
     border-radius: 3px;
-    background: #666666;
+    background: #444444;
     border-top: 1px solid var(--sslGold);
     margin-bottom: 20px;
     width: 100%;
@@ -474,3 +474,16 @@ h1, h2, h3, h4, h5 {
   display: none !important;
 }
 
+
+/* CSS styles for player and user statuses */
+.Active {
+  color: #32CD32;
+}
+
+.Inactive, .Retiring {
+  color: #FFA07A;
+}
+
+.Retired {
+  color: #F0E68C;
+}

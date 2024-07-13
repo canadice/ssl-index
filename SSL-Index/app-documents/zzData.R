@@ -1,6 +1,10 @@
 
 options(scipen = 999)
 
+sslBlueL <- "#324f7e"
+sslBlueD <- "#4b8dad"
+sslGold <- "#BD9523"
+
 ## Loads common and small tables
 tpeCost <- 
   portalQuery("SELECT * FROM tpetable")

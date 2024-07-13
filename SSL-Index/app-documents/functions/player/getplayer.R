@@ -40,9 +40,13 @@ getPlayerDataAsync <- function(uid = NULL, pid = NULL){
     } else {
       portalQuery(
         paste(
-          "SELECT *
-        FROM playerdata
-        WHERE pid = ", pid, " AND status_p = 1"
+          "SELECT pd.*, mb.username AS username, us.desc AS `userStatus`, ps.desc AS `playerStatus`
+        FROM playerdata pd
+        LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
+        LEFT JOIN useractivity ua ON pd.uid = ua.uid
+        LEFT JOIN userstatuses us ON ua.status_u = us.status
+        LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
+        WHERE pd.pid = ", pid,";"
         )
       )
     }
@@ -186,6 +190,19 @@ getPlayersFromAllTeams <- function(){
         "SELECT name, class, tpe, tpebank, `left foot`, `right foot`, position, team, affiliate, pid
       FROM playerdata
       WHERE status_p = 1 AND team NOT IN ('FA', 'Prospect');
+      "
+      )
+    )
+  })
+}
+
+getPlayerNames <- function(){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT pd.name, pd.pid, mb.username
+      FROM playerdata pd
+      LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid;
       "
       )
     )

@@ -450,10 +450,10 @@ server <- function(input, output, session) {
       tabItem(
         "careerRecords",
         careerRecordsUI(id = "careerRecords")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "playerCard",
+        playerCardUI(id = "playerCard")
       # ),
       # tabItem(
       #   "teamindex",
@@ -510,6 +510,10 @@ server <- function(input, output, session) {
           if(!any(0 %in% authOutput()$usergroup)){
             tagList(
               menuItemOutput("playerTabs"),
+              menuItem(
+                "Player Card",
+                tabName = "playerCard"
+              ),
               menuItem(
                 "SSL Bank",
                 {
@@ -763,7 +767,8 @@ server <- function(input, output, session) {
       uploadGame = FALSE,
       bankOverview = FALSE,
       welcome = FALSE,
-      records = FALSE
+      records = FALSE,
+      playerCard = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -807,6 +812,11 @@ server <- function(input, output, session) {
       req(authOutput()$uid)
       playerPageServer("playerpage", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$player <- TRUE
+      
+    } else if(!loadedPage$playerCard & input$tabs == "playerCard"){
+      req(authOutput()$uid)
+      playerCardServer("playerCard")
+      loadedPage$playerCard <- TRUE
       
     } else if(!loadedPage$academyIndex & input$tabs == "academyIndex"){
       academyIndexServer("academyIndex")
