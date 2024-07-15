@@ -454,10 +454,10 @@ server <- function(input, output, session) {
       tabItem(
         "playerPages",
         playerPagesUI(id = "playerPages")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "budgetProcess",
+        budgetProcessUI(id = "budgetProcess")
       # ),
       # tabItem(
       #   "teamindex",
@@ -534,6 +534,22 @@ server <- function(input, output, session) {
                     menuSubItem(
                       "Process Transactions",
                       tabName = "bankProcess"
+                    )
+                  }
+                }
+              ),
+              menuItem(
+                "SSL Budget",
+                menuSubItem(
+                  "Budget Overview",
+                  tabName = "budgetOverview"
+                ),
+                {
+                  # Banker (12), BoD (3), Commissioner (4)
+                  if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
+                    menuSubItem(
+                      "Process Budget",
+                      tabName = "budgetProcess"
                     )
                   }
                 }
@@ -768,7 +784,8 @@ server <- function(input, output, session) {
       bankOverview = FALSE,
       welcome = FALSE,
       records = FALSE,
-      playerPages = FALSE
+      playerPages = FALSE,
+      budgetProcess = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -812,6 +829,11 @@ server <- function(input, output, session) {
       req(authOutput()$uid)
       yourPlayerServer("yourPlayer", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$player <- TRUE
+      
+    } else if(!loadedPage$budgetProcess & input$tabs == "budgetProcess"){
+      req(authOutput()$uid)
+      budgetProcessServer("budgetProcess", uid = authOutput()$uid)
+      loadedPage$budgetProcess <- TRUE
       
     } else if(!loadedPage$playerPages & input$tabs == "playerPages"){
       req(authOutput()$uid)

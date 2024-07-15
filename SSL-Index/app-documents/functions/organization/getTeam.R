@@ -6,3 +6,12 @@ getActiveTeams <- function(){
   ) %>% 
     future_promise()
 }
+
+getOrganizations <- function(){
+  portalQuery(
+    paste(
+      "SELECT * FROM organizations;"
+    )
+  ) %>% 
+    future_promise()
+}

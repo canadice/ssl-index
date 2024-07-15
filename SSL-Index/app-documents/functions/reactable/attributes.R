@@ -53,9 +53,9 @@ attributeReactable <- function(data, session, output){
             reactable(
               defaultColDef = colDef(
                 style = function(value, index){
-                  color <- if_else(temp$ValueFill[index] == 1, "#7BB4FF", 
-                                   if_else(temp$ValueFill[index] == 2, "#66B38C", 
-                                           if_else(temp$ValueFill[index] == 3, "#F5D17E", "#D96F68")
+                  color <- if_else(temp$ValueFill[index] == 1, "#66b38c", 
+                                   if_else(temp$ValueFill[index] == 2, "#F5D17E", 
+                                           if_else(temp$ValueFill[index] == 3, "#ffffff", "#B6B6B6")
                                            )
                                    )
                   # color <- if_else(temp$ValueFill[index] == 1, "#008450", if_else(temp$ValueFill[index] == 2, "#EFB700", "#B81D13")) 
