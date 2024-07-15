@@ -114,7 +114,7 @@ getPlayerTraits <- function(pid){
       )
     ) %>% 
       str_split(
-        pattern = " \\\\ "
+        pattern = traitSep
       ) %>% 
       unlist()
   })
@@ -201,7 +201,7 @@ getPlayerNames <- function(){
   future_promise({
     portalQuery(
       paste(
-        "SELECT pd.name, pd.pid, mb.username
+        "SELECT pd.name, pd.pid, mb.username, pd.team, pd.status_p
       FROM playerdata pd
       LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid;
       "

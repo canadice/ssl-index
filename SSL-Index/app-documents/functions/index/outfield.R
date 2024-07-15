@@ -294,20 +294,20 @@ getOutfieldMatchStats <- function(name){
   indexQuery(
     paste(
       "SELECT 
-        CONCAT('S', s.season, ' MD', s.matchday) AS MD,
-        ti.abbreviation AS OPP,
+        CONCAT('S', s.season, ' MD', s.matchday) AS matchday,
+        ti.abbreviation AS opponent,
         CONCAT(
           CASE WHEN g.club = s.home THEN s.HomeScore ELSE s.AwayScore END,
           '-',
           CASE WHEN g.club = s.home THEN s.AwayScore ELSE s.HomeScore END
-        ) AS Res,
-        g.`minutes played` AS MP,
-        g.`average rating` AS AVR,
-        g.goals AS G,
-        g.assists AS A,
-        g.`pass%` AS `P%`,
-        g.`header%` AS `H%`,
-        g.`tackle%` AS `T%`
+        ) AS result,
+        g.`minutes played`,
+        g.`average rating`,
+        g.goals,
+        g.assists,
+        g.`pass%`,
+        g.`header%`,
+        g.`tackle%`
       FROM `gamedataoutfield` AS g 
       JOIN schedule AS s ON g.gid = s.gid
       JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)

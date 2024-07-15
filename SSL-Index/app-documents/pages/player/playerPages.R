@@ -1,23 +1,40 @@
-playerCardUI <- function(id) {
+playerPagesUI <- function(id) {
   ns <- NS(id)
   tagList(
     tagList(
       fluidRow(
         column(width = 12,
-               uiOutput(ns("selectPlayer"))       
+               column(width = 3, 
+                      uiOutput(ns("selectPlayer"))
+                      ),
+               column(
+                 width = 6, 
+                 uiOutput(ns("playerFilter"))  
+               )
              )
       ),
       fluidRow(
         column(width = 6,
                box(
-                 title = "Profile Information", status = "primary", solidHeader = TRUE, width = NULL,
-                 uiOutput(ns("playerInfo")) %>% column(width = 9),
-                 imageOutput(ns("clubLogo"), height = NULL) %>% column(width = 3)
+                 title = "Profile Information", status = "danger", solidHeader = TRUE, width = NULL,
+                 fluidRow(
+                   column(
+                     width = 9,
+                     uiOutput(ns("playerName"))
+                   ),
+                   column(width = 3, imageOutput(ns("clubLogo"), height = NULL))
+                 ),
+                 column(width = 6,
+                        uiOutput(ns("playerInfo"))
+                  ),
+                 column(width = 6,
+                        uiOutput(ns("playerInfoExtra"))
+                 )
                )
              ),
         column(width = 6,
                box(
-                 title = "Recent Match Statistics", status = "primary", solidHeader = TRUE, width = NULL,
+                 title = "Recent Match Statistics", status = "danger", solidHeader = TRUE, width = NULL,
                  reactableOutput(ns("matchStatsTable"))
                )
              )
@@ -25,13 +42,13 @@ playerCardUI <- function(id) {
       fluidRow(
         column(width = 8,
                box(
-                 title = "Player Attributes", status = "primary", solidHeader = TRUE, width = NULL,
+                 title = "Player Attributes", status = "danger", solidHeader = TRUE, width = NULL,
                  uiOutput(ns("attributeTable"))
                )
         ),
         column(width = 4,
                box(
-                 title = "TPE Progress", status = "primary", solidHeader = TRUE, width = NULL,
+                 title = "TPE Progress", status = "danger", solidHeader = TRUE, width = NULL,
                  plotlyOutput(ns("tpeProgressPlot"))
                )
         )
@@ -40,7 +57,7 @@ playerCardUI <- function(id) {
   )
 }
 
-playerCardServer <- function(id) {
+playerPagesServer <- function(id) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -58,9 +75,15 @@ playerCardServer <- function(id) {
       
       #### OUTPUTS ####
       output$selectPlayer <- renderUI({
+        req(input$retired, input$freeAgent)
         allNames() %>% 
           then(
             onFulfilled = function(names) {
+              names <- 
+                names %>%
+                filter(if(input$retired != 1) status_p > 0 else TRUE) %>%
+                filter(if(input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE)
+              
               namedVector <- names$pid
               
               names(namedVector) <- names$name
@@ -68,6 +91,19 @@ playerCardServer <- function(id) {
               selectInput(session$ns("selectedPlayer"), "Select Player", choices = namedVector)
             }
           )
+      })
+      
+      output$playerFilter <- renderUI({
+        tagList(
+          column(
+            width = 4,
+            radioButtons(session$ns("retired"), label = "Include retired: ", choices = c("Yes" = 1, "No" = 0), inline = TRUE, selected = 0)  
+          ),
+          column(
+            width = 4,
+            radioButtons(session$ns("freeAgent"), label = "Include free agents: ", choices = c("Yes" = 1, "No" = 0), inline = TRUE)  
+          )
+        )
       })
       
       output$clubLogo <- renderImage({
@@ -88,18 +124,74 @@ playerCardServer <- function(id) {
       },
       deleteFile = FALSE)
       
+      output$playerName <- renderUI({
+        req(input$selectedPlayer)
+        
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              getBankTotal(pid = data$pid) %>% 
+                then(
+                  onFulfilled = function(bank){
+                    tagList(
+                      tagList(
+                        h2(data$name),
+                        h3(paste0("@", data$username))
+                      )
+                    )
+                  }
+                )
+            }
+          )
+      })
+      
       output$playerInfo <- renderUI({
         req(input$selectedPlayer)
         
         playerData() %>% 
           then(
             onFulfilled = function(data){
-              tagList(
-                h2(data$name),
-                h3(paste0("@", data$username)),
-                h4(paste("Player Status: "), data$playerStatus, class = data$playerStatus),
-                h4(paste("User Status: "), data$userStatus, class = data$userStatus)
-              )
+              getBankTotal(pid = data$pid) %>% 
+                then(
+                  onFulfilled = function(bank){
+                    tagList(
+                      tagList(
+                        h4(paste("TPE: ", data$tpe)),
+                        h4(paste("Banked TPE: ", data$tpebank)),
+                        h4(paste("Bank Balance: ", bank$balance %>% dollar())),
+                        h4(paste("Player Status: "), data$playerStatus, class = data$playerStatus),
+                        h4(paste("User Status: "), data$userStatus, class = data$userStatus)
+                      )
+                    )
+                  }
+                )
+            }
+          )
+        
+      })
+      
+      output$playerInfoExtra <- renderUI({
+        req(input$selectedPlayer)
+        
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              value <- 
+                data %>% select(contains("pos_")) %>% 
+                pivot_longer(everything()) %>% 
+                mutate(
+                  name = str_remove(name, pattern = "pos_") %>% str_to_upper()
+                )
+              
+                tagList(
+                  h4("Traits"),
+                  data$traits %>% str_split(pattern = traitSep) %>% unlist() %>% paste(collapse = "<br>") %>% HTML(),
+                  br(),
+                  h4("Primary Position(s)"),
+                  value %>% filter(value == 20) %>% select(name) %>% unlist() %>% paste(collapse = ", ") %>% HTML(),
+                  h4("Secondary Position(s)"),
+                  value %>% filter(value < 20, value >= 10) %>% select(name)  %>% unlist() %>% paste(collapse = ", ") %>% HTML()
+                )
             }
           )
         
@@ -117,7 +209,7 @@ playerCardServer <- function(id) {
               if(nrow(data) < 2){
                 plot_ly() %>%
                   add_annotations(
-                    text = "The player has had no TPE progression in the Portal",
+                    text = "The player has had no TPE progression<br> in the Portal",
                     x = 0.5, y = 0.5,
                     xref = "paper", yref = "paper",
                     showarrow = FALSE,

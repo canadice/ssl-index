@@ -1,4 +1,4 @@
-playerPageUI <- function(id) {
+yourPlayerUI <- function(id) {
   ns <- NS(id)
   tagList(
     column(
@@ -42,7 +42,7 @@ playerPageUI <- function(id) {
   )
 }
 
-playerPageServer <- function(id, uid, parent, updated) {
+yourPlayerServer <- function(id, uid, parent, updated) {
   moduleServer(
     id,
     function(input, output, session) {

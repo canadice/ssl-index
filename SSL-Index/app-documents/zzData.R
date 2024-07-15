@@ -1,9 +1,14 @@
 
 options(scipen = 999)
 
+#### Common variables used throughout the application ####
+
 sslBlueL <- "#324f7e"
 sslBlueD <- "#4b8dad"
 sslGold <- "#BD9523"
+
+traitSep <- " \\\\ "
+
 
 ## Loads common and small tables
 tpeCost <- 
@@ -342,7 +347,10 @@ jsonTraits <-
     "Brings Ball Out Of Defense",
     "Plays ball with feet"
   )
-# 
+
+
+
+
 # ##################################################################
 # ##           Loading tables with information                    ##
 # ##################################################################

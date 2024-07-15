@@ -98,6 +98,7 @@ leaderReactable <- function(currentData){
     reactable(
       pagination = FALSE,
       searchable = FALSE,
+      sortable = FALSE,
       defaultColDef = colDef(maxWidth = 150),
       columns =
         list(
@@ -150,7 +151,10 @@ leaderReactable <- function(currentData){
             colDef(
               show = FALSE,
               searchable = TRUE
-            )
+            ),
+          matchday = 
+            colDef(header = "MATCHDAY",
+                   width = 100)
         ) %>% 
         append(
           pmap(statisticsTooltips, ~ {
@@ -158,7 +162,7 @@ leaderReactable <- function(currentData){
               ..1 =
                 colDef(
                   header =
-                    tippy(..1 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
+                    tippy(..3 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
                   html = TRUE,
                   minWidth = 50
                 )

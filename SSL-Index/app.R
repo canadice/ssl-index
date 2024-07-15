@@ -7,7 +7,7 @@
 ###########################################################################
 ###########################################################################
 
-version <- "v0.9.5"
+version <- "v0.9.6"
 
 suppressMessages({
   ## Data handling
@@ -379,8 +379,8 @@ server <- function(input, output, session) {
   output$body <- renderUI({
     tabItems(
       tabItem(
-        "playerpage",
-        playerPageUI(id = "playerpage")
+        "yourPlayer",
+        yourPlayerUI(id = "yourPlayer")
       ),
       tabItem(
         "leagueindex",
@@ -452,8 +452,8 @@ server <- function(input, output, session) {
         careerRecordsUI(id = "careerRecords")
       ),
       tabItem(
-        "playerCard",
-        playerCardUI(id = "playerCard")
+        "playerPages",
+        playerPagesUI(id = "playerPages")
       # ),
       # tabItem(
       #   "teamindex",
@@ -510,10 +510,6 @@ server <- function(input, output, session) {
           if(!any(0 %in% authOutput()$usergroup)){
             tagList(
               menuItemOutput("playerTabs"),
-              menuItem(
-                "Player Card",
-                tabName = "playerCard"
-              ),
               menuItem(
                 "SSL Bank",
                 {
@@ -617,6 +613,10 @@ server <- function(input, output, session) {
             )
           }
         },
+        menuItem(
+          "Player Pages",
+          tabName = "playerPages"
+        ),
         {
           if(!any(0 %in% authOutput()$usergroup)){
             menuItem(
@@ -721,7 +721,7 @@ server <- function(input, output, session) {
     if(hasActivePlayer(authOutput()$uid)){
       menuItem(
         "Your Player",
-        tabName = "playerpage"
+        tabName = "yourPlayer"
       )
     } else if(checkIfAlreadyApproving(authOutput()$uid)) {
       menuItem(
@@ -768,7 +768,7 @@ server <- function(input, output, session) {
       bankOverview = FALSE,
       welcome = FALSE,
       records = FALSE,
-      playerCard = FALSE
+      playerPages = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -808,15 +808,15 @@ server <- function(input, output, session) {
       createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
       loadedPage$create <- TRUE
       
-    } else if(!loadedPage$player & input$tabs == "playerpage"){
+    } else if(!loadedPage$player & input$tabs == "yourPlayer"){
       req(authOutput()$uid)
-      playerPageServer("playerpage", uid = authOutput()$uid, parent = session, updated = updated)
+      yourPlayerServer("yourPlayer", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$player <- TRUE
       
-    } else if(!loadedPage$playerCard & input$tabs == "playerCard"){
+    } else if(!loadedPage$playerPages & input$tabs == "playerPages"){
       req(authOutput()$uid)
-      playerCardServer("playerCard")
-      loadedPage$playerCard <- TRUE
+      playerPagesServer("playerPages")
+      loadedPage$playerPages <- TRUE
       
     } else if(!loadedPage$academyIndex & input$tabs == "academyIndex"){
       academyIndexServer("academyIndex")
