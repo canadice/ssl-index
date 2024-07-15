@@ -179,7 +179,8 @@ getPlayersFromTeam <- function(uid){
         )
       )"
       )
-    )
+    ) %>% 
+      arrange(affiliate, tpe %>% desc())
   })
 }
 

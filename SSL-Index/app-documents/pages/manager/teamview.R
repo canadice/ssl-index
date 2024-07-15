@@ -36,7 +36,7 @@ managerTeamServer <- function(id, userinfo) {
       )
       
       playerData <- reactive({
-        getPlayersFromTeam(userinfo$uid)
+        getPlayersFromTeam(userinfo$uid) 
       }) %>% 
         bindEvent(
           rv$bank,
@@ -48,8 +48,7 @@ managerTeamServer <- function(id, userinfo) {
           then(
             onFulfilled = function(value){
               value %>% 
-                select(!pid) %>% 
-                arrange(affiliate, tpe %>% desc()) %>% 
+                select(!pid) %>%
                 reactable(
                   selection = "single",
                   onClick = "select",
