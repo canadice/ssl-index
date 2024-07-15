@@ -477,13 +477,13 @@ h1, h2, h3, h4, h5 {
 
 /* CSS styles for player and user statuses */
 .Active {
-  color: #32CD32;
+  color: #66B38C;
 }
 
 .Inactive, .Retiring {
-  color: #FFA07A;
+  color: #D96F68;
 }
 
 .Retired {
-  color: #F0E68C;
+  color: #F5D17E;
 }

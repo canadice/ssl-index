@@ -245,7 +245,7 @@ playerPagesServer <- function(id) {
                   suppressMessages()
                 
                 plot_ly(visData, hoverinfo = "text") %>% 
-                  add_trace(x = ~week, y = ~cumulative, type = 'scatter', mode = 'lines',
+                  add_trace(x = ~week, y = ~cumulative, type = 'scatter', mode = 'markers+lines',
                             line = list(color = sslGold),
                             marker = list(size = 5, color = sslGold),
                             text = ~paste("Week:", week, "<br>TPE:", cumulative)
@@ -295,81 +295,7 @@ playerPagesServer <- function(id) {
         playerData() %>% 
           then(
             onFulfilled = function(data){
-              visData <- 
-                data %>% 
-                select(acceleration:throwing) %>% 
-                select(where(~ !is.na(.x))) %>% 
-                pivot_longer(
-                  cols = everything(),
-                  values_to = "Value",
-                  names_to = "Attribute"
-                ) %>% 
-                mutate(
-                  Attribute = str_to_title(Attribute)
-                ) %>% 
-                left_join(
-                  attributes,
-                  by = c("Attribute" = "attribute") 
-                ) %>% 
-                mutate(
-                  Attribute = factor(Attribute, levels = sort(Attribute %>% unique(), decreasing = TRUE)),
-                  group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
-                  ValueFill = case_when(
-                    Value >= 15 ~ 1,
-                    Value >= 10 ~ 2,
-                    TRUE ~ 3
-                  ) %>% factor()
-                ) %>% 
-                {
-                  if(data$pos_gk == 20){
-                    filter(
-                      ., 
-                      (group %in% c("Goalkeeper", "Technical") & keeper == "TRUE") | (group %in% c("Physical", "Mental"))
-                    )
-                  } else {
-                    filter(
-                      .,
-                      group %in% c("Physical", "Mental", "Technical")
-                    )
-                  }
-                }
-              
-              map(.x = visData$group,
-                  .f = function(chosenGroup){
-                    output[[chosenGroup]] <- renderReactable({
-                      temp <- 
-                        visData %>% 
-                        filter(
-                          group == chosenGroup
-                        )
-                      
-                      temp %>% 
-                        select(Attribute, Value) %>% 
-                        reactable(
-                          defaultColDef = colDef(
-                            style = function(value, index){
-                              color <- if_else(temp$ValueFill[index] == 1, "#66B38C", if_else(temp$ValueFill[index] == 2, "#F5D17E", "#D96F68"))
-                              # color <- if_else(temp$ValueFill[index] == 1, "#008450", if_else(temp$ValueFill[index] == 2, "#EFB700", "#B81D13")) 
-                              list(background = color, color = "black")
-                            }
-                          ),
-                          columns = list(
-                            Value = colDef(name = "", width = 40)
-                          ),
-                          pagination = FALSE,
-                          sortable = FALSE
-                        )
-                    })
-                  })
-              
-              map(.x = visData$group %>% unique(),
-                  .f = function(group){
-                    column(width = 12 / length(visData$group %>% unique()),
-                           h4(group),
-                           reactableOutput(session$ns(group))
-                    )
-                  }) %>% 
-                tagList()
+              attributeReactable(data, session, output)
             }
           )
       })
