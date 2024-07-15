@@ -288,3 +288,32 @@ getOutfieldCareer <- function(league){
       sep = "")
   ) %>% future_promise()
 }
+
+
+getOutfieldMatchStats <- function(name){
+  indexQuery(
+    paste(
+      "SELECT 
+        CONCAT('S', s.season, ' MD', s.matchday) AS MD,
+        ti.abbreviation AS OPP,
+        CONCAT(
+          CASE WHEN g.club = s.home THEN s.HomeScore ELSE s.AwayScore END,
+          '-',
+          CASE WHEN g.club = s.home THEN s.AwayScore ELSE s.HomeScore END
+        ) AS Res,
+        g.`minutes played` AS MP,
+        g.`average rating` AS AVR,
+        g.goals AS G,
+        g.assists AS A,
+        g.`pass%` AS `P%`,
+        g.`header%` AS `H%`,
+        g.`tackle%` AS `T%`
+      FROM `gamedataoutfield` AS g 
+      JOIN schedule AS s ON g.gid = s.gid
+      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
+      WHERE name = ", paste0("'", name, "'"), " 
+      ORDER BY g.gid DESC LIMIT 5;"
+    )
+  ) %>% 
+    future_promise()
+}

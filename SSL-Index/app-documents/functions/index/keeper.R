@@ -127,3 +127,30 @@ getKeeperCareer <- function(league){
       sep = "")
   ) %>% future_promise()
 }
+
+
+getKeeperMatchStats <- function(name){
+  indexQuery(
+    paste(
+      "SELECT 
+        CONCAT('S', s.season, ' MD', s.matchday) AS MD,
+        ti.abbreviation AS Opp,
+        CONCAT(
+          CASE WHEN g.club = s.home THEN s.HomeScore ELSE s.AwayScore END,
+          '-',
+          CASE WHEN g.club = s.home THEN s.AwayScore ELSE s.HomeScore END
+        ) AS Res,
+        g.`minutes played` AS MP,
+        g.`average rating` AS AVR,
+        (g.`saves parried`+g.`saves parried`+g.`saves tipped`) AS TS,
+        g.`save%` AS `S%`,
+        g.`xg prevented` AS `xG P`
+      FROM `gamedatakeeper` AS g 
+      JOIN schedule AS s ON g.gid = s.gid
+      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
+      WHERE name = ", paste0("'", name, "'"), " 
+      ORDER BY g.gid DESC LIMIT 5;"
+    )
+  ) %>% 
+    future_promise()
+}

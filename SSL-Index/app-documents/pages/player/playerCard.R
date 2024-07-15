@@ -7,27 +7,29 @@ playerCardUI <- function(id) {
                uiOutput(ns("selectPlayer"))       
              )
       ),
-      column(width = 6,
-             box(
-               title = "Profile Information", status = "primary", solidHeader = TRUE, width = NULL,
-               uiOutput(ns("playerInfo")) %>% column(width = 9),
-               imageOutput(ns("clubLogo"), height = NULL) %>% column(width = 3)
-             )
-      ),
-      column(width = 6,
-             box(
-               title = "Recent Match Statistics", status = "primary", solidHeader = TRUE, width = NULL,
-               tableOutput(ns("matchStatsTable"))
-             )
-      ),
       fluidRow(
         column(width = 6,
                box(
+                 title = "Profile Information", status = "primary", solidHeader = TRUE, width = NULL,
+                 uiOutput(ns("playerInfo")) %>% column(width = 9),
+                 imageOutput(ns("clubLogo"), height = NULL) %>% column(width = 3)
+               )
+             ),
+        column(width = 6,
+               box(
+                 title = "Recent Match Statistics", status = "primary", solidHeader = TRUE, width = NULL,
+                 reactableOutput(ns("matchStatsTable"))
+               )
+             )
+      ),
+      fluidRow(
+        column(width = 8,
+               box(
                  title = "Player Attributes", status = "primary", solidHeader = TRUE, width = NULL,
-                 tableOutput(ns("attributeTable"))
+                 uiOutput(ns("attributeTable"))
                )
         ),
-        column(width = 6,
+        column(width = 4,
                box(
                  title = "TPE Progress", status = "primary", solidHeader = TRUE, width = NULL,
                  plotlyOutput(ns("tpeProgressPlot"))
@@ -195,6 +197,114 @@ playerCardServer <- function(id) {
           )
       })
       
+      output$attributeTable <- renderUI({
+        req(input$selectedPlayer)
+        
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              visData <- 
+                data %>% 
+                select(acceleration:throwing) %>% 
+                select(where(~ !is.na(.x))) %>% 
+                pivot_longer(
+                  cols = everything(),
+                  values_to = "Value",
+                  names_to = "Attribute"
+                ) %>% 
+                mutate(
+                  Attribute = str_to_title(Attribute)
+                ) %>% 
+                left_join(
+                  attributes,
+                  by = c("Attribute" = "attribute") 
+                ) %>% 
+                mutate(
+                  Attribute = factor(Attribute, levels = sort(Attribute %>% unique(), decreasing = TRUE)),
+                  group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
+                  ValueFill = case_when(
+                    Value >= 15 ~ 1,
+                    Value >= 10 ~ 2,
+                    TRUE ~ 3
+                  ) %>% factor()
+                ) %>% 
+                {
+                  if(data$pos_gk == 20){
+                    filter(
+                      ., 
+                      (group %in% c("Goalkeeper", "Technical") & keeper == "TRUE") | (group %in% c("Physical", "Mental"))
+                    )
+                  } else {
+                    filter(
+                      .,
+                      group %in% c("Physical", "Mental", "Technical")
+                    )
+                  }
+                }
+              
+              map(.x = visData$group,
+                  .f = function(chosenGroup){
+                    output[[chosenGroup]] <- renderReactable({
+                      temp <- 
+                        visData %>% 
+                        filter(
+                          group == chosenGroup
+                        )
+                      
+                      temp %>% 
+                        select(Attribute, Value) %>% 
+                        reactable(
+                          defaultColDef = colDef(
+                            style = function(value, index){
+                              color <- if_else(temp$ValueFill[index] == 1, "#66B38C", if_else(temp$ValueFill[index] == 2, "#F5D17E", "#D96F68"))
+                              # color <- if_else(temp$ValueFill[index] == 1, "#008450", if_else(temp$ValueFill[index] == 2, "#EFB700", "#B81D13")) 
+                              list(background = color, color = "black")
+                            }
+                          ),
+                          columns = list(
+                            Value = colDef(name = "", width = 40)
+                          ),
+                          pagination = FALSE,
+                          sortable = FALSE
+                        )
+                    })
+                  })
+              
+              map(.x = visData$group %>% unique(),
+                  .f = function(group){
+                    column(width = 12 / length(visData$group %>% unique()),
+                           h4(group),
+                           reactableOutput(session$ns(group))
+                    )
+                  }) %>% 
+                tagList()
+            }
+          )
+      })
+      
+      output$matchStatsTable <- renderReactable({
+        req(input$selectedPlayer)
+        
+        playerData() %>% 
+          then(
+            onFulfilled = function(data){
+              if(data$pos_gk == 20){
+                matches <- getKeeperMatchStats(data$name)
+              } else {
+                matches <- getOutfieldMatchStats(data$name)
+              }
+              
+              matches %>% 
+                then(
+                  onFulfilled = function(stats){
+                    stats %>% 
+                      leaderReactable()
+                  }
+                )
+                
+            }
+          )
+      })
     }
   )
 }
