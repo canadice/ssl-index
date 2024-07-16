@@ -111,7 +111,8 @@ budgetProcessServer <- function(id, uid) {
                    ),
               column(6,
                      selectInput(session$ns("type"), label = "Contract type", choices = c("", "Rookie" = "ROO", "IFA" = "IFA", "Free Agent" = "FA", "Extension" = "EXT"), selected = data$type),
-                     numericInput(session$ns("length"), label = "Contract length", value = data$length, min = 1, max = 3)
+                     numericInput(session$ns("length"), label = "Contract length", value = data$length, min = 1, max = 3),
+                     checkboxInput(session$ns("active"), label = "Active contract?", value = data$status_c == 1)
                    )
             )
           })
@@ -123,19 +124,19 @@ budgetProcessServer <- function(id, uid) {
             onFulfilled = function(data){
               tagList(
                 column(3, 
-                       numericInput(session$ns("salary0"), label = paste0('Salary S', currentSeason$season), value = data$salary0, min = 1000000, max = 7000000, step = 100000),
+                       autonumericInput(session$ns("salary0"), label = paste0('Salary S', currentSeason$season), value = data$salary0, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
                        selectizeInput(session$ns("clause0"), label = paste0('Clauses in S', currentSeason$season), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause0 %>% str_split(pattern = ",") %>% unlist())
                 ),
                 column(3, 
-                       numericInput(session$ns("salary1"), label = paste0('Salary S', currentSeason$season+1), value = data$salary1, min = 1000000, max = 7000000, step = 100000),
+                       autonumericInput(session$ns("salary1"), label = paste0('Salary S', currentSeason$season+1), value = data$salary1, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
                        selectizeInput(session$ns("clause1"), label = paste0('Clauses in S', currentSeason$season+1), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause1 %>% str_split(pattern = ",") %>% unlist())
                 ),
                 column(3, 
-                       numericInput(session$ns("salary2"), label = paste0('Salary S', currentSeason$season+2), value = data$salary2, min = 1000000, max = 7000000, step = 100000),
+                       autonumericInput(session$ns("salary2"), label = paste0('Salary S', currentSeason$season+2), value = data$salary2, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
                        selectizeInput(session$ns("clause2"), label = paste0('Clauses in S', currentSeason$season+2), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause2 %>% str_split(pattern = ",") %>% unlist())
                 ),
                 column(3, 
-                       numericInput(session$ns("salary3"), label = paste0('Salary S', currentSeason$season+3), value = data$salary3, min = 1000000, max = 7000000, step = 100000),
+                       autonumericInput(session$ns("salary3"), label = paste0('Salary S', currentSeason$season+3), value = data$salary3, , minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
                        selectizeInput(session$ns("clause3"), label = paste0('Clauses in S', currentSeason$season+3), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause3 %>% str_split(pattern = ",") %>% unlist())
                 )
               )
@@ -161,7 +162,8 @@ budgetProcessServer <- function(id, uid) {
             clause1 = paste0("'", paste0(input$clause1, collapse = ","), "'"),
             clause2 = paste0("'", paste0(input$clause2, collapse = ","), "'"),
             clause3 = paste0("'", paste0(input$clause3, collapse = ","), "'"),
-            processed = uid
+            processed = uid,
+            status_c = input$active
           )
         
         updateContract(summary)
