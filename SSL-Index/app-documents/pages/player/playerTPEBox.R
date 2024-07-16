@@ -37,47 +37,57 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
     id,
     function(input, output, session) {
       #### TOTAL TPE ####
-      tpeTotal(
-        data() %>% 
-          then(
-            onFulfilled = function(data){
-              data$tpe
-            }
-          )
-      ) 
+      observe({
+        tpeTotal(
+          data() %>% 
+            then(
+              onFulfilled = function(data){
+                data$tpe
+              }
+            )
+        ) 
+      }) %>% 
+        bindEvent(
+          updated()
+        )
       
       output$tpeTotal <- renderText({
         tpeTotal()
       }) 
       
       #### REMAINING TPE ####
-      tpeBanked(
-        data() %>% 
-          then(
-            onFulfilled = function(data){
-              data %>% 
-                select(acceleration:throwing) %>% 
-                select(!`natural fitness` & !stamina) %>% 
-                pivot_longer(
-                  cols = everything(),
-                  names_to = "attribute",
-                  values_to = "value"
-                ) %>%
-                left_join(
-                  tpeCost %>% 
-                    select(
-                      value,
-                      cumCost
-                    ),
-                  by = "value"
-                ) %>% 
-                select(cumCost) %>% 
-                sum(na.rm = TRUE) %>% 
-                {
-                  data$tpe - .
-                }
-            }
+      observe({
+        tpeBanked(
+          data() %>% 
+            then(
+              onFulfilled = function(data){
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!`natural fitness` & !stamina) %>% 
+                  pivot_longer(
+                    cols = everything(),
+                    names_to = "attribute",
+                    values_to = "value"
+                  ) %>%
+                  left_join(
+                    tpeCost %>% 
+                      select(
+                        value,
+                        cumCost
+                      ),
+                    by = "value"
+                  ) %>% 
+                  select(cumCost) %>% 
+                  sum(na.rm = TRUE) %>% 
+                  {
+                    data$tpe - .
+                  }
+              }
+            )
           )
+      }) %>% 
+        bindEvent(
+          updated()
         )
       
       output$tpeRemaining <- renderText({

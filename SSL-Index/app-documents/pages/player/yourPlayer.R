@@ -174,17 +174,12 @@ yourPlayerServer <- function(id, uid, parent, updated) {
       }) %>% 
         bindEvent(playerData(), ignoreNULL = FALSE)
       
-      observe({
-        ## Loading server functions if an update to the build has happened
-        playerTPEBoxServer(id = "playerBuild", uid = uid, data = playerData, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked)
-        
-        playerUpdateBoxServer(id = "playerBuild", uid = uid, data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, updating = updating, updated = updated)
-        
-        playerOverviewBoxServer(id = "playerBuild", data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, mainSession = parent)
-      }) %>% 
-        bindEvent(
-          updated()
-        )
+      ## Loading server functions 
+      playerTPEBoxServer(id = "playerBuild", uid = uid, data = playerData, updated = updated, tpeTotal = tpeTotal, tpeBanked = tpeBanked)
+      
+      playerUpdateBoxServer(id = "playerBuild", uid = uid, data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, updating = updating, updated = updated)
+      
+      playerOverviewBoxServer(id = "playerBuild", data = playerData, tpeTotal = tpeTotal, tpeBanked = tpeBanked, mainSession = parent)
       
       
     }

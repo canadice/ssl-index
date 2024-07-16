@@ -212,7 +212,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
         data() %>% 
           then(
             onFulfilled = function(data){
-              currentTraits <- data$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
+              currentTraits <- data$traits %>% str_split(pattern = traitSep, simplify = TRUE) %>% unlist()
               nrTraits <- length(currentTraits)
               
               tagList(
@@ -637,7 +637,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   ]
                   
                   # Gets current traits and their number
-                  currentTraits <- data$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
+                  currentTraits <- data$traits %>% str_split(pattern = traitSep, simplify = TRUE) %>% unlist()
                   nrTraits <- length(currentTraits)
                   
                   # If the current player is a GK they should get the base restrictions for a redistribution
@@ -663,7 +663,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                       add_row(
                         attribute = "traits",
                         old = data$traits,
-                        new = paste0(input$traits, collapse = " \\\\ ")
+                        new = paste0(input$traits, collapse = traitSep)
                       )
                     
                     # Add pos_ variables for each position
@@ -997,7 +997,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     add_row(
                       attribute = "traits",
                       old = paste("'", data$traits, "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = " \\\\ "), "'", sep = "")
+                      new = paste("'", paste0(input$traits, collapse = traitSep), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
@@ -1072,7 +1072,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     add_row(
                       attribute = "traits",
                       old = paste("'", data$traits, "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = " \\\\ "), "'", sep = "")
+                      new = paste("'", paste0(input$traits, collapse = traitSep), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
@@ -1163,8 +1163,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       }) %>% 
         bindEvent(
           input$confirmUpdate,
-          ignoreInit = TRUE,
-          once = TRUE
+          ignoreInit = TRUE
         )
       
       #### OBSERVERS ####
