@@ -458,6 +458,38 @@ server <- function(input, output, session) {
       tabItem(
         "budgetProcess",
         budgetProcessUI(id = "budgetProcess")
+      ),
+      tabItem(
+        "budgetOverview",
+        budgetOverviewUI(id = "budgetOverview")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
+      # ),
+      # tabItem(
+      #   "teamindex",
+      #   teamIndexUI(id = "teamindex")
       # ),
       # tabItem(
       #   "teamindex",
@@ -785,7 +817,8 @@ server <- function(input, output, session) {
       welcome = FALSE,
       records = FALSE,
       playerPages = FALSE,
-      budgetProcess = FALSE
+      budgetProcess = FALSE,
+      budgetOverview = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -857,8 +890,13 @@ server <- function(input, output, session) {
       loadedPage$uploadGame <- TRUE
       
     } else if(!loadedPage$bankOverview & input$tabs == "bankOverview"){
+      req(authOutput())
       bankOverviewServer("bankOverview", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$bankOverview <- TRUE
+      
+    } else if(!loadedPage$budgetOverview & input$tabs == "budgetOverview"){
+      budgetOverviewServer("budgetOverview")
+      loadedPage$budgetOverview <- TRUE
       
     }
     
