@@ -39,7 +39,7 @@ attributeReactable <- function(data, session, output){
       }
     }
   
-  map(.x = visData$group,
+  map(.x = visData$group %>% unique() %>% sort(),
       .f = function(chosenGroup){
         output[[chosenGroup]] <- renderReactable({
           temp <- 
@@ -71,7 +71,7 @@ attributeReactable <- function(data, session, output){
         })
       })
   
-  map(.x = visData$group %>% unique(),
+  map(.x = visData$group %>% unique() %>% sort(),
       .f = function(group){
         column(width = 12 / length(visData$group %>% unique()),
                h4(group),
