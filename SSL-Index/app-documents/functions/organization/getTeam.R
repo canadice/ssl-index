@@ -1,7 +1,7 @@
 getActiveTeams <- function(){
-  indexQuery(
+  portalQuery(
     paste(
-      "SELECT * FROM teaminformation WHERE active = 1;"
+      "SELECT * FROM teams WHERE orgID IS NOT NULL;"
     )
   ) %>% 
     future_promise()
