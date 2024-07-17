@@ -20,3 +20,40 @@ getBudgetPlayer <- function(pid){
   ) %>% 
     future_promise()
 }
+
+getOrgTransactions <- function(){
+  budgetQuery(
+    paste(
+      "SELECT 
+          t.tid,
+          t.link,
+          t.type,
+          t.transfervalue,
+          p.name AS name_player,
+          tp.toOrg AS toOrg_player,
+          org_pl_to.abbr AS orgName_player,
+          CONCAT('S', dp.season, ' R', dp.round, ' ', org_orig.abbr) AS name_pick,
+          tpk.toOrg AS toOrg_pick,
+          org_pi_to.abbr AS orgName_pick
+      FROM 
+          budgetdb.transactions t
+      LEFT JOIN 
+          budgetdb.transactionsplayers tp ON t.tid = tp.tid
+      LEFT JOIN 
+          portaldb.playerdata p ON tp.pid = p.pid
+      LEFT JOIN 
+          portaldb.organizations org_pl_to ON tp.toOrg = org_pl_to.id
+      LEFT JOIN 
+          budgetdb.transactionspicks tpk ON t.tid = tpk.tid
+      LEFT JOIN
+      	portaldb.organizations org_pi_to ON tpk.toOrg = org_pi_to.id
+      LEFT JOIN 
+          budgetdb.draftpicks dp ON tpk.pickid = dp.pickid
+      LEFT JOIN 
+          portaldb.organizations org_orig ON dp.original = org_orig.id
+      LEFT JOIN 
+          portaldb.organizations org_curr ON dp.current = org_curr.id;"
+    )
+  ) %>% 
+    future_promise()
+}

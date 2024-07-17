@@ -456,16 +456,16 @@ server <- function(input, output, session) {
         playerPagesUI(id = "playerPages")
       ),
       tabItem(
-        "budgetProcess",
-        budgetProcessUI(id = "budgetProcess")
+        "contractProcess",
+        contractProcessUI(id = "contractProcess")
       ),
       tabItem(
         "budgetOverview",
         budgetOverviewUI(id = "budgetOverview")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      ),
+      tabItem(
+        "transactionProcess",
+        transactionProcessUI(id = "transactionProcess")
       # ),
       # tabItem(
       #   "teamindex",
@@ -564,7 +564,7 @@ server <- function(input, output, session) {
                   # Banker (12), BoD (3), Commissioner (4)
                   if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
                     menuSubItem(
-                      "Process Transactions",
+                      "Process Bank Transactions",
                       tabName = "bankProcess"
                     )
                   }
@@ -579,9 +579,15 @@ server <- function(input, output, session) {
                 {
                   # Banker (12), BoD (3), Commissioner (4)
                   if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
-                    menuSubItem(
-                      "Process Budget",
-                      tabName = "budgetProcess"
+                    tagList(
+                      menuSubItem(
+                        "Process Contracts",
+                        tabName = "contractProcess"
+                      ),
+                      menuSubItem(
+                        "Process Transactions",
+                        tabName = "transactionProcess"
+                      )
                     )
                   }
                 }
@@ -817,8 +823,9 @@ server <- function(input, output, session) {
       welcome = FALSE,
       records = FALSE,
       playerPages = FALSE,
-      budgetProcess = FALSE,
-      budgetOverview = FALSE
+      contractProcess = FALSE,
+      budgetOverview = FALSE,
+      transactionProcess = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -863,10 +870,15 @@ server <- function(input, output, session) {
       yourPlayerServer("yourPlayer", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$player <- TRUE
       
-    } else if(!loadedPage$budgetProcess & input$tabs == "budgetProcess"){
+    } else if(!loadedPage$contractProcess & input$tabs == "contractProcess"){
       req(authOutput()$uid)
-      budgetProcessServer("budgetProcess", uid = authOutput()$uid)
-      loadedPage$budgetProcess <- TRUE
+      contractProcessServer("contractProcess", uid = authOutput()$uid)
+      loadedPage$contractProcess <- TRUE
+      
+    } else if(!loadedPage$transactionProcess & input$tabs == "transactionProcess"){
+      req(authOutput()$uid)
+      transactionProcessServer("transactionProcess", uid = authOutput()$uid)
+      loadedPage$transactionProcess <- TRUE
       
     } else if(!loadedPage$playerPages & input$tabs == "playerPages"){
       req(authOutput()$uid)

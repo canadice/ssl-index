@@ -1,9 +1,9 @@
-budgetProcessUI <- function(id) {
+transactionProcessUI <- function(id) {
   ns <- NS(id)
   tagList(
     fluidRow(
       column(12,
-             uiOutput(ns("selectPlayer"))       
+             uiOutput(ns("selectTransaction"))       
              )
     ),
     fluidRow(
@@ -36,14 +36,14 @@ budgetProcessUI <- function(id) {
         class = "frozen-bottom",
         actionButton(
           inputId = ns("update"),
-          label = "Update Contract"
+          label = "Update Transaction"
         )
       )
     )
   )
 }
 
-budgetProcessServer <- function(id, uid) {
+transactionProcessServer <- function(id, uid) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -68,7 +68,7 @@ budgetProcessServer <- function(id, uid) {
         
       
       #### OUTPUTS ####
-      output$selectPlayer <- renderUI({
+      output$selectTransaction <- renderUI({
         allNames() %>% 
           then(
             onFulfilled = function(names) {
