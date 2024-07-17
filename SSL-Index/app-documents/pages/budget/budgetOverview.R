@@ -167,7 +167,7 @@ budgetOverviewServer <- function(id) {
                              h4("Majors: ", paste0("$", 55 - sum(majors$salary0, na.rm = TRUE), "M"), class = if_else((55 - sum(majors$salary0, na.rm = TRUE)) < 0, "Retired", "Active")),
                              h4("Minors: ", paste0("$", 45 - sum(minors$salary0, na.rm = TRUE), "M"), class = if_else((55 - sum(majors$salary0, na.rm = TRUE)) < 0, "Retired", "Active"))
                       ),
-                      column(3,
+                      column(6,
                              h4("Cap Penalties and Bonuses"),
                              h5("Majors Bonus: "),
                              h5("Minors Bonus: "),

@@ -2,41 +2,27 @@ transactionProcessUI <- function(id) {
   ns <- NS(id)
   tagList(
     fluidRow(
-      column(12,
-             uiOutput(ns("selectTransaction"))       
-             )
+      column(3,offset = 3,
+             radioButtons(ns("transactionType"), label = "Select transaction type", choices = c("Trade", "FA/IFA"), inline = TRUE))
     ),
     fluidRow(
-      column(4, 
+      column(6, 
              box(
-               title = "Organization Info",
+               title = "Organization A Receives",
                width = NULL,
-               uiOutput(ns("organization"))
+               uiOutput(ns("organizationA"))
              )
            ),
-      column(8, 
-             box(
-               title = "Contract Info",
-               width = NULL,
-               uiOutput(ns("contract"))
-             )
+      column(6, 
+             uiOutput(ns("organizationB"))
       )
-    ),
-    fluidRow(
-      column(12,
-             box(
-               title = "Salary and Clauses Info",
-               width = NULL,
-               uiOutput(ns("salary"))
-             )
-           )
     ),
     fluidRow(
       div(
         class = "frozen-bottom",
         actionButton(
           inputId = ns("update"),
-          label = "Update Transaction"
+          label = "Add Transaction"
         )
       )
     )
@@ -47,20 +33,13 @@ transactionProcessServer <- function(id, uid) {
   moduleServer(
     id,
     function(input, output, session) {
-      updated <- reactiveVal({0})
-      
-      allNames <- reactive({
-        getPlayerNames()
+      pickAssets <- reactive({
+        getPickAssets()
       })
       
-      data <- reactive({
-        req(input$selectedPlayer)
-        getBudgetPlayer(pid = input$selectedPlayer)
-      }) %>% 
-        bindEvent(
-          input$selectedPlayer,
-          updated()
-        )
+      playerAssets <- reactive({
+        getPlayerAssets()
+      })
       
       organizations <- reactive({
         getOrganizations()
@@ -68,80 +47,106 @@ transactionProcessServer <- function(id, uid) {
         
       
       #### OUTPUTS ####
-      output$selectTransaction <- renderUI({
-        allNames() %>% 
+      output$organizationA <- renderUI({
+        organizations() %>% 
           then(
-            onFulfilled = function(names) {
-              names <- 
-                names %>%
-                filter(status_p > 0)
+            onFulfilled = function(organizations){
+              orgVector <- setNames(organizations$id, organizations$name)
               
-              namedVector <- names$pid
-              
-              names(namedVector) <- names$name
-              
-              selectInput(session$ns("selectedPlayer"), "Select Player", choices = namedVector)
+              tagList(
+                fluidRow(
+                  column(6,
+                         selectInput(session$ns("organizationA"), label = "Select organization", choices = c("", orgVector))
+                  ),
+                  column(6,
+                         textInput(session$ns("link"), label = "Add link to transaction"),
+                         if(input$transactionType == "FA/IFA"){
+                           autonumericInput(
+                             session$ns("transfervalue"), 
+                             label = tippy("Add transfer value", tooltip = "Only used if FA/IFA signing"), 
+                             value = 0,
+                             currencySymbol = "$", currencySymbolPlacement = "p", 
+                             digitGroupSeparator = ",", decimalPlaces = 0
+                           )
+                         }
+                       )
+                ),
+                fluidRow(
+                  uiOutput(session$ns("assetsA"))
+                )
+              )
             }
           )
       })
       
-      output$organization <- renderUI({
-        promise_all(
-          budget = data(),
-          organizations = organizations()
-        ) %...>% 
-          with({
-            orgVector <- setNames(organizations$id, organizations$name)
-            
-            tagList(
-              selectInput(session$ns("organization"), label = "Select organization", choices = c("", orgVector), selected = budget$org),
-              selectInput(session$ns("affiliate"), label = "Select affiliate", choices = c("", "Major" = 1, "Minor" = 2), selected = budget$affiliate)
-            )
-          })
-      })
-      
-      output$contract <- renderUI({
-        data() %>% 
-          then(
-            onFulfilled = function(data){
-            tagList(
-              column(6, 
-                     textInput(session$ns("link"), label = "Link to contract post", value = data$link),
-                     numericInput(session$ns("signed"), label = "The season the contract was signed", value = data$signed, min = currentSeason$season - 4, max = currentSeason$season)
-                   ),
-              column(6,
-                     selectInput(session$ns("type"), label = "Contract type", choices = c("", "Rookie" = "ROO", "IFA" = "IFA", "Free Agent" = "FA", "Extension" = "EXT"), selected = data$type),
-                     numericInput(session$ns("length"), label = "Contract length", value = data$length, min = 1, max = 3),
-                     checkboxInput(session$ns("active"), label = "Active contract?", value = data$status_c == 1)
-                   )
-            )
-          })
-      })
-      
-      output$salary <- renderUI({
-        data() %>% 
-          then(
-            onFulfilled = function(data){
-              tagList(
-                column(3, 
-                       autonumericInput(session$ns("salary0"), label = paste0('Salary S', currentSeason$season), value = data$salary0, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
-                       selectizeInput(session$ns("clause0"), label = paste0('Clauses in S', currentSeason$season), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause0 %>% str_split(pattern = ",") %>% unlist())
-                ),
-                column(3, 
-                       autonumericInput(session$ns("salary1"), label = paste0('Salary S', currentSeason$season+1), value = data$salary1, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
-                       selectizeInput(session$ns("clause1"), label = paste0('Clauses in S', currentSeason$season+1), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause1 %>% str_split(pattern = ",") %>% unlist())
-                ),
-                column(3, 
-                       autonumericInput(session$ns("salary2"), label = paste0('Salary S', currentSeason$season+2), value = data$salary2, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
-                       selectizeInput(session$ns("clause2"), label = paste0('Clauses in S', currentSeason$season+2), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause2 %>% str_split(pattern = ",") %>% unlist())
-                ),
-                column(3, 
-                       autonumericInput(session$ns("salary3"), label = paste0('Salary S', currentSeason$season+3), value = data$salary3, , minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
-                       selectizeInput(session$ns("clause3"), label = paste0('Clauses in S', currentSeason$season+3), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause3 %>% str_split(pattern = ",") %>% unlist())
+      output$organizationB <- renderUI({
+        if(input$transactionType == "Trade"){
+          organizations() %>% 
+            then(
+              onFulfilled = function(organizations){
+                orgVector <- setNames(organizations$id, organizations$name)
+                
+                tagList(
+                  box(
+                    title = "Organization B Receives",
+                    width = NULL,
+                    fluidRow(
+                      column(6,
+                             selectInput(session$ns("organizationB"), label = "Select organization", choices = c("", orgVector))
+                      )
+                    ),
+                    fluidRow(
+                      uiOutput(session$ns("assetsB"))
+                    )
+                  )
                 )
-              )
-            })
+              }
+            )
+        }
       })
+      
+      
+      lapply(LETTERS[1:2], function(group){
+        observe({
+          req(input[[paste0("organization", group)]])
+          output[[paste0("assets", group)]] <- renderUI({
+            promise_all(
+              picks = pickAssets(),
+              players = playerAssets()
+            ) %...>% 
+              with({
+                pickVector<- 
+                  setNames(
+                    picks %>% filter(id != input[[paste0("organization", group)]]) %>% select(pickid) %>% unlist(), 
+                    picks %>% filter(id != input[[paste0("organization", group)]]) %>% select(pick) %>% unlist()
+                  )
+                
+                playerVector <- 
+                  setNames(
+                    players %>% filter(id != input[[paste0("organization", group)]]) %>% select(pid) %>% unlist(), 
+                    players %>% filter(id != input[[paste0("organization", group)]]) %>% select(player) %>% unlist()
+                  )
+                
+                tagList(
+                  column(6,
+                         h4("Players"),
+                         lapply(0:5, function(i){
+                           selectInput(session$ns(paste0("player", group, "_", i)), label = "Add asset", choices = c("", playerVector))  
+                         })
+                  ),
+                  column(6,
+                         h4("Picks"),
+                         lapply(0:5, function(i){
+                           selectInput(session$ns(paste0("pick", group, "_", i)), label = "Add asset", choices = c("", pickVector))  
+                         })
+                  )
+                )
+              })
+          })
+        }) %>% 
+          bindEvent(input[[paste0("organization", group)]])
+      }) 
+      
       
       #### OBSERVE ####
       observe({

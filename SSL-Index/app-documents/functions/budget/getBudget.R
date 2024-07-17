@@ -57,3 +57,31 @@ getOrgTransactions <- function(){
   ) %>% 
     future_promise()
 }
+
+getPickAssets <- function(){
+  budgetQuery(
+    paste(
+      "SELECT org.*, pick.pickid, CONCAT('S', pick.season, ' R', pick.round, ' ', org_orig.abbr) AS pick
+      FROM portaldb.organizations AS org
+      LEFT JOIN 
+          draftpicks AS pick ON org.id = pick.current
+      LEFT JOIN 
+          portaldb.organizations org_orig ON pick.original = org_orig.id;"
+    )
+  ) %>% 
+    future_promise()
+}
+
+getPlayerAssets <- function(){
+  budgetQuery(
+    paste(
+      "SELECT org.*, budget.pid, pd.name AS player
+      FROM portaldb.organizations AS org
+      LEFT JOIN 
+          budgetplayers AS budget ON org.id = budget.org
+      LEFT JOIN 
+          portaldb.playerdata AS pd ON budget.pid = pd.pid;"
+    )
+  ) %>% 
+    future_promise()
+}
