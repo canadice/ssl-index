@@ -7,6 +7,10 @@ sslBlueL <- "#324f7e"
 sslBlueD <- "#4b8dad"
 sslGold <- "#BD9523"
 
+red <- "#D96F68"
+yellow <- "#F5D17E"
+green <- "#66B38C"
+
 traitSep <- " \\\\ "
 
 
