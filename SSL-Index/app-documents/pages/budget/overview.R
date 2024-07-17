@@ -68,39 +68,49 @@ budgetOverviewServer <- function(id) {
                     
                     data %>% 
                       reactable(
+                        pagination = FALSE,
                         defaultColDef = colDef(html = TRUE, footerStyle = list(fontWeight = "bold")),
                         columns = list(
-                          POSITION = colDef(footer = function(values) paste(sum(str_detect(values, "[A-z]+")), "Players")),
+                          POSITION = colDef(width = 80),
+                          PLAYER = colDef(footer = function(values) paste(sum(str_detect(values, "[A-z]+")), "Players")),
                           CLASS = colDef(name = "AGE", width = 50),
                           SIGNED = colDef(width = 75),
                           TPE = colDef(width = 50, footer = function(values) paste("AVG:", mean(values, na.rm = TRUE) %>% round(0))),
-                          STATUS_C = colDef(name = "TYPE", width = 80, footer = function(values) paste(sum(str_detect(values, "IA")), "IA Contracts")),
+                          STATUS_C = colDef(name = "TYPE", width = 90, footer = function(values) paste(sum(str_detect(values, "IA")), "IA Contracts")),
                           SALARY0 = colDef(
+                            width = 75,
                             name = paste0("S", currentSeason$season),
                             cell = function(value, index){
                               tippy(value %>% dollar(suffix = "M"), tooltip = data$CLAUSE0[index])
                             },
+                            style = "border-left: 1px;",
                             footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
                           ),
                           SALARY1 = colDef(
+                            width = 75,
                             name = paste0("S", currentSeason$season+1),
                             cell = function(value, index){
                               tippy(value %>% dollar(suffix = "M"), tooltip = data$CLAUSE1[index])
                             },
+                            style = "border-left: 1px;",
                             footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
                           ),
                           SALARY2 = colDef(
+                            width = 75,
                             name = paste0("S", currentSeason$season+2),
                             cell = function(value, index){
                               tippy(value %>% dollar(suffix = "M"), tooltip = data$CLAUSE2[index])
                             },
+                            style = "border-left: 1px;",
                             footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
                           ),
                           SALARY3 = colDef(
+                            width = 75,
                             name = paste0("S", currentSeason$season+3),
                             cell = function(value, index){
                               tippy(value %>% dollar(suffix = "M"), tooltip = data$CLAUSE3[index])
                             },
+                            style = "border-left: 1px;",
                             footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
                           ),
                           CLAUSE0 = colDef(show = FALSE),

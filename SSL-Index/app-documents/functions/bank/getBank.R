@@ -15,6 +15,7 @@ getBankTransactions <- function(pid){
     portalQuery(
       paste("SELECT 
             bt.time AS Time,
+            pd.name AS Player,
             mbb.username AS Username,
             bt.source AS Source,
             bt.transaction AS Transaction
@@ -22,9 +23,9 @@ getBankTransactions <- function(pid){
             banktransactions bt
         LEFT JOIN
             mybbdb.mybb_users mbb ON bt.uid = mbb.uid
-        WHERE 
-            pid = ", pid, " AND status = 1
-        ORDER BY Time DESC;")
+        LEFT JOIN playerdata pd ON bt.pid = pd.pid",
+            if_else(pid < 0, "WHERE bt.status = 1", paste("WHERE bt.pid = ", pid, " AND bt.status = 1")),
+        "ORDER BY Time DESC;")
     ) %>% 
       mutate(
         Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")

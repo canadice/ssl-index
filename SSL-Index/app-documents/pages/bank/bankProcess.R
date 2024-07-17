@@ -6,6 +6,7 @@ bankProcessUI <- function(id) {
              box(title = "Transactions to approve", width = NULL, solidHeader = TRUE,
                  reactableOutput(ns("needApproval")) %>% 
                    withSpinnerMedium(),
+                 br(),
                  fluidRow(
                    column(
                      width = 12,
@@ -13,6 +14,14 @@ bankProcessUI <- function(id) {
                      actionButton(ns("goReject"), "Reject selected transactions")  
                    )
                  )
+             )
+      )
+    ),
+    fluidRow(
+      column(12,
+             box(title = "Historical transactions", width = NULL, solidheader = TRUE,
+             reactableOutput(ns("history")) %>% 
+               withSpinnerMedium()
              )
       )
     )
@@ -32,6 +41,16 @@ bankProcessServer <- function(id, userinfo) {
           updated()
         )
       
+      allTransactions <- reactive({
+        ## -99 returns all approved transactions
+        getBankTransactions(pid = -99)
+      }) %>% 
+        bindEvent(
+          updated()
+        )
+      
+      
+      #### OUTPUTS ####
       output$needApproval <- renderReactable({
         transactions() %>% 
           then(
@@ -45,13 +64,37 @@ bankProcessServer <- function(id, userinfo) {
                   onClick = "select",
                   columns = 
                     list(
-                      Time = colDef(format = colFormat(datetime = TRUE))
+                      Time = colDef(format = colFormat(datetime = TRUE)),
+                      Amount = colDef(style = function(value){list(color = if_else(value < 0, red, "white"))},
+                                      format = colFormat(prefix = "$", separators = TRUE, digits = 0))
                     )
                 )
             }
           )
       })
       
+      output$history <- renderReactable({
+        allTransactions() %>% 
+          then(
+            onFulfilled = function(bank){
+              bank %>% 
+                mutate(
+                  Time = as_datetime(Time)
+                ) %>% 
+                reactable(
+                  searchable = TRUE,
+                  columns = 
+                    list(
+                      Time = colDef(format = colFormat(datetime = TRUE)),
+                      Transaction = colDef(style = function(value){list(color = if_else(value < 0, red, "white"))}, 
+                                           format = colFormat(prefix = "$", separators = TRUE, digits = 0))
+                    )
+                )
+            }
+          )
+      })
+      
+      #### APPROVE OR REJECT OBSERVERS ####
       observe({
         transactions() %>% 
           then(
