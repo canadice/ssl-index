@@ -1,5 +1,5 @@
 
-options(scipen = 999)
+options(scipen = 999, dplyr.summarise.inform = FALSE)
 
 #### Common variables used throughout the application ####
 

@@ -28,9 +28,9 @@ budgetOverviewServer <- function(id) {
             onFulfilled = function(budget){
               do.call(tabsetPanel, 
                       c(list(width = NULL), 
-                        lapply(unique(budget$organization), function(org) {
+                        lapply(unique(budget$org), function(org) {
                           tabPanel(
-                            title = org,
+                            title = budget$organization[budget$org == org] %>% unique(),
                             column(12,
                                    fluidRow(
                                      uiOutput(session$ns(paste0("overview_", org)))
@@ -63,12 +63,12 @@ budgetOverviewServer <- function(id) {
         budget() %>% 
           then(
             onFulfilled = function(budget){
-              lapply(unique(budget$organization), function(i) {
+              lapply(unique(budget$org), function(i) {
                 lapply(1:2, function(j){
                   output[[paste0("table_", i, j)]] <- renderReactable({
                     data <- 
                       budget %>% 
-                      filter(organization == i, affiliate == j) %>% 
+                      filter(org == i, affiliate == j) %>% 
                       select(position, player, username, class, tpe, signed, link, status_c, contains("salary"), contains("clause")) %>% 
                       rename_with(str_to_upper) %>%
                       mutate(
@@ -145,11 +145,11 @@ budgetOverviewServer <- function(id) {
         budget() %>% 
           then(
             onFulfilled = function(budget){
-              lapply(unique(budget$organization), function(i) {
+              lapply(unique(budget$org), function(i) {
                 output[[paste0("overview_", i)]] <- renderUI({
                     data <- 
                       budget %>% 
-                      filter(organization == i) %>% 
+                      filter(org == i) %>% 
                       mutate(
                         across(
                           contains("salary"),
@@ -183,65 +183,70 @@ budgetOverviewServer <- function(id) {
       })
       
       observe({
-        transactions() %>% 
-          then(
-            onFulfilled = function(transactions){
-              lapply(0:7, function(i) {
-                output[[paste0("trades_", i)]] <- renderReactable({
-                  data <- 
-                    transactions %>% 
-                    filter(type == "TRAD") %>% 
-                    select(!type) %>% 
-                    group_by(tid) %>% 
-                    filter(any(toOrg_player == i | toOrg_pick == i)) %>%
-                    pivot_longer(
-                      cols = name_player:orgName_pick,
-                      names_to = c(".value", "pair"),
-                      names_pattern = "(.*)_(.*?)",
-                      values_transform = as.character
-                    ) %>% 
-                    unique() %>% 
-                    group_by(tid, link, transfervalue, orgName) %>% 
-                    summarize(
-                      assets = paste0(name, collapse = ", ")
-                    ) %>% 
-                    mutate(
-                      to = LETTERS[1:n()]
-                    ) %>% 
-                    group_by(tid, link, transfervalue) %>% 
-                    pivot_wider(
-                      names_from = to,
-                      values_from = c(orgName, assets)
-                    ) %>% 
-                    mutate(
-                      tid = sprintf('<a href="%s" target="_blank">%s</a>', link, tid)
-                    ) %>% 
-                    ungroup() %>% 
-                    select(tid, transfervalue, contains("_A"), contains("_B"))
-                    
-                  data %>% 
-                    reactable(
-                      defaultColDef = colDef(html = TRUE),
-                      columns = 
-                        list(
-                          orgName_A = colDef(
-                            name = "Org. A"
-                          ),
-                          orgName_B = colDef(
-                            name = "Org. B"
-                          ),
-                          assets_A = colDef(
-                            name = "Receives"
-                          ),
-                          assets_B = colDef(
-                            name = "Receives"
-                          )
+        promise_all(
+          budget = budget(),
+          transactions = transactions()
+        ) %...>% 
+          with({
+            lapply(unique(budget$org), function(i) {
+              output[[paste0("trades_", i)]] <- renderReactable({
+                data <- 
+                  transactions %>% 
+                  filter(type == "TRAD") %>% 
+                  select(!type) %>% 
+                  group_by(tid) %>% 
+                  filter(any(toOrg_player == i | toOrg_pick == i)) %>%
+                  pivot_longer(
+                    cols = name_player:orgName_pick,
+                    names_to = c(".value", "pair"),
+                    names_pattern = "(.*)_(.*?)",
+                    values_transform = as.character
+                  ) %>% 
+                  unique() %>% 
+                  group_by(tid, link, transfervalue, orgName) %>% 
+                  summarize(
+                    assets = paste0(name, collapse = ", ")
+                  ) %>% 
+                  mutate(
+                    to = LETTERS[1:n()]
+                  ) %>% 
+                  group_by(tid, link, transfervalue) %>% 
+                  pivot_wider(
+                    names_from = to,
+                    values_from = c(orgName, assets)
+                  ) %>% 
+                  mutate(
+                    tid = sprintf('<a href="%s" target="_blank">%s</a>', link, tid)
+                  ) %>% 
+                  ungroup() %>% 
+                  select(tid, contains("_A"), contains("_B"))
+                
+                data %>% 
+                  reactable(
+                    defaultColDef = colDef(html = TRUE, minWidth = 50),
+                    columns = 
+                      list(
+                        tid = colDef(
+                          name = "ID",
+                          width = 30,
+                        ),
+                        orgName_A = colDef(
+                          name = "Org. A"
+                        ),
+                        orgName_B = colDef(
+                          name = "Org. B"
+                        ),
+                        assets_A = colDef(
+                          name = "Receives"
+                        ),
+                        assets_B = colDef(
+                          name = "Receives"
                         )
-                    )
-                })
+                      )
+                  )
               })
-            }
-          )
+            })
+          })
       })
     }
   )

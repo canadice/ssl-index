@@ -3,7 +3,7 @@ transactionProcessUI <- function(id) {
   tagList(
     fluidRow(
       column(3,offset = 3,
-             radioButtons(ns("transactionType"), label = "Select transaction type", choices = c("Trade", "FA/IFA"), inline = TRUE))
+             radioButtons(ns("transactionType"), label = "Select transaction type", choices = c("Trade" = "TRAD", "FA/IFA" = "FA"), inline = TRUE))
     ),
     fluidRow(
       column(6, 
@@ -60,7 +60,7 @@ transactionProcessServer <- function(id, uid) {
                   ),
                   column(6,
                          textInput(session$ns("link"), label = "Add link to transaction"),
-                         if(input$transactionType == "FA/IFA"){
+                         if(input$transactionType == "FA"){
                            autonumericInput(
                              session$ns("transfervalue"), 
                              label = tippy("Add transfer value", tooltip = "Only used if FA/IFA signing"), 
@@ -80,7 +80,7 @@ transactionProcessServer <- function(id, uid) {
       })
       
       output$organizationB <- renderUI({
-        if(input$transactionType == "Trade"){
+        if(input$transactionType == "TRAD"){
           organizations() %>% 
             then(
               onFulfilled = function(organizations){
@@ -127,20 +127,32 @@ transactionProcessServer <- function(id, uid) {
                     players %>% filter(id != input[[paste0("organization", group)]]) %>% select(player) %>% unlist()
                   )
                 
-                tagList(
-                  column(6,
-                         h4("Players"),
-                         lapply(0:5, function(i){
-                           selectInput(session$ns(paste0("player", group, "_", i)), label = "Add asset", choices = c("", playerVector))  
-                         })
-                  ),
-                  column(6,
-                         h4("Picks"),
-                         lapply(0:5, function(i){
-                           selectInput(session$ns(paste0("pick", group, "_", i)), label = "Add asset", choices = c("", pickVector))  
-                         })
+                
+                if(input$transactionType == "TRAD"){
+                  tagList(
+                    column(6,
+                           h4("Players"),
+                           lapply(0:5, function(i){
+                             selectInput(session$ns(paste0("player", group, "_", i)), label = "Add asset", choices = c("", playerVector))  
+                           })
+                    ),
+                    column(6,
+                           h4("Picks"),
+                           lapply(0:5, function(i){
+                             selectInput(session$ns(paste0("pick", group, "_", i)), label = "Add asset", choices = c("", pickVector))  
+                           })
+                    )
                   )
-                )
+                } else {
+                  tagList(
+                    column(12,
+                           h4("Players"),
+                           lapply(0:0, function(i){
+                             selectInput(session$ns(paste0("player", group, "_", i)), label = "Add asset", choices = c("", playerVector))  
+                           })
+                    )
+                  )
+                }
               })
           })
         }) %>% 
@@ -150,32 +162,65 @@ transactionProcessServer <- function(id, uid) {
       
       #### OBSERVE ####
       observe({
-        summary <- 
-          tibble(
-            pid = input$selectedPlayer,
-            org = input$organization,
-            affiliate = input$affiliate,
-            link = paste0("'", input$link, "'"),
-            signed = input$signed,
-            type = paste0("'", input$type, "'"),
-            length = input$length,
-            salary0 = input$salary0,
-            salary1 = input$salary1,
-            salary2 = input$salary2,
-            salary3 = input$salary3,
-            clause0 = paste0("'", paste0(input$clause0, collapse = ","), "'"),
-            clause1 = paste0("'", paste0(input$clause1, collapse = ","), "'"),
-            clause2 = paste0("'", paste0(input$clause2, collapse = ","), "'"),
-            clause3 = paste0("'", paste0(input$clause3, collapse = ","), "'"),
-            processed = uid,
-            status_c = input$active
-          )
-        
-        updateContract(summary)
-        
-        updated(updated() + 1)
-        
-        showToast(type = "success", "The contract has been updated!")
+        if(input$transactionType == "TRAD"){
+          if(
+            ((input$playerB_0 %>% is.null()) & (input$pickB_0 %>% is.null())) |
+            ((input$playerB_0 == "") & (input$pickB_0 == ""))
+            ){
+            showToast("error", "At least one asset must be sent by both teams.")
+          } else {
+            
+            players <- tibble(
+              player = c(input$playerA_0, input$playerA_1, input$playerA_2, input$playerA_3, input$playerA_4,
+                         input$playerB_0, input$playerB_1, input$playerB_2, input$playerB_3, input$playerB_4),
+              org = c(rep(input$organizationA, times = 5), rep(input$organizationB, times = 5))
+            ) %>% 
+              filter(
+                player != ""
+              )
+            
+            picks <- tibble(
+              pick = c(input$pickA_0, input$pickA_1, input$pickA_2, input$pickA_3, input$pickA_4,
+                         input$pickB_0, input$pickB_1, input$pickB_2, input$pickB_3, input$pickB_4),
+              org = c(rep(input$organizationA, times = 5), rep(input$organizationB, times = 5))
+            ) %>% 
+              filter(
+                pick != ""
+              )
+            
+            transaction <- 
+              tibble(
+                link = paste0("'", input$link, "'"),
+                type = paste0("'", input$transactionType, "'"),
+                transfervalue = 0,
+                processed = uid
+              )
+            
+            updateTransaction(transaction = transaction, players = players, picks = picks)
+            
+            showToast(type = "success", "The transaction has been processed!")
+          }
+        } else {
+          players <- tibble(
+            player = c(input$playerA_0),
+            org = c(input$organizationA)
+          ) %>% 
+            filter(
+              player != ""
+            )
+          
+          transaction <- 
+            tibble(
+              link = paste0("'", input$link, "'"),
+              type = paste0("'", input$transactionType, "'"),
+              transfervalue = 0,
+              processed = uid
+            )
+          
+          updateTransaction(transaction = transaction, players = players)
+          
+          showToast(type = "success", "The transaction has been processed!")
+        }
       }) %>% 
         bindEvent(
           input$update
