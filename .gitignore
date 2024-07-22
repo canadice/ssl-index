@@ -39,11 +39,4 @@ database/.gitignore
 my.png
 *.xml
 *.RData
-Temp.csv
-Academy Draft Statistics.csv
-*Reset.csv
-database
-.api
-documents
-ssl-scripts
-Kove Reset.csv
+
