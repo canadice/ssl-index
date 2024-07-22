@@ -1,3 +1,32 @@
+:root {
+    --color: 0, 0%;
+    --sslBlue: #070b51ff;
+	  --sslBlueL: color-mix(in srgb, var(--sslBlue) 95%, white);
+	  --sslBlueD: color-mix(in srgb, var(--sslBlue) 95%, black);
+    --sslGold: #bd9523ff;
+    --lighterText: hsl(var(--color), 100%);
+    --darkerText: hsl(var(--color), 0%);
+    --amazon: #417b5aff;
+    --mountbatten-pink: #916c80ff;
+    --topBackground: hsl(var(--color), 10%);
+    --middleBackground: hsl(var(--color), 20%);
+    --bottomBackground: hsl(var(--color), 30%);
+    --borderColor: hsl(var(--color), 25%);
+}
+
+/* General styles */
+body {
+  font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+  color: white;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+  font-weight: 800; 
+  font-style: normal;
+  color: white;
+}
+
 /* Display grid for the box container with 4 columns   */
 #standingsCup-boxes {
   display: grid;
@@ -37,4 +66,424 @@
 
 .scores:nth-child(even) {
   border-left: 1px solid;
+}
+
+.shiny-split-layout {
+  display: flex; /* Use Flexbox */
+}
+
+.shiny-split-layout > div {
+  display: flex; /* Nested Flexbox */
+  flex-direction: column; /* Stack children vertically */
+}
+
+
+.attributeCost {
+  justify-content: center; /* Center content horizontally */
+}
+
+.attributeInput input {
+  border-radius: 5px;
+  border: 1px solid black;
+  flex: 1; /* Take up all available space */
+}
+
+/* Hover information for text */
+/* Updated CSS */
+.hovertext {
+    position: relative; /* Make sure the parent container has relative positioning */
+}
+
+.hovertext:before {
+    content: attr(data_hover);
+    visibility: hidden;
+    opacity: 0;
+    min-width: 100px;
+    max-width: 300px;
+    background-color: black;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    transition: opacity 0.3s ease-in-out;
+
+    position: absolute;
+    z-index: 999;
+    /* Center on top of the element */
+    bottom: calc(100% + 5px);  
+    left: 50%; 
+    transform: translate(-50%);
+}
+
+.hovertext:hover:before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* splits information into multiple columns */
+.multicol {
+  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+  -moz-column-count: 3; /* Firefox */
+  column-count: 3;
+}
+
+
+.shiny-split-layout > div:has(> div.attribute) {
+  overflow: visible;
+}
+
+/* Makes result boxes overflow and creates a scroller */
+.results {
+  overflow-x: scroll;
+  display: flex;
+  flex-direction: row;
+}
+
+.results > div {
+  min-width: 140px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.results .box-header,
+.results .box-body {
+  text-align: center;
+}
+
+/* Buttons in dropdowns take the entire width */
+
+.tippy-popper button{
+  width: -webkit-fill-available;
+}
+
+/* Header navbar with logo */
+.main-header {
+  max-height: 200px;
+}
+.main-header .logo {
+  padding-top: 5px;
+  padding-right: 30px;
+  height: 80px; 
+}
+
+
+/* Fixes so that the sidebar menus are visible from the first item regardless of the split of the nav-bar */
+.main-sidebar {
+  padding-top: 100px;
+}
+
+@media (max-width: 767px) {
+  .main-sidebar {
+    padding-top: 18vh;
+  }  
+}
+
+
+
+.content-wrapper {
+    min-height: 100%;
+    background-color: var(--middleBackground);
+    z-index: 800;
+}
+
+.skin-blue .main-header .navbar {
+    background-color: var(--sslBlueD);
+    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+}
+
+.skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
+    background-color: var(--topBackground);
+    /*background-image: url(https://i.imgur.com/k7qNGB5.jpg);*/
+    border-right: 2px solid var(--sslGold);
+}
+
+.skin-blue .main-header .logo {
+    background-color: var(--topBackground);
+    color: #fff;
+    border-bottom: 0 solid rgba(0, 0, 0, 0);
+    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+    border-right: 2px solid var(--sslGold);
+}
+
+.skin-blue .sidebar-menu .treeview-menu>li.active>a, .skin-blue .sidebar-menu .treeview-menu>li>a:hover {
+    color: var(--sslBlueD);
+}
+
+.skin-blue .sidebar-menu>li>.treeview-menu {
+    margin: 0px;
+    background: var(--sslGold);
+    }
+    
+.skin-blue .sidebar-menu>li:hover>a, .skin-blue .sidebar-menu>li.active>a, .skin-blue .sidebar-menu>li.menu-open>a {
+    color: #fff;
+    background: var(--sslGold);
+    background-image: url(https://i.imgur.com/gVNA3OP.jpg);
+}
+
+.skin-blue .sidebar-menu>li.active>a {
+    border: none;
+}
+
+.skin-blue .main-header .navbar .sidebar-toggle:hover {
+    background-color: var(--sslGold);
+}
+
+.skin-blue .sidebar-menu>li.active>a,.skin-blue .sidebar-menu>li:hover>a {
+    color: #fff;
+    background: var(--bottomBackground);
+    border-left-color: var(--sslGold); 
+    
+}
+
+.content {
+    min-height: 1000px;
+    padding: 15px;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    background-color: var(--middleBackground);
+    background-image: url(https://i.imgur.com/9BuU3Op.jpeg);
+}
+
+.box-header {
+    color: var(--sslGold);
+    display: block;
+    padding: 10px;
+    position: relative;
+    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+    border: 2px solid var(--sslGold);
+    text-align: center;
+}
+
+.box.box-primary {
+    border-top-color: var(--sslGold);
+}
+
+
+.box-footer {
+    border-top-left-radius: 0;
+   border-top-right-radius: 0;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top: 1px solid var(--sslGold);
+    padding: 10px;
+    background-color: var(--sslGold);
+    color: #ffffff;
+}
+
+.box {
+    position: relative;
+    border-radius: 3px;
+    background: #444444;
+    border-top: 1px solid var(--sslGold);
+    margin-bottom: 20px;
+    width: 100%;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.results .box-header, .results .box-body {
+    text-align: center;
+    border: 2px solid var(--sslGold);
+    color: #ffffff;
+    background-color: var(--middleBackground);
+}
+
+.box-body {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 0px;
+    padding: 10px;
+    border: 2px solid var(--sslGold);
+}
+
+.results {
+    overflow-x: scroll;
+    display: flex;
+    flex-direction: row;
+    scrollbar-color: #666666 #999999;
+}
+
+.rt-th, .rt-th-inner, .rt-pagination {
+    overflow: visible !important;
+    background-color: var(--middleBackground);
+    Color: var(--sslGold);
+}
+
+.rt-text-content {
+  overflow: visible;
+}
+
+.Reactable {
+  background-color: var(--topBackground);
+}
+
+.Reactable .rt-table {
+    background: inherit;
+    border: 1px solid var(--sslGold);
+    scrollbar-color: #666666 #999999;
+}
+
+.Reactable .rt-tbody, 
+.Reactable .rt-tfoot, 
+.Reactable .rt-thead {
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    background-color: var(--middleBackground);
+}
+
+.rt-th {
+    border-bottom: 2px solid var(--sslGold);
+    border-left-color: rgba(0,0,0,.05);
+    border-left-width: 1px
+}
+
+.rt-td {
+    border-left-color: rgba(0,0,0,.05);
+    border-left-width: 1px;
+    border-top: 1px solid var(--sslGold)
+}
+
+.rt-search {
+  margin: 10px 20px 8px;
+  width: 100%;
+  width: -moz-available;          /* WebKit-based browsers will ignore this. */
+  width: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+  width: fill-available;
+  background-color: var(--bottomBackground);
+  color: var(--lighterText);
+}
+
+
+.stickyReactableColumn, .stickyReactableHeader {
+  position: sticky !important; 
+  left: 0;
+  background: var(--topBackground);
+  z-index: 1;
+}
+
+.leaderTable {
+  padding-top: 20px
+}
+
+
+/* Navtabs */
+.nav-tabs {
+  border-bottom: 1px solid var(--sslGold);
+}
+
+.nav-tabs>li.active>a {
+  background-color: var(--topBackground);
+  color: var(--lighterText);
+}
+
+.nav-tabs>li>a {
+  color: var(--lighterText);
+}
+
+
+.attribute, .attributeCost {
+    background-color: var(--middleBackground);
+    border: 1px solid grey;
+    border-radius: 5px;
+    padding: 4px;
+    flex: 1; /* Distribute remaining space evenly */
+    display: flex; /* Use Flexbox */
+    align-items: center; /* Align items vertically */
+}
+
+.frozen-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  text-align: center;
+  width: 100%;
+  background-color: var(--topBackground);
+    padding: 10px 20% 30px 30%;
+    border-top: 1px solid var(--sslGold);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap; 
+}
+
+
+.rank-list-item {
+  color: var(--darkerText);
+}
+
+.modal-content {
+  background-color: var(--bottomBackground);
+  border: var(--topBackground);
+  border-radius: 4px;
+}
+
+.verifyBox {
+  background: var(--lighterText);
+  color: var(--darkerText);
+}
+
+.stickyFooter {
+  position:fixed;
+  bottom:0;
+  right:90%;
+  left:60px;
+  padding:10px;
+  box-sizing:border-box;
+}
+
+.navbarHead {
+  display: flex;
+  padding: 20px 0px;
+  flex-direction: row;
+}
+
+.navbarHead button {
+    color: inherit;
+    background: inherit;
+    border: none;
+    font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+    font-weight: 800;
+    font-style: normal;
+    margin: 0px 20px;
+}
+
+/* Index Tables */
+.tableClubName {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: end;
+}
+
+.tableClubName span {
+  padding-left: 10px;
+}
+
+/* Edit Schedule selects */
+.smallSelect .selectize-input{
+  overflow: hidden;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  text-indent: 1px;
+}
+
+.smallSelect .selectize-input::after{
+  display: none !important;
+}
+
+
+/* CSS styles for player and user statuses */
+.Active {
+  color: #66B38C;
+}
+
+.Inactive, .Retiring {
+  color: #D96F68;
+}
+
+.Retired {
+  color: #F5D17E;
 }

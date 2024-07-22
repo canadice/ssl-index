@@ -7,86 +7,139 @@
 ###########################################################################
 ###########################################################################
 
-## Data handling from HTML format
-# remotes::install_github("Canadice/sslrtools", force = TRUE)
-require(sslrtools)
+version <- "v1.0"
 
-require(rvest)
+suppressMessages({
+  ## Data handling
+  require(dplyr, quietly = FALSE)
+  require(tidyr, quietly = FALSE)
+  require(purrr, quietly = FALSE)
+  require(arsenal, quietly = FALSE)
+  require(rvest, quietly = FALSE)
+  require(scales, quietly = FALSE)
+  
+  ## Visualizations
+  require(ggplot2, quietly = FALSE)
+  require(ggnewscale, quietly = FALSE)
+  require(RColorBrewer, quietly = FALSE)
+  require(cowplot, quietly = FALSE)
+  require(plotly, quietly = FALSE)
+  require(ggimage, quietly = FALSE)
+  require(magick, quietly = FALSE)
+  require(rsvg, quietly = FALSE)
+  require(grid, quietly = FALSE)
+  require(ggpubr, quietly = FALSE)
+  require(ggforce, quietly = FALSE)
+  
+  ## Tables
+  require(formattable, quietly = FALSE)
+  # require(gt, quietly = FALSE)
+  require(gtExtras, quietly = FALSE) #Github package
+  require(reactable, quietly = FALSE)
+  require(reactable.extras, quietly = FALSE)
+  require(reactablefmtr, quietly = FALSE)
+  require(tippy, quietly = FALSE)
+  
+  ## Package for handling date and time
+  require(lubridate, quietly = FALSE)
+  
+  ## Packages for handling strings
+  require(stringr, quietly = FALSE)
+  require(stringi, quietly = FALSE)
+  
+  ## Loading packages for handling RMarkdown files
+  require(rmarkdown, quietly = FALSE)
+  require(markdown, quietly = FALSE)
+  
+  ##Loading Database packages for MySQL database
+  require(DBI, quietly = FALSE)
+  require(dbplyr, quietly = FALSE)
+  require(RMySQL, quietly = FALSE)
+  
+  ## Loading jsonlite and httr for API calls
+  require(jsonlite, quietly = FALSE)
+  require(httr, quietly = FALSE)
+  
+  ## Loading Shiny packages
+  require(shiny, quietly = FALSE)
+  require(knitr, quietly = FALSE)
+  require(kableExtra, quietly = FALSE)
+  # require(shinythemes, quietly = FALSE)
+  require(shinycssloaders, quietly = FALSE)
+  require(shinyjs, quietly = FALSE)
+  require(shinydashboard, quietly = FALSE)
+  require(shinyBS, quietly = FALSE)
+  require(shinyFeedback, quietly = FALSE)
+  require(sortable, quietly = FALSE)
+  require(shinyWidgets, quietly = FALSE)
+  # require(bslib, quietly = FALSE) ## Incompatible with shinydashboard
+  
+  require(fresh, quietly = FALSE)
+  require(shiny.router, quietly = FALSE)
+  
+  require(vembedr, quietly = FALSE)
+  
+  ## Packages for asynchronuous programming
+  require(promises, quietly = FALSE)
+  require(future, quietly = FALSE)
+  
+  ## Package for login
+  require(sodium, quietly = FALSE)
+  require(shinymanager, quietly = FALSE)
+})
 
-## Data handling
-require(dplyr)
-require(tidyr)
-require(purrr)
-require(arsenal)
+## Sets up that evaluating futures is done in parallell
+plan(multisession)
 
-## Visualizations
-require(ggplot2)
-require(ggnewscale)
-require(RColorBrewer)
-require(cowplot)
-require(plotly)
-require(ggimage)
-require(magick)
-require(rsvg)
-require(grid)
-require(ggpubr)
-require(ggforce)
+shinyDashboardLogoDIY <- 
+  function(boldText, 
+           mainText, 
+           textSize = 15, 
+           badgeText, 
+           badgeTextColor,
+           badgeTextSize = 2, 
+           badgeBackColor, 
+           badgeBorderRadius = 3) {
+    htmlCode <- 
+      htmltools::HTML(
+        text = paste0("<p style=\"font-size:",
+                      textSize, "px\">\n      <b> ", boldText, " </b>", mainText, 
+                      "<span> &nbsp; </span>\n      <span style=\"background-color: ", 
+                      badgeBackColor, ";\n      border-radius: ", badgeBorderRadius, 
+                      "px; \"> &nbsp;\n      <font color=\"", badgeTextColor, 
+                      "\" size=\"", badgeTextSize, "\">", badgeText, "  </font> &nbsp; </span> </p>")
+        )
+    htmlCode <- gsub(pattern = "\n", replacement = "", x = htmlCode)
+    htmlCode <- gsub(pattern = "[[:space:]]{2,3}", replacement = "", 
+                     x = htmlCode)
+    return(htmlCode)
+}
 
-## Tables
-require(formattable)
-# require(gt)
-# require(gtExtras) #Github package
-require(reactable)
-require(reactablefmtr)
-
-
-## Package for handling date and time
-require(lubridate)
-
-## Packages for handling strings
-require(stringr)
-require(stringi)
-
-## Loading package that can talk to Google Sheets
-require(googlesheets4)
-require(googledrive)
-
-## Loading packages for handling RMarkdown files
-require(rmarkdown)
-require(markdown)
-
-##Loading Database packages for SQLite database
-require(DBI)
-require(dbplyr)
-require(RSQLite)
-
-## Loading jsonlite and httr for API calls
-require(jsonlite)
-require(httr)
-
-## Loading Shiny packages
-require(shiny)
-require(DT)
-require(knitr)
-require(kableExtra)
-# require(shinythemes)
-require(shinycssloaders)
-require(shinyjs)
-require(shinydashboard)
-
-require(fresh)
-require(shiny.router)
-
-require(vembedr)
 
 ##################################################################
 ##                      SSL Logo and Theme                      ##
 ##################################################################
 
+# sslBlueD <- "#070B51"
+# sslBlueL <- "#141204"
+# sslGold <- "#BD9523"
 
-sslBlueD <- "#070B51"
-sslBlueL <- "#141204"
+sslBlueL <- "#324f7e"
+sslBlueD <- "#4b8dad"
 sslGold <- "#BD9523"
+
+customLogo <- 
+  shinyDashboardLogoDIY(
+    boldText = "",
+    mainText = tags$a(
+      href='https://forum.simulationsoccer.com',
+      target="_blank",
+      tags$img(src='portalwhite.png', height = "70")
+    ),
+    badgeText = version,
+    badgeTextColor = "white",
+    badgeBackColor = sslBlueL
+  )
 
 customTheme <- 
   create_theme(
@@ -114,12 +167,10 @@ customTheme <-
     ),
     adminlte_global(
       content_bg = "#FFF",
-      box_bg = "#D8DEE9", 
-      info_box_bg = "#D8DEE9"
+      box_bg = "#e4eef3", 
+      info_box_bg = "#e4eef3"
     )
   )
-  
-
 
 #################################################################
 ##               Running all modules for the app               ##
@@ -127,27 +178,11 @@ customTheme <-
 
 fileSources <- c("app-documents")
 
-## Loads and runs RMarkdown files
-rmdFiles <- 
-  sapply(
-    X = fileSources,
-    FUN = function(x){
-      list.files(path = x, pattern = ".Rmd$") %>% 
-        paste(x, ., sep = "/")
-    },
-    simplify = TRUE,
-    USE.NAMES = FALSE
-  ) %>% 
-  unlist() %>% 
-  .[str_detect(., pattern = ".Rmd")]
-
-sapply(rmdFiles, rmarkdown::render, quiet = T, output_dir = "app-documents")
-
 ## Loads files
 sapply(
   X = fileSources,
   FUN = function(x){
-    files <- list.files(path = x, pattern = ".R$")
+    files <- list.files(path = x, pattern = ".R$", recursive = TRUE)
     
     sapply(
       X = paste(x, files, sep = "/"),
@@ -156,63 +191,403 @@ sapply(
   }
 )
 
-
 ##################################################################
 ##                  The UI and Server function                  ##
 ##################################################################
 
-# jsResetCode <- "shinyjs.restart = function() {history.go(0)}"
 
 ui <- function(request){
+  
   dashboardPage(
-    ##----------------------------------------------------------------
-    ##                            Header                             -
-    ##----------------------------------------------------------------
-    
+    title = "SSL Portal",
     dashboardHeader(
-      title = "SSL Index",
+      title = customLogo,
       tags$li(
+        ## Function that loads js-cookies for auto-login
+        tags$script(
+          src = paste0(
+            "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
+            "dist/js.cookie.min.js"
+          )
+        ),
+        tags$script("Shiny.addCustomMessageHandler('cookie-remove', function(msg){
+                        Cookies.remove(msg.name);
+                        getCookies();
+                      })
+                    "),
         tags$head(
           tags$link(
             rel = "icon", 
             type = "image/png", 
             href = "favicon.png"),
-          tags$title("SSL Index")
+          tags$title("SSL Portal")
         ),
         class = "dropdown",
-        tags$head(
-          
-          ## HTML code so that a href link inherits the text color, not the link color
-          tags$style(HTML("a, a:hover, a:visited, a:active {color: inherit}")),
-          tags$style(HTML('
-            thead th {
-              background-color:#00044d !important;
-              color:#ffffff !important;
-            }')),
-          tags$style(
-            type="text/css",
-            "#playerComparison-fieldImage img {max-width: 480px; width: inherit; max-height: 600px;}"
-          )
-          # ## Increases the size of the logo box at the top left
-          # tags$style(".main-header {max-height: 80px}"),
-          # tags$style(".main-header .logo {height: 80px}"),
-          # tags$style(".main-header .logo {width: 300px}"),
-          # 
-          # ## Changes the margin of the sidebar
-          # tags$style(".main-header .navbar {margin-left: 300px}"),
-          # tags$style(type="text/css", "text {font-family: sans-serif, courier}"),
-          # 
+        div(
+          class = "navbarHead",
+          tags$p(actionButton(inputId = "gotoportal",
+                            label = "Portal")),
+          tags$p(actionButton(inputId = "gotoindex",
+                            label = "Index"))
         )
       )
     ),
-    
-    ##---------------------------------------------------------------
-    ##                            Sidebar                           -
-    ##---------------------------------------------------------------
-    
     dashboardSidebar(
-      # # Adjust the sidebar in accordance with the higher header
-      # tags$style(".left-side, .main-sidebar {padding-top: 100px}"),
+      uiOutput("sidebarpanel") %>% 
+        withSpinnerSmall()
+    ),
+    dashboardBody(
+      customTheme %>% use_theme(),
+      includeCSS('style.css'),
+      useShinyFeedback(), # include shinyFeedback
+      useShinyjs(), # include shinyjs
+      uiOutput("body")
+    )
+  )
+}
+
+## Adds shinymanager authentication to the app
+ui <- 
+  secure_app(
+    ui,
+    status = "primary",
+    ## Login page functionality
+    tags_top = 
+      list(
+        ## js function for storing cookies
+        tags$script(
+          src = paste0(
+            "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
+            "dist/js.cookie.min.js"
+          )
+        ),
+        tags$script("// script.js
+                      function getCookies(){
+                        var res = Cookies.get();
+                        Shiny.setInputValue('cookies', res);
+                      }
+                    
+                    // script.js
+                      Shiny.addCustomMessageHandler('cookie-set', function(msg){
+                        Cookies.set(msg.name, msg.value);
+                        getCookies();
+                      })
+                      
+                      Shiny.addCustomMessageHandler('cookie-remove', function(msg){
+                        Cookies.remove(msg.name);
+                        getCookies();
+                      })
+                    
+                    $(document).on('shiny:connected', function(ev){
+                      getCookies();
+                    });"),
+        tags$div(
+          tags$h4("SSL Portal", style = "align:center"),
+          tags$img(src = "FA.png", width = 100)
+        ),
+        tags$style(
+          type="text/css",
+          "body {font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;}
+          h1, h2, h3, h4, h5 {
+            font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
+            font-weight: 800; font-style: normal;
+          }"
+        )
+      ),
+    tags_bottom = tags$div(
+      tags$a("Register a new user!", href = "https://forum.simulationsoccer.com/member.php?action=register", target = "_blank", style = "float: left;"),
+      tags$a("Forgot password?", href = "https://forum.simulationsoccer.com/member.php?action=lostpw", target = "_blank", style = "float:right;"),
+      tags$br(),
+      div(
+        align = "center",
+        tags$p(actionButton(inputId = "login_guest",
+                          label = "Continue as guest"))
+      )
+    ),
+    fab_position = "bottom-left"
+  )
+  
+server <- function(input, output, session) {
+  
+  resAuth <- secure_server(
+    check_credentials = customCheckCredentials(),
+    timeout = 45,
+    session = session
+  )
+  
+  # login as guest
+  observe({
+    token <- shinymanager:::.tok$generate("guest")
+    shinymanager:::.tok$add(token, list(user = "guest", role = "guest", usergroup = 0))
+    shinymanager:::addAuthToQuery(session, token, "en")
+    session$reload()
+  }) %>% 
+    bindEvent(input$login_guest)
+  
+  # Checks saved cookie for automatic login
+  observe({
+    refreshtoken <- getRefreshToken(input$cookies$token)
+    
+    if(refreshtoken %>% nrow() > 0){
+      if((now() %>% as.numeric()) < refreshtoken$expires_at){
+        token <- shinymanager:::.tok$generate(refreshtoken$username)
+        shinymanager:::.tok$add(token, list(
+          uid = refreshtoken$uid, 
+          username = refreshtoken$username, 
+          usergroup = 
+            paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") %>% 
+            str_split(pattern = ",", simplify = TRUE) %>%
+            as.numeric() %>% 
+            as.list()
+        ))
+        shinymanager:::addAuthToQuery(session, token, "en")
+        
+        setRefreshToken(uid = refreshtoken$uid, token = refreshtoken$token)
+        
+        session$reload()
+      }
+    }
+  }) %>% 
+    bindEvent(input$cookies$token, ignoreNULL = TRUE)
+  
+  ## Removes cookie when logging out
+  observe({
+    msg <- list(name = "token")
+    session$sendCustomMessage("cookie-remove", msg)
+  }) %>% 
+    bindEvent(input$.shinymanager_logout)
+  
+  ## Adds all authentication list to a reactive object
+  authOutput <- reactive({
+    reactiveValuesToList(resAuth)
+  })
+  
+  #### BODY ####
+  output$body <- renderUI({
+    tabItems(
+      tabItem("yourPlayer",yourPlayerUI(id = "yourPlayer")),
+      tabItem("leagueindex",leagueIndexUI(id = "leagueindex")),
+      tabItem("createplayer",createPlayerUI(id = "createplayer")),
+      tabItem("playerapprove",playerApproveUI(id = "playerapprove")),
+      tabItem("teamView",managerTeamUI(id = "managerteam")),
+      tabItem("welcome",welcomeUI(id = "welcome"),active = TRUE),
+      tabItem("bodoverview",bodTeamUI(id = "bodoverview")),
+      tabItem("assignManager",assignManagerUI("assignManager")),
+      tabItem("submitPT",submitPTUI(id = "submitPT")),
+      tabItem("exportBuild",exportBuildUI(id = "exportBuild")),
+      tabItem("uploadGame",uploadGameUI(id = "uploadGame")),
+      tabItem("bankOverview",bankOverviewUI(id = "bankOverview")),
+      tabItem("bankDeposit",bankDepositUI(id = "bankDeposit")),
+      tabItem("bankProcess",bankProcessUI(id = "bankProcess")),
+      tabItem("editSchedule",editScheduleUI(id = "editSchedule")),
+      tabItem("academyUpload",academyUploadUI(id = "academyUpload")),
+      tabItem("academyIndex",academyIndexUI(id = "academyIndex")),
+      tabItem("careerRecords",careerRecordsUI(id = "careerRecords")),
+      tabItem("playerPages",playerPagesUI(id = "playerPages")# ),
+      # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
+      # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
+      # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
+      
+      # tabItem("teamindex",teamIndexUI(id = "teamindex")),
+      )
+      
+    )
+  })
+  
+  #### SIDEBAR ####
+  
+  ## Navigation between Portal and Index
+  menuGroup <- reactiveVal({0})
+  
+  observe({
+    menuGroup(1)
+    if(!(input$tabs %>% is.null())){
+      if(input$tabs != "welcome"){
+        updateTabItems(session, "tabs", "welcome")  
+      }  
+    }
+  }) %>% 
+    bindEvent(
+      input$gotoindex
+    )
+  
+  observe({
+    menuGroup(0)
+    if(!(input$tabs %>% is.null())){
+      if(input$tabs != "welcome"){
+        updateTabItems(session, "tabs", "welcome")  
+      }  
+    }
+  }) %>% 
+    bindEvent(
+      input$gotoportal
+    )
+  
+  ## Rendered menu in sidebar
+  output$sidebarpanel <- renderUI({
+    if(menuGroup() %% 2 == 0){
+      sidebarMenu(
+        id = "tabs",
+        menuItem(
+          "Welcome",
+          tabName = "welcome",
+          selected = TRUE
+        ),
+        {
+          if(!any(c(0,5) %in% authOutput()$usergroup)){
+            tagList(
+              menuItemOutput("playerTabs"),
+              menuItem(
+                "SSL Bank",
+                {
+                  if(hasActivePlayer(authOutput()$uid)){
+                    menuSubItem(
+                      "Player Store",
+                      tabName = "bankOverview"
+                    )
+                  }
+                },
+                {
+                  if(any(c(3, 4, 8, 11, 12) %in% authOutput()$usergroup)){
+                    menuSubItem(
+                      "Bank Deposits",
+                      tabName = "bankDeposit"
+                    )
+                  }
+                },
+                {
+                  # Banker (12), BoD (3), Commissioner (4)
+                  if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
+                    menuSubItem(
+                      "Process Bank Transactions",
+                      tabName = "bankProcess"
+                    )
+                  }
+                }
+              ),
+              # menuItem(
+              #   "SSL Budget",
+              #   menuSubItem(
+              #     "Budget Overview",
+              #     tabName = "budgetOverview"
+              #   ),
+              #   {
+              #     # Banker (12), BoD (3), Commissioner (4)
+              #     if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
+              #       tagList(
+              #         menuSubItem(
+              #           "Process Contracts",
+              #           tabName = "contractProcess"
+              #         ),
+              #         menuSubItem(
+              #           "Process Trade",
+              #           tabName = "tradeProcess"
+              #         )
+              #       )
+              #     }
+              #   }
+              # ),
+              {
+                # PT (11), Commissioner (4)
+                if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
+                  menuItem(
+                    "PT Tools",
+                    menuSubItem(
+                      "Submit Graded PT",
+                      tabName = "submitPT"
+                    )
+                  )
+                }
+              },
+              {
+                # Fileworker (14), Commissioner (4)
+                if(any(c(4, 3, 14) %in% authOutput()$usergroup)){
+                  menuItem(
+                    "File Work Tools",
+                    menuSubItem(
+                      "Export Builds",
+                      tabName = "exportBuild"
+                    ),
+                    menuSubItem(
+                      "Upload Game Stats",
+                      tabName = "uploadGame"
+                    ),
+                    menuSubItem(
+                      "Upload Academy Stats",
+                      tabName = "academyUpload"
+                    ),
+                    menuSubItem(
+                      "Edit Schedule",
+                      tabName = "editSchedule"
+                    )
+                  )
+                }
+              },
+              {
+                # Manager (8)
+                if(any(c(3, 4, 8) %in% authOutput()$usergroup)){
+                  menuItem(
+                    "Manager Tools",
+                    menuSubItem(
+                      "Your Team",
+                      tabName = "teamView"
+                      # ),
+                      # menuSubItem(
+                      #   "Team Index",
+                      #   tabName = "teamindex"
+                    )
+                  )
+                }
+              },
+              {
+                # BoD (3), Commissioner (4) or Intern (15)
+                if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
+                  menuItem(
+                    "BoD Tools",
+                    menuSubItem(
+                      "Player Approvals",
+                      tabName = "playerapprove"
+                    ),
+                    menuSubItem(
+                      "Assign Managers",
+                      tabName = "assignManager"
+                    ),
+                    menuSubItem(
+                      "Organizational Overview",
+                      tabName = "bodoverview"
+                    )
+                  )
+                }
+              }
+            )
+          }
+        },
+        menuItem(
+          "Player Pages",
+          tabName = "playerPages"
+        ),
+        {
+          if(!any(c(0,5) %in% authOutput()$usergroup)){
+            menuItem(
+              "Your User",
+              href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
+            )
+          } else {
+            menuItem(
+              "Register a user",
+              href = paste("https://forum.simulationsoccer.com/member.php?action=register")
+            )
+          }
+        },
+        menuItem(
+          "SSL Forum",
+          icon = icon("external-link-alt"),
+          href = "https://forum.simulationsoccer.com/"
+        ),
+        div(class = "stickyFooter",
+            tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
+      )
+    } else {
       sidebarMenu(
         id = "tabs",
         menuItem(
@@ -221,342 +596,42 @@ ui <- function(request){
           selected = TRUE
         ),
         menuItem(
-          "SSL Index",
-          menuSubItem(
-            "Schedule",
-            tabName = "schedule"
-          ),
-          menuSubItem(
-            "Standings",
-            tabName = "standings"
-          ),
-          menuSubItem(
-            "Cup",
-            tabName = "standingsCup"
-          ),
-          menuSubItem(
-            "Individual Statistics",
-            tabName = "playerStats"
-          ),
-          menuSubItem(
-            "Advanced Statistics",
-            tabName = "advancedStats"
-          ),
-          menuSubItem(
-            "Player Records",
-            tabName = "playerRecords"
-          )
+          "Academy Index",
+          tabName = "academyIndex"
         ),
         menuItem(
-          "SSL Academy",
-          menuSubItem(
-            "Academy Statistics",
-            tabName = "academyStats"
-          )
+          "League Index",
+          tabName = "leagueindex"
         ),
         menuItem(
-          "Teams",
-          tabName = "teamOverview"
+          "Career Records",
+          tabName = "careerRecords"
         ),
-        menuItem(
-          "Player Pages",
-          tabName = "playerPages"
-        ),
-        menuItem(
-          "Draft Class Tracker",
-          tabName = "trackerTPE"
-        ),
-        menuItem(
-          "Player Tools",
-          # menuSubItem(
-          #   "Build a new player",
-          #   tabName = "playerBuilder"
-          # ),
-          menuSubItem(
-            "Player Comparisons",
-            tabName = "playerComparison"  
-          ),
-          menuSubItem(
-            "Position Tracker",
-            tabName = "trackerPosition"
-          ),
-          menuSubItem(
-            "Regression",
-            tabName = "regression"
-          )
-        ),
-        menuItem(
-          "Fileworker Tools",
-          menuSubItem(
-            "Export Builds",
-            tabName = "fileUpdate"
-          ),
-          menuSubItem(
-            "Check FM Builds",
-            tabName = "fileCheck"
-          )
-        ),
+        {
+          if(!any(0 %in% authOutput()$usergroup)){
+            menuItem(
+              "Your User",
+              href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
+            )
+          } else {
+            menuItem(
+              "Register a user",
+              href = paste("https://forum.simulationsoccer.com/member.php?action=register")
+            )
+          }
+        },
         menuItem(
           "SSL Forum",
           icon = icon("external-link-alt"),
           href = "https://forum.simulationsoccer.com/"
         ),
-        menuItem(
-          "Github", 
-          icon = icon("github"),
-          href = "https://github.com/canadice/ssl-index"
-        )
-      )#,
-      # extendShinyjs(text = jsResetCode, functions = "restart"), # Add the js code to the page
-      # actionButton("reset_button", "Reload Page")
-    ),
-    
-    ##----------------------------------------------------------------
-    ##                              Body                             -
-    ##----------------------------------------------------------------
-    
-    dashboardBody(
-      customTheme %>% use_theme(),
-      includeCSS('style.css'),
-      useShinyjs(),
-      tabItems(
-        tabItem(
-          "welcome",
-          welcomeUI(id = "welcome")
-        ),
-        tabItem(
-          "schedule",
-          titlePanel(
-            h1("Schedule", align = "center")
-          ),
-          scheduleUI(id = "schedule")
-        ),
-        tabItem(
-          "standings",
-          titlePanel(
-            h1("Standings", align = "center")
-          ),
-          standingsUI(id = "standings")
-        ),
-        tabItem(
-          "standingsCup",
-          titlePanel(
-            h1("Simulation Soccer Cup", align = "center")
-          ),
-          standingsCupUI(id = "standingsCup")
-        ),
-        tabItem(
-          "teamOverview",
-          titlePanel(
-            h1("Team Overview", align = "center")
-          ),
-          teamOverviewUI(id = "teamOverview")
-        ),
-        tabItem(
-          "playerStats",
-          titlePanel(
-            h1("Individual Stats", align = "center")
-          ),
-          playerStatsUI(id = "playerStats")
-        ),
-        tabItem(
-          "playerComparison",
-          titlePanel(
-            h1("Player Comparison", align = "center")
-          ),
-          playerComparisonUI(id = "playerComparison")
-        ),
-        tabItem(
-          "playerPages",
-          titlePanel(
-            h1("Player Pages", align = "center")
-          ),
-          playerDatabaseUI(id = "playerPages")
-        ),
-        tabItem(
-          "trackerPosition",
-          titlePanel(
-            h1("Position Tracker", align = "center")
-          ),
-          trackerPositionUI(id = "trackerPosition")
-        ),
-        tabItem(
-          "playerRecords",
-          titlePanel(
-            h1("Individual Records", align = "center")
-          ),
-          playerRecordsUI(id = "playerRecords")
-        ),
-        tabItem(
-          "trackerTPE",
-          titlePanel(
-            h1("Draft Class Tracker", align = "center")
-          ),
-          trackerTPEUI(id = "trackerTPE")
-        ),
-        tabItem(
-          "regression",
-          regressionUI(id = "regression")
-        ),
-        tabItem(
-          "advancedStats",
-          advancedStatsUI(id = "advancedStats")
-        ),
-        tabItem(
-          "academyStats",
-          academyStatsUI(id = "academyStats")
-        ),
-        tabItem(
-          "fileUpdate",
-          titlePanel(
-            h1("File Update Tool", align = "center")
-          ),
-          fileUpdateToolUI(id = "fileUpdate")
-        ),
-        tabItem(
-          "fileCheck",
-          titlePanel(
-            h1("File Check Tool", align = "center")
-          ),
-          fileCheckUI(id = "fileCheck")
-        )#,
-        # tabItem(
-        #   "playerBuilder",
-        #   titlePanel(
-        #     h1("Player Builder", align = "center")
-        #   ),
-        #   hr(),
-        #   p(
-        #     paste("The Player Builder allows you to build your player",
-        #       "using your earned TPE as a bank. The resulting build",
-        #       "can then be exported to the Forum using the Export button.")
-        #   ),
-        #   hr(),
-        #   playerBuilderUI(id = "playerBuilder")
-        # )
+        div(class = "stickyFooter",
+            tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
       )
-    )
-    ##----------------------------------------------------------------
-  )
-}
-
-server <- function(input, output, session) {
-  
-  # ## Observes a reset
-  # observeEvent(input$reset_button, {js$restart()}) 
-  
-  
-  loadedModuleSchedule <- reactiveVal(FALSE)
-  loadedModuleStandings <- reactiveVal(FALSE)
-  loadedModulePlayerStats <- reactiveVal(FALSE)
-  loadedModulePlayerComparison <- reactiveVal(FALSE)
-  loadedModulePlayerBuilder <- reactiveVal(FALSE)
-  loadedModuleTrackerPosition <- reactiveVal(FALSE)
-  loadedModuleOverviewTeam <- reactiveVal(FALSE)
-  loadedModulePlayerDatabase <- reactiveVal(FALSE)
-  loadedModulePlayerRecords <- reactiveVal(FALSE)
-  loadedModuletrackerTPE <- reactiveVal(FALSE)
-  loadedModulefileUpdate <- reactiveVal(FALSE)
-  loadedModuleregression <- reactiveVal(FALSE)
-  loadedModuleadvancedStats <- reactiveVal(FALSE)
-  loadedModuleacademyStats <- reactiveVal(FALSE)
-  loadedModulestandingsCup <- reactiveVal(FALSE)
-  loadedModulefileCheck <- reactiveVal(FALSE)
-  # loadedModuleIIHF <- reactiveVal(FALSE)
-  
-  
-  ##---------------------------------------------------------------
-  ##          Loading each of the different backend sites         -
-  ##---------------------------------------------------------------
-  ### Only run the module once the menu is clicked to fasten start time
-  observeEvent(input$tabs,{
-    ## Checks which menu tab has been selected and whether the module has already been loaded
-    if(input$tabs == "schedule" & !loadedModuleSchedule()){
-      
-      loadedModuleSchedule(TRUE)
-      
-      scheduleSERVER(id = "schedule")
-      
-    } else if(input$tabs=="standings" & !loadedModuleStandings()){
-      
-      loadedModuleStandings(TRUE)
-      
-      standingsSERVER(id = "standings")
-      
-    } else if(input$tabs == "playerStats" & !loadedModulePlayerStats()){
-      
-      playerStatsSERVER(id = "playerStats")
-      
-    } else if(input$tabs == "playerComparison" & !loadedModulePlayerComparison()){
-
-      loadedModulePlayerComparison(TRUE)
-
-      playerComparisonSERVER(id = "playerComparison")
-
-    } else if(input$tabs == "playerBuilder" & !loadedModulePlayerBuilder()){
-      
-      loadedModulePlayerBuilder(TRUE)
-      
-      playerBuilderSERVER(id = "playerBuilder")
-      
-    } else if(input$tabs == "trackerPosition" & !loadedModuleTrackerPosition()){
-      
-      loadedModuleTrackerPosition(TRUE)
-      
-      trackerPositionSERVER(id = "trackerPosition")
-      
-    } else if(input$tabs == "teamOverview" & !loadedModuleOverviewTeam()){
-      
-      loadedModuleOverviewTeam(TRUE)
-      
-      teamOverviewSERVER(id = "teamOverview")
-      
-    } else if(input$tabs == "playerPages" & !loadedModulePlayerDatabase()){
-      
-      loadedModulePlayerDatabase(TRUE)
-      
-      playerDatabaseSERVER(id = "playerPages")
-      
-    } else if(input$tabs == "playerRecords" & !loadedModulePlayerDatabase()){
-      
-      loadedModulePlayerRecords(TRUE)
-      
-      playerRecordsSERVER(id = "playerRecords")
-      
-    } else if(input$tabs == "trackerTPE" & !loadedModuletrackerTPE()){
-      
-      loadedModuletrackerTPE(TRUE)
-      
-      trackerTPESERVER(id = "trackerTPE")
-      
-    } else if(input$tabs == "fileUpdate" & !loadedModulefileUpdate()){
-      
-      loadedModulefileUpdate(TRUE)
-      
-      fileUpdateToolSERVER(id = "fileUpdate")
-      
-    } else if(input$tabs == "regression" & !loadedModuleregression()){
-      loadedModuleregression(TRUE)
-      regressionServer(id = "regression")
-      
-    } else if(input$tabs == "advancedStats" & !loadedModuleadvancedStats()){
-      loadedModuleadvancedStats(TRUE)
-      advancedStatsServer(id = "advancedStats")
-      
-    } else if(input$tabs == "academyStats" & !loadedModuleacademyStats()){
-      loadedModuleacademyStats(TRUE)
-      academyStatsServer(id = "academyStats")
-      
-    } else if(input$tabs == "standingsCup" & !loadedModulestandingsCup()){
-      loadedModulestandingsCup(TRUE)
-      standingsCupServer(id = "standingsCup")
-      
-    } else if(input$tabs == "fileCheck" & !loadedModulefileCheck()){
-      loadedModulefileCheck(TRUE)
-      fileCheckServer(id = "fileCheck")
-      
     }
-  }, ignoreNULL = TRUE, ignoreInit = TRUE)
+  }) 
+  
+  ##----------------------------------------------------------------
   
   ### Sets the url for each tab
   observeEvent(input$tabs,{
@@ -581,7 +656,159 @@ server <- function(input, output, session) {
     }
   })
   
+  # Goes to welcome tab after logging in successfully
+  observe({
+    updateTabItems(session, "tabs", selected = "welcome")
+  }) %>%
+    bindEvent(
+      authOutput(),
+      once = TRUE
+    )
+  
+  # Different player menu based on if you have a current player or not
+  output$playerTabs <- renderMenu({
+    if(hasActivePlayer(authOutput()$uid)){
+      menuItem(
+        "Your Player",
+        tabName = "yourPlayer"
+      )
+    } else if(checkIfAlreadyApproving(authOutput()$uid)) {
+      menuItem(
+        "Your player is awaiting approval"
+      )
+    } else {
+      menuItem(
+        "Create a player",
+        tabName = "createplayer"
+      )
+    }
+  }) %>% 
+    bindEvent(
+      input$tabs,
+      ignoreInit = FALSE,
+      ignoreNULL = FALSE
+    )
+  
+  observe({
+    req(authOutput()$uid)
+    
+    # print("Authenticating")
+    # print(authOutput())
+    # 
+    ## Loads the different server modules
+    managerTeamServer("managerteam", userinfo = authOutput())
+    assignManagerServer("assignManager", userinfo = authOutput())
+    bodTeamServer("bodoverview", userinfo = authOutput())
+    exportBuildServer("exportBuild")
+    
+  }) %>% 
+    bindEvent(
+      authOutput(),
+      ignoreInit = FALSE
+    )
+  
+  loadedPage <- 
+    reactiveValues(
+      create = FALSE,
+      player = FALSE,
+      index = FALSE,
+      academyIndex = FALSE,
+      uploadGame = FALSE,
+      bankOverview = FALSE,
+      welcome = FALSE,
+      records = FALSE,
+      playerPages = FALSE,
+      contractProcess = FALSE,
+      tradeProcess = FALSE
+    )
+  
+  ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
+  updated <- reactiveVal({0})
+  
+  observe({
+    if(input$tabs == "playerapprove"){
+      req(authOutput()$uid)
+      playerApproveServer("playerapprove", userinfo = authOutput())
+      
+    } else if(input$tabs == "submitPT"){
+      req(authOutput()$uid)
+      submitPTServer("submitPT", userinfo = authOutput())
+      
+    } else if(!loadedPage$welcome & input$tabs == "welcome"){
+      welcomeServer("welcome", usergroup = authOutput()$usergroup)
+      loadedPage$welcome <- TRUE
+      
+    } else if(input$tabs == "bankDeposit"){
+      req(authOutput()$uid)
+      bankDepositServer("bankDeposit", userinfo = authOutput())
+      
+    } else if(input$tabs == "bankProcess"){
+      req(authOutput()$uid)
+      bankProcessServer("bankProcess", userinfo = authOutput())
+      
+    } else if(input$tabs == "editSchedule"){
+      req(authOutput()$uid)
+      editScheduleServer("editSchedule")
+      
+    } else if(input$tabs == "academyUpload"){
+      req(authOutput()$uid)
+      academyUploadServer("academyUpload")
+      
+    } else if(!loadedPage$create & input$tabs == "createplayer"){
+      req(authOutput()$uid)
+      createPlayerServer("createplayer", userinfo = authOutput(), parent = session)
+      loadedPage$create <- TRUE
+      
+    } else if(!loadedPage$player & input$tabs == "yourPlayer"){
+      req(authOutput()$uid)
+      yourPlayerServer("yourPlayer", uid = authOutput()$uid, parent = session, updated = updated)
+      loadedPage$player <- TRUE
+      
+    # } else if(!loadedPage$contractProcess & input$tabs == "contractProcess"){
+    #   req(authOutput()$uid)
+    #   contractProcessServer("contractProcess", uid = authOutput()$uid)
+    #   loadedPage$contractProcess <- TRUE
+    #   
+    # } else if(!loadedPage$tradeProcess & input$tabs == "tradeProcess"){
+    #   req(authOutput()$uid)
+    #   tradeProcessServer("tradeProcess", uid = authOutput()$uid)
+    #   loadedPage$tradeProcess <- TRUE
+      
+    } else if(!loadedPage$playerPages & input$tabs == "playerPages"){
+      playerPagesServer("playerPages")
+      loadedPage$playerPages <- TRUE
+      
+    } else if(!loadedPage$academyIndex & input$tabs == "academyIndex"){
+      academyIndexServer("academyIndex")
+      loadedPage$academyIndex <- TRUE
+      
+    } else if(!loadedPage$index & input$tabs == "leagueindex"){
+      leagueIndexServer("leagueindex")
+      loadedPage$index <- TRUE
+      
+    } else if(!loadedPage$records & input$tabs == "careerRecords"){
+      careerRecordsServer("careerRecords")
+      loadedPage$careerRecords <- TRUE
+      
+    } else if(!loadedPage$uploadGame & input$tabs == "uploadGame"){
+      uploadGameServer("uploadGame")
+      loadedPage$uploadGame <- TRUE
+      
+    } else if(!loadedPage$bankOverview & input$tabs == "bankOverview"){
+      req(authOutput())
+      bankOverviewServer("bankOverview", uid = authOutput()$uid, parent = session, updated = updated)
+      loadedPage$bankOverview <- TRUE
+      
+    # } else if(input$tabs == "budgetOverview"){
+    #   budgetOverviewServer("budgetOverview")
+      
+    }
+    
+  }) %>% 
+    bindEvent(
+      input$tabs
+    )
   
 }
 # Run the application 
-shinyApp(ui = ui, server = server, enableBookmarking = "disable")
+app <- shinyApp(ui = ui, server = server, enableBookmarking = "url")
