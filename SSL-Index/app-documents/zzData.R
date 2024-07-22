@@ -271,6 +271,25 @@ positions <- c(
 
 positionsGK <- c(positions, "GK" = "Goalkeeper")
 
+# Define Hair options
+hairColor <- c(
+  "Light Brown 1" = "LBR1",
+  "Light Brown 2" = "LBR2",
+  "Light Brown 3" = "LBR3",
+  "Dark Brown 1" = "DBR1",
+  "Dark Brown 2" = "DBR2",
+  "Dark Brown 3" = "DBR3",
+  "Blond(e) 1" = "BLN1",
+  "Blond(e) 2" = "BLN2",
+  "Blond(e) 3" = "BLN3",
+  "Black 1" = "BLK1",
+  "Black 2" = "BLK2",
+  "Black 3" = "BLK3",
+  "Red 1" = "RED1",
+  "Red 2" = "RED2",
+  "Red 3" = "RED3"
+)
+
 # Define trait options with optgroup
 traits <- list(
   "Movement - On the Ball" = list(

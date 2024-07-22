@@ -30,6 +30,7 @@ exportBuildUI <- function(id) {
              ),
       column(
         width =4, 
+        uiOutput(ns("singleNationality")),
         div(
           id = ns("singlePlayerDownload"),
           downloadButton(ns("singleDownloadData"), "Download Selected Player")
@@ -67,7 +68,8 @@ exportBuildServer <- function(id) {
           }
         
         paste(
-          '{"GoalKeeperAttributes":{',
+          '{"GoalKeeperAttributes":{
+          ',
           sapply(
             temp %>% 
               select(`aerial reach`:throwing),
@@ -77,7 +79,9 @@ exportBuildServer <- function(id) {
             str_replace_all(pattern = " ", replacement = "") %>% 
             str_replace(pattern = "TendencyToRush", replacement = "RushingOut") %>% 
             str_replace(pattern = "AerialReach", replacement = "AerialAbility"),
-          '},"MentalAttributes":{',
+          '},
+"MentalAttributes":{
+          ',
           sapply(
             temp %>% 
               select(`aggression`:`work rate`),
@@ -86,7 +90,9 @@ exportBuildServer <- function(id) {
             paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
             str_replace_all(pattern = " ", replacement = "") %>% 
             str_replace(pattern = "WorkRate", replacement = "Workrate"),
-          '},"PhysicalAttributes":{',
+          '},
+"PhysicalAttributes":{
+          ',
           sapply(
             temp %>% 
               select(`acceleration`:`strength`),
@@ -97,8 +103,9 @@ exportBuildServer <- function(id) {
             str_replace(pattern = "JumpingReach", replacement = "Jumping"),
           ',"LeftFoot":', temp$`left foot`,
           ',"RightFoot":', temp$`right foot`,
-          '}', 
-          ',"TechnicalAttributes":{',
+          '},
+"TechnicalAttributes":{
+          ',
           sapply(
             temp %>% 
               select(`corners`:`technique`),
@@ -108,18 +115,21 @@ exportBuildServer <- function(id) {
             str_replace_all(pattern = " ", replacement = "") %>% 
             str_replace(pattern = "FreeKick", replacement = "Freekicks") %>% 
             str_replace(pattern = "LongThrows", replacement = "Longthrows"),
-          '},"Positions":{',
+          '},
+"Positions":{
+          ',
           sapply(
             temp %>% 
               select(`pos_st`:`pos_gk`),
             FUN = function(x) {if_else(is.na(x)|x == 0, 1, as.numeric(x))}
           ) %>% 
-            paste(paste('"', positionsGK[names(positionsGK) %in% (names(.) %>% str_remove_all(pattern = "pos_") %>% str_to_upper())], '"', sep = ""), ., sep = ":", collapse = ",") %>% 
+            paste(paste('"', positionsGK[sapply((names(.) %>% str_remove_all(pattern = "pos_") %>% str_to_upper()), FUN = function(x) which(names(positionsGK) == x))], '"', sep = ""), ., sep = ":", collapse = ",") %>% 
             str_replace_all(pattern = " ", replacement = "") %>% 
             str_replace_all(pattern = "AttackingMidfielder", replacement = "AttackingMid") %>% 
-            str_replace_all(pattern = "Wingback", replacement = "WingBack"),
-          '}',
-          ',"HairColour":"', temp$hair_color %>% str_replace_all(pattern = " |\\(|\\)", replacement = ""), 
+            str_replace_all(pattern = "Wingback", replacement = "WingBack") %>% 
+            str_replace_all(pattern = "(Left|Right|Central)([A-Za-z]+)(\":\"?[0-9]+)", replacement = "\\2\\1\\3"),
+          '},
+"HairColour":"', hairColor[temp$hair_color] %>% names() %>% str_replace_all(pattern = " |\\(|\\)", replacement = ""), 
           '","HairLength":"', temp$hair_length %>% str_to_title(), 
           '","SkinColour":', temp$skintone, 
           ',"Height":', 
@@ -202,6 +212,19 @@ exportBuildServer <- function(id) {
                 label = "Select a player to export", 
                 choices = c(data$name)
               )      
+            }
+          )
+      })
+      
+      output$singleNationality <- renderUI({
+        req(input$selectedPlayer)
+        build() %>% 
+          then(
+            onFulfilled = function(data){
+              tagList(
+                h4("Position: ", data$position),
+                h4("Nationality: ", data$nationality)
+              )
             }
           )
       })
