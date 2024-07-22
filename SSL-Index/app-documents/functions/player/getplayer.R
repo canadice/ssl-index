@@ -136,6 +136,20 @@ getPlayerPositions <- function(pid){
   })
 }
 
+getAllPlayerPositions <- function(){
+  future_promise({
+    portalQuery(
+      paste(
+        "SELECT ua.status_u AS status, pd.pos_st, pd.pos_lam, pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, 
+        pd.pos_lwb, pd.pos_cdm, pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk
+        FROM playerdata pd
+        JOIN useractivity ua ON pd.uid = ua.uid
+        WHERE pd.status_p = 1;"
+      )
+    ) 
+  })
+}
+
 getPlayerFootedness <- function(pid){
   future_promise({
     portalQuery(

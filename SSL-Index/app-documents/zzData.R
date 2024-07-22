@@ -11,8 +11,8 @@ red <- "#D96F68"
 yellow <- "#F5D17E"
 green <- "#66B38C"
 
-keyColor <- "#A1CDF4"
-importantColor <- "#CAFFD0"
+keyColor <- "#276BB0"
+importantColor <- "#60c689"
 
 traitSep <- " \\\\ "
 
@@ -29,6 +29,23 @@ currentSeason <-
 
 statisticsLegend <- 
   indexQuery("SELECT * FROM statlegend")
+
+positionalCoord <-
+  tibble::tibble(
+    x = c(375, 130, 375, 620, 130, 375, 620, 130, 375, 620, 130, 375, 620, 375),
+    y = c(775, 625, 625, 625, 455, 455, 455, 310, 310, 310, 150, 150, 150, 50),
+    position = c("ST", "LAM", "CAM", "RAM", "LM", "CM", "RM", "LWB", "DM",
+                 "RWB", "LD", "CD", "RD", "GK")
+  )
+
+pitch <- 
+  try(
+    image_read_svg(
+      path = "https://raw.githubusercontent.com/canadice/ssl-index/main/graphics/pitch.svg",
+      width = 750
+    ),
+    silent = TRUE
+  )
 
 editableAttributes <- 
   attributes$attribute %>% 
