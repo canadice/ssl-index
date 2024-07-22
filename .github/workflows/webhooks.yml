@@ -95,7 +95,6 @@ jobs:
 
       - name: Generate data
         run: |
-          source("scrapers/scraperJob.R")
           source("scrapers/webhookJob.R")
         shell: Rscript {0}
 
