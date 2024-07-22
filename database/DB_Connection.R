@@ -104,7 +104,7 @@ playerdata <-
     skintone = `Skin Tone` %>% str_extract(pattern = "\\d+") %>% as.integer(),
     status_p = if_else(Team == "Retired", 0, 1),
     status_u = if_else(Active == "IA", 0, 1),
-    render = if_else(`Player Render` %>% is.na(), Render, `Player Render`),
+    render = `Player Render`,
     Affiliate = case_when(
       Team %in% c("Athênai F.C.", "Seoul MFC", "F.C. Kaapstad", "Cairo City", "North Shore United", "Inter London", "Montréal United", "AS Paris") ~ "Minor",
       TRUE ~ "Major"
@@ -118,6 +118,7 @@ playerdata <-
       Team == "Inter London" ~ "A.C. Romana",
       Team == "Montréal United" ~ "Schwarzwälder FV",
       Team == "AS Paris" ~ "União São Paulo",
+      Team == "Prospect" ~ "Academy",
       TRUE ~ Team
     ),
     rerollused = 0,
@@ -663,6 +664,10 @@ data.frame(
 #################################################################
 gameData <-
   tbl(con, "gameDataPlayer") %>%
+  filter(
+    (Season == "15" & Division == "2" & Matchday == "13") | (Season == "15" &
+    Matchday %in% c("14", "Final"))
+  ) %>% 
   collect() %>% 
   select(
     Name,
@@ -707,16 +712,43 @@ gameData <-
   rename_with(
     tolower
   ) %>% 
-  dbWriteTable(
-    conn = indexcon,
-    name = "gamedataoutfield",
-    value = .,
-    row.names = FALSE,
-    overwrite = TRUE
+  mutate(
+    name = name %>% str_replace_all(pattern = "'", replacement = "\\\\'"),
+    across(
+      where(is.character),
+      ~ paste0("'", .x, "'")
+    )
+  ) %>% 
+  mutate(
+    across(
+      everything(),
+      ~ replace_na(.x, 0)
+    )
   )
+
+for(i in 75:nrow(gameData)){
+  indexQuery(
+    paste(
+      "INSERT INTO gamedataoutfield (
+  name, club, position, result, opponent, matchday, season, division, acc, aer, agg, agi, ant, bal, bra, cmd, com, cmp, cnt, cor, cro, `dec`, det, dri, ecc, fin, fir, fla, fre, han, hea, jum, kic, ldr, lon, `l th`, mar, nat, otb, `1v1`, pac, pas, pen, pos, pun, ref, tro, sta, str, tck, tea, tec, thr, vis, wor, apps, `minutes played`, `distance run (km)`, `average rating`, `player of the match`, goals, assists, xg, `shots on target`, shots, `penalties taken`, `penalties scored`, `successful passes`, `attempted passes`, `pass%`, `key passes`, `successful crosses`, `attempted crosses`, `cross%`, `chances created`, `successful headers`, `attempted headers`, `header%`, `key headers`, dribbles, `tackles won`, `attempted tackles`, `tackle%`, `key tackles`, interceptions, clearances, `mistakes leading to goals`, `yellow cards`, `red cards`, fouls, `fouls against`, offsides, xa, `xg overperformance`, `goals outside b`, `fk shots`, blocks, `open play key passes`, `successful open play crosses`, `attempted open play crosses`, `shots blocked`, `progressive passes`, `successful presses`, `attempted presses`, `goals outside box`, gid
+) VALUES ",
+      paste(
+        "(", paste(gameData[i,] %>% t(), collapse = ", "), ",", 0, ")", collapse = ","
+      ),
+      ";"
+    )  
+  )
+}
+
+
+
 
 gameData <-
   tbl(con, "gameDataKeeper") %>%
+  filter(
+    (Season == "15" & Division == "2" & Matchday == "13") | (Season == "15" &
+                                                               Matchday %in% c("14", "Final"))
+  ) %>% 
   collect() %>% 
   select(
     Name,
@@ -753,13 +785,34 @@ gameData <-
   rename_with(
     tolower
   ) %>% 
-  dbWriteTable(
-    conn = indexcon,
-    name = "gamedatakeeper",
-    value = .,
-    row.names = FALSE,
-    overwrite = TRUE
+  mutate(
+    name = name %>% str_replace_all(pattern = "'", replacement = "\\\\'"),
+    across(
+      where(is.character),
+      ~ paste0("'", .x, "'")
+    )
+  ) %>% 
+  mutate(
+    across(
+      everything(),
+      ~ replace_na(.x, 0)
+    )
   )
+
+for(i in 1:nrow(gameData)){
+  indexQuery(
+    paste(
+      "INSERT INTO gamedatakeeper (
+  name, club, position, result, opponent, matchday, season, division, apps, `minutes played`, `average rating`, `player of the match`, won, lost, drawn, `clean sheets`, conceded, `saves parried`, `saves held`, `saves tipped`, `save%`, `penalties faced`, `penalties saved`, `xsave%`, `xg prevented`, gid
+) VALUES ",
+      paste(
+        "(", paste(gameData[i,] %>% t(), collapse = ", "), ",", 0, ")", collapse = ","
+      ),
+      ";"
+    )  
+  )
+}
+
 
 #################################################################
 ##                Insert Positional Coordinates                ##

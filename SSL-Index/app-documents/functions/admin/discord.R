@@ -23,6 +23,40 @@ sendTest <- function(){
   runjs(jscode)
 }
 
+sendGradedTPE <- function(source, tpe){
+  jscode <- paste0("
+    function sendMessage() {
+      const request = new XMLHttpRequest();
+      request.open('POST', '", config$discord$tpe, "');
+
+      request.setRequestHeader('Content-type', 'application/json');
+
+      var myEmbed = {
+        author: {
+          name: 'A new PT has been graded!'
+        },
+        title: '", source, "',
+        fields: [",
+                   paste0("{ name: '", tpe$username, "', value:", tpe$tpe, ", inline: TRUE}") %>% paste(collapse = ","),
+        "],
+        footer: {
+          text: 'The TPE has already been added to your player page, this is just a report.'
+        }
+      }
+
+      var params = {
+        username: 'PT Watcher',
+        embeds: [ myEmbed ]
+      }
+
+      request.send(JSON.stringify(params));
+    }
+    sendMessage();
+  ")
+  
+  runjs(jscode)
+}
+
 sendAcademyIndexUpdate <- function(season){
   jscode <- paste0("
     function sendMessage() {

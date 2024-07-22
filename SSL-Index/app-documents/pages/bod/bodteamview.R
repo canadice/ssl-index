@@ -27,14 +27,15 @@ bodTeamServer <- function(id, userinfo) {
           then(
             onFulfilled = function(value){
               value %>% 
-                select(!pid) %>% 
+                select(!c(pid, `left foot`, `right foot`)) %>% 
                 arrange(
                   team,
                   affiliate,
                   tpe %>% desc()
                 ) %>% 
                 reactable(
-                  groupBy = c("team"),
+                  # groupBy = c("team"),
+                  pagination = FALSE,
                   rowStyle = function(index){
                     if(.[index, "tpebank"] < 0){
                       list(background = "#FFCCCB", color = "black")

@@ -2,6 +2,8 @@ welcomeUI <- function(id) {
   ns <- NS(id)
   tagList(
     
+    uiOutput(ns("information")),
+    
     box(title = "Latest Results", width = NULL,
         uiOutput(ns("schedule")) %>% 
           withSpinnerSmall()
@@ -37,10 +39,22 @@ welcomeUI <- function(id) {
   )
 }
 
-welcomeServer <- function(id) {
+welcomeServer <- function(id, usergroup) {
   moduleServer(
     id,
     function(input, output, session) {
+      
+      #### INFORMATION ####
+      output$information <- renderUI({
+        if(any(5 %in% usergroup)){
+          box(title = "Information", width = NULL, collapsible = TRUE,
+              h2("Your account needs to be activated in order to access the rest of the portal functions. Please check the e-mail used when registering on the SSL forums.") %>% 
+                div(class = "Retired")
+          ) %>% 
+            column(width = 12)
+        }
+      })
+      
       
       #### Latest league standings ####
       lapply(1:2,

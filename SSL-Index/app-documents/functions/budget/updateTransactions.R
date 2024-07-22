@@ -10,7 +10,7 @@ AND TABLE_NAME = 'transactions';")
   
   budgetQuery(
     paste(
-      "INSERT INTO transactions (link, type, transfervalue, processed) VALUES ",
+      "INSERT INTO transactions (link, type, processed) VALUES ",
       paste("(", paste0(transaction, collapse = ","), ")")
     )
   )

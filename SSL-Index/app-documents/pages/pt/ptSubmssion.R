@@ -192,6 +192,14 @@ submitPTServer <- function(id, userinfo) {
             onFulfilled = function(data){
               removeModal()
               
+              data <- 
+                data %>% 
+                filter(
+                  pid != -99
+                )
+              
+              sendGradedTPE(source = input$taskName, tpe = data)
+              
               data %>% 
                 mutate(
                   source = input$taskName

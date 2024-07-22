@@ -107,7 +107,14 @@ contractProcessServer <- function(id, uid) {
             tagList(
               column(6, 
                      textInput(session$ns("link"), label = "Link to contract post", value = data$link),
-                     numericInput(session$ns("signed"), label = "The season the contract was signed", value = data$signed, min = currentSeason$season - 4, max = currentSeason$season)
+                     numericInput(session$ns("signed"), label = "The season the contract was signed", value = data$signed, min = currentSeason$season - 4, max = currentSeason$season),
+                     autonumericInput(
+                       session$ns("transfervalue"), 
+                       label = tippy("Add transfer value", tooltip = "Only used if FA/IFA signing"), 
+                       value = 0,
+                       currencySymbol = "$", currencySymbolPlacement = "p", 
+                       digitGroupSeparator = ",", decimalPlaces = 0
+                     )
                    ),
               column(6,
                      selectInput(session$ns("type"), label = "Contract type", choices = c("", "Rookie" = "ROO", "IFA" = "IFA", "Free Agent" = "FA", "Extension" = "EXT"), selected = data$type),
@@ -163,7 +170,8 @@ contractProcessServer <- function(id, uid) {
             clause2 = paste0("'", paste0(input$clause2, collapse = ","), "'"),
             clause3 = paste0("'", paste0(input$clause3, collapse = ","), "'"),
             processed = uid,
-            status_c = input$active
+            status_c = input$active,
+            transfervalue = input$transfervalue
           )
         
         updateContract(summary)
