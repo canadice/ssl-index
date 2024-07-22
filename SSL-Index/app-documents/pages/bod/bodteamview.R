@@ -27,7 +27,7 @@ bodTeamServer <- function(id, userinfo) {
           then(
             onFulfilled = function(value){
               value %>% 
-                select(!c(pid, `left foot`, `right foot`)) %>% 
+                select(!c(`left foot`, `right foot`)) %>% 
                 arrange(
                   team,
                   affiliate,
