@@ -174,6 +174,10 @@ createPlayerUI <- function(id) {
         status = "info",
         width = NULL,
         fluidRow(
+          ## Selects player roles from a dropdown
+          uiOutput(ns("roleSelector")) %>% column(width = 12),
+        ),
+        fluidRow(
           ##---------------------
           ##  Physical Attributes  
           ##---------------------
@@ -305,6 +309,53 @@ createPlayerServer <- function(id, userinfo, parent) {
       output$tpeRemaining <- output$tpeRemaining2 <- renderText({
         tpeBanked()
       })
+      
+      #### ROLE OUTPUT ####
+      # Dynamic UI for role selector
+      output$roleSelector <- renderUI({
+        tagList(
+          paste("Football Manager uses <i>roles</i> and <i>duties</i> to control what your player will do within a
+        set tactic. There exists many different roles with different importances given to specific
+        attributes. Selecting a role and duty in the list below will highlight the <span
+        class='keyAttribute'>very important</span> and
+        <span class='importantAttribute'>important</span>          attributes.") %>% HTML(),
+          br(),
+          selectInput(session$ns("selectedRole"), label = tippy("Select a player role", tooltip = "Please note, the role you play will be determined by your Manager. If you want to play a specific role, make sure to speak with your Manager."), choices = names(roleAttributes))
+        )
+      })
+      
+      #### ATTRIBUTE HIGHLIGHTS BASED ON ROLE ####
+      observe({
+        editableAttributes %>% 
+          lapply(
+            X = .,
+            FUN = function(x){
+              if(roleAttributes[[input$selectedRole]][[x]] == 1){
+                feedback(
+                  session = session,
+                  show = TRUE,
+                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  color = importantColor,
+                  icon = shiny::icon("exclamation-sign", lib = "glyphicon")
+                ) 
+              } else if(roleAttributes[[input$selectedRole]][[x]] == 2){
+                feedback(
+                  session = session,
+                  show = TRUE,
+                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  color = keyColor,
+                  icon = shiny::icon("exclamation-sign", lib = "glyphicon")
+                )
+              } else {
+                hideFeedback(
+                  session = session,
+                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ")
+                )
+              }
+              
+            }
+          )
+      }) %>% bindEvent(input$selectedRole)
       
       ## All the cost outputs
       editableAttributes %>% 

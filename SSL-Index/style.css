@@ -1,13 +1,13 @@
 :root {
     --color: 0, 0%;
-    --sslBlue: #070b51ff;
+    --sslBlue: #070b51;
 	  --sslBlueL: color-mix(in srgb, var(--sslBlue) 95%, white);
 	  --sslBlueD: color-mix(in srgb, var(--sslBlue) 95%, black);
-    --sslGold: #bd9523ff;
+    --sslGold: #bd9523;
     --lighterText: hsl(var(--color), 100%);
     --darkerText: hsl(var(--color), 0%);
-    --amazon: #417b5aff;
-    --mountbatten-pink: #916c80ff;
+    --key: #A1CDF4;
+    --important: #CAFFD0;
     --topBackground: hsl(var(--color), 10%);
     --middleBackground: hsl(var(--color), 20%);
     --bottomBackground: hsl(var(--color), 30%);
@@ -25,6 +25,16 @@ h1, h2, h3, h4, h5 {
   font-weight: 800; 
   font-style: normal;
   color: white;
+}
+
+.keyAttribute {
+    color: var(--key);
+    font-weight: 600;
+}
+
+.importantAttribute {
+    color: var(--important);
+    font-weight: 600;
 }
 
 /* Display grid for the box container with 4 columns   */
@@ -407,6 +417,7 @@ h1, h2, h3, h4, h5 {
     justify-content: space-evenly;
     align-items: center;
     flex-wrap: wrap; 
+    z-index: 10;
 }
 
 
