@@ -6,8 +6,8 @@
     --sslGold: #bd9523;
     --lighterText: hsl(var(--color), 100%);
     --darkerText: hsl(var(--color), 0%);
-    --key: #A1CDF4;
-    --important: #CAFFD0;
+    --key: #276BB0;
+    --important: #60c689;
     --topBackground: hsl(var(--color), 10%);
     --middleBackground: hsl(var(--color), 20%);
     --bottomBackground: hsl(var(--color), 30%);
