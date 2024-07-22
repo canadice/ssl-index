@@ -1,0 +1,40 @@
+/* Display grid for the box container with 4 columns   */
+#standingsCup-boxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+#standingsCup-boxes > div:nth-child(-n+3),
+#standingsCup-boxes > div:nth-child(n+7):nth-child(-n+9),
+#standingsCup-boxes > div:nth-child(n+13):nth-child(-n+15),
+#standingsCup-boxes > div:nth-child(n+19):nth-child(-n+21){
+  margin-bottom: -15px;
+}
+
+.small-box.bg-orange { 
+  background-color: #e08b46 !important; 
+  color: #000000 !important; 
+}
+
+.cup-info-div {
+  display: inline-block;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.scores {
+  font-size: 1.2em;
+  width: 20px;
+  padding: 0px 15%;
+  float: right;
+}
+
+.scores:nth-child(odd) {
+  border-right: 1px solid;
+}
+
+.scores:nth-child(even) {
+  border-left: 1px solid;
+}
