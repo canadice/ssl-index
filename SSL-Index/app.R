@@ -7,7 +7,7 @@
 ###########################################################################
 ###########################################################################
 
-version <- "v0.9.6"
+version <- "v1.0"
 
 suppressMessages({
   ## Data handling
@@ -220,7 +220,7 @@ ui <- function(request){
             rel = "icon", 
             type = "image/png", 
             href = "favicon.png"),
-          tags$title("TESTING GROUND")
+          tags$title("SSL Portal")
         ),
         class = "dropdown",
         div(
@@ -283,9 +283,7 @@ ui <-
                     });"),
         tags$div(
           tags$h4("SSL Portal", style = "align:center"),
-          tags$img(
-            src = "FA.png", width = 100
-          )
+          tags$img(src = "FA.png", width = 100)
         ),
         tags$style(
           type="text/css",
@@ -324,14 +322,11 @@ server <- function(input, output, session) {
     shinymanager:::addAuthToQuery(session, token, "en")
     session$reload()
   }) %>% 
-    bindEvent(
-      input$login_guest
-    )
+    bindEvent(input$login_guest)
   
   # Checks saved cookie for automatic login
   observe({
-    refreshtoken <- 
-      getRefreshToken(input$cookies$token)
+    refreshtoken <- getRefreshToken(input$cookies$token)
     
     if(refreshtoken %>% nrow() > 0){
       if((now() %>% as.numeric()) < refreshtoken$expires_at){
@@ -353,22 +348,14 @@ server <- function(input, output, session) {
       }
     }
   }) %>% 
-    bindEvent(
-      input$cookies$token,
-      ignoreNULL = TRUE
-    )
-  
+    bindEvent(input$cookies$token, ignoreNULL = TRUE)
   
   ## Removes cookie when logging out
   observe({
-    msg <- list(
-      name = "token"
-    )
+    msg <- list(name = "token")
     session$sendCustomMessage("cookie-remove", msg)
   }) %>% 
-    bindEvent(
-      input$.shinymanager_logout
-    )
+    bindEvent(input$.shinymanager_logout)
   
   ## Adds all authentication list to a reactive object
   authOutput <- reactive({
@@ -378,122 +365,30 @@ server <- function(input, output, session) {
   #### BODY ####
   output$body <- renderUI({
     tabItems(
-      tabItem(
-        "yourPlayer",
-        yourPlayerUI(id = "yourPlayer")
-      ),
-      tabItem(
-        "leagueindex",
-        leagueIndexUI(id = "leagueindex")
-      ),
-      tabItem(
-        "createplayer",
-        createPlayerUI(id = "createplayer")
-      ),
-      tabItem(
-        "playerapprove",
-        playerApproveUI(id = "playerapprove")
-      ),
-      tabItem(
-        "teamView",
-        managerTeamUI(id = "managerteam")
-      ),
-      tabItem(
-        "welcome",
-        welcomeUI(id = "welcome"),
-        active = TRUE
-      ),
-      tabItem(
-        "bodoverview",
-        bodTeamUI(id = "bodoverview")
-      ),
-      tabItem(
-        "assignManager",
-        assignManagerUI("assignManager")
-      ),
-      tabItem(
-        "submitPT",
-        submitPTUI(id = "submitPT")
-      ),
-      tabItem(
-        "exportBuild",
-        exportBuildUI(id = "exportBuild")
-      ),
-      tabItem(
-        "uploadGame",
-        uploadGameUI(id = "uploadGame")
-      ),
-      tabItem(
-        "bankOverview",
-        bankOverviewUI(id = "bankOverview")
-      ),
-      tabItem(
-        "bankDeposit",
-        bankDepositUI(id = "bankDeposit")
-      ),
-      tabItem(
-        "bankProcess",
-        bankProcessUI(id = "bankProcess")
-      ),
-      tabItem(
-        "editSchedule",
-        editScheduleUI(id = "editSchedule")
-      ),
-      tabItem(
-        "academyUpload",
-        academyUploadUI(id = "academyUpload")
-      ),
-      tabItem(
-        "academyIndex",
-        academyIndexUI(id = "academyIndex")
-      ),
-      tabItem(
-        "careerRecords",
-        careerRecordsUI(id = "careerRecords")
-      ),
-      tabItem(
-        "playerPages",
-        playerPagesUI(id = "playerPages")
-      ),
-      tabItem(
-        "contractProcess",
-        contractProcessUI(id = "contractProcess")
-      ),
-      tabItem(
-        "budgetOverview",
-        budgetOverviewUI(id = "budgetOverview")
-      ),
-      tabItem(
-        "transactionProcess",
-        transactionProcessUI(id = "transactionProcess")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
-      # ),
-      # tabItem(
-      #   "teamindex",
-      #   teamIndexUI(id = "teamindex")
+      tabItem("yourPlayer",yourPlayerUI(id = "yourPlayer")),
+      tabItem("leagueindex",leagueIndexUI(id = "leagueindex")),
+      tabItem("createplayer",createPlayerUI(id = "createplayer")),
+      tabItem("playerapprove",playerApproveUI(id = "playerapprove")),
+      tabItem("teamView",managerTeamUI(id = "managerteam")),
+      tabItem("welcome",welcomeUI(id = "welcome"),active = TRUE),
+      tabItem("bodoverview",bodTeamUI(id = "bodoverview")),
+      tabItem("assignManager",assignManagerUI("assignManager")),
+      tabItem("submitPT",submitPTUI(id = "submitPT")),
+      tabItem("exportBuild",exportBuildUI(id = "exportBuild")),
+      tabItem("uploadGame",uploadGameUI(id = "uploadGame")),
+      tabItem("bankOverview",bankOverviewUI(id = "bankOverview")),
+      tabItem("bankDeposit",bankDepositUI(id = "bankDeposit")),
+      tabItem("bankProcess",bankProcessUI(id = "bankProcess")),
+      tabItem("editSchedule",editScheduleUI(id = "editSchedule")),
+      tabItem("academyUpload",academyUploadUI(id = "academyUpload")),
+      tabItem("academyIndex",academyIndexUI(id = "academyIndex")),
+      tabItem("careerRecords",careerRecordsUI(id = "careerRecords")),
+      tabItem("playerPages",playerPagesUI(id = "playerPages")# ),
+      # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
+      # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
+      # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
+      
+      # tabItem("teamindex",teamIndexUI(id = "teamindex")),
       )
       
     )
@@ -539,7 +434,7 @@ server <- function(input, output, session) {
           selected = TRUE
         ),
         {
-          if(!any(0 %in% authOutput()$usergroup)){
+          if(!any(c(0,5) %in% authOutput()$usergroup)){
             tagList(
               menuItemOutput("playerTabs"),
               menuItem(
@@ -570,28 +465,28 @@ server <- function(input, output, session) {
                   }
                 }
               ),
-              menuItem(
-                "SSL Budget",
-                menuSubItem(
-                  "Budget Overview",
-                  tabName = "budgetOverview"
-                ),
-                {
-                  # Banker (12), BoD (3), Commissioner (4)
-                  if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
-                    tagList(
-                      menuSubItem(
-                        "Process Contracts",
-                        tabName = "contractProcess"
-                      ),
-                      menuSubItem(
-                        "Process Transactions",
-                        tabName = "transactionProcess"
-                      )
-                    )
-                  }
-                }
-              ),
+              # menuItem(
+              #   "SSL Budget",
+              #   menuSubItem(
+              #     "Budget Overview",
+              #     tabName = "budgetOverview"
+              #   ),
+              #   {
+              #     # Banker (12), BoD (3), Commissioner (4)
+              #     if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
+              #       tagList(
+              #         menuSubItem(
+              #           "Process Contracts",
+              #           tabName = "contractProcess"
+              #         ),
+              #         menuSubItem(
+              #           "Process Trade",
+              #           tabName = "tradeProcess"
+              #         )
+              #       )
+              #     }
+              #   }
+              # ),
               {
                 # PT (11), Commissioner (4)
                 if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
@@ -672,7 +567,7 @@ server <- function(input, output, session) {
           tabName = "playerPages"
         ),
         {
-          if(!any(0 %in% authOutput()$usergroup)){
+          if(!any(c(0,5) %in% authOutput()$usergroup)){
             menuItem(
               "Your User",
               href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = "")
@@ -824,8 +719,7 @@ server <- function(input, output, session) {
       records = FALSE,
       playerPages = FALSE,
       contractProcess = FALSE,
-      budgetOverview = FALSE,
-      transactionProcess = FALSE
+      tradeProcess = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -841,7 +735,7 @@ server <- function(input, output, session) {
       submitPTServer("submitPT", userinfo = authOutput())
       
     } else if(!loadedPage$welcome & input$tabs == "welcome"){
-      welcomeServer("welcome")
+      welcomeServer("welcome", usergroup = authOutput()$usergroup)
       loadedPage$welcome <- TRUE
       
     } else if(input$tabs == "bankDeposit"){
@@ -870,18 +764,17 @@ server <- function(input, output, session) {
       yourPlayerServer("yourPlayer", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$player <- TRUE
       
-    } else if(!loadedPage$contractProcess & input$tabs == "contractProcess"){
-      req(authOutput()$uid)
-      contractProcessServer("contractProcess", uid = authOutput()$uid)
-      loadedPage$contractProcess <- TRUE
-      
-    } else if(!loadedPage$transactionProcess & input$tabs == "transactionProcess"){
-      req(authOutput()$uid)
-      transactionProcessServer("transactionProcess", uid = authOutput()$uid)
-      loadedPage$transactionProcess <- TRUE
+    # } else if(!loadedPage$contractProcess & input$tabs == "contractProcess"){
+    #   req(authOutput()$uid)
+    #   contractProcessServer("contractProcess", uid = authOutput()$uid)
+    #   loadedPage$contractProcess <- TRUE
+    #   
+    # } else if(!loadedPage$tradeProcess & input$tabs == "tradeProcess"){
+    #   req(authOutput()$uid)
+    #   tradeProcessServer("tradeProcess", uid = authOutput()$uid)
+    #   loadedPage$tradeProcess <- TRUE
       
     } else if(!loadedPage$playerPages & input$tabs == "playerPages"){
-      req(authOutput()$uid)
       playerPagesServer("playerPages")
       loadedPage$playerPages <- TRUE
       
@@ -906,9 +799,8 @@ server <- function(input, output, session) {
       bankOverviewServer("bankOverview", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$bankOverview <- TRUE
       
-    } else if(!loadedPage$budgetOverview & input$tabs == "budgetOverview"){
-      budgetOverviewServer("budgetOverview")
-      loadedPage$budgetOverview <- TRUE
+    # } else if(input$tabs == "budgetOverview"){
+    #   budgetOverviewServer("budgetOverview")
       
     }
     
