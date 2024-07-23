@@ -3,11 +3,17 @@ submitPTUI <- function(id) {
   tagList(
     column(
       width = 12,
-      paste("The .csv file should contain the username and the tpe gained. The encoding of the file should be UTF-8. 
+      column(width = 6,
+             paste("The .csv file should contain the username and the tpe gained. The encoding of the file should be UTF-8. 
             If you are not sure how to do this, follow the instructions in this ", 
-            a("link", href = "https://stackoverflow.com/questions/18693139/how-to-convert-csv-files-encoding-to-utf-8"),
-            ".", sep = ""
-      ) %>% HTML(), 
+                   a("link", href = "https://stackoverflow.com/questions/18693139/how-to-convert-csv-files-encoding-to-utf-8"),
+                   ".", sep = ""
+             ) %>% HTML()
+      ),
+      column(width = 3,
+             downloadButton(ns("downloadTemplate"), label = "Download template file")
+      ), 
+      br(),
       br(),
       fileInput(inputId = ns("gradedTask"),label = "Upload a , separated .csv file", accept = ".csv"),
       textInput(inputId = ns("taskName"), label = "What is the task name?")
@@ -22,9 +28,11 @@ submitPTUI <- function(id) {
       fluidRow(),
     column(
       width = 12,
+      h3("Confirm the submission:"),
       actionButton(inputId = ns("submitTask"), label = "Submit"),
       downloadButton(ns("downloadData"),label = "Fake", style = "visibility: hidden;")
-    )
+    ) %>% 
+      div(class = "frozen-bottom")
   )
 }
 
@@ -117,6 +125,7 @@ submitPTServer <- function(id, userinfo) {
                     source = input$taskName
                   ) %>% 
                   reactable(
+                    pagination = FALSE,
                     rowStyle = function(index){
                       if(.[index, "pid"] < 0){
                         list(background = "#FFCCCB")
@@ -145,6 +154,15 @@ submitPTServer <- function(id, userinfo) {
                   write.csv(file, row.names = FALSE)
               }
             )
+        })
+      
+      output$downloadTemplate <- downloadHandler(
+        filename = function() { 
+          paste("Bank Deposit Template.csv", sep="")
+        },
+        content = function(file) {
+          url <- "https://raw.githubusercontent.com/canadice/ssl-index/main/SSL-Index/ptGradeTemplate.csv"  # Replace with your actual URL
+          download.file(url, destfile = file)
         })
       
       observe({

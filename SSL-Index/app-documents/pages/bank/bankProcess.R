@@ -62,6 +62,7 @@ bankProcessServer <- function(id, userinfo) {
                 reactable(
                   selection = "multiple",
                   onClick = "select",
+                  pagination = FALSE,
                   columns = 
                     list(
                       Time = colDef(format = colFormat(datetime = TRUE)),
