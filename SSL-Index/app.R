@@ -327,7 +327,6 @@ server <- function(input, output, session) {
   # Checks saved cookie for automatic login
   observe({
     refreshtoken <- getRefreshToken(input$cookies$token)
-    
     if(refreshtoken %>% nrow() > 0){
       if((now() %>% as.numeric()) < refreshtoken$expires_at){
         token <- shinymanager:::.tok$generate(refreshtoken$username)

@@ -54,53 +54,38 @@ submitPTServer <- function(id, userinfo) {
             
             pids <- 
               promise_map(
-                .x = file$username, 
-                .f = getUserID
-              ) %>% 
-              then(
-                onFulfilled = function(uids){
-                  uids %>%
-                    promise_map(
-                      .x = .,
-                      .f = function(x) {
-                        if(nrow(x) == 0){
-                          tibble(
-                            pid = -99
-                          )
-                        } else {
-                          res <- getPlayerName(uid = x)
-                          
-                          res %>% 
-                            then(
-                              onFulfilled = function(name){
-                                if(name %>% nrow() == 0){
-                                  tibble(
-                                    pid = -99
-                                  )
-                                } else {
-                                  name
-                                }
-                              }
-                            )
-                        }
-                      } 
-                    ) %>% 
-                    then(
-                      onFulfilled = function(names){
-                        names %>%
-                          do.call(args = ., what = plyr::rbind.fill) %>%
-                          select(pid)
+              .x = file$username,
+              .f = function(x){
+                res <- getPlayerNameFromUsername(x)
+                
+                res %>% 
+                  then(
+                    onFulfilled = function(name){
+                      if(name %>% nrow() == 0){
+                        tibble(
+                          pid = -99
+                        )
+                      } else {
+                        name
                       }
-                    )
+                    }
+                  )
+              }
+            ) %>% 
+              then(
+                onFulfilled = function(names){
+                  names %>%
+                    do.call(args = ., what = plyr::rbind.fill)
                 }
               )
-            
+              
             pids %>%
               then(
                 onFulfilled = function(data){
                   file %>%
                     mutate(
-                      pid = data %>% unlist()
+                      pid = data$pid %>% unlist(),
+                      player = data$name %>% unlist()
                     )
                 }
               )
@@ -124,11 +109,12 @@ submitPTServer <- function(id, userinfo) {
                   mutate(
                     source = input$taskName
                   ) %>% 
+                  rename_with(str_to_upper) %>% 
                   reactable(
                     pagination = FALSE,
                     rowStyle = function(index){
-                      if(.[index, "pid"] < 0){
-                        list(background = "#FFCCCB")
+                      if(.[index, "PID"] < 0){
+                        list(background = "#FFCCCB", color = "black")
                       }
                     }
                   )
@@ -158,7 +144,7 @@ submitPTServer <- function(id, userinfo) {
       
       output$downloadTemplate <- downloadHandler(
         filename = function() { 
-          paste("Bank Deposit Template.csv", sep="")
+          paste("PT Grading Template.csv", sep="")
         },
         content = function(file) {
           url <- "https://raw.githubusercontent.com/canadice/ssl-index/main/SSL-Index/ptGradeTemplate.csv"  # Replace with your actual URL

@@ -66,6 +66,18 @@ hasActivePlayer <- function(uid){
   nrow(res) > 0
 }
 
+getPlayerNameFromUsername <- function(username){
+  portalQuery(
+    paste(
+      "SELECT pd.pid, pd.name
+        FROM playerdata AS pd
+        JOIN mybbdb.mybb_users AS mbb ON pd.uid = mbb.uid
+        WHERE mbb.username = ", paste0("'", username, "'"), " AND pd.status_p = 1;"
+    )
+  ) %>% 
+    future_promise()
+}
+
 getPlayerName <- function(uid = NULL, pid = NULL){
   future_promise({
     if(pid %>% is.null()){
