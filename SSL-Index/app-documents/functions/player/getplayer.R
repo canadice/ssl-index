@@ -98,7 +98,7 @@ getPlayerID <- function(name){
     paste(
       "SELECT pid
         FROM playerdata
-        WHERE name = '", name, "' AND status_p = 1;",
+        WHERE name = '", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "' AND status_p = 1;",
       sep = ""
     )
   )

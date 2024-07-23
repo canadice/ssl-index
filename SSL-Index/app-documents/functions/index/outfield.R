@@ -311,7 +311,7 @@ getOutfieldMatchStats <- function(name){
       FROM `gamedataoutfield` AS g 
       JOIN schedule AS s ON g.gid = s.gid
       JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
-      WHERE name = ", paste0("'", name, "'"), " 
+      WHERE name = ", paste0("'", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'"), " 
       ORDER BY g.gid DESC LIMIT 5;"
     )
   ) %>% 

@@ -53,12 +53,15 @@ bankDepositServer <- function(id, userinfo) {
               ) %>% 
               then(
                 onFulfilled = function(pids){
-                  pids[[lapply(
-                    X = pids,
-                    FUN = function(x){
-                      x %>% nrow() == 0
-                    }
-                  ) %>% unlist() %>% which()]] <- tibble(pid = -99)
+                  missing <- lapply(X = pids,FUN = function(x){
+                    x %>% nrow() == 0
+                  }) %>% 
+                    unlist() %>% 
+                    which()
+                  
+                  if(length(missing) != 0){
+                    pids[[missing]] <- tibble(pid = -99)
+                  }
                     
                   tibble(
                     pid = pids %>% do.call(what = rbind, args = .) %>% unlist(),
@@ -87,9 +90,16 @@ bankDepositServer <- function(id, userinfo) {
                   mutate(
                     source = input$depositSource
                   ) %>% 
+                  rename_with(
+                    str_to_upper
+                  ) %>% 
                   reactable(
+                    columns = 
+                      list(
+                        AMOUNT = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
+                      ),
                     rowStyle = function(index){
-                      if(.[index, "pid"] < 0){
+                      if(.[index, "PID"] < 0){
                         list(background = "#FFCCCB")
                       }
                     }
