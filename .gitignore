@@ -43,3 +43,5 @@ my.png
 # Ignore config.yml
 *config.yml
 
+# Ignore SSL Bot Python caches
+*__pycache__
