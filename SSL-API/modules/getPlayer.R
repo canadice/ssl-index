@@ -110,7 +110,7 @@ function(class = NULL) {
         LEFT JOIN useractivity ua ON pd.uid = ua.uid
         LEFT JOIN userstatuses us ON ua.status_u = us.status
         LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
-      WHERE pd.class = ", paste0("'S", class, "'"), "
+      WHERE pd.class = ", paste0("'S", class, "'"), " AND pd.status_p > 0
       ORDER BY pd.tpe DESC;"
     )
   )
