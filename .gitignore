@@ -41,5 +41,5 @@ my.png
 *.RData
 
 # Ignore config.yml
-*/config.yml
+*config.yml
 
