@@ -40,3 +40,6 @@ my.png
 *.xml
 *.RData
 
+# Ignore config.yml
+*/config.yml
+
