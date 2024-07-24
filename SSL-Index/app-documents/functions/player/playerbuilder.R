@@ -262,7 +262,7 @@ approvePlayer <- function(uid){
   sendApprovedCreate(data)
   
   portalQuery(
-    paste("UPDATE playerdata SET rerollused = 0, redistused = 0, team = 'Academy', status_p = 1, name = concat(first, ' ', last),",
+    paste("UPDATE playerdata SET rerollused = 0, redistused = 0, team = -1, affiliate = 1, status_p = 1, name = concat(first, ' ', last),",
           "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
           "WHERE uid = ", uid, "AND status_p = -1;")
   )
