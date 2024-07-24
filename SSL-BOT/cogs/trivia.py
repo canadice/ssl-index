@@ -8,7 +8,7 @@ class Trivia(commands.Cog): # create a class for our cog that inherits from comm
     def __init__(self, bot): # this is a special method that is called when the cog is loaded
         self.bot = bot
         
-    @discord.slash_command(name='trivia', help='Responds with a random trivia from the SSL')
+    @discord.slash_command(name='trivia', description='Responds with a random trivia from the SSL')
     async def trivia(self, ctx: discord.ApplicationContext):
         ssl_trivia = [
             'Seoul Mythic FC used to be located in Rio de Janeiro as FC Rio.',
@@ -32,7 +32,7 @@ class Trivia(commands.Cog): # create a class for our cog that inherits from comm
         response = random.choice(ssl_trivia)
         await ctx.respond(response)
       
-    @discord.slash_command(name='nine_nine', help='Responds with a random trivia from the SSL')
+    @discord.slash_command(name='nine_nine', description='Responds with a random quote')
     async def nine_nine(self, ctx: discord.ApplicationContext):
         brooklyn_99_quotes = [
             "No doubt, no doubt, no doubt.",

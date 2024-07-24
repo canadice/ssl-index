@@ -23,7 +23,7 @@ class Player(commands.Cog): # create a class for our cog that inherits from comm
         
         return(embed)
         
-    @discord.slash_command(name='player', help='Gets player information')
+    @discord.slash_command(name='player', description='Gets player information')
     async def player(self, ctx: discord.ApplicationContext, season: typing.Optional[int] = None, *, name: typing.Optional[str] = None):
         if name is None:
           await ctx.send(noName)

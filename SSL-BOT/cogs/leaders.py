@@ -11,7 +11,7 @@ class Leaders(commands.Cog): # create a class for our cog that inherits from com
         self.bot = bot
         
         
-    @discord.slash_command(name='classleaders', help='Shows the draft class leaders')
+    @discord.slash_command(name='classleaders', description='Shows the draft class leaders for a specific class (number)')
     async def classleaders(self, ctx: discord.ApplicationContext, season: typing.Optional[int] = None):
         if season is None:
           info = requests.get('https://api.simulationsoccer.com/player/getDraftClass')
@@ -30,7 +30,15 @@ class Leaders(commands.Cog): # create a class for our cog that inherits from com
         # TPE Leaders
         stat = data[["tpe", "name", "username"]].sort_values("tpe", ascending = False).head()
         
-        embed.add_field(name = "TPE ", value = stat.to_csv(index = False, header = False, sep = "\t"), inline = True)
+        stat.columns = stat.columns.str.upper()
+        
+        # Convert the DataFrame to a formatted string
+        stat_string = stat.to_string(index=False)
+        
+        # Format the string to fit nicely in the embed
+        formatted_stat_string = f"```\n{stat_string}\n```"
+        
+        embed.add_field(name = "", value = formatted_stat_string, inline = True)
           
         await ctx.respond(embed = embed)
         
