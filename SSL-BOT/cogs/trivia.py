@@ -23,8 +23,10 @@ class Trivia(commands.Cog): # create a class for our cog that inherits from comm
             'The inaugural manager of Inter London was @frazzle14.',
             'The inaugural manager of Tokyo S.C. was @Pingu.',
             'CF Catalunya and Montréal United were the first expansion teams in season 2.',
-            "The first SSL Goal ever scored was by Athênai F.C.'s A Singular Tub of FazeBerry ® GFuel ® Energy Formula - The Official Drink of ESports ® in the 43rd minute of MD1 in Season 1.",
-            'The first team to win all major trophies (League, Cup, and Shield) was Hollywood FC after winning the S4 Founders Shield.'
+            "The first SSL goal ever scored was by Athênai F.C.'s A Singular Tub of FazeBerry ® GFuel ® Energy Formula - The Official Drink of ESports ® in the 43rd minute of MD1 in Season 1.",
+            'The first team to win all major trophies (League, Cup, and Shield) was Hollywood FC after winning the season 4 Founders Shield.',
+            'The fastest goal scored in an SSL League match was Antonio Governo (CABA) after 9 seconds in a 6-1 victory over Romana in season 7 of Division 2.',
+            'The fastest sending off in an SSL League match was Siilver Druid (MTL) after 04:54 in a 1-3 loss to Cairo in season 3.'
           ]
     
         response = random.choice(ssl_trivia)
