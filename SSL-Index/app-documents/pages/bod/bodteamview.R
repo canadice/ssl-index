@@ -27,9 +27,8 @@ bodTeamServer <- function(id, userinfo) {
           then(
             onFulfilled = function(value){
               value %>% 
-                select(!c(`left foot`, `right foot`)) %>% 
                 arrange(
-                  team,
+                  organization,
                   affiliate,
                   tpe %>% desc()
                 ) %>% 
@@ -42,7 +41,7 @@ bodTeamServer <- function(id, userinfo) {
                     }
                   },
                   columns = list(
-                    team = colDef(width = 200)
+                    organization = colDef(width = 200)
                   )
                 )
             }

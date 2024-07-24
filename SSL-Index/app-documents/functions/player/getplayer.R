@@ -215,9 +215,10 @@ getPlayersFromAllTeams <- function(){
   future_promise({
     portalQuery(
       paste(
-        "SELECT name, class, tpe, tpebank, `left foot`, `right foot`, position, team, affiliate, pid
-      FROM playerdata
-      WHERE status_p = 1 AND team NOT IN ('FA', 'Prospect');
+        "SELECT pd.name, pd.class, pd.tpe, pd.tpebank, pd.position, teams.name AS organization, (CASE WHEN teams.affiliate = 2 THEN 'Minor' ELSE 'Major' END) AS affiliate, pid
+      FROM playerdata AS pd
+      LEFT JOIN teams ON pd.team = teams.orgID AND pd.affiliate = teams.affiliate
+      WHERE status_p > 0 AND team > -3;
       "
       )
     )
@@ -249,7 +250,7 @@ getRecentCreates <- function(){
         LEFT JOIN
             mybbdb.mybb_users mbb ON pd.uid = mbb.uid
         WHERE 
-            pd.status_p = 1
+            pd.status_p > 0
         ORDER BY 
             created DESC
         LIMIT 5;"
