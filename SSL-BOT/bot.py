@@ -27,7 +27,8 @@ async def hello(ctx: discord.ApplicationContext):
 
 cogs_list = [
     'trivia',
-    'player'
+    'player',
+    'leaders'
 ]
 
 for cog in cogs_list:
