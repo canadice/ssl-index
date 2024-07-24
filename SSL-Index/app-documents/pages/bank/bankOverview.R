@@ -625,25 +625,33 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                                 attribute = "right foot",
                                 old = foot$`right foot` %>% as.character(),
                                 new = input$right %>% as.character()
-                              ) %>% 
-                              add_row(
-                                tibble(
-                                  attribute = c(input$primary, input$secondary, input$unusedPositions),
-                                  value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions))) %>% as.character()
-                                ) %>% 
-                                  left_join(
-                                    positions,
-                                    by = c("attribute" = "name"),
-                                    suffix = c(".new", ".old")
+                              ) 
+                            
+                            if(c(input$primary, input$secondary, input$unusedPositions) %>% length() != 0){
+                              update <- 
+                                update %>% 
+                                add_row(
+                                  tibble(
+                                    attribute = c(input$primary, input$secondary, input$unusedPositions),
+                                    value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions))) %>% as.character()
                                   ) %>% 
-                                  rename(
-                                    old = value.old,
-                                    new = value.new
-                                  ) %>% 
-                                  mutate(
-                                    old = old %>% as.character()
-                                  )
-                              ) %>% 
+                                    left_join(
+                                      positions,
+                                      by = c("attribute" = "name"),
+                                      suffix = c(".new", ".old")
+                                    ) %>% 
+                                    rename(
+                                      old = value.old,
+                                      new = value.new
+                                    ) %>% 
+                                    mutate(
+                                      old = old %>% as.character()
+                                    )
+                                )
+                            }
+                            
+                            update <- 
+                              update %>% 
                               add_row(
                                 tibble(
                                   attribute = "tpe",
@@ -717,28 +725,34 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                       attribute = "right foot",
                       old = foot$`right foot` %>% as.character(),
                       new = input$right %>% as.character()
-                    ) %>% 
-                    add_row(
-                      tibble(
-                        attribute = paste("pos_", c(input$primary, input$secondary, input$unusedPositions) %>% str_to_lower(), sep = ""),
-                        value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions))) %>% as.character()
-                      ) %>% 
-                        left_join(
-                          positions %>% 
-                            mutate(
-                              name = paste("pos_", c(name) %>% str_to_lower(), sep = "")
-                            ),
-                          by = c("attribute" = "name"),
-                          suffix = c(".new", ".old")
+                    )
+                  
+                  
+                  if(c(input$primary, input$secondary, input$unusedPositions) %>% length() != 0){
+                    update <- 
+                      update %>% 
+                      add_row(
+                        tibble(
+                          attribute = paste("pos_", c(input$primary, input$secondary, input$unusedPositions) %>% str_to_lower(), sep = ""),
+                          value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions))) %>% as.character()
                         ) %>% 
-                        rename(
-                          old = value.old,
-                          new = value.new
-                        ) %>% 
-                        mutate(
-                          old = old %>% as.character()
-                        )
-                    ) 
+                          left_join(
+                            positions %>% 
+                              mutate(
+                                name = paste("pos_", c(name) %>% str_to_lower(), sep = "")
+                              ),
+                            by = c("attribute" = "name"),
+                            suffix = c(".new", ".old")
+                          ) %>% 
+                          rename(
+                            old = value.old,
+                            new = value.new
+                          ) %>% 
+                          mutate(
+                            old = old %>% as.character()
+                          )
+                      ) 
+                  }
                   
                   tpe <- tibble(
                     source = "Individual Training",
