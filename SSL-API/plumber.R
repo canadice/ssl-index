@@ -23,6 +23,8 @@ root <- pr() %>%
   pr_set_api_spec(function(spec) {
     spec$info$title <- "SSL Portal API" 
     spec$info$description <- "This API is connected to the SSL Portal and grants access to various different databases used to store information about players teams and organizations."
+    spec$info$contact <- list(name = "Canadice", url = "https://forum.simulationsoccer.com")
+    
     spec
   })
 
@@ -31,7 +33,5 @@ info <- pr("./info.R")
 
 root %>% 
   pr_mount("/player", players) %>% 
-  pr_mount("/info", info)
-
-root %>% 
+  pr_mount("/info", info) %>% 
   pr_run(port = 8001)
