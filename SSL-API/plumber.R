@@ -1,0 +1,37 @@
+#
+# This is a Plumber API. You can run the API by clicking
+# the 'Run API' button above.
+#
+# Find out more about building APIs with Plumber here:
+#
+#    https://www.rplumber.io/
+#
+
+require(plumber)
+require(RMySQL)
+
+#* @apiTitle Player API
+#* @apiDescription Endpoints to get player information.
+
+if(Sys.info()["sysname"] == "Linux"){
+  Sys.setenv(HOME = "/root")  
+}
+
+source("functions/database.R")
+
+root <- pr() %>% 
+  pr_set_api_spec(function(spec) {
+    spec$info$title <- "SSL Portal API" 
+    spec$info$description <- "This API is connected to the SSL Portal and grants access to various different databases used to store information about players teams and organizations."
+    spec
+  })
+
+players <- pr("./modules/getPlayer.R")
+info <- pr("./info.R")
+
+root %>% 
+  pr_mount("/player", players) %>% 
+  pr_mount("/info", info)
+
+root %>% 
+  pr_run(port = 8001)
