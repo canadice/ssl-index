@@ -190,11 +190,12 @@ getPlayersFromTeam <- function(uid){
   future_promise({
     portalQuery(
       paste(
-        "SELECT us.desc AS `user status`, ps.desc AS `player status`, name, class, tpe, tpebank, `left foot`, `right foot`, position, affiliate, pid
+        "SELECT us.desc AS `user status`, ps.desc AS `player status`, pd.name, pd.class, pd.tpe, pd.tpebank, `left foot`, `right foot`, pd.position, (CASE WHEN teams.affiliate = 2 THEN 'Minor' ELSE 'Major' END) AS affiliate, pid
       FROM playerdata pd
       JOIN useractivity ua ON pd.uid = ua.uid
       JOIN userstatuses us ON ua.status_u = us.status
       JOIN playerstatuses ps ON pd.status_p = ps.status
+      JOIN teams ON pd.team = teams.orgID AND pd.affiliate = teams.affiliate
       WHERE team IN (
         SELECT name
         FROM teams
