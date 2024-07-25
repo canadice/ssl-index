@@ -80,10 +80,17 @@ function() {
 #* @serializer json
 #* @param name:str The player name
 #* @param pid:int The player ID
+#* @param username:str The username
 #* 
-function(name = NULL, pid = NULL) {
-  if(all(name %>% is.null(), pid %>% is.null())){
+function(name = NULL, pid = NULL, username = NULL) {
+  if(all(name %>% is.null(), pid %>% is.null(), username %>% is.null())){
     return("You need to specify at least one of the arguments!")
+  }
+  
+  if(!(username %>% is.null())){
+    whereClause <- paste("WHERE mb.username = ", paste0("'", username, "'"), "ORDER BY pid LIMIT 1;")
+  } else {
+    whereClause <- if_else(name %>% is.null(), paste("WHERE pd.pid = ", pid, ";"), paste("WHERE pd.name = ", paste0("'", name, "'"), ";"))
   }
   
   data <- 
@@ -124,12 +131,12 @@ function(name = NULL, pid = NULL) {
           LEFT JOIN userstatuses us ON ua.status_u = us.status
           LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
           LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate",
-        if_else(name %>% is.null(), paste("WHERE pd.pid = ", pid, ";"), paste("WHERE pd.name = ", paste0("'", name, "'"), ";"))
+          whereClause
       )
     )
   
   if(data %>% nrow() < 1){
-    return("No player with that name or player id found.")
+    return("No player found.")
   }
   
   return(data)
