@@ -9,6 +9,7 @@
 
 require(plumber)
 require(RMySQL)
+require(tidyverse)
 
 #* @apiTitle Player API
 #* @apiDescription Endpoints to get player information.
@@ -29,9 +30,12 @@ root <- pr() %>%
   })
 
 players <- pr("./modules/getPlayer.R")
+bank <- pr("./modules/getBank.R")
 info <- pr("./info.R")
+
 
 root %>% 
   pr_mount("/player", players) %>% 
+  pr_mount("/bank", bank) %>% 
   pr_mount("/info", info) %>% 
   pr_run(port = 8001)
