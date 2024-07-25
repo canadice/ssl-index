@@ -20,6 +20,7 @@ async def on_ready():
 async def reload(ctx: discord.ApplicationContext, extension: str):
     bot.unload_extension(f'cogs.{extension}')
     bot.load_extension(f'cogs.{extension}')
+    await ctx.respond("Extension is being reloaded.")
 
 @bot.slash_command(name="hello", description="Say hello to the bot")
 async def hello(ctx: discord.ApplicationContext):
