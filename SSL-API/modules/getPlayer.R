@@ -53,7 +53,8 @@ function() {
         LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
         LEFT JOIN useractivity ua ON pd.uid = ua.uid
         LEFT JOIN userstatuses us ON ua.status_u = us.status
-        LEFT JOIN playerstatuses ps ON pd.status_p = ps.status;"
+        LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
+        ORDER BY pd.name DESC;"
     )
   )
 }
