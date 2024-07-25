@@ -9,7 +9,9 @@
 
 require(plumber)
 require(RMySQL)
-require(tidyverse)
+require(dplyr)
+require(lubridate)
+require(scales)
 
 #* @apiTitle Player API
 #* @apiDescription Endpoints to get player information.

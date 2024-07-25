@@ -12,6 +12,7 @@ function(name){
       WHERE pd.name = ", paste0("'", name, "'"), " AND bt.status = 1;"
     )
   ) %>% 
+    mutate(balance = paste0("$", comma(balance))) %>% 
     suppressWarnings()
 }
 
@@ -19,6 +20,7 @@ function(name){
 #* @get /getBankHistory
 #* @serializer json
 #* @param name The player name
+#* 
 function(name){
   portalQuery(
     paste("SELECT 
@@ -36,6 +38,7 @@ function(name){
       ORDER BY Time DESC;")
   ) %>% 
     mutate(
-      Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific") %>% as_date()
+      Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific") %>% as_date(),
+      Transaction = paste0("$", comma(Transaction))
     )
 }
