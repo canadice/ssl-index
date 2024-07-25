@@ -10,8 +10,9 @@ load_dotenv('.secrets/.env') # load all the variables from the env file
 intents = discord.Intents.all()
 TOKEN = os.getenv('DISCORD_v2_TOKEN')
 SERVER = [os.getenv('DISCORD_SERVER')]
+OWNER_ID = int(os.getenv('DISCORD_OWNER'))
 
-bot = discord.Bot(debug_guilds=SERVER)
+bot = discord.Bot()
 
 #### SLASH FUNCTIONS ####
 @bot.event
@@ -77,6 +78,10 @@ async def store(ctx: discord.ApplicationContext):
 
 @bot.slash_command(name="reload", description="Reloading some cogs")
 async def reload(ctx: discord.ApplicationContext, extension: str):
+  if ctx.author.id != OWNER_ID:
+        await ctx.respond("You do not have permission to use this command.")
+        return
+  else:
     bot.unload_extension(f'cogs.{extension}')
     bot.load_extension(f'cogs.{extension}')
     await ctx.respond("Extension is being reloaded.")

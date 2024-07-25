@@ -30,7 +30,7 @@ class Player(commands.Cog): # create a class for our cog that inherits from comm
           name = get_name(ctx.author.id)
     
         if name is None:  
-          await ctx.respond(noName)  
+          await ctx.respond("You have no user stored. Use /store to store your forum username.")  
         else:
           info = requests.get('https://api.simulationsoccer.com/player/getPlayer?name=' + name.replace(" ", "%20"))
           
@@ -44,38 +44,42 @@ class Player(commands.Cog): # create a class for our cog that inherits from comm
     @discord.slash_command(name='bank', description='Gets player bank information')
     async def bank(self, ctx: discord.ApplicationContext, name: typing.Optional[str] = None):
         if name is None:
-          await ctx.respond("You need to provide a name.")
+          name = get_name(ctx.author.id)
+    
+        if name is None:  
+          await ctx.respond("You have no user stored. Use /store to store your forum username.")  
+        else:
         
-        balance = requests.get('https://api.simulationsoccer.com/bank/getBankBalance?name=' + name.replace(" ", "%20"))
-        transactions = requests.get('https://api.simulationsoccer.com/bank/getBankHistory?name=' + name.replace(" ", "%20"))
+          balance = requests.get('https://api.simulationsoccer.com/bank/getBankBalance?name=' + name.replace(" ", "%20"))
+          transactions = requests.get('https://api.simulationsoccer.com/bank/getBankHistory?name=' + name.replace(" ", "%20"))
+          
+          # Data formatting
+          balancedata = pd.DataFrame(eval(balance.content))
+          transactiondata = pd.DataFrame(eval(transactions.content))
+          
+          if transactiondata.empty:
+            await ctx.respond("This player does not have any bank information. Check the spelling.")
+          else: 
+            embed = discord.Embed(color = discord.Color(0xBD9523))
+            
+            embed.title = name
+            
+            embed.add_field(name = "Bank Balance", value = balancedata["balance"].iloc[0])
+            
+            # Latest transactions
+            stat = transactiondata.sort_values("Time", ascending = False).head()
+            
+            stat.columns = stat.columns.str.upper()
+            
+            # Convert the DataFrame to a formatted string
+            stat_string = stat.to_string(index=False)
+            
+            # Format the string to fit nicely in the embed
+            formatted_stat_string = f"```\n{stat_string}\n```"
+            
+            embed.add_field(name = "Latest Transactions", value = formatted_stat_string, inline = False)
         
-        # Data formatting
-        balancedata = pd.DataFrame(eval(balance.content))
-        transactiondata = pd.DataFrame(eval(transactions.content))
-        
-        if transactiondata.empty:
-          await ctx.respond("This player does not have any bank information. Check the spelling.")
-        else: 
-          embed = discord.Embed(color = discord.Color(0xBD9523))
-          
-          embed.title = name
-          
-          embed.add_field(name = "Bank Balance", value = balancedata["balance"].iloc[0])
-          
-          # Latest transactions
-          stat = transactiondata.sort_values("Time", ascending = False).head()
-          
-          stat.columns = stat.columns.str.upper()
-          
-          # Convert the DataFrame to a formatted string
-          stat_string = stat.to_string(index=False)
-          
-          # Format the string to fit nicely in the embed
-          formatted_stat_string = f"```\n{stat_string}\n```"
-          
-          embed.add_field(name = "Latest Transactions", value = formatted_stat_string, inline = False)
-      
-          await ctx.respond(embed = embed)
+            await ctx.respond(embed = embed)
         
 def setup(bot): # this is called by Pycord to setup the cog
     bot.add_cog(Player(bot)) # add the cog to the bot
