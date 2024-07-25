@@ -3,6 +3,7 @@ from discord.ext import commands
 import pandas as pd
 import typing
 import requests
+from db_utils import *
 
 class Player(commands.Cog): # create a class for our cog that inherits from commands.Cog
     # this class is used to create a cog, which is a module that can be added to the bot
@@ -24,18 +25,21 @@ class Player(commands.Cog): # create a class for our cog that inherits from comm
         return(embed)
         
     @discord.slash_command(name='player', description='Gets player information')
-    async def player(self, ctx: discord.ApplicationContext, season: typing.Optional[int] = None, *, name: typing.Optional[str] = None):
+    async def player(self, ctx: discord.ApplicationContext, *, name: typing.Optional[str] = None):
         if name is None:
-          await ctx.respond("You need to provide a name.")
-        
-        info = requests.get('https://api.simulationsoccer.com/player/getPlayer?name=' + name.replace(" ", "%20"))
-        
-        # Data formatting
-        data = pd.DataFrame(eval(info.content))
+          name = get_name(ctx.author.id)
     
-        embed = self.playerStatsEmbed(data)
+        if name is None:  
+          await ctx.respond(noName)  
+        else:
+          info = requests.get('https://api.simulationsoccer.com/player/getPlayer?name=' + name.replace(" ", "%20"))
           
-        await ctx.respond(embed = embed)
+          # Data formatting
+          data = pd.DataFrame(eval(info.content))
+      
+          embed = self.playerStatsEmbed(data)
+            
+          await ctx.respond(embed = embed)
         
     @discord.slash_command(name='bank', description='Gets player bank information')
     async def bank(self, ctx: discord.ApplicationContext, name: typing.Optional[str] = None):
