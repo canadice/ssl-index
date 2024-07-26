@@ -88,7 +88,7 @@ function(name = NULL, pid = NULL, username = NULL) {
   }
   
   if(!(username %>% is.null())){
-    whereClause <- paste("WHERE mb.username = ", paste0("'", username, "'"), "ORDER BY pid LIMIT 1;")
+    whereClause <- paste("WHERE mb.username = ", paste0("'", username, "'"), "ORDER BY pid DESC LIMIT 1;")
   } else {
     whereClause <- if_else(name %>% is.null(), paste("WHERE pd.pid = ", pid, ";"), paste("WHERE pd.name = ", paste0("'", name, "'"), ";"))
   }
