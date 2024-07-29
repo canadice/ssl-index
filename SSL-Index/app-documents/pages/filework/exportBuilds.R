@@ -226,9 +226,17 @@ exportBuildServer <- function(id) {
         build() %>% 
           then(
             onFulfilled = function(data){
+              
+              if(data$nationality %>% nchar() == 3){
+                nationality <- names(sslNations)[sslNations == data$nationality]
+              } else {
+                nationality <- data$nationality
+              }
+              
+              
               tagList(
                 h4("Position: ", data$position),
-                h4("Nationality: ", data$nationality)
+                h4("Nationality: ", nationality)
               )
             }
           )
