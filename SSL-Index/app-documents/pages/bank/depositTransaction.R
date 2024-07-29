@@ -59,16 +59,15 @@ bankDepositServer <- function(id, userinfo) {
               ) %>% 
               then(
                 onFulfilled = function(pids){
-                  missing <- lapply(X = pids,FUN = function(x){
-                    x %>% nrow() == 0
-                  }) %>% 
-                    unlist() %>% 
-                    which()
+                  pids <- 
+                    lapply(pids, FUN = function(x){
+                      if(x %>% nrow() == 0){
+                        -99
+                      } else {
+                        x
+                      }
+                    })
                   
-                  if(length(missing) != 0){
-                    pids[[missing]] <- tibble(pid = -99)
-                  }
-                    
                   tibble(
                     pid = pids %>% do.call(what = rbind, args = .) %>% unlist(),
                     player = file$player,
@@ -148,18 +147,18 @@ bankDepositServer <- function(id, userinfo) {
         bankDeposit() %>% 
           then(
             onFulfilled = function(data){
-              if(data$pid %>% duplicated() %>% any()){
+              processed <- 
+                data %>% 
+                filter(
+                  pid != -99
+                )
+              
+              if(processed$pid %>% duplicated() %>% any()){
                 showToast("error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same player listed twice.")  
               } else if(any(data$pid == -99)){
                 showToast("warning", "At least one player in the submitted csv cannot be found on the forum. They are found in the downloaded csv file for checking and re-import.")
                 
                 click("downloadData")
-                
-                processed <- 
-                  data %>% 
-                  filter(
-                    pid != -99
-                  )
                 
                 data <- 
                   processed %>% 

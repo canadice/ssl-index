@@ -103,13 +103,7 @@ bankProcessServer <- function(id, userinfo) {
               selected <- getReactableState("needApproval", "selected")
               req(selected)
               
-              approveTransaction(data[selected,], uid = userinfo$uid)
-              
-              showToast("success", "The selected transactions have successfully been approved.")
-              
-              updated(updated() + 1)
-              
-              # updateReactable("needApproval", playerForApproval())
+              bankVerify(transactions = data[selected,], session = session, approve = TRUE)
             }
           )
       }) %>% 
@@ -124,11 +118,7 @@ bankProcessServer <- function(id, userinfo) {
               selected <- getReactableState("needApproval", "selected")
               req(selected)
               
-              rejectTransaction(data[selected,], uid = userinfo$uid)
-              
-              showToast("success", "The selected transactions have successfully been rejected.")
-              
-              updated(updated() + 1)
+              bankVerify(transactions = data[selected,], session = session, approve = FALSE)
               
               # updateReactable("needApproval", playerForApproval())
             }
@@ -137,6 +127,40 @@ bankProcessServer <- function(id, userinfo) {
         bindEvent(
           input$goReject
         )
+      
+      observe({
+        transactions() %>% 
+          then(
+            onFulfilled = function(data){
+              selected <- getReactableState("needApproval", "selected")
+              req(selected)
+              
+              approveTransaction(data[selected,], uid = userinfo$uid)
+              
+              showToast("success", "The selected transactions have successfully been approved.")
+              
+              updated(updated() + 1)
+            }
+          )
+      }) %>% 
+        bindEvent(input$confirmApprove)
+      
+      observe({
+        transactions() %>% 
+          then(
+            onFulfilled = function(data){
+              selected <- getReactableState("needApproval", "selected")
+              req(selected)
+              
+              rejectTransaction(data[selected,], uid = userinfo$uid)
+              
+              showToast("success", "The selected transactions have successfully been rejected.")
+              
+              updated(updated() + 1)
+            }
+          )
+      }) %>% 
+        bindEvent(input$confirmReject)
     }
   )
 }
