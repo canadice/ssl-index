@@ -15,8 +15,7 @@ submitPTUI <- function(id) {
       ), 
       br(),
       br(),
-      fileInput(inputId = ns("gradedTask"),label = "Upload a , separated .csv file", accept = ".csv"),
-      textInput(inputId = ns("taskName"), label = "What is the task name?")
+      uiOutput(ns("informationUI"))
     ) %>% 
       fluidRow(),
     column(
@@ -28,9 +27,7 @@ submitPTUI <- function(id) {
       fluidRow(),
     column(
       width = 12,
-      h3("Confirm the submission:"),
-      actionButton(inputId = ns("submitTask"), label = "Submit"),
-      downloadButton(ns("downloadData"),label = "Fake", style = "visibility: hidden;")
+      uiOutput(ns("confirmationUI"))
     ) %>% 
       div(class = "frozen-bottom")
   )
@@ -41,11 +38,32 @@ submitPTServer <- function(id, userinfo) {
     id,
     function(input, output, session) {
       
-      gradedTask <- reactive({
-        if(input$gradedTask %>% is.null()){
+      #### UI OUTPUTS ####
+      output$confirmationUI <- renderUI({
+        req(input$taskSource)
+        req(input$taskName)
+        
+        tagList(
+          h3("Confirm the submission:"),
+          actionButton(inputId = session$ns("submitTask"), label = "Submit"),
+          downloadButton(session$ns("downloadData"),label = "Fake", style = "visibility: hidden;")
+        )
+      })
+      
+      output$informationUI <- renderUI({
+        tagList(
+          fileInput(inputId = session$ns("taskSource"),label = "Upload a , separated .csv file", accept = ".csv"),
+          textInput(inputId = session$ns("taskName"), label = "What is the task name?")
+        )
+      })
+      
+      
+      #### REACTIVES ####
+      taskSource <- reactive({
+        if(input$taskSource %>% is.null()){
           NULL
         } else {
-          file <- input$gradedTask
+          file <- input$taskSource
           
           file <- read.csv(file$datapath, header = TRUE, encoding = "UTF-8") 
           
@@ -98,11 +116,15 @@ submitPTServer <- function(id, userinfo) {
         }
       })
       
+      
+      #### CHECKS OUTPUTS ####
       output$checkImport <- renderReactable({
-        if(gradedTask() %>% is.null()){
+        if(taskSource() %>% is.null()){
           NULL
         } else {
-          gradedTask() %>% 
+          req(input$taskName)
+          
+          taskSource() %>% 
             then(
               onFulfilled = function(data){
                 data %>% 
@@ -123,13 +145,13 @@ submitPTServer <- function(id, userinfo) {
         }
       })
       
-      # DOWNLOAD BUTTON 
+      #### DOWNLOAD BUTTON ####
       output$downloadData <- downloadHandler(
         filename = function() { 
           paste(input$taskName, " Unprocessed ", Sys.Date(), ".csv", sep="")
         },
         content = function(file) {
-          gradedTask() %>% 
+          taskSource() %>% 
             then(
               onFulfilled = function(data){
                 data %>% 
@@ -151,8 +173,9 @@ submitPTServer <- function(id, userinfo) {
           download.file(url, destfile = file)
         })
       
+      #### OBSERVERS ####
       observe({
-        gradedTask() %>% 
+        taskSource() %>% 
           then(
             onFulfilled = function(data){
               if(any(data$pid == -99)){
@@ -190,8 +213,7 @@ submitPTServer <- function(id, userinfo) {
         )
       
       observe({
-        
-        gradedTask() %>% 
+        taskSource() %>% 
           then(
             onFulfilled = function(data){
               removeModal()
@@ -220,6 +242,13 @@ submitPTServer <- function(id, userinfo) {
                 )
               
               showToast(type = "success", "You have successfully submitted a graded PT task.")
+              
+              output$informationUI <- renderUI({
+                tagList(
+                  fileInput(inputId = session$ns("taskSource"),label = "Upload a , separated .csv file", accept = ".csv"),
+                  textInput(inputId = session$ns("taskName"), label = "What is the task name?")
+                )
+              })
             }
           )
       }) %>% 

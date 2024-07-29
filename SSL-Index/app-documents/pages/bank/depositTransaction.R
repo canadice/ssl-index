@@ -15,8 +15,7 @@ bankDepositUI <- function(id) {
              ), 
       br(),
       br(),
-      fileInput(inputId = ns("bankDeposit"),label = "Upload a , separated .csv file", accept = ".csv"),
-      textInput(inputId = ns("depositSource"), label = "What is the source of the money?")
+      uiOutput(ns("informationUI"))
     ) %>% 
       fluidRow(),
     column(
@@ -28,9 +27,7 @@ bankDepositUI <- function(id) {
       fluidRow(),
     column(
       width = 12,
-      h3("Confirm the deposit:"),
-      actionButton(inputId = ns("confirmDeposit"), label = "Confirm"),
-      downloadButton(ns("downloadData"),label = "Fake", style = "visibility: hidden;")
+      uiOutput(ns("confirmationUI"))
     ) %>% 
       div(class = "frozen-bottom")
   )
@@ -84,10 +81,31 @@ bankDepositServer <- function(id, userinfo) {
         }
       })
       
+      #### UI OUTPUTS ####
+      output$confirmationUI <- renderUI({
+        req(input$depositSource)
+        req(input$bankDeposit)
+        
+        tagList(
+          h3("Confirm the deposit:"),
+          actionButton(inputId = session$ns("confirmDeposit"), label = "Confirm"),
+          downloadButton(session$ns("downloadData"),label = "Fake", style = "visibility: hidden;")  
+        )
+      })
+      
+      output$informationUI <- renderUI({
+        tagList(
+          fileInput(inputId = session$ns("bankDeposit"),label = "Upload a , separated .csv file", accept = ".csv"),
+          textInput(inputId = session$ns("depositSource"), label = "What is the source of the money?")
+        )
+      })
+      
       output$checkImport <- renderReactable({
         if(bankDeposit() %>% is.null()){
           NULL
         } else {
+          req(input$depositSource)
+          
           bankDeposit() %>% 
             then(
               onFulfilled = function(data){
@@ -139,7 +157,7 @@ bankDepositServer <- function(id, userinfo) {
           paste("Bank Deposit Template.csv", sep="")
         },
         content = function(file) {
-          url <- "https://raw.githubusercontent.com/canadice/ssl-index/main/SSL-Index/bankDepositTemplate.csv"  # Replace with your actual URL
+          url <- "https://raw.githubusercontent.com/canadice/ssl-index/main/SSL-Index/bankDepositTemplate.csv"  
           download.file(url, destfile = file)
         })
       
@@ -169,6 +187,13 @@ bankDepositServer <- function(id, userinfo) {
                 addBankTransaction(uid = userinfo$uid, pid = data$pid, source = data$source, transaction = data$amount, status = 0)
                 
                 showToast(type = "success", "You have successfully deposited a subset of the transactions.")
+                
+                output$informationUI <- renderUI({
+                  tagList(
+                    fileInput(inputId = session$ns("bankDeposit"),label = "Upload a , separated .csv file", accept = ".csv"),
+                    textInput(inputId = session$ns("depositSource"), label = "What is the source of the money?")
+                  )
+                })
               } else {
                 data <- 
                   data %>% 
@@ -179,6 +204,13 @@ bankDepositServer <- function(id, userinfo) {
                 addBankTransaction(uid = userinfo$uid, pid = data$pid, source = data$source, transaction = data$amount, status = 0)
                 
                 showToast(type = "success", "You have successfully deposited the transaction.")
+                
+                output$informationUI <- renderUI({
+                  tagList(
+                    fileInput(inputId = session$ns("bankDeposit"),label = "Upload a , separated .csv file", accept = ".csv"),
+                    textInput(inputId = session$ns("depositSource"), label = "What is the source of the money?")
+                  )
+                })
               }
             }
           )
