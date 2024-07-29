@@ -57,7 +57,7 @@ exportBuildServer <- function(id) {
       downloadPlayer <- function(temp){
         traits <- 
           temp$traits %>% 
-          str_split(pattern = " \\\\ ", simplify = TRUE) %>% 
+          str_split(pattern = traitSep, simplify = TRUE) %>% 
           str_to_lower() %>% 
           {
             (jsonTraits %>% str_to_lower()) %in% .  
@@ -160,10 +160,15 @@ exportBuildServer <- function(id) {
               data %>% 
                 select(
                   Name = name,
-                  Team = team,
-                  Nationality = nationality
+                  Team = teamName,
+                  Nationality = nationality,
+                  Attribute, 
+                  Previous = old,
+                  New = new
                 ) %>% 
-                reactable()
+                reactable(
+                  groupBy = c("Name")
+                )
             }
           )
       })
