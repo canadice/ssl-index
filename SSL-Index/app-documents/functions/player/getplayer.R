@@ -196,15 +196,11 @@ getPlayersFromTeam <- function(uid){
       JOIN userstatuses us ON ua.status_u = us.status
       JOIN playerstatuses ps ON pd.status_p = ps.status
       JOIN teams ON pd.team = teams.orgID AND pd.affiliate = teams.affiliate
-      WHERE team IN (
-        SELECT name
-        FROM teams
-        WHERE orgID IN (
-          SELECT orgID
+      WHERE pd.team IN (
+        SELECT orgID
         FROM managers
         WHERE orgManager = ", uid, " OR assManager1 = ", uid, "OR assManager2 = ", uid, "
-        )
-      )"
+      );"
       )
     ) %>% 
       arrange(affiliate, tpe %>% desc())
