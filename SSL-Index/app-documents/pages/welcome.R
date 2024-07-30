@@ -22,7 +22,12 @@ welcomeUI <- function(id) {
           h4("Recent creates"),
           reactableOutput(ns("created")) %>% 
             withSpinnerMedium()
-        )
+        ),
+        column(width = 12,
+               h4("Activity Checks"),
+               plotlyOutput(ns("activityChecks")) %>% 
+                 withSpinnerMedium() %>% 
+                 div(class = "plotlyBorder"))
       ) %>% 
       column(width = 8),
     
@@ -172,6 +177,47 @@ welcomeServer <- function(id, usergroup) {
                   )
                 )
             }
+          )
+      })
+      
+      output$activityChecks <- renderPlotly({
+        readAPI("https://api.simulationsoccer.com/player/acHistory") %>% 
+          mutate(weekYear = paste(paste0("W", week), year, sep ="\n")) %>% 
+          plot_ly(x = ~weekYear, y= ~count, type = "scatter", mode = "lines+markers",
+                  hoverinfo = "text",
+                  line = list(color = sslGold),
+                  marker = list(size = 5, color = sslGold),
+                  text = ~paste("#AC: ", count)
+                  ) %>% 
+          layout(
+            xaxis = list(
+              title = "Time",
+              tickfont = list(color = "white"),  # Set x-axis tick labels color to white
+              titlefont = list(color = "white"),  # Set x-axis title color to white
+              dtick = 1,
+              showgrid = FALSE
+            ),
+            yaxis = list(
+              title = "#ACs",
+              range = c(0, 120),
+              tickfont = list(color = "white"),  # Set y-axis tick labels color to white
+              titlefont = list(color = "white"),  # Set y-axis title color to white
+              dtick = 20,  # Show tickmarks at intervals of 200
+              gridcolor = "rgba(255, 255, 255, 0.5)",  # Set gridline color to white with opacity
+              gridwidth = 1  # Set gridline width
+            ),
+            plot_bgcolor = "#333333",   # background color
+            paper_bgcolor = "#333333",   # plot area background color
+            showlegend = FALSE  # Hide legend (optional)
+          ) %>% 
+          plotly::config(
+            displayModeBar = TRUE,  # Enable display of mode bar (optional, true by default)
+            modeBarButtonsToRemove = list(
+              "zoom2d", "pan2d", "select2d",
+              "lasso2d", "zoomIn2d", "zoomOut2d",
+              "autoScale2d", "resetScale2d"
+            ),
+            displaylogo = FALSE  # Remove Plotly logo
           )
       })
     }

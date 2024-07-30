@@ -167,3 +167,20 @@ function(class = NULL) {
     )
   )
 }
+
+#* Get Activity Check History
+#* @get /acHistory
+#* @serializer json
+#* 
+function(){
+  portalQuery(
+    "SELECT 
+        YEAR(FROM_UNIXTIME(time)) AS year,
+        WEEK(FROM_UNIXTIME(time), 3) AS week,
+        COUNT(*) AS count
+    FROM tpehistory
+    WHERE source = 'Activity Check'
+    GROUP BY year, week
+    ORDER BY year, week;"
+  )
+}

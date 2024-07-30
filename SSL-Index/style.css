@@ -502,3 +502,7 @@ h1, h2, h3, h4, h5 {
 .Retired {
   color: #F5D17E;
 }
+
+.plotlyBorder {
+  border: 1px solid var(--sslGold);
+}
