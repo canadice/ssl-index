@@ -64,12 +64,19 @@ leagueIndexServer <- function(id) {
       #### DATA GENERATION ####
       outfieldData <- reactive({
         req(input$selectedLeague)
-        getOutfieldIndex(league = input$selectedLeague, season = input$selectedSeason) 
+        
+        readAPI(url = "https://api.simulationsoccer.com/index/outfield", 
+                query = list(league = input$selectedLeague, season = input$selectedSeason)
+        ) %>% 
+          future_promise()
       })
       
       keeperData <- reactive({
         req(input$selectedLeague)
-        getKeeperIndex(league = input$selectedLeague, season = input$selectedSeason) 
+        readAPI(url = "https://api.simulationsoccer.com/index/keeper", 
+                query = list(league = input$selectedLeague, season = input$selectedSeason)
+        ) %>% 
+          future_promise()
       })
       
       #### UI OUTPUT ####
