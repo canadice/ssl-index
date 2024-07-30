@@ -89,7 +89,7 @@ sendIndexUpdate <- function(season){
   jscode <- paste0("
     function sendMessage() {
       const request = new XMLHttpRequest();
-      request.open('POST', '", config$discord$player, "');
+      request.open('POST', '", config$discord$indexUpdate, "');
 
       request.setRequestHeader('Content-type', 'application/json');
 
