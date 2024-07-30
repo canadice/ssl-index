@@ -24,8 +24,8 @@ on:
         #type: boolean
    schedule:
        - cron: "45 17 * * 2,3,5,6"
-#
-#   workflow_dispatch:
+
+   workflow_dispatch:
 
 jobs:
   generate-data:
