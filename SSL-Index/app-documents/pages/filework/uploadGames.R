@@ -282,7 +282,10 @@ uploadGameServer <- function(id) {
       nextGame <- reactive({
         req(input$season)
         readAPI(url = "https://api.simulationsoccer.com/index/nextGame", query = list(season = input$season))
-      })
+      }) %>% 
+        bindEvent(
+          input$fm
+        )
       
       #### FUNCTIONS ####
       fmData <- function(path){
@@ -488,7 +491,9 @@ uploadGameServer <- function(id) {
         } else {
           req(input$fm)
           reactable(
-            processedGame()$k
+            processedGame()$k %>% 
+              relocate(gid) %>% 
+              arrange(gid)
           )
         }
       })
@@ -499,7 +504,9 @@ uploadGameServer <- function(id) {
         } else {
           req(input$fm)
           reactable(
-            processedGame()$o
+            processedGame()$o %>% 
+              relocate(gid) %>% 
+              arrange(gid)
           )
         }
       })
