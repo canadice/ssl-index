@@ -34,10 +34,12 @@ root <- pr() %>%
 players <- pr("./modules/getPlayer.R")
 bank <- pr("./modules/getBank.R")
 info <- pr("./info.R")
+index <- pr("./modules/getIndex.R")
 
 
 root %>% 
   pr_mount("/player", players) %>% 
   pr_mount("/bank", bank) %>% 
   pr_mount("/info", info) %>% 
+  pr_mount("/index", index) %>% 
   pr_run(port = 8001)
