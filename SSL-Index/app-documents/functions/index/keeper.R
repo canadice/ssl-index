@@ -98,7 +98,6 @@ getKeeperCareer <- function(league){
       SELECT
         `name`,
         `club`,
-        `position`,
         `apps`,
         `minutes played`,
         `average rating`,
