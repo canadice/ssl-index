@@ -56,8 +56,8 @@ editScheduleServer <- function(id, userinfo) {
                   column(2, h5(paste(paste0("S", game$Season), if_else(game$Matchtype == 0, "CUP", paste0(game$Matchtype)), paste0("MD", game$Matchday)))),
                   column(2, selectInput(paste0("home_", id) %>% session$ns(), label = NULL, choices = c("", teams$name), selected = game$Home)) %>% div(class = "smallSelect"),
                   column(2, selectInput(paste0("away_", id) %>% session$ns(), label = NULL, choices = c("", teams$name), selected = game$Away)) %>% div(class = "smallSelect"),
-                  column(1, selectInput(paste0("hscore_", id) %>% session$ns(), label = NULL, choices = 0:20, selected = game$HomeScore)) %>% div(class = "smallSelect"),
-                  column(1, selectInput(paste0("ascore_", id) %>% session$ns(), label = NULL, choices = 0:20, selected = game$AwayScore)) %>% div(class = "smallSelect"),
+                  column(1, selectInput(paste0("hscore_", id) %>% session$ns(), label = NULL, choices = c("None" = "NULL", 0:20), selected = game$HomeScore)) %>% div(class = "smallSelect"),
+                  column(1, selectInput(paste0("ascore_", id) %>% session$ns(), label = NULL, choices = c("None" = "NULL", 0:20), selected = game$AwayScore)) %>% div(class = "smallSelect"),
                   column(1, checkboxInput(paste0("et_", id) %>% session$ns(), label = NULL, value = FALSE)),
                   column(1, checkboxInput(paste0("p_", id) %>% session$ns(), label = NULL, value = FALSE)),
                   column(2, actionButton(paste0("update_", id) %>% session$ns(), "Update"))
