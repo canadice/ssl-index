@@ -54,7 +54,7 @@ getBankTransactionsForApproval <- function(){
         ORDER BY Time DESC;")
     ) %>% 
       mutate(
-        Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
+        Time = Time %>% as.numeric()
       )
   })
 }

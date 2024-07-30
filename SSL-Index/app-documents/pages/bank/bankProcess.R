@@ -135,6 +135,8 @@ bankProcessServer <- function(id, userinfo) {
               selected <- getReactableState("needApproval", "selected")
               req(selected)
               
+              removeModal()
+              
               approveTransaction(data[selected,], uid = userinfo$uid)
               
               showToast("success", "The selected transactions have successfully been approved.")
@@ -151,6 +153,8 @@ bankProcessServer <- function(id, userinfo) {
             onFulfilled = function(data){
               selected <- getReactableState("needApproval", "selected")
               req(selected)
+              
+              removeModal()
               
               rejectTransaction(data[selected,], uid = userinfo$uid)
               
