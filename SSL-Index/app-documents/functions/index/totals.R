@@ -4,10 +4,10 @@ getKeeperSeasonTotal <- function(season){
       "SELECT
         name,
         club,
-        AVG(`average rating`) AS `average rating`,
-        AVG(`xsave%`) AS `xsave%`,
         SUM(apps) AS apps,
         SUM(`minutes played`) AS `minutes played`,
+        AVG(`average rating`) AS `average rating`,
+        SUM(`player of the match`) AS `player of the match`,
         SUM(`clean sheets`) AS `clean sheets`,
         SUM(conceded) AS conceded,
         SUM(`saves parried`) AS `saves parried`,
@@ -16,11 +16,14 @@ getKeeperSeasonTotal <- function(season){
         SUM(`save%`) AS `save%`,
         SUM(`penalties faced`) AS `penalties faced`,
         SUM(`penalties saved`) AS `penalties saved`,
+        AVG(`xsave%`) AS `xsave%`,
         SUM(`xg prevented`) AS `xg prevented`
       FROM
-          gamedatakeeper
+          gamedatakeeper AS gd
+      JOIN
+          schedule AS s ON gd.gid = s.gid
       WHERE
-          Season = ", season, "
+          s.Season = ", season, "
       GROUP BY
           Name, Club
       ORDER BY
@@ -36,10 +39,10 @@ getOutfieldSeasonTotal <- function(season){
       "SELECT
         name,
         club,
-        AVG(`average rating`) AS `average rating`,
         SUM(apps) AS apps,
         SUM(`minutes played`) AS `minutes played`,
         SUM(`distance run (km)`) AS `distance run (km)`,
+        AVG(`average rating`) AS `average rating`,
         SUM(`player of the match`) AS `player of the match`,
         SUM(goals) AS goals,
         SUM(assists) AS assists,
@@ -86,9 +89,11 @@ getOutfieldSeasonTotal <- function(season){
         SUM(`successful presses`) AS `successful presses`,
         SUM(`attempted presses`) AS `attempted presses`
       FROM
-          gamedataoutfield
+          gamedataoutfield AS gd
+      JOIN
+          schedule AS s ON gd.gid = s.gid
       WHERE
-          Season = ", season, "
+          s.Season = ", season, "
       GROUP BY
           Name, Club
       ORDER BY

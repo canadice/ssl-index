@@ -11,20 +11,7 @@ uploadGameUI <- function(id) {
         ) %>% HTML()
     ),
     fluidRow(
-      column(
-        width = 4,
-        fileInput(
-          inputId = ns("fm"),
-          label = "Upload the exported view ",
-          accept = ".html"
-        ),
-        selectInput(
-          inputId = ns("season"),
-          label = "Which season is the view from?",
-          choices = 1:currentSeason$season,
-          selected = currentSeason$season
-        )
-      )
+      uiOutput(ns("informationUI"))
     ),
     fluidRow(
       column(
@@ -41,7 +28,27 @@ uploadGameUI <- function(id) {
         ) %>% 
           withSpinnerSmall()
       )
-    )
+    ),
+    fluidRow(
+      column(
+        width = 8,
+        h5("Keeper"),
+        reactableOutput(
+          outputId = ns("keeperCheck")
+        ) %>% 
+          withSpinnerSmall(),
+        h5("Outfield"),
+        reactableOutput(
+          outputId = ns("outfieldCheck")
+        ) %>% 
+          withSpinnerSmall()
+      )
+    ),
+    fluidRow(
+      class = "frozen-bottom",
+      uiOutput(ns("confirmUI"))
+    ),
+    div(style = "min-height:100px;")
   )
 }
 uploadGameServer <- function(id) {
@@ -52,11 +59,13 @@ uploadGameServer <- function(id) {
       filePath <- reactive({
         file <- input$fm
         
+        enable("uploadData")
+        
         file$datapath
       })
       
       processedGame <- reactive({
-        req(filePath())
+        req(input$fm)
         
         current <- fmData(filePath())
         
@@ -76,11 +85,14 @@ uploadGameServer <- function(id) {
           relocate(
             c(colnames(outfieldTotals), colnames(keeperTotals)) %>% 
               unique()
+          ) %>% 
+          rename_with(
+            str_to_lower
           )
         
         splitKeeper <- 
           current %>%
-          filter(Position == "GK") %>% 
+          filter(position == "GK") %>% 
           select(colnames(keeperTotals)) %>% 
           full_join(
             keeperTotals,
@@ -151,7 +163,17 @@ uploadGameServer <- function(id) {
                 TRUE ~ 0.5
               )
           ) %>%
-          ungroup()
+          ungroup() %>% 
+          left_join(
+            nextGame(),
+            by = c("club" = "team")
+          ) %>% 
+          mutate(
+            across(
+              !(name:club),
+              ~ replace_na(.x, 0)
+            )
+          )
         
         splitOutfield <- 
           current %>% 
@@ -218,11 +240,30 @@ uploadGameServer <- function(id) {
                 TRUE ~ 0.5
               )
           ) %>% 
-          ungroup()
+          ungroup() %>% 
+          left_join(
+            nextGame(),
+            by = c("club" = "team")
+          ) %>% 
+          left_join(
+            current %>% 
+              select(name, club, position, acc:wor),
+            by = c("name", "club")
+          ) %>% 
+          relocate(
+            c(position, acc:wor),
+            .after = club
+          ) %>% 
+          mutate(
+            across(
+              !(name:position),
+              ~ replace_na(.x, 0)
+            )
+          )
         
         list(
-          splitKeeper,
-          splitOutfield,
+          k = splitKeeper,
+          o = splitOutfield,
           checks = tibble(
             `Outfield Minutes` = (sum(splitOutfield$`minutes played`)/length(splitOutfield$`club` %>% unique())/11) %>% round(1),
             `Keeper Minutes` = sum(splitKeeper$`minutes played`)/length(splitKeeper$`club` %>% unique()) %>% round(1),
@@ -236,6 +277,11 @@ uploadGameServer <- function(id) {
             summarize(n = n())
         )
         
+      })
+      
+      nextGame <- reactive({
+        req(input$season)
+        readAPI(url = "https://api.simulationsoccer.com/index/nextGame", query = list(season = input$season))
       })
       
       #### FUNCTIONS ####
@@ -406,22 +452,150 @@ uploadGameServer <- function(id) {
       }
       
       #### OUTPUTS ####
-      output$outputMinutes <- renderReactable({
-        req(filePath())
-        reactable(
-          processedGame()$checks
+      output$informationUI <- renderUI({
+        tagList(
+          column(
+            width = 4,
+            fileInput(
+              inputId = session$ns("fm"),
+              label = "Upload the exported view ",
+              accept = ".html"
+            ),
+            selectInput(
+              inputId = session$ns("season"),
+              label = "Which season is the view from?",
+              choices = 1:currentSeason$season,
+              selected = currentSeason$season
+            )
+          )
         )
       })
       
-      output$outputPlayers <- renderReactable({
-        req(filePath())
-        reactable(
-          processedGame()$playersPerTeam %>% 
-            rename_with(
-              ~ str_to_title(.x)
-            )
-        )
+      output$confirmUI <- renderUI({
+        if(filePath() %>% is.null()){
+          NULL
+        } else {
+          req(input$fm)
+          column(width = 12,
+                 actionButton(inputId = session$ns("uploadData"), label = "Upload game")
+          )
+        }
       })
+      
+      output$keeperCheck <- renderReactable({
+        if(filePath() %>% is.null()){
+          NULL
+        } else {
+          req(input$fm)
+          reactable(
+            processedGame()$k
+          )
+        }
+      })
+      
+      output$outfieldCheck <- renderReactable({
+        if(filePath() %>% is.null()){
+          NULL
+        } else {
+          req(input$fm)
+          reactable(
+            processedGame()$o
+          )
+        }
+      })
+      
+      output$outputMinutes <- renderReactable({
+        if(filePath() %>% is.null()){
+          NULL
+        } else {
+          req(input$fm)
+          reactable(
+            processedGame()$checks
+          )
+        }
+      })
+      
+      output$outputPlayers <- renderReactable({
+        if(filePath() %>% is.null()){
+          NULL
+        } else {
+          req(input$fm)
+          reactable(
+            processedGame()$playersPerTeam %>% 
+              rename_with(
+                ~ str_to_title(.x)
+              )
+          )
+        }
+      })
+      
+      #### OBSERVERS ####
+      observe({
+        req(input$fm)
+        
+        keeper <- processedGame()$k %>% 
+          mutate(
+            across(
+              name:club,
+              ~ paste0('"', .x, '"')
+            )
+          )
+        
+        outfield <- processedGame()$o %>% 
+          mutate(
+            across(
+              name:position,
+              ~ paste0('"', .x, '"')
+            )
+          ) 
+        
+
+        indexQuery(
+          paste(
+            "INSERT INTO gamedataoutfield VALUES ",
+            do.call(function(...) paste(..., sep = ", "), args = outfield) %>% paste0("(", ., ")", collapse = ", "),
+            ";"
+          )
+        )
+
+        indexQuery(
+          paste(
+            "INSERT INTO gamedatakeeper VALUES ",
+            do.call(function(...) paste(..., sep = ", "), args = keeper) %>% paste0("(", ., ")", collapse = ", "),
+            ";"
+          )
+        )
+
+        sendIndexUpdate(input$season)
+        
+        output$informationUI <- renderUI({
+          tagList(
+            column(
+              width = 4,
+              fileInput(
+                inputId = session$ns("fm"),
+                label = "Upload the exported view ",
+                accept = ".html"
+              ),
+              selectInput(
+                inputId = session$ns("season"),
+                label = "Which season is the view from?",
+                choices = 1:currentSeason$season,
+                selected = currentSeason$season
+              )
+            )
+          )
+        })
+        
+        disable("uploadData")
+        
+        showToast("success", "You have successfully uploaded the recent matchday!")
+        
+      }) %>% 
+        bindEvent(
+          input$uploadData
+        )
+      
       
     }
   )
