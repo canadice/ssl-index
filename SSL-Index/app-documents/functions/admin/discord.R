@@ -37,10 +37,10 @@ sendGradedTPE <- function(source, tpe){
         },
         title: '", source, "',
         fields: [",
-                   paste0("{ name: '", tpe$username, "', value:", tpe$tpe, ", inline: TRUE}") %>% paste(collapse = ","),
+                   paste0("{ name: '", tpe$username, "', value:", tpe$tpe, ", inline: true}") %>% paste(collapse = ","),
         "],
         footer: {
-          text: 'If you have received 0 or reduced TPE, please check a summary post in the PT thread. \\n The TPE has already been added to your player page, this is just a report.'
+          text: 'If you have received 0 or reduced TPE, please check a summary post in the PT thread. \\n\\nThe TPE has already been added to your player page, this is just a report.'
         }
       }
 
@@ -53,6 +53,8 @@ sendGradedTPE <- function(source, tpe){
     }
     sendMessage();
   ")
+  
+  cat(jscode)
   
   runjs(jscode)
 }
