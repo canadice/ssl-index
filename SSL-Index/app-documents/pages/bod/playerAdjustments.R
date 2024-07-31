@@ -425,7 +425,6 @@ playerEditServer <- function(id, uid) {
 
               updateBuild(pid = data$pid, updates = update)
               
-              print(update)
               
               updated(updated() + 1)
               
