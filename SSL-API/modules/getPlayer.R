@@ -97,7 +97,7 @@ function(name = NULL, pid = NULL, username = NULL) {
     portalQuery(
       paste(
         "SELECT pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
-        pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name AS team, pd.affiliate, pd.birthplace, 
+        pd.created, pd.tpe, pd.tpeused, pd.tpebank, pd.team AS organization, t.name AS team, pd.affiliate, pd.birthplace, 
         pd.nationality, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
         pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
         pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
