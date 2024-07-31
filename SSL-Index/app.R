@@ -7,7 +7,7 @@
 ###########################################################################
 ###########################################################################
 
-version <- "v1.2"
+version <- "v1.3"
 
 suppressMessages({
   ## Data handling
@@ -382,7 +382,8 @@ server <- function(input, output, session) {
       tabItem("academyUpload",academyUploadUI(id = "academyUpload")),
       tabItem("academyIndex",academyIndexUI(id = "academyIndex")),
       tabItem("careerRecords",careerRecordsUI(id = "careerRecords")),
-      tabItem("playerPages",playerPagesUI(id = "playerPages")# ),
+      tabItem("playerPages",playerPagesUI(id = "playerPages")),
+      tabItem("playerEdit",playerEditUI(id = "playerEdit")# ),
       # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
       # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
       # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
@@ -509,6 +510,7 @@ server <- function(input, output, session) {
                   menuItem(
                     "BoD Tools",
                     menuSubItem("Player Approvals",tabName = "playerapprove"),
+                    menuSubItem("Edit Player",tabName = "playerEdit"),
                     menuSubItem("Assign Managers",tabName = "assignManager"),
                     menuSubItem("Organizational Overview",tabName = "bodoverview")
                   )
@@ -624,7 +626,8 @@ server <- function(input, output, session) {
       records = FALSE,
       playerPages = FALSE,
       contractProcess = FALSE,
-      tradeProcess = FALSE
+      tradeProcess = FALSE,
+      playerEdit = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -682,6 +685,10 @@ server <- function(input, output, session) {
     } else if(!loadedPage$playerPages & input$tabs == "playerPages"){
       playerPagesServer("playerPages")
       loadedPage$playerPages <- TRUE
+      
+    } else if(!loadedPage$playerEdit & input$tabs == "playerEdit"){
+      playerEditServer("playerEdit", uid = authOutput()$uid)
+      loadedPage$playerEdit <- TRUE
       
     } else if(!loadedPage$academyIndex & input$tabs == "academyIndex"){
       academyIndexServer("academyIndex")

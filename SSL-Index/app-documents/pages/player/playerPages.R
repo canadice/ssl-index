@@ -52,6 +52,31 @@ playerPagesUI <- function(id) {
                  plotlyOutput(ns("tpeProgressPlot"))
                )
         )
+      ),
+      box(
+        title = "Updating History", status = "danger", solidHeader = TRUE, collapsed = TRUE, collapsible = TRUE, width = NULL,
+        fluidRow(
+          column(width = 12,
+                 reactableOutput(ns("historyUpdates")) %>% 
+                   withSpinnerMedium()
+          )
+        )
+      ),
+      box(title = "TPE History", status = "danger", solidHeader = TRUE, collapsed = TRUE, collapsible = TRUE,width = NULL,
+          fluidRow(
+            column(
+              width = 12,
+              reactableOutput(ns("historyTPE"))
+            )
+          )
+      ),
+      box(title = "Bank History", status = "danger", solidHeader = TRUE, collapsed = TRUE, collapsible = TRUE,width = NULL,
+          fluidRow(
+            column(
+              width = 12,
+              reactableOutput(ns("historyBank"))
+            )
+          )
       )
     )
   )
@@ -74,6 +99,30 @@ playerPagesServer <- function(id) {
       allNames <- reactive({
         getPlayerNames()
       })
+      
+      historyTPE <- 
+        reactive({
+          req(input$selectedPlayer)
+          pid <- input$selectedPlayer %>% as.numeric()
+          
+          getTpeHistory(pid)
+        })
+      
+      historyUpdates <- 
+        reactive({
+          req(input$selectedPlayer)
+          pid <- input$selectedPlayer %>% as.numeric()
+          
+          getUpdateHistory(pid)
+        })
+      
+      historyBank <- 
+        reactive({
+          req(input$selectedPlayer)
+          pid <- input$selectedPlayer %>% as.numeric()
+          
+          getBankTransactions(pid)
+        })
       
       #### OUTPUTS ####
       output$selectPlayer <- renderUI({
@@ -293,6 +342,53 @@ playerPagesServer <- function(id) {
               stats %>% 
                 leaderReactable()
             }
+          )
+      })
+      
+      output$historyTPE <- renderReactable({
+        historyTPE() %>%
+          mutate(
+            Time = as_datetime(Time)
+          ) %>% 
+          reactable(
+            columns = 
+              list(
+                Time = colDef(format = colFormat(datetime = TRUE))
+              )
+          )
+        
+      })
+      
+      output$historyUpdates <- renderReactable({
+        historyUpdates() %>% 
+          mutate(
+            Time = as_datetime(Time)
+          ) %>% 
+          reactable(
+            columns = 
+              list(
+                Time = colDef(format = colFormat(datetime = TRUE))
+              )
+          )
+      })
+      
+      output$historyBank <- renderReactable({
+        historyBank() %>% 
+          then(
+            onFulfilled = function(value){
+              value %>% 
+                mutate(
+                  Time = as_datetime(Time)
+                ) %>% 
+                reactable(
+                  columns = 
+                    list(
+                      Time = colDef(format = colFormat(datetime = TRUE)),
+                      Transaction = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
+                    )
+                )
+            },
+            onRejected = NULL
           )
       })
     }
