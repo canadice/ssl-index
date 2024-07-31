@@ -29,7 +29,8 @@ bankDepositUI <- function(id) {
       width = 12,
       uiOutput(ns("confirmationUI"))
     ) %>% 
-      div(class = "frozen-bottom")
+      div(class = "frozen-bottom"),
+    div(style = "min-height:100px;")
   )
 }
 
