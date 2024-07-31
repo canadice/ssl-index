@@ -40,7 +40,7 @@ sendGradedTPE <- function(source, tpe){
                    paste0("{ name: '", tpe$username, "', value:", tpe$tpe, ", inline: TRUE}") %>% paste(collapse = ","),
         "],
         footer: {
-          text: 'The TPE has already been added to your player page, this is just a report.'
+          text: 'If you have received 0 or reduced TPE, please check a summary post in the PT thread. \\n The TPE has already been added to your player page, this is just a report.'
         }
       }
 
