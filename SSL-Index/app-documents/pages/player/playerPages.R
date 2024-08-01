@@ -97,7 +97,11 @@ playerPagesServer <- function(id) {
       })
       
       allNames <- reactive({
-        getPlayerNames()
+        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") %>% 
+          select(
+            name, pid, username, team, status_p
+          ) %>% 
+          future_promise()
       })
       
       historyTPE <- 
