@@ -72,7 +72,10 @@ function() {
         WHERE pd.status_p >= 0
         ORDER BY pd.name;"
     )
-  )
+  ) %>% 
+    mutate(
+      across(where(is.numeric), ~replace_na(.x, 5))
+    )
 }
 
 #* Get single players from the portal database, only one of `name` or `pid` should be used
@@ -133,6 +136,9 @@ function(name = NULL, pid = NULL, username = NULL) {
           LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate",
           whereClause
       )
+    ) %>% 
+    mutate(
+      across(where(is.numeric), ~replace_na(.x, 5))
     )
   
   if(data %>% nrow() < 1){

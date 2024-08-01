@@ -12,6 +12,7 @@ require(RMySQL)
 require(dplyr)
 require(lubridate)
 require(scales)
+require(tidyr)
 
 #* @apiTitle Player API
 #* @apiDescription Endpoints to get player information.
