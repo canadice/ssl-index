@@ -178,9 +178,10 @@ getPlayerTeam <- function(pid){
   future_promise({
     portalQuery(
       paste(
-        "SELECT team
-          FROM playerdata
-          WHERE pid =", pid, ";"
+        "SELECT t.name AS team
+          FROM playerdata pd
+          LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
+          WHERE pd.pid =", pid, ";"
       )
     )
   })

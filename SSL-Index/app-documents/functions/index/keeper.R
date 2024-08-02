@@ -81,9 +81,16 @@ getKeeperCareer <- function(league){
       SUM(`minutes played`) AS `minutes played`,
       AVG(`average rating`) AS `average rating`,
       SUM(`player of the match`) AS `player of the match`,
-      SUM(`won`) AS `won`,
-      SUM(`lost`) AS `lost`,
-      SUM(`drawn`) AS `drawn`,
+      SUM(CASE 
+            WHEN (Home = club AND HomeScore > AwayScore) OR 
+                 (Away = club AND AwayScore > HomeScore)
+            THEN 1 ELSE 0 END) AS `won`,
+        SUM(CASE 
+            WHEN (Home = club AND HomeScore < AwayScore) OR 
+                 (Away = club AND AwayScore < HomeScore)
+            THEN 1 ELSE 0 END) AS `lost`,
+        SUM(CASE 
+            WHEN HomeScore = AwayScore THEN 1 ELSE 0 END) AS `drawn`,
       SUM(`clean sheets`) AS `clean sheets`,
       SUM(`conceded`) AS `conceded`,
       SUM(`saves parried`) AS `saves parried`,
@@ -102,9 +109,6 @@ getKeeperCareer <- function(league){
         `minutes played`,
         `average rating`,
         `player of the match`,
-        `won`,
-        lost,
-        drawn,
         `clean sheets`,
         `conceded`,
         `saves parried`,
@@ -114,11 +118,13 @@ getKeeperCareer <- function(league){
         `penalties faced`,  
         `penalties saved`,
         `xsave%`, 
-        `xg prevented`
-      FROM `gamedatakeeper`",
-      if_else(league == "ALL", 
-              "",
-              paste("WHERE division = '", league, "'", sep = "")
+        `xg prevented`,
+        s.*
+      FROM `gamedatakeeper`AS gd
+      JOIN schedule AS s ON gd.gid = s.gid
+      ",if_else(league == "ALL",
+                "",
+                paste("WHERE s.Matchtype = '", league, "'", sep = "")
       ),
       ") `q01`
       GROUP BY `name`
