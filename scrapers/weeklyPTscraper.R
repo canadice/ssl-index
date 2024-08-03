@@ -22,8 +22,12 @@ readPosts <- function(page){
   link <- 
     read_html(page) %>% 
     html_elements(".post_body a") %>% 
-    html_attr("href")  
-    
+    html_attr("href")
+  
+  post_link <- 
+    read_html(page) %>% 
+    html_elements(".post_head .float_right a") %>% 
+    html_attr("href")
   
   user <- 
     read_html(page) %>% 
@@ -35,7 +39,8 @@ readPosts <- function(page){
   tibble(
     username = user,
     word = words,
-    link = link
+    post = post_link,
+    link = link[1:length(user)]
   )
 }
 
