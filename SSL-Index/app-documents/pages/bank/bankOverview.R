@@ -556,22 +556,26 @@ bankOverviewServer <- function(id, uid, parent, updated) {
               getPlayerFootedness(pid = data$pid) %>%
                 then(
                   onFulfilled = function(currentFootedness){
-                    if(input$left > 20){
-                      updateNumericInput(inputId = "left", value = 20)
-                    }
-                    if(input$right > 20){
-                      updateNumericInput(inputId = "right", value = 20)
-                    }
-                    if(input$left < currentFootedness$`left foot`){
-                      updateNumericInput(inputId = "left", value = currentFootedness$`left foot`)
-                    }
-                    if(input$right < currentFootedness$`right foot`){
-                      updateNumericInput(inputId = "right", value = currentFootedness$`right foot`)
-                    }
-                    
-                    ## Only change the cost if the footedness is within the allowed constraints
-                    if(input$left >= currentFootedness$`left foot` & input$left <= 20 & input$right >= currentFootedness$`right foot` & input$right <= 20){
-                      footSum(((input$left - currentFootedness$`left foot`) + (input$right - currentFootedness$`right foot`)) / 5 * 7500000)  
+                    if(input$left %>% is.na() | input$right %>% is.na()){
+                      # DO NOTHING
+                    } else {
+                      if(input$left > 20){
+                        updateNumericInput(inputId = "left", value = 20)
+                      }
+                      if(input$right > 20){
+                        updateNumericInput(inputId = "right", value = 20)
+                      }
+                      if(input$left < currentFootedness$`left foot`){
+                        updateNumericInput(inputId = "left", value = currentFootedness$`left foot`)
+                      }
+                      if(input$right < currentFootedness$`right foot`){
+                        updateNumericInput(inputId = "right", value = currentFootedness$`right foot`)
+                      }
+                      
+                      ## Only change the cost if the footedness is within the allowed constraints
+                      if(input$left >= currentFootedness$`left foot` & input$left <= 20 & input$right >= currentFootedness$`right foot` & input$right <= 20){
+                        footSum(((input$left - currentFootedness$`left foot`) + (input$right - currentFootedness$`right foot`)) / 5 * 7500000)  
+                      }
                     }
                   }
                 )
