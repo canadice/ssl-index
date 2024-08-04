@@ -259,7 +259,13 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
         class='keyAttribute'>very important</span> and
         <span class='importantAttribute'>important</span>          attributes.") %>% HTML(),
           br(),
-          selectInput(session$ns("selectedRole"), label = tippy("Select a player role", tooltip = "Please note, the role you play will be determined by your Manager. If you want to play a specific role, make sure to speak with your Manager."), choices = names(roleAttributes))
+          selectInput(
+            session$ns("selectedRole"), 
+            label = tippy("Select a player role", 
+                          tooltip = "Please note, the role you play will be determined by your Manager. 
+                          If you want to play a specific role, make sure to speak with your Manager."), 
+            choices = c("Select a role" = "", names(roleAttributes))
+          )
         )
       })
       
@@ -437,29 +443,32 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
           lapply(
             X = .,
             FUN = function(x){
-              if(roleAttributes[[input$selectedRole]][[x]] == 1){
-                feedback(
-                  session = session,
-                  show = TRUE,
-                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                  color = importantColor,
-                  icon = shiny::icon("exclamation-sign", lib = "glyphicon")
-                ) 
-              } else if(roleAttributes[[input$selectedRole]][[x]] == 2){
-                feedback(
-                  session = session,
-                  show = TRUE,
-                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                  color = keyColor,
-                  icon = shiny::icon("exclamation-sign", lib = "glyphicon")
-                )
+              if(input$selectedRole == ""){
+                # DO NOTHING
               } else {
-                hideFeedback(
-                  session = session,
-                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ")
-                )
+                if(roleAttributes[[input$selectedRole]][[x]] == 1){
+                  feedback(
+                    session = session,
+                    show = TRUE,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    color = importantColor,
+                    icon = shiny::icon("exclamation-sign", lib = "glyphicon")
+                  ) 
+                } else if(roleAttributes[[input$selectedRole]][[x]] == 2){
+                  feedback(
+                    session = session,
+                    show = TRUE,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    color = keyColor,
+                    icon = shiny::icon("exclamation-sign", lib = "glyphicon")
+                  )
+                } else {
+                  hideFeedback(
+                    session = session,
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ")
+                  )
+                }
               }
-                
             }
           )
       }) %>% bindEvent(input$selectedRole)
