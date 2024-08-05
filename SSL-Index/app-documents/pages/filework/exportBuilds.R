@@ -123,7 +123,7 @@ exportBuildServer <- function(id) {
               select(`pos_st`:`pos_gk`),
             FUN = function(x) {if_else(is.na(x)|x == 0, 1, as.numeric(x))}
           ) %>% 
-            paste(paste('"', positionsGK[sapply((names(.) %>% str_remove_all(pattern = "pos_") %>% str_to_upper()), FUN = function(x) which(names(positionsGK) == x))], '"', sep = ""), ., sep = ":", collapse = ",") %>% 
+            paste(paste('"', positionsGK[sapply((names(.) %>% str_remove_all(pattern = "pos_") %>% str_to_upper()), FUN = function(x) which(names(positionsGK) == x)) %>% unlist()], '"', sep = ""), ., sep = ":", collapse = ",") %>% 
             str_replace_all(pattern = " ", replacement = "") %>% 
             str_replace_all(pattern = "AttackingMidfielder", replacement = "AttackingMid") %>% 
             str_replace_all(pattern = "Wingback", replacement = "WingBack") %>% 
