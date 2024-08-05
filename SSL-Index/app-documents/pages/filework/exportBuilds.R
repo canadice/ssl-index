@@ -167,7 +167,7 @@ exportBuildServer <- function(id) {
                   New = new
                 ) %>% 
                 reactable(
-                  groupBy = c("Name")
+                  groupBy = c("Team", "Name")
                 )
             }
           )
@@ -184,13 +184,20 @@ exportBuildServer <- function(id) {
                 temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
                 dir.create(temp_directory)
                 
-                data$name %>%
+                data <- 
+                  data %>% 
+                  select(!c(Attribute, old, new)) %>% 
                   unique() %>% 
+                  mutate(
+                    fileName = paste(teamName, name, sep = "_")
+                  )
+                
+                data$fileName %>%
                   imap(function(x,y){
                     if(!is.null(x)){
-                      file_name <- glue::glue("{x} Build.json")
+                      file_name <- glue::glue("{x}_Build.json")
                       writeLines(
-                        downloadPlayer(data %>% filter(name == x)),
+                        downloadPlayer(data %>% filter(fileName == x)),
                         file.path(temp_directory, file_name)
                       )
                     }
