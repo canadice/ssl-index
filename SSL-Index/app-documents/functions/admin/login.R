@@ -78,7 +78,7 @@ getRefreshToken <- function(token){
 }
 
 setRefreshToken <- function(uid, token, session = shiny::getDefaultReactiveDomain()){
-  expires <- (now() + minutes(15)) %>% as.numeric()
+  expires <- (now() + hours(72)) %>% as.numeric()
   
   portalQuery({
     paste("INSERT INTO refreshtokens (uid, expires_at, token)
