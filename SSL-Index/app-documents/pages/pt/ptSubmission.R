@@ -25,12 +25,13 @@ submitPTUI <- function(id) {
         withSpinnerMedium()
     ) %>% 
       fluidRow(),
+    div(style = "min-height:200px;"),
     column(
       width = 12,
-      uiOutput(ns("confirmationUI"))
+      uiOutput(ns("confirmationUI")) %>% 
+        div(class = "frozen-bottom")
     ) %>% 
-      div(class = "frozen-bottom"),
-    div(style = "min-height:100px;")
+      fluidRow()
   )
 }
 
@@ -125,6 +126,12 @@ submitPTServer <- function(id, userinfo) {
         } else {
           req(input$taskName)
           
+          if(nchar(input$taskName) > 32){
+            shinyFeedback::feedbackDanger("taskName", show = TRUE, text = "You need to enter a shorter task name!")  
+          } else {
+            hideFeedback("taskName")
+          }
+          
           taskSource() %>% 
             then(
               onFulfilled = function(data){
@@ -197,7 +204,11 @@ submitPTServer <- function(id, userinfo) {
                   ptGradingVerify(session = session)
                 
               } else if(data$pid %>% duplicated() %>% any()){
-                showToast("error", "You hav duplicated player ids in the submitted csv. Please check that you don't have the same user listed twice.")
+                showToast("error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same user listed twice.")
+              } else if(nchar(input$taskName) > 32){
+                showToast("error", "You need to shorten the task name.")
+                
+                shinyFeedback::feedbackDanger("taskName", show = TRUE, text = "You need to enter a shorter task name!")  
               } else {
                 data %>% 
                   mutate(
@@ -225,8 +236,6 @@ submitPTServer <- function(id, userinfo) {
                   pid != -99
                 )
               
-              sendGradedTPE(source = input$taskName, tpe = data)
-              
               data %>% 
                 mutate(
                   source = input$taskName
@@ -243,6 +252,8 @@ submitPTServer <- function(id, userinfo) {
                 )
               
               showToast(type = "success", "You have successfully submitted a graded PT task.")
+              
+              sendGradedTPE(source = input$taskName, tpe = data)
               
               output$informationUI <- renderUI({
                 tagList(
