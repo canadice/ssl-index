@@ -9,10 +9,19 @@ sendTest <- function(){
 
       request.setRequestHeader('Content-type', 'application/json');
 
-      const params = {
-        username: 'Captain Hook',
-        avatar_url: '',
-        content: 'The message to send'
+      var myEmbed = {
+        author: {
+          name: 'A new PT has been graded!'
+        },
+        title: 'TPE List',
+        fields: [
+                   {name: '', value:'```Test\\\\nTEST```'}
+        ]
+      }
+
+      var params = {
+        username: 'Index Update',
+        embeds: [ myEmbed ]
       }
 
       request.send(JSON.stringify(params));
@@ -24,37 +33,36 @@ sendTest <- function(){
 }
 
 sendGradedTPE <- function(source, tpe){
+  
+  gradedString <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
+    paste(collapse = "\\n")
+  
   jscode <- paste0("
     function sendMessage() {
       const request = new XMLHttpRequest();
-      request.open('POST', '", config$discord$tpe, "');
-
+      request.open('POST', '", config$discord$player, "');
       request.setRequestHeader('Content-type', 'application/json');
-
       var myEmbed = {
-        author: {
-          name: 'A new PT has been graded!'
-        },
+        author: {name: 'A new PT has been graded!'},
         title: '", source, "',
-        fields: [",
-                   paste0("{ name: '", tpe$username, "', value:", tpe$tpe, ", inline: true}") %>% paste(collapse = ","),
-        "],
+        fields: [ 
+          {name: 'TPE', 
+           value: '", sprintf("```%s```", gradedString), "'}
+        ],
         footer: {
           text: 'If you have received 0 or reduced TPE, please check a summary post in the PT thread. \\n\\nThe TPE has already been added to your player page, this is just a report.'
-        }
-      }
-
-      var params = {
-        username: 'PT Watcher',
-        embeds: [ myEmbed ]
-      }
-
+        } 
+      };
+      
+      var params = {username: 'PT Watcher',embeds: [ myEmbed ]};
+      
       request.send(JSON.stringify(params));
     }
-    sendMessage();
-  ")
+    
+    sendMessage();"
+  )
   
-  cat(jscode)
+  # cat(jscode)
   
   runjs(jscode)
 }

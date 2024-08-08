@@ -254,6 +254,7 @@ submitPTServer <- function(id, userinfo) {
               showToast(type = "success", "You have successfully submitted a graded PT task.")
               
               sendGradedTPE(source = input$taskName, tpe = data)
+              # sendTest()
               
               output$informationUI <- renderUI({
                 tagList(
