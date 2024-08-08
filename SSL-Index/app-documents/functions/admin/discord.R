@@ -40,13 +40,13 @@ sendGradedTPE <- function(source, tpe){
   jscode <- paste0("
     function sendMessage() {
       const request = new XMLHttpRequest();
-      request.open('POST', '", config$discord$player, "');
+      request.open('POST', '", config$discord$tpe, "');
       request.setRequestHeader('Content-type', 'application/json');
       var myEmbed = {
         author: {name: 'A new PT has been graded!'},
         title: '", source, "',
         fields: [ 
-          {name: 'TPE', 
+          {name: '', 
            value: '", sprintf("```%s```", gradedString), "'}
         ],
         footer: {
