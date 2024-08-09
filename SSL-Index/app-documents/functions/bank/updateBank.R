@@ -53,20 +53,27 @@ modalBankVerify <- function(update, cost, session){
 addBankTransaction <- function(uid, pid, source, transaction, status = 1){
   time <- lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric()
   
-  for(i in 1:length(pid)){
-    portalQuery(
+  portalQuery(
+    paste(
+      "INSERT INTO banktransactions (time, pid, `source`, `transaction`, `status`, uid) 
+      VALUES",
       paste(
-        "INSERT INTO banktransactions (time, pid, source, transaction, status, uid) VALUES
-      (", paste0("'", time, "'"),", ", 
-        pid[i], ", ", 
-        paste0("'", source[i], "'"),", ",
-        transaction[i], ", ",
-        status, ", ",
-        uid, ");"
-      )
+        "(",
+        paste(
+          time,
+          pid,
+          paste0("'", source, "'"),
+          ifelse(transaction %>% class() == "character", transaction %>% str_trim(), transaction),
+          status,
+          uid,
+          sep = ","
+        ),
+        ")",
+        collapse = ","
+      ),
+      ";"
     )
-  }
-  
+  )
 }
 
 approveTransaction <- function(data, uid){

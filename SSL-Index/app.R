@@ -628,7 +628,9 @@ server <- function(input, output, session) {
       contractProcess = FALSE,
       tradeProcess = FALSE,
       playerEdit = FALSE,
-      submitPT = FALSE
+      submitPT = FALSE,
+      bankDeposit = FALSE,
+      bankProcess = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -648,13 +650,15 @@ server <- function(input, output, session) {
       welcomeServer("welcome", usergroup = authOutput()$usergroup)
       loadedPage$welcome <- TRUE
       
-    } else if(input$tabs == "bankDeposit"){
+    } else if(!loadedPage$bankDeposit & input$tabs == "bankDeposit"){
       req(authOutput()$uid)
       bankDepositServer("bankDeposit", userinfo = authOutput())
+      loadedPage$bankDeposit <- TRUE
       
-    } else if(input$tabs == "bankProcess"){
+    } else if(!loadedPage$bankProcess & input$tabs == "bankProcess"){
       req(authOutput()$uid)
       bankProcessServer("bankProcess", userinfo = authOutput())
+      loadedPage$bankProcess <- TRUE
       
     } else if(input$tabs == "editSchedule"){
       req(authOutput()$uid)
