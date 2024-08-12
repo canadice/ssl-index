@@ -50,8 +50,15 @@ function(league, season){
       `key tackles`,`interceptions`,`clearances`,`mistakes leading to goals`,`yellow cards`,`red cards`,
       `fouls`,`fouls against`,`offsides`,`xa`,`xg overperformance`,`fk shots`,`blocks`,`open play key passes`,
       `successful open play crosses`,`attempted open play crosses`,`shots blocked`,`progressive passes`,
-      `successful presses`,`attempted presses`,`goals outside box`,`average rating`,`successful presses` / `attempted presses` * 100 AS `press%`,
-      `successful open play crosses` / `attempted open play crosses` * 100 AS `open play crosses%`,
+      `successful presses`,`attempted presses`,`goals outside box`,`average rating`,
+      CASE 
+          WHEN IFNULL(`attempted presses`, 0) = 0 THEN 0
+          ELSE (`successful presses` / `attempted presses`) * 100
+  	  END AS `press%`,
+        CASE 
+          WHEN IFNULL(`attempted open play crosses`, 0) = 0 THEN 0
+          ELSE (`successful open play crosses` / `attempted open play crosses`) * 100
+      END AS `open play crosses%`,
       `shots on target` / `shots` * 100 AS `shot accuracy%`,
       `xG` - 0.83*`penalties taken` AS `pen adj xG`
   FROM (
