@@ -181,8 +181,8 @@ function(class = NULL) {
 function(){
   portalQuery(
     "SELECT 
-        YEAR(FROM_UNIXTIME(time)) AS year,
-        WEEK(FROM_UNIXTIME(time), 3) AS week,
+        YEAR(CONVERT_TZ(FROM_UNIXTIME(time), 'UTC', 'America/Los_Angeles')) AS year,
+        WEEK(CONVERT_TZ(FROM_UNIXTIME(time), 'UTC', 'America/Los_Angeles'), 3) AS week,
         COUNT(*) AS count
     FROM tpehistory
     WHERE source = 'Activity Check'
