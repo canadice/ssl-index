@@ -321,8 +321,17 @@ h1, h2, h3, h4, h5 {
     Color: var(--sslGold);
 }
 
+.rt-td-inner {
+  text-wrap: nowrap;
+}
+
+.rt-sort-header {
+  text-wrap: pretty;
+}
+
 .rt-text-content {
-  overflow: visible;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
 }
 
 .Reactable {
@@ -487,6 +496,10 @@ h1, h2, h3, h4, h5 {
 
 .smallSelect .selectize-input::after{
   display: none !important;
+}
+
+.selectize-dropdown-content {
+  text-wrap: nowrap;
 }
 
 

@@ -78,7 +78,7 @@ welcomeServer <- function(id, usergroup) {
                          Team = colDef(
                            # width = 25,
                            cell = function(value){
-                             image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value)  
+                             image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)  
                              
                              list <- 
                                tagList(
@@ -104,9 +104,9 @@ welcomeServer <- function(id, usergroup) {
                    function(i){
                      box(
                        title = div(
-                         div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"])), 
+                         div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"], title = schedule[i, "Home"])), 
                          strong(" - "), 
-                         div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"])),
+                         div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"], title = schedule[i, "Away"])),
                          align = "center"
                        ),
                        width = NULL,
@@ -116,13 +116,20 @@ welcomeServer <- function(id, usergroup) {
                          ),
                        footer = 
                          paste(
-                           if_else(schedule[i, "MatchType"] == 0, 
-                                   "Cup",
-                                   if_else(schedule[i, "MatchType"] == 1, 
-                                           "Major League",
-                                           if_else(schedule[i, "MatchType"] == 2, "Minor League", "Pre-Season"))),
-                           schedule[i, "MatchDay"], sep = ", "
+                           paste(
+                             if_else(schedule[i, "MatchType"] == 0, 
+                                     "Cup",
+                                     if_else(schedule[i, "MatchType"] == 1, 
+                                             "Major League",
+                                             if_else(schedule[i, "MatchType"] == 2, "Minor League", "Pre-Season"))),
+                             schedule[i, "MatchDay"], sep = ", "
+                           ),
+                           paste(
+                             schedule[i, "IRLDate"]
+                           ),
+                           sep = "<br>"
                          ) %>% 
+                         HTML() %>% 
                          div(align = "center")
                      )
                      
