@@ -443,10 +443,47 @@ h1, h2, h3, h4, h5 {
 .verifyBox {
   background: var(--lighterText);
   color: var(--darkerText);
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
-.verifyBox Reactable {
-  color: var(--lighterText);
+/* Target the table inside the .verifyBox class */
+.verifyBox .ReactTable {
+  background-color: #f9f9f9; /* Light background for the table */
+  border: 1px solid #ddd; /* Light border around the table */
+  border-radius: 5px; /* Optional rounded corners */
+  overflow: hidden; /* Ensure no overflow */
+}
+
+/* Style for the table header */
+.verifyBox .rt-th {
+  text-transform: uppercase; /* Make header text uppercase */
+  background-color: #e0e0e0; /* Slightly darker background for header */
+  color: #333; /* Dark text color for contrast */
+  font-weight: bold; /* Bold font for header */
+  padding: 10px; /* Padding inside header cells */
+}
+
+.verifyBox .rt-th-inner {
+  background-color: inherit;
+}
+
+/* Style for the table rows (cells) */
+.verifyBox .rt-td {
+  color: #333; /* Dark text color for visibility */
+  padding: 10px; /* Padding inside cells */
+  border-bottom: 1px solid #ddd; /* Light border between rows */
+  background-color: #ffffff; /* Light background for table rows */
+}
+
+/* Optional: Style the last row border */
+.verifyBox .rt-tr-group:last-child .rt-td {
+  border-bottom: none; /* Remove the border from the last row */
+}
+
+/* Optional: Add hover effect for rows */
+.verifyBox .rt-tr:hover .rt-td {
+  background-color: #f0f0f0; /* Slightly darker background on hover */
 }
 
 .stickyFooter {
