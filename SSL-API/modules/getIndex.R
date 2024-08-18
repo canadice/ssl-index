@@ -127,9 +127,14 @@ function(league, season){
         `successful presses`,`attempted presses`,`goals outside box`
       FROM `gamedataoutfield` AS gd
       JOIN schedule AS s ON gd.gid = s.gid
-      ",if_else(league == "ALL",
-              paste("WHERE s.season = ", season, sep = ""),
-              paste("WHERE s.Matchtype = '", league, "' AND s.season = ", season, sep = "")
+      ",if_else(league == "ALL" & season == "ALL",
+                "",
+                if_else(league == "ALL",
+                        paste("WHERE s.season = ", season, sep = ""),
+                        if_else(season == "ALL",
+                                paste("WHERE s.Matchtype = ", league, sep = ""),
+                                paste("WHERE s.Matchtype = '", league, "' AND s.season = ", season, sep = ""))
+                )
       ),
       ") `q01`
       GROUP BY `name`
@@ -200,9 +205,14 @@ function(league, season){
         s.*
       FROM `gamedatakeeper`AS gd
       JOIN schedule AS s ON gd.gid = s.gid
-      ",if_else(league == "ALL",
-                paste("WHERE s.season = ", season, sep = ""),
-                paste("WHERE s.Matchtype = '", league, "' AND s.season = ", season, sep = "")
+      ",if_else(league == "ALL" & season == "ALL",
+                "",
+                if_else(league == "ALL",
+                        paste("WHERE s.season = ", season, sep = ""),
+                        if_else(season == "ALL",
+                                paste("WHERE s.Matchtype = ", league, sep = ""),
+                                paste("WHERE s.Matchtype = '", league, "' AND s.season = ", season, sep = ""))
+                )
       ),
       ") `q01`
       GROUP BY `name`
