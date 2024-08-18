@@ -322,6 +322,9 @@ traits <- list(
   "Technique" = list(
     "Avoids Using Weaker Foot", "Uses Outside Of Foot", "Tries Tricks", "Likes To Beat Opponent Repeatedly",
     "Curls Ball", "Possess Long Flat Throw", "Tries To Play Way Out Of Trouble"
+  ), 
+  "Goalkeeper" = list(
+    "Uses Long Throw To Start Counter Attack"
   )
 )
 

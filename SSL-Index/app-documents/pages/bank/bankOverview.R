@@ -339,7 +339,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         )
       
       # Calculates sum of purchase
-      observe({
+      shiny::observe({
         player() %>% 
           then(
             onFulfilled = function(data){
@@ -549,7 +549,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
           )
       })
       
-      observe({
+      shiny::observe({
         player() %>%
           then(
             onFulfilled = function(data){

@@ -250,6 +250,7 @@ ui <- function(request){
 ui <- 
   secure_app(
     ui,
+    lan = "en",
     status = "primary",
     ## Login page functionality
     tags_top = 
