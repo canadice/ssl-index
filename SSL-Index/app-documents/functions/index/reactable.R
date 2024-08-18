@@ -36,7 +36,7 @@ indexReactable <- function(currentData){
                         function(X){
                           div(
                             style = "display: inline-block; width: 25px;", 
-                            img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
+                            img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X, title = X) 
                           )
                         }
                       )
@@ -45,7 +45,7 @@ indexReactable <- function(currentData){
                 } else {
                   # file.exists(sprintf("%s.png", Club)) %>% print()
                   
-                  image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
+                  image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club, title = Club)  
                   
                   list <- 
                     tagList(
@@ -121,7 +121,7 @@ leaderReactable <- function(currentData){
                         function(X){
                           div(
                             style = "display: inline-block; width: 25px;", 
-                            img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
+                            img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X, title = X) 
                           )
                         }
                       )
@@ -130,7 +130,7 @@ leaderReactable <- function(currentData){
                 } else {
                   # file.exists(sprintf("%s.png", Club)) %>% print()
                   
-                  image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
+                  image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club, title = Club)  
                   
                   list <- 
                     tagList(
@@ -209,7 +209,7 @@ recordReactable <- function(currentData){
                         function(X){
                           div(
                             style = "display: inline-block; width: 25px;", 
-                            img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X) 
+                            img(src = sprintf("%s.png", X), style = "height: 25px;", alt = X, title = X) 
                           )
                         }
                       )
@@ -218,7 +218,7 @@ recordReactable <- function(currentData){
                 } else {
                   # file.exists(sprintf("%s.png", Club)) %>% print()
                   
-                  image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club)  
+                  image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club, title = Club)  
                   
                   list <- 
                     tagList(
