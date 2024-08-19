@@ -384,7 +384,9 @@ server <- function(input, output, session) {
       tabItem("academyIndex",academyIndexUI(id = "academyIndex")),
       tabItem("careerRecords",careerRecordsUI(id = "careerRecords")),
       tabItem("playerPages",playerPagesUI(id = "playerPages")),
-      tabItem("playerEdit",playerEditUI(id = "playerEdit")# ),
+      tabItem("playerEdit",playerEditUI(id = "playerEdit")),
+      tabItem("leagueStandings",leagueStandingsUI(id = "leagueStandings")),
+      tabItem("leagueSchedule",leagueScheduleUI(id = "leagueSchedule")#),
       # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
       # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
       # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
@@ -542,6 +544,8 @@ server <- function(input, output, session) {
         menuItem("Welcome",tabName = "welcome",selected = TRUE),
         menuItem("Academy Index",tabName = "academyIndex"),
         menuItem("League Index",tabName = "leagueindex"),
+        menuItem("Standings", tabName = "leagueStandings"),
+        menuItem("Schedule", tabName = "leagueSchedule"),
         menuItem("Career Records",tabName = "careerRecords"),
         {
           if(!any(0 %in% authOutput()$usergroup)){
@@ -631,7 +635,9 @@ server <- function(input, output, session) {
       playerEdit = FALSE,
       submitPT = FALSE,
       bankDeposit = FALSE,
-      bankProcess = FALSE
+      bankProcess = FALSE,
+      leagueStandings = FALSE,
+      leagueSchedule = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -694,8 +700,17 @@ server <- function(input, output, session) {
       loadedPage$playerPages <- TRUE
       
     } else if(!loadedPage$playerEdit & input$tabs == "playerEdit"){
+      req(authOutput())
       playerEditServer("playerEdit", uid = authOutput()$uid)
       loadedPage$playerEdit <- TRUE
+      
+    } else if(!loadedPage$leagueStandings & input$tabs == "leagueStandings"){
+      leagueStandingsServer("leagueStandings")
+      loadedPage$leagueStandings <- TRUE
+      
+    } else if(!loadedPage$leagueSchedule & input$tabs == "leagueSchedule"){
+      leagueScheduleServer("leagueSchedule")
+      loadedPage$leagueSchedule <- TRUE
       
     } else if(!loadedPage$academyIndex & input$tabs == "academyIndex"){
       academyIndexServer("academyIndex")
