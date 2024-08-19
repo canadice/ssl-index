@@ -221,3 +221,51 @@ function(league, season){
       sep = "")
   )
 }
+
+#* Gets aggregated standings
+#* @get /standings
+#* @param season The selected season
+#* @param league The selected league
+#* 
+function(league = "ALL", season = "ALL"){
+  indexQuery(
+    paste(
+      "SELECT
+    Team,
+    COUNT(*) AS MatchesPlayed,
+    SUM(CASE
+        WHEN (Home = Team AND HomeScore > AwayScore) OR (Away = Team AND AwayScore > HomeScore) THEN 1
+        ELSE 0
+    END) AS Wins,
+    SUM(CASE
+        WHEN (HomeScore = AwayScore) THEN 1
+        ELSE 0
+    END) AS Draws,
+    SUM(CASE
+        WHEN (Home = Team AND HomeScore < AwayScore) OR (Away = Team AND AwayScore < HomeScore) THEN 1
+        ELSE 0
+    END) AS Losses,
+    SUM(CASE
+        WHEN (Home = Team) THEN HomeScore
+        ELSE AwayScore
+    END) AS GoalsFor,
+    SUM(CASE
+        WHEN (Home = Team) THEN AwayScore
+        ELSE HomeScore
+    END) AS GoalsAgainst,
+    SUM(CASE
+        WHEN (Home = Team AND HomeScore > AwayScore) OR (Away = Team AND AwayScore > HomeScore) THEN 3
+        WHEN (HomeScore = AwayScore) THEN 1
+        ELSE 0
+    END) AS Points
+FROM (
+    SELECT Home AS Team, Home, Away, HomeScore, AwayScore FROM schedule WHERE HomeScore IS NOT NULL AND matchtype ", if_else(league == "ALL", '>= 0', paste0("=", league)), if_else(season == "ALL", "", paste0(" AND Season = ", season)),  
+      "UNION ALL
+    SELECT Away AS Team, Home, Away, HomeScore, AwayScore FROM schedule WHERE HomeScore IS NOT NULL AND matchtype ", if_else(league == "ALL", '>= 0', paste0("=", league)), if_else(season == "ALL", "", paste0(" AND Season = ", season)),
+      ") AS combined
+GROUP BY Team
+ORDER BY Points DESC, GoalsFor DESC, GoalsAgainst ASC;"
+    )
+  ) %>% 
+    suppressWarnings()
+}
