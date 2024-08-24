@@ -48,7 +48,7 @@ function() {
       pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
       pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
       pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
-      mb.username, us.desc AS `userStatus`, ps.desc AS `playerStatus`, 
+      mb.username, mbuf.fid4 AS discord, us.desc AS `userStatus`, ps.desc AS `playerStatus`, 
             CASE 
               WHEN pd.tpe <= 350 THEN 1000000
               WHEN pd.tpe BETWEEN 351 AND 500 THEN 1500000
@@ -69,8 +69,9 @@ function() {
         LEFT JOIN userstatuses us ON ua.status_u = us.status
         LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
         LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
+        LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
         WHERE pd.status_p >= 0
-        ORDER BY pd.name;"
+        ORDER BY pd.created;"
     )
   ) %>% 
     mutate(

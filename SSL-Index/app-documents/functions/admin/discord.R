@@ -191,6 +191,10 @@ sendApprovedCreate <- function(data){
                       name: 'Username',
                       value: '", data$username, "',
                    },
+                   { 
+                      name: 'Discord',
+                      value: '", data$discord, "',
+                   },
         ]
       }
 
