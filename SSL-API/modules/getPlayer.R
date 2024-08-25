@@ -191,3 +191,66 @@ function(){
     ORDER BY year, week;"
   )
 }
+
+
+#* Get weekly TPE Checklists
+#* @get /tpeChecklist
+#* @serializer json
+#* @param username Forum username
+#* 
+function(username){
+  ## Gets date of the start of the week in Pacific
+  weekStart <- 
+    lubridate::now() %>% 
+    with_tz("US/Pacific") %>% 
+    floor_date("week", week_start = "Monday") %>% 
+    as.numeric()
+  
+  tasks <- 
+    mybbQuery(
+      "SELECT 
+          p.username AS user, 
+          COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count, 
+          t.tid, 
+          CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link, 
+          t.subject, 
+          t.username AS op
+      FROM 
+          mybbdb.mybb_threads t
+      JOIN 
+          mybbdb.mybb_posts p ON p.tid = t.tid
+      WHERE 
+          t.fid IN (22, 49, 25, 24, 122) 
+          AND t.sticky = 0 
+          AND t.closed = 0
+      GROUP BY 
+          p.username, 
+          t.tid, 
+          t.subject, 
+          t.username;"
+    ) %>% 
+    group_by(subject, link) %>% 
+    summarize(posted = dplyr::if_else(any(user == username & count > 0), TRUE, FALSE) %>% 
+             tidyr::replace_na(replace = FALSE)) %>% 
+    ungroup() %>% 
+    add_row(
+      tibble(
+        subject = "Activity Check",
+        link = "https://index.simulationsoccer.com",
+        posted = (portalQuery(
+              paste("SELECT * 
+          FROM tpehistory 
+          WHERE pid = (
+              SELECT pd.pid
+              FROM playerdata AS pd
+              JOIN mybbdb.mybb_users AS mbb ON pd.uid = mbb.uid
+              WHERE mbb.username = ", paste0("'", username, "'"), " 
+                AND pd.status_p = 1
+          ) 
+          AND source LIKE '%Activity Check' 
+          AND time > ", weekStart)
+            ) %>% nrow()) > 0
+      )
+    ) %>% 
+    suppressWarnings()
+}
