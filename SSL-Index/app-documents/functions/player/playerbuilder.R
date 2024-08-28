@@ -242,7 +242,7 @@ approvePlayer <- function(uid){
         "SELECT pd.pid, pd.first, pd.last, pd.tpebank, pd.tpe, pd.position, mybb.username AS username, mbuf.fid4 AS discord
         FROM playerdata pd 
         JOIN mybbdb.mybb_users mybb ON pd.uid = mybb.uid 
-        JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.uid
+        JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
         WHERE pd.uid = ", uid, "AND pd.status_p = -1;"
       )
     )
