@@ -230,7 +230,7 @@ function(username){
           t.username;"
     ) %>% 
     group_by(subject, link) %>% 
-    summarize(posted = dplyr::if_else(any(user == username & count > 0), TRUE, FALSE) %>% 
+    summarize(posted = dplyr::if_else(any(str_to_lower(user) == str_to_lower(username) & count > 0), TRUE, FALSE) %>% 
              tidyr::replace_na(replace = FALSE)) %>% 
     ungroup() %>% 
     add_row(

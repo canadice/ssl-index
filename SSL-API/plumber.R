@@ -13,6 +13,7 @@ require(dplyr)
 require(lubridate)
 require(scales)
 require(tidyr)
+require(stringr)
 
 #* @apiTitle Player API
 #* @apiDescription Endpoints to get player information.
