@@ -9,7 +9,7 @@ function(name){
       "SELECT sum(transaction) AS balance 
       FROM banktransactions bt
       JOIN playerdata pd ON bt.pid = pd.pid
-      WHERE pd.name = ", paste0("'", name, "'"), " AND bt.status = 1;"
+      WHERE pd.name = ", paste0("'", name %>% str_replace(pattern = "'", replacement = "\\\\'"), "'"), " AND bt.status = 1;"
     )
   ) %>% 
     mutate(balance = paste0("$", comma(balance))) %>% 
@@ -34,7 +34,7 @@ function(name){
           mybbdb.mybb_users mbb ON bt.uid = mbb.uid
       LEFT JOIN playerdata pd ON bt.pid = pd.pid
       WHERE 
-          pd.name = ", paste0("'", name, "'"), "AND bt.status = 1
+          pd.name = ", paste0("'", name %>% str_replace(pattern = "'", replacement = "\\\\'"), "'"), "AND bt.status = 1
       ORDER BY Time DESC;")
   ) %>% 
     mutate(
