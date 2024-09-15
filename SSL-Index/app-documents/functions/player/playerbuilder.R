@@ -250,7 +250,7 @@ approvePlayer <- function(uid){
   addBankTransaction(uid = 1, pid = data$pid, source = "Academy Contract", transaction = 3000000, status = 1)
   
   today <- (now() %>% as_date() %>% as.numeric())
-  start <- (currentSeason$startDate %>% as_date() - days(7)) %>% as.numeric()
+  start <- (currentSeason$startDate %>% as_date()) %>% as.numeric()
   
   tpe <- 
     tibble(
