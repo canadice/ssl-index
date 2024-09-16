@@ -36,7 +36,7 @@ playerApproveServer <- function(id, userinfo) {
         selected <- getReactableState("needApproval", "selected")
           req(selected)
           
-          approvePlayer(playerForApproval()[selected,"uid"])
+          approvePlayer(playerForApproval()[selected,"uid"], session = session)
           
           showToast("success", "Player has successfully been approved.")
           
