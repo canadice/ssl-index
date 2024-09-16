@@ -261,3 +261,18 @@ function(season){
   ) %>% 
     suppressWarnings()
 }
+
+#* Gets the schedule for the league
+#* @get /schedule
+#* @param season The selected season
+#* 
+function(season){
+  indexQuery(
+    paste(
+      "SELECT IRLDate, MatchType, MatchDay, Home, Away, HomeScore, AwayScore, ExtraTime, Penalties
+      FROM schedule
+      WHERE season = ", season,
+      "ORDER BY IRLDate;"
+    )
+  )
+}
