@@ -28,7 +28,7 @@ editScheduleServer <- function(id, userinfo) {
       updated <- reactiveVal({0})
       
       data <- reactive({
-        getUnfinishedSchedule()
+        getUnfinishedSchedule()[1:8,]
       }) %>% 
         bindEvent(
           updated()
