@@ -208,26 +208,53 @@ function(username){
   
   tasks <- 
     mybbQuery(
-      "SELECT 
-          p.username AS user, 
-          COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count, 
-          t.tid, 
-          CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link, 
-          t.subject, 
-          t.username AS op
-      FROM 
-          mybbdb.mybb_threads t
-      JOIN 
-          mybbdb.mybb_posts p ON p.tid = t.tid
-      WHERE 
-          t.fid IN (22, 49, 25, 24, 122) 
-          AND t.sticky = 0 
-          AND t.closed = 0
-      GROUP BY 
-          p.username, 
-          t.tid, 
-          t.subject, 
-          t.username;"
+      paste0(
+        "WITH current_season AS (
+    SELECT MAX(season) AS current_season
+    FROM indexdb.seasoninfo
+), 
+player_class AS (
+    SELECT MAX(pd.class) AS class
+    FROM 
+        portaldb.playerdata pd
+    JOIN 
+        mybbdb.mybb_users mbb ON pd.uid = mbb.uid
+	WHERE
+		mbb.username = '", username, "'
+    )
+
+        SELECT 
+            p.username AS user, 
+            COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count, 
+            t.tid, 
+            CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link, 
+            t.subject, 
+            t.username AS op
+        FROM 
+            mybbdb.mybb_threads t
+        JOIN 
+            mybbdb.mybb_posts p ON p.tid = t.tid
+        JOIN 
+            player_class pc ON 1=1
+        JOIN 
+            current_season cs ON 1=1
+        WHERE 
+            (
+                (pc.class <> CONCAT('S', cs.current_season + 1) AND t.fid IN (22, 49, 25, 24, 122))
+                OR 
+                -- Check for extended forum IDs for S18 players
+                (pc.class = CONCAT('S', cs.current_season + 1) AND 
+                t.fid IN (22, 49, 25, 24, 122, 179, 180, 181, 182, 183) AND
+                NOT (t.subject LIKE CONCAT('%S', cs.current_season, ' Minor%') OR t.subject LIKE CONCAT('%S', cs.current_season, ' Major%')) )
+            )
+            AND t.sticky = 0 
+            AND t.closed = 0
+        GROUP BY 
+            p.username, 
+            t.tid, 
+            t.subject, 
+            t.username;"
+      )
     ) %>% 
     group_by(subject, link) %>% 
     summarize(posted = dplyr::if_else(any(str_to_lower(user) == str_to_lower(username) & count > 0), TRUE, FALSE) %>% 
