@@ -35,7 +35,7 @@ checkBuild <- function(input, tpebank, session){
         ))
     }
     
-    playerInfo$traits <- paste0(input$traits, collapse = " \\ ")
+    playerInfo$traits <- paste0(input$traits, collapse = traitSep)
   } else {
     playerInfo$position <- "GK"
     
@@ -97,7 +97,7 @@ submitBuild <- function(input, tpebank, userinfo){
         ))
     }
     
-    playerInfo$traits <- paste0(input$traits, collapse = " \\\\ ")
+    playerInfo$traits <- paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'")
   } else {
     playerInfo$position <- "GK"
     
@@ -131,7 +131,7 @@ submitBuild <- function(input, tpebank, userinfo){
       )
     )
   
-  ## SUBMIT BUILD TO A TEMPORARY TABLE FOR APPROVAL 
+  ## SUBMIT BUILD TO PLAYER DATA FOR APPROVAL 
   insertBuildForApproval(playerInfo)
   
   sendNewCreate(playerInfo, username = userinfo$username)
