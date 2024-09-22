@@ -214,7 +214,7 @@ function(username){
     FROM indexdb.seasoninfo
 ), 
 player_class AS (
-    SELECT MAX(pd.class) AS class
+    SELECT CONCAT('S', MAX(CAST(SUBSTRING(pd.class, 2) AS UNSIGNED))) AS class
     FROM 
         portaldb.playerdata pd
     JOIN 
