@@ -475,27 +475,28 @@ title <- title[!(tid %in% postedThreads$title)]
 tid <- tid[!(tid %in% postedThreads$title)]
 
 if(length(tid) > 0){
-  lapply(X = 1:length(tid), function(X){
-    send_webhook_message(
-      paste(
-        "## New Transaction!", "\n\n", 
-        paste(
-          paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+  postedThreads <- postedThreads %>% 
+    add_row(
+      lapply(X = 1:length(tid), function(X){
+        send_webhook_message(
+          paste(
+            "## New Transaction!", "\n\n",
+            paste(
+              paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+            )
+          )
         )
-      )
-    )
-    
-    postedThreads <- postedThreads %>% 
-      add_row(
+        
         tibble(
           title = tid[X],
           link = paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]),
           forum = forum
-        )
-      )
+        ) %>% 
+          return()
+      }) %>% 
+        do.call(what = rbind.fill, args = .)
+    )
     
-    return(NULL)
-  })
 }
 
 forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=72"
@@ -516,27 +517,28 @@ title <- title[!(tid %in% postedThreads$title)]
 tid <- tid[!(tid %in% postedThreads$title)]
 
 if(length(tid) > 0){
-  lapply(X = 1:length(tid), function(X){
-    send_webhook_message(
-      paste(
-        "## New Trade!", "\n\n", 
-        paste(
-          paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+  postedThreads <- postedThreads %>% 
+    add_row(
+      lapply(X = 1:length(tid), function(X){
+        send_webhook_message(
+          paste(
+            "## New Trade!", "\n\n", 
+            paste(
+              paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+            )
+          )
         )
-      )
-    )
-    
-    postedThreads <- postedThreads %>% 
-      add_row(
+        
         tibble(
           title = tid[X],
           link = paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]),
           forum = forum
-        )
-      )
-    
-    return(NULL)
-  })
+        ) %>% 
+          return()
+      }) %>% 
+        do.call(what = rbind.fill, args = .)
+    )
+  
 }
 
 
@@ -558,27 +560,27 @@ title <- title[!(tid %in% postedThreads$title)]
 tid <- tid[!(tid %in% postedThreads$title)]
 
 if(length(tid) > 0){
-  lapply(X = 1:length(tid), function(X){
-    send_webhook_message(
-      paste(
-        "## New Bonuses!", "\n\n", 
-        paste(
-          paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+  postedThreads <- postedThreads %>% 
+    add_row(
+      lapply(X = 1:length(tid), function(X){
+        send_webhook_message(
+          paste(
+            "## New Bonuses!", "\n\n", 
+            paste(
+              paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+            )
+          )
         )
-      )
-    )
-    
-    postedThreads <- postedThreads %>% 
-      add_row(
+        
         tibble(
           title = tid[X],
           link = paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]),
           forum = forum
-        )
-      )
-    
-    return(NULL)
-  })
+        ) %>% 
+          return()
+      }) %>% 
+        do.call(what = rbind.fill, args = .)
+    )
 }
 
 ##################################################################
