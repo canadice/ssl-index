@@ -44,6 +44,7 @@ jobs:
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       MATCHDAYREM: ${{ secrets.MATCHDAYREM }}
+      PRODUCTIONSH: ${{ secrets.PRODUCTIONSH }}
       
 
     steps:
@@ -81,6 +82,7 @@ jobs:
       - name: Create and populate .Renviron file
         run: |
           echo MATCHDAYREM ="MATCHDAYREM" >> ~/.Renviron
+          echo PRODUCTIONSH ="PRODUCTIONSH" >> ~/.Renviron
         shell: bash
 
       - name: Generate data
