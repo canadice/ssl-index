@@ -36,7 +36,12 @@ function() {
     paste(
       "SELECT pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
       pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name AS team, pd.affiliate, pd.birthplace, 
-      pd.nationality, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
+      -- Check if nationality is 3 letters and map it to the full name from portaldb.nationality, else show pd.nationality
+        CASE 
+            WHEN LENGTH(pd.nationality) = 3 THEN n.name
+            ELSE pd.nationality 
+        END AS nationality,
+      pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
       pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
       pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
       pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk, pd.acceleration, pd.agility,
@@ -62,7 +67,8 @@ function() {
               WHEN pd.tpe BETWEEN 1551 AND 1700 THEN 5500000
               WHEN pd.tpe > 1700 THEN 6000000
               ELSE NULL
-          END AS `minimum salary`
+          END AS `minimum salary`,
+          sum(bt.transaction) AS bankBalance 
         FROM playerdata pd
         LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
         LEFT JOIN useractivity ua ON pd.uid = ua.uid
@@ -70,7 +76,24 @@ function() {
         LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
         LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
         LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
-        WHERE pd.status_p >= 0
+        LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation
+        LEFT JOIN banktransactions bt ON pd.pid = bt.pid
+        WHERE pd.status_p >= 0 AND bt.status = 1
+        GROUP BY pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
+         pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name, pd.affiliate, pd.birthplace, 
+         n.name, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
+         pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
+         pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
+         pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk, pd.acceleration, pd.agility,
+         pd.balance, pd.`jumping reach`, pd.`natural fitness`, pd.pace, pd.stamina, pd.strength, 
+         pd.corners, pd.crossing, pd.dribbling, pd.finishing, pd.`first touch`, pd.`free kick`, 
+         pd.heading, pd.`long shots`, pd.`long throws`, pd.marking, pd.passing, pd.`penalty taking`, 
+         pd.tackling, pd.technique, pd.aggression, pd.anticipation, pd.bravery, pd.composure, 
+         pd.concentration, pd.decisions, pd.determination, pd.flair, pd.leadership, pd.`off the ball`, 
+         pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
+         pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
+         pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
+         mb.username, mbuf.fid4, us.desc, ps.desc
         ORDER BY pd.created;"
     )
   ) %>% 
@@ -102,7 +125,12 @@ function(name = NULL, pid = NULL, username = NULL) {
       paste(
         "SELECT pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
         pd.created, pd.tpe, pd.tpeused, pd.tpebank, pd.team AS organization, t.name AS team, pd.affiliate, pd.birthplace, 
-        pd.nationality, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
+        -- Check if nationality is 3 letters and map it to the full name from portaldb.nationality, else show pd.nationality
+        CASE 
+            WHEN LENGTH(pd.nationality) = 3 THEN n.name
+            ELSE pd.nationality 
+        END AS nationality,
+        pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
         pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
         pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
         pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk, pd.acceleration, pd.agility,
@@ -134,7 +162,8 @@ function(name = NULL, pid = NULL, username = NULL) {
           LEFT JOIN useractivity ua ON pd.uid = ua.uid
           LEFT JOIN userstatuses us ON ua.status_u = us.status
           LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
-          LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate",
+          LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
+          LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation",
           whereClause
       )
     ) %>% 
@@ -162,17 +191,20 @@ function(class = NULL) {
   
   portalQuery(
     paste(
-      "SELECT pd.name, pd.tpe, t.abbreviation AS team, mb.username, us.desc AS `userStatus`, ps.desc AS `playerStatus`
+      "SELECT pd.name, pd.tpe, t.name AS team, mb.username, us.desc AS `userStatus`, ps.desc AS `playerStatus`, pd.position, sum(bt.transaction) AS bankBalance 
         FROM playerdata pd
         LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
         LEFT JOIN useractivity ua ON pd.uid = ua.uid
         LEFT JOIN userstatuses us ON ua.status_u = us.status
         LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
         LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
-      WHERE pd.class = ", paste0("'S", class, "'"), " AND pd.status_p > 0
+        LEFT JOIN banktransactions bt ON pd.pid = bt.pid
+      WHERE pd.class = ", paste0("'S", class, "'"), " AND pd.status_p > 0 AND bt.status = 1
+      GROUP BY pd.name, pd.tpe, t.name, mb.username, us.desc, ps.desc, pd.position
       ORDER BY pd.tpe DESC;"
     )
-  )
+  ) %>% 
+    suppressWarnings()
 }
 
 #* Get Activity Check History
