@@ -12,8 +12,7 @@ leagueScheduleUI <- function(id) {
             choices = 
               c(
                 1:currentSeason$season %>% 
-                sort(decreasing = TRUE),
-                "ALL"
+                sort(decreasing = TRUE)
               )
           )
         ),
@@ -51,58 +50,43 @@ leagueScheduleServer <- function(id) {
       
       #### UI OUTPUT ####
       output$leagueSelector <- renderUI({
-        if(input$selectedSeason != "ALL"){
-          season <- input$selectedSeason %>% as.numeric()
-          
-          if(season < 5){
-            selectInput(
-              inputId = session$ns("selectedLeague"),
-              label = "League",
-              choices = 
-                c(
-                  "ALL",
-                  "League" = "1",
-                  "Cup"
-                )
-            )
-          } else if (season == 12){
-            selectInput(
-              inputId = session$ns("selectedLeague"),
-              label = "League",
-              choices = 
-                c(
-                  "ALL",
-                  "Major" = "1",
-                  "Minor" = "2",
-                  "Cup",
-                  "WSFC"
-                )
-            )
-          } else if (season < 12){
-            selectInput(
-              inputId = session$ns("selectedLeague"),
-              label = "League",
-              choices = 
-                c(
-                  "ALL",
-                  "Division 1" = "1",
-                  "Division 2" = "2",
-                  "Cup"
-                )
-            )
-          } else {
-            selectInput(
-              inputId = session$ns("selectedLeague"),
-              label = "League",
-              choices = 
-                c(
-                  "ALL",
-                  "Major" = "1",
-                  "Minor" = "2",
-                  "Cup"
-                )
-            )
-          }
+        season <- input$selectedSeason %>% as.numeric()
+        
+        if(season < 5){
+          selectInput(
+            inputId = session$ns("selectedLeague"),
+            label = "League",
+            choices = 
+              c(
+                "ALL",
+                "League" = "1",
+                "Cup" = "0"
+              )
+          )
+        } else if (season == 12){
+          selectInput(
+            inputId = session$ns("selectedLeague"),
+            label = "League",
+            choices = 
+              c(
+                "ALL",
+                "Major" = "1",
+                "Minor" = "2",
+                "Cup" = "0"
+              )
+          )
+        } else if (season < 12){
+          selectInput(
+            inputId = session$ns("selectedLeague"),
+            label = "League",
+            choices = 
+              c(
+                "ALL",
+                "Division 1" = "1",
+                "Division 2" = "2",
+                "Cup" = "0"
+              )
+          )
         } else {
           selectInput(
             inputId = session$ns("selectedLeague"),
@@ -110,9 +94,9 @@ leagueScheduleServer <- function(id) {
             choices = 
               c(
                 "ALL",
-                "Major / Division 1" = "1",
-                "Minor / Division 2" = "2",
-                "Cup"
+                "Major" = "1",
+                "Minor" = "2",
+                "Cup" = "0"
               )
           )
         }
@@ -122,30 +106,33 @@ leagueScheduleServer <- function(id) {
         season <- input$selectedSeason
         league <- input$selectedLeague
         
-        if(season == "ALL"){
-          relegation <- FALSE
-        } else if(season < 5 | season > 11){
-          relegation <- FALSE
-        } else {
-          relegation <- TRUE
-        } 
-        
         schedule() %>% 
           rename(
             Date = IRLDate
           ) %>% 
           mutate(
+            across(
+              c(HomeScore, AwayScore),
+              function(x) ifelse(is.na(x), " ", x)
+            ),
             Score = case_when(
               Penalties == 1 & HomeScore > AwayScore ~ paste0("p", paste(HomeScore, AwayScore, sep = " - ")),
               Penalties == 1 & HomeScore < AwayScore ~ paste0(paste(HomeScore, AwayScore, sep = " - "), "p"),
               ExtraTime == 1 & HomeScore > AwayScore ~ paste0("e", paste(HomeScore, AwayScore, sep = " - ")),
               ExtraTime == 1 & HomeScore < AwayScore ~ paste0(paste(HomeScore, AwayScore, sep = " - "), "p"),
               TRUE ~ paste(HomeScore, AwayScore, sep = " - ")
+            ),
+            MatchType = case_when(
+              MatchType == -1 ~ "Friendlies",
+              MatchType == 0 ~ "Cup",
+              MatchType == 1 ~ "Major League",
+              TRUE ~ "Minor League"
             )
           ) %>% 
           select(!c(HomeScore, AwayScore, ExtraTime, Penalties)) %>% 
           reactable(
             pagination = FALSE,
+            searchable = TRUE,
             columns = 
               list(
                 Date = colDef(width = 100),
