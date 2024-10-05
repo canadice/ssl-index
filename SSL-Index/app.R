@@ -513,7 +513,8 @@ server <- function(input, output, session) {
                     menuSubItem("Player Approvals",tabName = "playerapprove"),
                     menuSubItem("Edit Player",tabName = "playerEdit"),
                     menuSubItem("Assign Managers",tabName = "assignManager"),
-                    menuSubItem("Organizational Overview",tabName = "bodoverview")
+                    menuSubItem("Organizational Overview",tabName = "bodoverview"),
+                    menuSubItem("Edit Schedule",tabName = "editSchedule")
                   )
                 }
               }
