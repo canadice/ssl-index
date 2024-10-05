@@ -45,8 +45,7 @@ leagueStandingsServer <- function(id) {
         
         readAPI(url = "https://api.simulationsoccer.com/index/standings", 
                 query = list(league = input$selectedLeague, season = input$selectedSeason)
-        ) %>% 
-          future_promise()
+        )
       })
       
       
