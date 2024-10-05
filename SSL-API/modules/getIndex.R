@@ -324,13 +324,14 @@ function(season){
 #* Gets the schedule for the league
 #* @get /schedule
 #* @param season The selected season
+#* @param league The selected league
 #* 
-function(season){
+function(season, league = "ALL"){
   indexQuery(
     paste(
       "SELECT IRLDate, MatchType, MatchDay, Home, Away, HomeScore, AwayScore, ExtraTime, Penalties
       FROM schedule
-      WHERE season = ", season,
+      WHERE season = ", season, "AND MatchType",  if_else(league == "ALL", '< 10', paste0("=", league)),
       "ORDER BY IRLDate;"
     )
   )
