@@ -359,7 +359,8 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       }) %>% 
         bindEvent(
           input$traits,
-          ignoreInit = TRUE
+          ignoreInit = TRUE,
+          ignoreNULL = FALSE
         )
       
       #### POSITION XP ####
@@ -535,11 +536,11 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                         selected at creation. You can increase your weak foot proficiency by increments of 5 for $7.5 million."),
                       column(
                         width = 6,
-                        numericInput(session$ns("left"), label = "Left Foot", min = currentFootedness$`left foot`, value = currentFootedness$`left foot`, max = 20, step = 5)  
+                        selectInput(session$ns("left"), label = "Left Foot", choices = seq(currentFootedness$`left foot`, 20, by = 5), selected = currentFootedness$`left foot`)  
                       ),
                       column(
                         width = 6,
-                        numericInput(session$ns("right"), label = "Right Foot", min = currentFootedness$`right foot`, value = currentFootedness$`right foot`, max = 20, step = 5)  
+                        selectInput(session$ns("right"), label = "Right Foot", choices = seq(currentFootedness$`right foot`, 20, by = 5), selected = currentFootedness$`right foot`) 
                       )
                     ) %>% 
                       box(title = "Player Footedness", collapsible = TRUE, width = NULL, collapsed = TRUE)
@@ -559,22 +560,26 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                     if(input$left %>% is.na() | input$right %>% is.na()){
                       # DO NOTHING
                     } else {
-                      if(input$left > 20){
-                        updateNumericInput(inputId = "left", value = 20)
-                      }
-                      if(input$right > 20){
-                        updateNumericInput(inputId = "right", value = 20)
-                      }
-                      if(input$left < currentFootedness$`left foot`){
-                        updateNumericInput(inputId = "left", value = currentFootedness$`left foot`)
-                      }
-                      if(input$right < currentFootedness$`right foot`){
-                        updateNumericInput(inputId = "right", value = currentFootedness$`right foot`)
-                      }
                       
+                      left <- input$left %>% as.numeric()
+                      right <- input$right %>% as.numeric()
+                      
+                      # if(input$left > 20){
+                      #   updateNumericInput(inputId = "left", value = 20)
+                      # }
+                      # if(input$right > 20){
+                      #   updateNumericInput(inputId = "right", value = 20)
+                      # }
+                      # if(input$left < currentFootedness$`left foot`){
+                      #   updateNumericInput(inputId = "left", value = currentFootedness$`left foot`)
+                      # }
+                      # if(input$right < currentFootedness$`right foot`){
+                      #   updateNumericInput(inputId = "right", value = currentFootedness$`right foot`)
+                      # }
+                      # 
                       ## Only change the cost if the footedness is within the allowed constraints
-                      if(input$left >= currentFootedness$`left foot` & input$left <= 20 & input$right >= currentFootedness$`right foot` & input$right <= 20){
-                        footSum(((input$left - currentFootedness$`left foot`) + (input$right - currentFootedness$`right foot`)) / 5 * 7500000)  
+                      if(left >= currentFootedness$`left foot` & left <= 20 & right >= currentFootedness$`right foot` & right <= 20){
+                        footSum(((left - currentFootedness$`left foot`) + (right - currentFootedness$`right foot`)) / 5 * 7500000)  
                       }
                     }
                   }

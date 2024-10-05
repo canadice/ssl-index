@@ -438,6 +438,151 @@ if(length(currentFileThread) > 0){
   print("No new sim file!")
 }
 
+
+
+
+
+
+
+##---------------------------------------------------------------
+##                      New Discord Channel                     -
+##---------------------------------------------------------------
+
+conn_obj <- 
+  create_discord_connection(
+    webhook = Sys.getenv('TRANSACTIONS'), 
+    username = 'Budget Watcher', 
+    set_default = TRUE)
+#################################################################
+##                          TRANSACTIONS                       ##
+#################################################################
+
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=52"
+
+new <- newThreads(forum)
+
+title <- new %>% 
+  html_elements("a[title]") %>% 
+  html_text2()
+
+link <- new %>% 
+  html_elements("a[title]") %>% 
+  html_attr("href")
+
+tid <- link %>% str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
+
+title <- title[!(tid %in% postedThreads$title)]
+tid <- tid[!(tid %in% postedThreads$title)]
+
+if(length(tid) > 0){
+  postedThreads <- postedThreads %>% 
+    add_row(
+      lapply(X = 1:length(tid), function(X){
+        send_webhook_message(
+          paste(
+            "## New Transaction!", "\n\n",
+            paste(
+              paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+            )
+          )
+        )
+        
+        tibble(
+          title = tid[X],
+          link = paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]),
+          forum = forum
+        ) %>% 
+          return()
+      }) %>% 
+        do.call(what = rbind.fill, args = .)
+    )
+    
+}
+
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=72"
+
+new <- newThreads(forum)
+
+title <- new %>% 
+  html_elements("a[title]") %>% 
+  html_text2()
+
+link <- new %>% 
+  html_elements("a[title]") %>% 
+  html_attr("href")
+
+tid <- link %>% str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
+
+title <- title[!(tid %in% postedThreads$title)]
+tid <- tid[!(tid %in% postedThreads$title)]
+
+if(length(tid) > 0){
+  postedThreads <- postedThreads %>% 
+    add_row(
+      lapply(X = 1:length(tid), function(X){
+        send_webhook_message(
+          paste(
+            "## New Trade!", "\n\n", 
+            paste(
+              paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+            )
+          )
+        )
+        
+        tibble(
+          title = tid[X],
+          link = paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]),
+          forum = forum
+        ) %>% 
+          return()
+      }) %>% 
+        do.call(what = rbind.fill, args = .)
+    )
+  
+}
+
+
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=86"
+
+new <- newThreads(forum)
+
+title <- new %>% 
+  html_elements("a[title]") %>% 
+  html_text2()
+
+link <- new %>% 
+  html_elements("a[title]") %>% 
+  html_attr("href")
+
+tid <- link %>% str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
+
+title <- title[!(tid %in% postedThreads$title)]
+tid <- tid[!(tid %in% postedThreads$title)]
+
+if(length(tid) > 0){
+  postedThreads <- postedThreads %>% 
+    add_row(
+      lapply(X = 1:length(tid), function(X){
+        send_webhook_message(
+          paste(
+            "## New Bonuses!", "\n\n", 
+            paste(
+              paste("[",title[X],"](", paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]), ")", sep = ""), collapse = "\n\n"
+            )
+          )
+        )
+        
+        tibble(
+          title = tid[X],
+          link = paste0("https://forum.simulationsoccer.com/showthread.php?tid=", tid[X]),
+          forum = forum
+        ) %>% 
+          return()
+      }) %>% 
+        do.call(what = rbind.fill, args = .)
+    )
+}
+
 ##################################################################
 ##              Storing posted threads in database              ##
 ##################################################################

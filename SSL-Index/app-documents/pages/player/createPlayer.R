@@ -608,8 +608,35 @@ createPlayerServer <- function(id, userinfo, parent) {
       observe({
         if(input$playerType == "Outfield"){
           shinyjs::show("outfieldExtras")
+          
+          attributes %>% 
+            filter(
+              group %in% c("Goalkeeper", "Technical"),
+              keeper == "TRUE"
+            ) %>% 
+            select(
+              attribute
+            ) %>% 
+            unlist() %>% 
+            unname() %>% 
+            map(
+              .x = .,
+              .f = 
+                ~ attributeInput(ns = session$ns, name = .x, value = 5)
+            )
         } else {
           shinyjs::hide("outfieldExtras")
+          
+          c(
+            "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
+            "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
+            "Passing", "Penalty Taking", "Tackling", "Technique"
+          ) %>% 
+            map(
+              .x = .,
+              .f = 
+                ~ attributeInput(ns = session$ns, name = .x, value = 5)
+            )
         }
       }) %>% 
         bindEvent(
@@ -646,6 +673,7 @@ createPlayerServer <- function(id, userinfo, parent) {
               .f = 
                 ~ attributeInput(ns = session$ns, name = .x, value = NA)
             )
+          
         }
       })
       

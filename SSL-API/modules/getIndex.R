@@ -222,6 +222,7 @@ function(league, season){
   )
 }
 
+
 #* Gets aggregated standings
 #* @get /standings
 #* @param season The selected season
@@ -269,3 +270,69 @@ ORDER BY Points DESC, GoalsFor DESC, GoalsAgainst ASC;"
   ) %>% 
     suppressWarnings()
 }
+
+#* Gets outfield index data for season and league
+#* @get /academyOutfield
+#* @param season The selected season
+
+function(season){
+  indexQuery(
+    paste(
+      "SELECT
+      `name`, `club`, `position`, `apps`, `minutes played`,`player of the match`,`distance run (km)`, 
+      `goals`,`assists`,`xg`,`shots on target`,`shots`,`penalties taken`,`penalties scored`,`successfull passes` AS `successful passes`,
+      `attempted passes`,`successfull passes` / `attempted passes` * 100 AS `pass%`,`key passes`,  
+      `successful crosses`,`attempted crosses`,`successful crosses` / `attempted crosses` * 100 AS `cross%`,
+      `chances created`,`successful headers`,`attempted headers`,`successful headers` / `attempted headers` * 100 AS `header%`,
+      `key headers`,`dribbles`,`tackles won`,`attempted tackles`,`tackles won` / `attempted tackles` * 100 AS `tackle%`,
+      `key tackles`,`interceptions`,`clearances`,`mistakes leading to goals`,`yellow cards`,`red cards`,
+      `fouls`,`fouls against`,`offsides`,`xa`,`xg overperformance`,`fk shots`,`blocks`,`open play key passes`,
+      `successful open play crosses`,`attempted open play crosses`,`shots blocked`,`progressive passes`,
+      `successful presses`,`attempted presses`,`goals outside box`,`average rating`,
+      CASE 
+          WHEN IFNULL(`attempted presses`, 0) = 0 THEN 0
+          ELSE (`successful presses` / `attempted presses`) * 100
+  	  END AS `press%`,
+        CASE 
+          WHEN IFNULL(`attempted open play crosses`, 0) = 0 THEN 0
+          ELSE (`successful open play crosses` / `attempted open play crosses`) * 100
+      END AS `open play crosses%`,
+      `shots on target` / `shots` * 100 AS `shot accuracy%`,
+      `xG` - 0.83*`penalties taken` AS `pen adj xG`
+  FROM academyoutfield WHERE season = ", season, ";",
+      sep = "")
+  ) %>% 
+    suppressWarnings()
+}
+
+#* Gets keeper index data for season and league
+#* @get /academyKeeper
+#* @param season The selected season
+function(season){
+  indexQuery(
+    paste(
+      "SELECT
+      `name`, `club`, `apps`, `minutes played`, `average rating`, `player of the match`, won, lost, draw, `clean sheets`, conceded, `saves parried`, `saves held`, 
+      `saves tipped`, (1 - (conceded / (conceded + `saves parried` + `saves held` + `saves tipped`))) * 100 AS `save%`,
+      `penalties faced`, `penalties saved`, `xsave%`, `xg prevented`
+  FROM academykeeper WHERE season = ", season, ";",
+      sep = "")
+  ) %>% 
+    suppressWarnings()
+}
+
+#* Gets the schedule for the league
+#* @get /schedule
+#* @param season The selected season
+#* 
+function(season){
+  indexQuery(
+    paste(
+      "SELECT IRLDate, MatchType, MatchDay, Home, Away, HomeScore, AwayScore, ExtraTime, Penalties
+      FROM schedule
+      WHERE season = ", season,
+      "ORDER BY IRLDate;"
+    )
+  )
+}
+

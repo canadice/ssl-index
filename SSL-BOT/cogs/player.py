@@ -3,6 +3,7 @@ from discord.ext import commands
 import pandas as pd
 import typing
 import requests
+import json 
 from db_utils import *
 
 class Player(commands.Cog): # create a class for our cog that inherits from commands.Cog
@@ -78,6 +79,44 @@ class Player(commands.Cog): # create a class for our cog that inherits from comm
             formatted_stat_string = f"```\n{stat_string}\n```"
             
             embed.add_field(name = "Latest Transactions", value = formatted_stat_string, inline = False)
+        
+            await ctx.respond(embed = embed)
+            
+    @discord.slash_command(name='checklist', description='Returns the weekly TPE checklist')
+    async def checklist(self, ctx: discord.ApplicationContext, username: typing.Optional[str] = None):
+        if username is None:
+          username = get_username(ctx.author.id)
+    
+        if username is None:  
+          await ctx.respond("You have no user stored. Use /store to store your forum username.")  
+        else:
+        
+          checklist = requests.get('https://api.simulationsoccer.com/player/tpeChecklist?username=' + username.replace(" ", "%20"))
+          
+          # Data formatting
+          checklistdata = pd.DataFrame(json.loads(checklist.content))
+          
+          if checklistdata.empty:
+            await ctx.respond("This player does not have any checklist information. Check the spelling.")
+          else: 
+            
+            # Group the data based on the 'posted' status
+            posted_true = checklistdata[checklistdata['posted'] == True]
+            posted_false = checklistdata[checklistdata['posted'] == False]
+            
+            embed = discord.Embed(color = discord.Color(0xBD9523))
+            
+            embed.title = username + ' Weekly TPE Checklist'
+            
+            # Add fields for each group
+            if not posted_true.empty:
+                posted_true_str = "\n".join([f"[{row['subject']}]({row['link']})" for index, row in posted_true.iterrows()])
+                embed.add_field(name="Completed", value=posted_true_str, inline=False)
+            
+            if not posted_false.empty:
+                posted_false_str = "\n".join([f"[{row['subject']}]({row['link']})" for index, row in posted_false.iterrows()])
+                embed.add_field(name="Remaining", value=posted_false_str, inline=False)
+
         
             await ctx.respond(embed = embed)
         

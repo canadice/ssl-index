@@ -63,7 +63,7 @@ addBankTransaction <- function(uid, pid, source, transaction, status = 1){
           time,
           pid,
           paste0("'", source, "'"),
-          ifelse(transaction %>% class() == "character", transaction %>% str_trim(), transaction),
+          transaction,
           status,
           uid,
           sep = ","

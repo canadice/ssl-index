@@ -50,15 +50,30 @@ def update_row(conn, data):
     conn.commit()
     return(cur.lastrowid)
 
-## Gets the current username tied to a Discord User
+## Gets the current player name tied to a Discord User
 def get_name(discord_id):
-  session = create_connection()
-  with session:
-    table = pd.read_sql_query("SELECT * from discordUser WHERE discordID = " + str(discord_id), session)
-    if(table.shape[0] > 0):
-      name = table["player"][0]
-    else:
-      name = None
-  session.close()
-  
-  return(name)
+    session = create_connection()
+    with session:
+      table = pd.read_sql_query("SELECT * from discordUser WHERE discordID = " + str(discord_id), session)
+      if(table.shape[0] > 0):
+        name = table["player"][0]
+      else:
+        name = None
+    session.close()
+    
+    return(name)
+
+
+## Gets the current player name tied to a Discord User
+def get_username(discord_id):
+    session = create_connection()
+    with session:
+      table = pd.read_sql_query("SELECT * from discordUser WHERE discordID = " + str(discord_id), session)
+      if(table.shape[0] > 0):
+        name = table["username"][0]
+      else:
+        name = None
+    session.close()
+    
+    return(name)
+

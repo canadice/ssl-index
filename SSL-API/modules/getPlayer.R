@@ -48,7 +48,7 @@ function() {
       pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
       pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
       pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
-      mb.username, us.desc AS `userStatus`, ps.desc AS `playerStatus`, 
+      mb.username, mbuf.fid4 AS discord, us.desc AS `userStatus`, ps.desc AS `playerStatus`, 
             CASE 
               WHEN pd.tpe <= 350 THEN 1000000
               WHEN pd.tpe BETWEEN 351 AND 500 THEN 1500000
@@ -69,8 +69,9 @@ function() {
         LEFT JOIN userstatuses us ON ua.status_u = us.status
         LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
         LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
+        LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
         WHERE pd.status_p >= 0
-        ORDER BY pd.name;"
+        ORDER BY pd.created;"
     )
   ) %>% 
     mutate(
@@ -93,7 +94,7 @@ function(name = NULL, pid = NULL, username = NULL) {
   if(!(username %>% is.null())){
     whereClause <- paste("WHERE mb.username = ", paste0("'", username, "'"), "ORDER BY pid DESC LIMIT 1;")
   } else {
-    whereClause <- if_else(name %>% is.null(), paste("WHERE pd.pid = ", pid, ";"), paste("WHERE pd.name = ", paste0("'", name, "'"), ";"))
+    whereClause <- if_else(name %>% is.null(), paste("WHERE pd.pid = ", pid, ";"), paste("WHERE pd.name = ", paste0("'", name %>% str_replace(pattern = "'", replacement = "\\\\'"), "'"), ";"))
   }
   
   data <- 
@@ -189,4 +190,94 @@ function(){
     GROUP BY year, week
     ORDER BY year, week;"
   )
+}
+
+
+#* Get weekly TPE Checklists
+#* @get /tpeChecklist
+#* @serializer json
+#* @param username Forum username
+#* 
+function(username){
+  ## Gets date of the start of the week in Pacific
+  weekStart <- 
+    lubridate::now() %>% 
+    with_tz("US/Pacific") %>% 
+    floor_date("week", week_start = "Monday") %>% 
+    as.numeric()
+  
+  tasks <- 
+    mybbQuery(
+      paste0(
+        "WITH current_season AS (
+    SELECT MAX(season) AS current_season
+    FROM indexdb.seasoninfo
+), 
+player_class AS (
+    SELECT CONCAT('S', MAX(CAST(SUBSTRING(pd.class, 2) AS UNSIGNED))) AS class
+    FROM 
+        portaldb.playerdata pd
+    JOIN 
+        mybbdb.mybb_users mbb ON pd.uid = mbb.uid
+	WHERE
+		mbb.username = '", username, "'
+    )
+
+        SELECT 
+            p.username AS user, 
+            COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count, 
+            t.tid, 
+            CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link, 
+            t.subject, 
+            t.username AS op
+        FROM 
+            mybbdb.mybb_threads t
+        JOIN 
+            mybbdb.mybb_posts p ON p.tid = t.tid
+        JOIN 
+            player_class pc ON 1=1
+        JOIN 
+            current_season cs ON 1=1
+        WHERE 
+            (
+                (pc.class <> CONCAT('S', cs.current_season + 1) AND t.fid IN (22, 49, 25, 24, 122))
+                OR 
+                -- Check for extended forum IDs for S18 players
+                (pc.class = CONCAT('S', cs.current_season + 1) AND 
+                t.fid IN (22, 49, 25, 24, 122, 179, 180, 181, 182, 183) AND
+                NOT (t.subject LIKE CONCAT('%S', cs.current_season, ' Minor%') OR t.subject LIKE CONCAT('%S', cs.current_season, ' Major%')) )
+            )
+            AND t.sticky = 0 
+            AND t.closed = 0
+        GROUP BY 
+            p.username, 
+            t.tid, 
+            t.subject, 
+            t.username;"
+      )
+    ) %>% 
+    group_by(subject, link) %>% 
+    summarize(posted = dplyr::if_else(any(str_to_lower(user) == str_to_lower(username) & count > 0), TRUE, FALSE) %>% 
+             tidyr::replace_na(replace = FALSE)) %>% 
+    ungroup() %>% 
+    add_row(
+      tibble(
+        subject = "Activity Check",
+        link = "https://index.simulationsoccer.com",
+        posted = (portalQuery(
+              paste("SELECT * 
+          FROM tpehistory 
+          WHERE pid = (
+              SELECT pd.pid
+              FROM playerdata AS pd
+              JOIN mybbdb.mybb_users AS mbb ON pd.uid = mbb.uid
+              WHERE mbb.username = ", paste0("'", username, "'"), " 
+                AND pd.status_p = 1
+          ) 
+          AND source LIKE '%Activity Check' 
+          AND time > ", weekStart)
+            ) %>% nrow()) > 0
+      )
+    ) %>% 
+    suppressWarnings()
 }

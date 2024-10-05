@@ -1089,6 +1089,10 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 } else {
                   update <- 
                     update %>% 
+                    mutate(
+                      old = as.character(old),
+                      new = as.character(new)
+                    ) %>% 
                     add_row(
                       attribute = "traits",
                       old = paste("'", data$traits, "'", sep = ""),

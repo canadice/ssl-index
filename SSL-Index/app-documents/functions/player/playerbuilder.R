@@ -35,7 +35,7 @@ checkBuild <- function(input, tpebank, session){
         ))
     }
     
-    playerInfo$traits <- paste0(input$traits, collapse = " \\ ")
+    playerInfo$traits <- paste0(input$traits, collapse = traitSep)
   } else {
     playerInfo$position <- "GK"
     
@@ -97,7 +97,7 @@ submitBuild <- function(input, tpebank, userinfo){
         ))
     }
     
-    playerInfo$traits <- paste0(input$traits, collapse = " \\\\ ")
+    playerInfo$traits <- paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'")
   } else {
     playerInfo$position <- "GK"
     
@@ -131,7 +131,7 @@ submitBuild <- function(input, tpebank, userinfo){
       )
     )
   
-  ## SUBMIT BUILD TO A TEMPORARY TABLE FOR APPROVAL 
+  ## SUBMIT BUILD TO PLAYER DATA FOR APPROVAL 
   insertBuildForApproval(playerInfo)
   
   sendNewCreate(playerInfo, username = userinfo$username)
@@ -190,14 +190,17 @@ getPlayersForApproval <- function(){
   ) 
 }
 
-approvePlayer <- function(uid){
-  portalQuery(
-    paste(
-      "INSERT INTO tpehistory (time, uid, pid, source, tpe) 
+approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
+  tryCatch(
+    portalQuery(
+      paste(
+        "INSERT INTO tpehistory (time, uid, pid, source, tpe) 
       SELECT ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), ", 1, pid, 'Initial TPE', 350
       FROM playerdata
       WHERE uid = ", uid, "AND status_p = -1;"
-    )
+      )
+    ),
+    error = function(e) showToast("error", paste("Error in inserting TPE History.", e, sep = "\n"))
   )
   
   data <- portalQuery(
@@ -215,40 +218,48 @@ approvePlayer <- function(uid){
   ) %>% 
     pivot_longer(!pid, values_transform = as.character)
   
-  portalQuery(
-    paste(
-      "INSERT INTO updatehistory (time, uid, pid, attribute, old, new) VALUES",
+  tryCatch(
+    portalQuery(
       paste(
-        "(",
+        "INSERT INTO updatehistory (time, uid, pid, attribute, old, new) VALUES",
         paste(
-          paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
-          1,
-          data$pid,
-          paste0("'", data$name %>% str_to_upper(), "'"),
-          if_else(data$name %>% str_detect("pos"), '0', if_else(data$name == "traits", "'NO TRAITS'", '5')),
-          paste0("'", data$value, "'"),
-          sep = ","
+          "(",
+          paste(
+            paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
+            1,
+            data$pid,
+            paste0("'", data$name %>% str_to_upper(), "'"),
+            if_else(data$name %>% str_detect("pos"), '0', if_else(data$name == "traits", "'NO TRAITS'", '5')),
+            paste0("'", data$value, "'"),
+            sep = ","
+          ),
+          ")",
+          collapse = ","
         ),
-        ")",
-        collapse = ","
-      ),
-      ";"
-    )
+        ";"
+      )
+    ),
+    error = function(e) showToast("error", paste("Error in inserting Update History.", e, sep = "\n"))
   )
   
   data <- 
     portalQuery(
       paste(
-        "SELECT pd.pid, pd.first, pd.last, pd.tpebank, pd.tpe, pd.position, mybb.username AS username
-        FROM playerdata pd JOIN mybbdb.mybb_users mybb ON pd.uid = mybb.uid 
+        "SELECT pd.pid, pd.first, pd.last, pd.tpebank, pd.tpe, pd.position, mybb.username AS username, mbuf.fid4 AS discord
+        FROM playerdata pd 
+        LEFT JOIN mybbdb.mybb_users mybb ON pd.uid = mybb.uid 
+        LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
         WHERE pd.uid = ", uid, "AND pd.status_p = -1;"
       )
     )
   
-  addBankTransaction(uid = 1, pid = data$pid, source = "Academy Contract", transaction = 3000000, status = 1)
+  tryCatch(
+    addBankTransaction(uid = 1, pid = data$pid, source = "Academy Contract", transaction = 3000000, status = 1),
+    error = function(e) showToast("error", paste("Error in adding academy contract.", e, sep = "\n"))
+  )
   
   today <- (now() %>% as_date() %>% as.numeric())
-  start <- (currentSeason$startDate %>% as_date() - days(7)) %>% as.numeric()
+  start <- (currentSeason$startDate %>% as_date()) %>% as.numeric()
   
   tpe <- 
     tibble(
@@ -256,17 +267,31 @@ approvePlayer <- function(uid){
       tpe = floor((today - start)/7)*6
     )
   
-  tpeLog(uid = 1, pid = data$pid, tpe = tpe)
-  updateTPE(pid = data$pid, tpe = tpe)
+  if(tpe$tpe > 0){
+    tryCatch(
+      tpeLog(uid = 1, pid = data$pid, tpe = tpe),
+      error = function(e) showToast("error", paste("Error in logging catch-up TPE.", e, sep = "\n"))
+    )
+    
+    tryCatch(
+      updateTPE(pid = data$pid, tpe = tpe),
+      error = function(e) showToast("error", paste("Error in adding catch-up TPE.", e, sep = "\n"))
+    )
+  }
   
-  sendApprovedCreate(data)
-  
-  portalQuery(
-    paste("UPDATE playerdata SET rerollused = 0, redistused = 0, team = -1, affiliate = 1, status_p = 1, name = concat(first, ' ', last),",
-          "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
-          "WHERE uid = ", uid, "AND status_p = -1;")
+  tryCatch(
+    sendApprovedCreate(data),
+    error = function(e) showToast("error", paste("Error in sending approved create to Discord.", e, sep = "\n"))
   )
   
+  tryCatch(
+    portalQuery(
+      paste("UPDATE playerdata SET rerollused = 0, redistused = 0, team = -1, affiliate = 1, status_p = 1, name = concat(first, ' ', last),",
+            "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
+            "WHERE uid = ", uid, "AND status_p = -1;")
+    ),
+    error = function(e) showToast("error", paste("Error in updating player data.", e, sep = "\n"))
+  )
   
 }
 
