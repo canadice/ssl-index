@@ -48,17 +48,13 @@ academyIndexServer <- function(id) {
       #### DATA GENERATION ####
       outfieldData <- reactive({
         req(input$selectedSeason)
-        indexQuery(
-          paste("SELECT * FROM academyoutfield WHERE season = ", input$selectedSeason, ";")
-        ) %>% 
+        readAPI("https://api.simulationsoccer.com/index/academyOutfield", query = list(season = input$selectedSeason)) %>% 
           future_promise()
       })
       
       keeperData <- reactive({
         req(input$selectedSeason)
-        indexQuery(
-          paste("SELECT * FROM academykeeper WHERE season = ", input$selectedSeason, ";")
-        ) %>% 
+        readAPI("https://api.simulationsoccer.com/index/academyKeeper", query = list(season = input$selectedSeason)) %>% 
           future_promise()
       })
       
