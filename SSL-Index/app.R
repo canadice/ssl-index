@@ -386,6 +386,8 @@ server <- function(input, output, session) {
       tabItem("playerPages",playerPagesUI(id = "playerPages")),
       tabItem("playerEdit",playerEditUI(id = "playerEdit")),
       tabItem("leagueStandings",leagueStandingsUI(id = "leagueStandings")),
+      tabItem("draftClass",draftClassUI(id = "draftClass")),
+      tabItem("organizationPages",organizationPagesUI(id = "organizationPages")),
       tabItem("leagueSchedule",leagueScheduleUI(id = "leagueSchedule")#),
       # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
       # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
@@ -437,6 +439,8 @@ server <- function(input, output, session) {
           if(!any(c(0,5) %in% authOutput()$usergroup)){
             tagList(
               menuItemOutput("playerTabs"),
+              
+              ### BANK MENU
               menuItem("SSL Bank",
                 {
                   if(hasActivePlayer(authOutput()$uid)){
@@ -456,6 +460,11 @@ server <- function(input, output, session) {
                   }
                 }
               ),
+              
+              menuItem("Player Pages",tabName = "playerPages"),
+              menuItem("Organization Pages",tabName = "organizationPages"),
+              menuItem("Draft Class Tracker",tabName = "draftClass"),
+              if(!any(c(2) %in% authOutput()$usergroup)){hr()},
               # menuItem(
               #   "SSL Budget",
               #   menuSubItem(
@@ -478,6 +487,7 @@ server <- function(input, output, session) {
               #     }
               #   }
               # ),
+              ### PT TOOLS
               {
                 # PT (11), Commissioner (4)
                 if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
@@ -486,6 +496,8 @@ server <- function(input, output, session) {
                   )
                 }
               },
+              
+              ### FILEWORKER TOOLS
               {
                 # Fileworker (14), Commissioner (4)
                 if(any(c(4, 3, 14) %in% authOutput()$usergroup)){
@@ -498,6 +510,8 @@ server <- function(input, output, session) {
                   )
                 }
               },
+              
+              ### MANAGER TOOLS
               {
                 # Manager (8)
                 if(any(c(3, 4, 8) %in% authOutput()$usergroup)){
@@ -507,6 +521,8 @@ server <- function(input, output, session) {
                   )
                 }
               },
+              
+              ### BOD TOOLS
               {
                 # BoD (3), Commissioner (4) or Intern (15)
                 if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
@@ -523,10 +539,7 @@ server <- function(input, output, session) {
             )
           }
         },
-        menuItem(
-          "Player Pages",
-          tabName = "playerPages"
-        ),
+        hr(),
         {
           if(!any(c(0,5) %in% authOutput()$usergroup)){
             menuItem("Your User",href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = ""))
@@ -595,6 +608,8 @@ server <- function(input, output, session) {
   
   # Different player menu based on if you have a current player or not
   output$playerTabs <- renderMenu({
+    req(authOutput())
+    
     if(hasActivePlayer(authOutput()$uid)){
       menuItem("Your Player",tabName = "yourPlayer")
     } else if(checkIfAlreadyApproving(authOutput()$uid)) {
@@ -612,33 +627,18 @@ server <- function(input, output, session) {
     # print(authOutput())
     # 
     ## Loads the different server modules
-    managerTeamServer("managerteam", userinfo = authOutput())
-    assignManagerServer("assignManager", userinfo = authOutput())
-    bodTeamServer("bodoverview", userinfo = authOutput())
-    exportBuildServer("exportBuild")
+    
     
   }) %>% 
     bindEvent(authOutput(),ignoreInit = FALSE)
   
   loadedPage <- 
     reactiveValues(
-      create = FALSE,
-      player = FALSE,
-      index = FALSE,
-      academyIndex = FALSE,
-      uploadGame = FALSE,
-      bankOverview = FALSE,
-      welcome = FALSE,
-      records = FALSE,
-      playerPages = FALSE,
-      contractProcess = FALSE,
-      tradeProcess = FALSE,
-      playerEdit = FALSE,
-      submitPT = FALSE,
-      bankDeposit = FALSE,
-      bankProcess = FALSE,
-      leagueStandings = FALSE,
-      leagueSchedule = FALSE
+      create = FALSE, player = FALSE, index = FALSE, academyIndex = FALSE, uploadGame = FALSE,
+      bankOverview = FALSE, welcome = FALSE, records = FALSE, playerPages = FALSE, contractProcess = FALSE,
+      tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
+      leagueStandings = FALSE, leagueSchedule = FALSE, managerteam = FALSE, assignManager = FALSE,
+      bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -728,6 +728,34 @@ server <- function(input, output, session) {
     } else if(!loadedPage$uploadGame & input$tabs == "uploadGame"){
       uploadGameServer("uploadGame")
       loadedPage$uploadGame <- TRUE
+    
+    } else if(!loadedPage$managerteam & input$tabs == "managerteam"){
+      req(authOutput())
+      managerTeamServer("managerteam", userinfo = authOutput())
+      loadedPage$managerteam <- TRUE
+      
+    } else if(!loadedPage$assignManager & input$tabs == "assignManager"){
+      req(authOutput())
+      assignManagerServer("assignManager", userinfo = authOutput())
+      loadedPage$assignManager <- TRUE
+      
+    } else if(!loadedPage$bodoverview & input$tabs == "bodoverview"){
+      req(authOutput())
+      bodTeamServer("bodoverview", userinfo = authOutput())
+      loadedPage$bodoverview <- TRUE
+      
+    } else if(!loadedPage$exportBuild & input$tabs == "exportBuild"){
+      exportBuildServer("exportBuild")
+      loadedPage$exportBuild <- TRUE
+    
+    } else if(!loadedPage$organizationPages & input$tabs == "organizationPages"){
+      organizationPagesServer("organizationPages")
+      loadedPage$organizationPages <- TRUE
+      
+    } else if(!loadedPage$draftClass & input$tabs == "draftClass"){
+      draftClassServer("draftClass")
+      loadedPage$draftClass <- TRUE
+      
       
     } else if(!loadedPage$bankOverview & input$tabs == "bankOverview"){
       req(authOutput())
