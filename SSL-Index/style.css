@@ -519,8 +519,16 @@ h1, h2, h3, h4, h5 {
   text-align: end;
 }
 
+.leaderTable .tableClubName {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
 .tableClubName span {
   padding-left: 10px;
+  text-wrap: pretty;
 }
 
 /* Edit Schedule selects */

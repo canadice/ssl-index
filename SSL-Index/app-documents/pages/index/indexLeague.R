@@ -10,8 +10,11 @@ leagueIndexUI <- function(id) {
             inputId = ns("selectedSeason"),
             label = "Select a season",
             choices = 
-              1:currentSeason$season %>% 
-              sort(decreasing = TRUE)
+              c(
+                1:currentSeason$season %>% 
+                sort(decreasing = TRUE),
+                "ALL"
+              )
           )
         ),
         column(
@@ -81,44 +84,58 @@ leagueIndexServer <- function(id) {
       
       #### UI OUTPUT ####
       output$leagueSelector <- renderUI({
-        season <- input$selectedSeason %>% as.numeric()
-        
-        if(season < 5){
-          selectInput(
-            inputId = session$ns("selectedLeague"),
-            label = "League",
-            choices = 
-              c(
-                "ALL",
-                "League" = "1",
-                "Cup"
-              )
-          )
-        } else if (season == 12){
-          selectInput(
-            inputId = session$ns("selectedLeague"),
-            label = "League",
-            choices = 
-              c(
-                "ALL",
-                "Major" = "1",
-                "Minor" = "2",
-                "Cup",
-                "WSFC"
-              )
-          )
-        } else if (season < 12){
-          selectInput(
-            inputId = session$ns("selectedLeague"),
-            label = "League",
-            choices = 
-              c(
-                "ALL",
-                "Division 1" = "1",
-                "Division 2" = "2",
-                "Cup"
-              )
-          )
+        if(input$selectedSeason != "ALL"){
+          season <- input$selectedSeason %>% as.numeric()
+          
+          if(season < 5){
+            selectInput(
+              inputId = session$ns("selectedLeague"),
+              label = "League",
+              choices = 
+                c(
+                  "ALL",
+                  "League" = "1",
+                  "Cup"
+                )
+            )
+          } else if (season == 12){
+            selectInput(
+              inputId = session$ns("selectedLeague"),
+              label = "League",
+              choices = 
+                c(
+                  "ALL",
+                  "Major" = "1",
+                  "Minor" = "2",
+                  "Cup",
+                  "WSFC"
+                )
+            )
+          } else if (season < 12){
+            selectInput(
+              inputId = session$ns("selectedLeague"),
+              label = "League",
+              choices = 
+                c(
+                  "ALL",
+                  "Division 1" = "1",
+                  "Division 2" = "2",
+                  "Cup"
+                )
+            )
+          } else {
+            selectInput(
+              inputId = session$ns("selectedLeague"),
+              label = "League",
+              choices = 
+                c(
+                  "ALL",
+                  "Major" = "1",
+                  "Minor" = "2",
+                  "Cup"
+                )
+            )
+          }
         } else {
           selectInput(
             inputId = session$ns("selectedLeague"),
@@ -126,14 +143,12 @@ leagueIndexServer <- function(id) {
             choices = 
               c(
                 "ALL",
-                "Major" = "1",
-                "Minor" = "2",
+                "Major / Division 1" = "1",
+                "Minor / Division 2" = "2",
                 "Cup"
               )
           )
         }
-        
-        
       })
       
       outstatistics <- c("goals", "assists", "player of the match", "distance run (km)", "successful passes", "chances created", "tackles won", "interceptions", "yellow cards", "red cards")

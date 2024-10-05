@@ -127,9 +127,14 @@ function(league, season){
         `successful presses`,`attempted presses`,`goals outside box`
       FROM `gamedataoutfield` AS gd
       JOIN schedule AS s ON gd.gid = s.gid
-      ",if_else(league == "ALL",
-              paste("WHERE s.season = ", season, sep = ""),
-              paste("WHERE s.Matchtype = '", league, "' AND s.season = ", season, sep = "")
+      ",if_else(league == "ALL" & season == "ALL",
+                "",
+                if_else(league == "ALL",
+                        paste("WHERE s.season = ", season, sep = ""),
+                        if_else(season == "ALL",
+                                paste("WHERE s.Matchtype = ", league, sep = ""),
+                                paste("WHERE s.Matchtype = '", league, "' AND s.season = ", season, sep = ""))
+                )
       ),
       ") `q01`
       GROUP BY `name`
@@ -200,9 +205,14 @@ function(league, season){
         s.*
       FROM `gamedatakeeper`AS gd
       JOIN schedule AS s ON gd.gid = s.gid
-      ",if_else(league == "ALL",
-                paste("WHERE s.season = ", season, sep = ""),
-                paste("WHERE s.Matchtype = '", league, "' AND s.season = ", season, sep = "")
+      ",if_else(league == "ALL" & season == "ALL",
+                "",
+                if_else(league == "ALL",
+                        paste("WHERE s.season = ", season, sep = ""),
+                        if_else(season == "ALL",
+                                paste("WHERE s.Matchtype = ", league, sep = ""),
+                                paste("WHERE s.Matchtype = '", league, "' AND s.season = ", season, sep = ""))
+                )
       ),
       ") `q01`
       GROUP BY `name`
@@ -210,6 +220,55 @@ function(league, season){
     GROUP BY `name`",
       sep = "")
   )
+}
+
+
+#* Gets aggregated standings
+#* @get /standings
+#* @param season The selected season
+#* @param league The selected league
+#* 
+function(league = "ALL", season = "ALL"){
+  indexQuery(
+    paste(
+      "SELECT
+    Team,
+    COUNT(*) AS MatchesPlayed,
+    SUM(CASE
+        WHEN (Home = Team AND HomeScore > AwayScore) OR (Away = Team AND AwayScore > HomeScore) THEN 1
+        ELSE 0
+    END) AS Wins,
+    SUM(CASE
+        WHEN (HomeScore = AwayScore) THEN 1
+        ELSE 0
+    END) AS Draws,
+    SUM(CASE
+        WHEN (Home = Team AND HomeScore < AwayScore) OR (Away = Team AND AwayScore < HomeScore) THEN 1
+        ELSE 0
+    END) AS Losses,
+    SUM(CASE
+        WHEN (Home = Team) THEN HomeScore
+        ELSE AwayScore
+    END) AS GoalsFor,
+    SUM(CASE
+        WHEN (Home = Team) THEN AwayScore
+        ELSE HomeScore
+    END) AS GoalsAgainst,
+    SUM(CASE
+        WHEN (Home = Team AND HomeScore > AwayScore) OR (Away = Team AND AwayScore > HomeScore) THEN 3
+        WHEN (HomeScore = AwayScore) THEN 1
+        ELSE 0
+    END) AS Points
+FROM (
+    SELECT Home AS Team, Home, Away, HomeScore, AwayScore FROM schedule WHERE HomeScore IS NOT NULL AND matchtype ", if_else(league == "ALL", '>= 0', paste0("=", league)), if_else(season == "ALL", "", paste0(" AND Season = ", season)),  
+      "UNION ALL
+    SELECT Away AS Team, Home, Away, HomeScore, AwayScore FROM schedule WHERE HomeScore IS NOT NULL AND matchtype ", if_else(league == "ALL", '>= 0', paste0("=", league)), if_else(season == "ALL", "", paste0(" AND Season = ", season)),
+      ") AS combined
+GROUP BY Team
+ORDER BY Points DESC, GoalsFor DESC, GoalsAgainst ASC;"
+    )
+  ) %>% 
+    suppressWarnings()
 }
 
 #* Gets outfield index data for season and league
@@ -276,3 +335,4 @@ function(season){
     )
   )
 }
+
