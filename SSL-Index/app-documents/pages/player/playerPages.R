@@ -183,7 +183,7 @@ playerPagesServer <- function(id) {
         data <- playerData() 
         
         tagList(
-          h2(data$name),
+          h2(paste(data$name, paste0("(", data$class, ")"), sep = " ")),
           h3(paste0("@", data$username))
         )
         
@@ -202,6 +202,7 @@ playerPagesServer <- function(id) {
           h4(paste("Bank Balance: ", bank$balance)),
           h4(paste("Player Status: "), data$playerStatus, class = data$playerStatus),
           h4(paste("User Status: "), data$userStatus, class = data$userStatus),
+          h5(paste("Nationality:"), data$nationality), 
           h5(paste("Render: "), data$render)
         )
         
