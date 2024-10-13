@@ -7,7 +7,7 @@
 ###########################################################################
 ###########################################################################
 
-version <- "v2.0"
+version <- "v2.1"
 
 suppressMessages({
   ## Data handling
@@ -30,6 +30,7 @@ suppressMessages({
   require(grid, quietly = FALSE)
   require(ggpubr, quietly = FALSE)
   require(ggforce, quietly = FALSE)
+  require(highcharter, quietly = FALSE)
   
   ## Tables
   require(formattable, quietly = FALSE)
@@ -388,7 +389,8 @@ server <- function(input, output, session) {
       tabItem("leagueStandings",leagueStandingsUI(id = "leagueStandings")),
       tabItem("draftClass",draftClassUI(id = "draftClass")),
       tabItem("organizationPages",organizationPagesUI(id = "organizationPages")),
-      tabItem("leagueSchedule",leagueScheduleUI(id = "leagueSchedule")#),
+      tabItem("leagueSchedule",leagueScheduleUI(id = "leagueSchedule")),
+      tabItem("nationTracker",nationTrackerUI(id = "nationTracker")
       # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
       # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
       # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
@@ -561,6 +563,11 @@ server <- function(input, output, session) {
         menuItem("Standings", tabName = "leagueStandings"),
         menuItem("Schedule", tabName = "leagueSchedule"),
         menuItem("Career Records",tabName = "careerRecords"),
+        hr(),
+        menuItem("WSFC",
+                 menuSubItem("Nation Tracker", tabName = "nationTracker")
+         ),
+        hr(),
         {
           if(!any(0 %in% authOutput()$usergroup)){
             menuItem("Your User",href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = ""))
@@ -638,7 +645,8 @@ server <- function(input, output, session) {
       bankOverview = FALSE, welcome = FALSE, records = FALSE, playerPages = FALSE, contractProcess = FALSE,
       tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
       leagueStandings = FALSE, leagueSchedule = FALSE, managerteam = FALSE, assignManager = FALSE,
-      bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE
+      bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE,
+      nationTracker = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -755,7 +763,10 @@ server <- function(input, output, session) {
     } else if(!loadedPage$draftClass & input$tabs == "draftClass"){
       draftClassServer("draftClass")
       loadedPage$draftClass <- TRUE
-      
+    
+    } else if(!loadedPage$nationTracker & input$tabs == "nationTracker"){
+      nationTrackerServer("nationTracker")
+      loadedPage$nationTracker <- TRUE
       
     } else if(!loadedPage$bankOverview & input$tabs == "bankOverview"){
       req(authOutput())

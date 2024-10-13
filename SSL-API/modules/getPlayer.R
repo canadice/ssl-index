@@ -68,7 +68,8 @@ function() {
               WHEN pd.tpe > 1700 THEN 6000000
               ELSE NULL
           END AS `minimum salary`,
-          sum(bt.transaction) AS bankBalance 
+          sum(bt.transaction) AS bankBalance,
+          n.region
         FROM playerdata pd
         LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
         LEFT JOIN useractivity ua ON pd.uid = ua.uid
@@ -76,7 +77,7 @@ function() {
         LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
         LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
         LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
-        LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation
+        LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation OR pd.nationality = n.name
         LEFT JOIN banktransactions bt ON pd.pid = bt.pid
         WHERE pd.status_p >= 0 AND bt.status = 1
         GROUP BY pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
@@ -93,7 +94,7 @@ function() {
          pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
          pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
          pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
-         mb.username, mbuf.fid4, us.desc, ps.desc
+         mb.username, mbuf.fid4, us.desc, ps.desc, n.region
         ORDER BY pd.created;"
     )
   ) %>% 
