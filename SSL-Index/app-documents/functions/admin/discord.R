@@ -37,7 +37,50 @@ sendGradedTPE <- function(source, tpe){
   gradedString <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
     paste(collapse = "\\n")
   
-  jscode <- paste0("
+  if(nchar(gradedString) > 1024){
+    gradedString1 <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
+      .[1:floor(length(.)/2)] %>% 
+      paste(collapse = "\\n")
+    
+    gradedString2 <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
+      .[(floor(length(.)/2) + 1):length(.)] %>% 
+      paste(collapse = "\\n")
+    
+    jscode <- paste0("
+    function sendMessage() {
+      const request = new XMLHttpRequest();
+      request.open('POST', '", config$discord$tpe, "');
+      request.setRequestHeader('Content-type', 'application/json');
+      var myEmbed = {
+        author: {name: 'A new PT has been graded!'},
+        title: '", source, "',
+        fields: [ 
+          {name: '', 
+           value: '", sprintf("```%s```", gradedString1), "'}
+        ],
+        fields: [ 
+          {name: '', 
+           value: '", sprintf("```%s```", gradedString2), "'}
+        ],
+        footer: {
+          text: 'If you have received 0 or reduced TPE, please check a summary post in the PT thread. \\n\\nThe TPE has already been added to your player page, this is just a report.'
+        } 
+      };
+      
+      var params = {username: 'PT Watcher',embeds: [ myEmbed ]};
+      
+      request.send(JSON.stringify(params));
+    }
+    
+    sendMessage();"
+    )
+    
+    # cat(jscode)
+    
+    runjs(jscode)
+    
+  } else {
+    jscode <- paste0("
     function sendMessage() {
       const request = new XMLHttpRequest();
       request.open('POST', '", config$discord$tpe, "');
@@ -60,11 +103,12 @@ sendGradedTPE <- function(source, tpe){
     }
     
     sendMessage();"
-  )
-  
-  # cat(jscode)
-  
-  runjs(jscode)
+    )
+    
+    # cat(jscode)
+    
+    runjs(jscode)
+  }
 }
 
 sendAcademyIndexUpdate <- function(season){
