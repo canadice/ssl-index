@@ -59,15 +59,14 @@ nationTrackerServer <- function(id) {
       data("worldgeojson")
       
       players <- reactive({
-        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") %>% 
+        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))  %>% 
           select(name, class, tpe, tpebank, username, discord, bankBalance, nationality, position, userStatus, playerStatus, render, team, region) %>% 
           future_promise()
       })
       
       nations <- reactive({
         data <- 
-          readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") %>%
-          filter(playerStatus == "Active") %>% 
+          readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
           mutate(
             nationality = case_when(
               nationality == "United States" ~ "United States of America",

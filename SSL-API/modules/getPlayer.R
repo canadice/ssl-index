@@ -29,9 +29,13 @@ cors <- function(req, res) {
 #* Get all players from the portal database
 #* @get /getAllPlayers
 #* @serializer json
+#* @param active:boolean Filters out retired players
 #* 
-#* 
-function() {
+function(active = FALSE) {
+  print(active)
+  
+  active <- if_else(active == "true", 1, 0)
+  
   portalQuery(
     paste(
       "SELECT pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
@@ -79,7 +83,7 @@ function() {
         LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
         LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation OR pd.nationality = n.name
         LEFT JOIN banktransactions bt ON pd.pid = bt.pid
-        WHERE pd.status_p >= 0 AND bt.status = 1
+        WHERE pd.status_p >= ", active , " AND bt.status = 1
         GROUP BY pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
          pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name, pd.affiliate, pd.birthplace, 
          n.name, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
