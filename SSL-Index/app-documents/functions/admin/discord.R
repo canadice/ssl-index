@@ -56,9 +56,7 @@ sendGradedTPE <- function(source, tpe){
         title: '", source, "',
         fields: [ 
           {name: '', 
-           value: '", sprintf("```%s```", gradedString1), "'}
-        ],
-        fields: [ 
+           value: '", sprintf("```%s```", gradedString1), "'},
           {name: '', 
            value: '", sprintf("```%s```", gradedString2), "'}
         ],
