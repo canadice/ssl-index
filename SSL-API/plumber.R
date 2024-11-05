@@ -37,11 +37,14 @@ players <- pr("./modules/getPlayer.R")
 bank <- pr("./modules/getBank.R")
 info <- pr("./info.R")
 index <- pr("./modules/getIndex.R")
-
+admin <- pr("./modules/getAdmin.R")
+organization <- pr("./modules/getOrganization.R")
 
 root %>% 
   pr_mount("/player", players) %>% 
   pr_mount("/bank", bank) %>% 
   pr_mount("/info", info) %>% 
   pr_mount("/index", index) %>% 
+  pr_mount("/admin", admin) %>% 
+  pr_mount("/organization", organization) %>% 
   pr_run(port = 8001)

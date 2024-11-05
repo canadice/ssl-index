@@ -72,8 +72,9 @@ function(active = FALSE) {
               WHEN pd.tpe > 1700 THEN 6000000
               ELSE NULL
           END AS `minimum salary`,
-          sum(bt.transaction) AS bankBalance,
-          n.region
+          SUM(CASE WHEN bt.status = 1 THEN bt.transaction ELSE 0 END) AS bankBalance,
+          n.region,
+          o.name AS organization
         FROM playerdata pd
         LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
         LEFT JOIN useractivity ua ON pd.uid = ua.uid
@@ -83,7 +84,8 @@ function(active = FALSE) {
         LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
         LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation OR pd.nationality = n.name
         LEFT JOIN banktransactions bt ON pd.pid = bt.pid
-        WHERE pd.status_p >= ", active , " AND bt.status = 1
+        LEFT JOIN organizations o ON pd.team = o.id
+        WHERE pd.status_p >= ", active , "
         GROUP BY pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
          pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name, pd.affiliate, pd.birthplace, 
          n.name, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
@@ -107,20 +109,23 @@ function(active = FALSE) {
     )
 }
 
-#* Get single players from the portal database, only one of `name` or `pid` should be used
+#* Get single players from the portal database, only one of `name` and `pid` or `username` and `uid` should be used at the same time
 #* @get /getPlayer
 #* @serializer json
 #* @param name:str The player name
 #* @param pid:int The player ID
 #* @param username:str The username
+#* @param uid:int The user ID
 #* 
-function(name = NULL, pid = NULL, username = NULL) {
-  if(all(name %>% is.null(), pid %>% is.null(), username %>% is.null())){
+function(name = NULL, pid = NULL, username = NULL, uid = NULL) {
+  if(all(name %>% is.null(), pid %>% is.null(), username %>% is.null(), uid %>% is.null())){
     return("You need to specify at least one of the arguments!")
   }
   
   if(!(username %>% is.null())){
     whereClause <- paste("WHERE mb.username = ", paste0("'", username, "'"), "ORDER BY pid DESC LIMIT 1;")
+  } else if(!(uid %>% is.null())){
+    whereClause <- paste("WHERE pd.uid = ", uid, "ORDER BY pid DESC LIMIT 1;")
   } else {
     whereClause <- if_else(name %>% is.null(), paste("WHERE pd.pid = ", pid, ";"), paste("WHERE pd.name = ", paste0("'", name %>% str_replace(pattern = "'", replacement = "\\\\'"), "'"), ";"))
   }
@@ -317,4 +322,33 @@ player_class AS (
       )
     ) %>% 
     suppressWarnings()
+}
+
+
+#* Gets weekly top earners
+#* @get /topEarners
+#* @serializer json
+#* 
+function() {
+  portalQuery(
+    paste(
+      "SELECT 
+            pd.name AS Name,
+            mbb.username AS Username,
+            SUM(ph.tpe) AS `TPE Earned`
+        FROM 
+            tpehistory ph
+        JOIN 
+            playerdata pd ON ph.pid = pd.pid
+        LEFT JOIN
+            mybbdb.mybb_users mbb ON pd.uid = mbb.uid
+        WHERE 
+            YEARWEEK(FROM_UNIXTIME(ph.time), 1) = YEARWEEK(CONVERT_TZ(CURDATE(), 'UTC', 'America/Los_Angeles'), 1) AND ph.source <> 'Initial TPE' AND ph.tpe > 0
+        GROUP BY 
+            ph.pid
+        ORDER BY 
+            `TPE Earned` DESC
+        LIMIT 10;"
+    )
+  )
 }
