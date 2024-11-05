@@ -125,7 +125,10 @@ playerPagesServer <- function(id) {
           req(input$selectedPlayer)
           pid <- input$selectedPlayer %>% as.numeric()
           
-          getBankTransactions(pid)
+          readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
+                  query = list(pid = pid)
+          ) %>% 
+            future_promise()
         })
       
       #### OUTPUTS ####
@@ -199,7 +202,7 @@ playerPagesServer <- function(id) {
         tagList(
           h4(paste("TPE: ", data$tpe)),
           h4(paste("Banked TPE: ", data$tpebank)),
-          h4(paste("Bank Balance: ", bank$balance)),
+          h4(paste("Bank Balance: ", bank$balanceStr)),
           h4(paste("Player Status: "), data$playerStatus, class = data$playerStatus),
           h4(paste("User Status: "), data$userStatus, class = data$userStatus),
           h5(paste("Nationality:"), data$nationality), 

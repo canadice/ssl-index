@@ -1,29 +1,4 @@
-getUserID <- function(name){
-  future_promise({
-    mybbQuery(
-      paste(
-        "SELECT uid
-          FROM mybb_users
-          WHERE username = '", name, "'",
-        sep = ""
-      )
-    )
-  }) %>% 
-    suppressWarnings()
-}
-
-getUserName <- function(uid){
-  future_promise({
-    mybbQuery(
-      paste(
-        "SELECT username
-          FROM mybb_users
-          WHERE uid =", uid, ";"
-      )
-    )
-  })
-}
-
+## THIS ONE SHOULD NOT BE EXPOSED TO API
 getUsers <- function(){
   future_promise({
     mybbQuery(
@@ -37,19 +12,19 @@ getUsers <- function(){
 }
 
 
-getUserStatus <- function(pid){
-  future_promise({
-    portalQuery(
-      paste(
-        "SELECT status.desc
-        FROM playerdata pd
-        JOIN useractivity activity ON pd.uid = activity.uid
-        JOIN userstatuses status ON activity.status_u = status.status
-        WHERE pd.pid =", pid, ";"
-      )
-    )
-  })
-}
+# getUserStatus <- function(playerID){
+#   future_promise({
+#     portalQuery(
+#       paste(
+#         "SELECT status.desc
+#         FROM playerdata pd
+#         JOIN useractivity activity ON pd.uid = activity.uid
+#         JOIN userstatuses status ON activity.status_u = status.status
+#         WHERE pd.pid =", playerID, ";"
+#       )
+#     )
+#   })
+# }
 
 
 

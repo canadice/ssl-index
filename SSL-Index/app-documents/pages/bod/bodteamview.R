@@ -19,7 +19,8 @@ bodTeamServer <- function(id, userinfo) {
     function(input, output, session) {
       
       playerData <- reactive({
-        getPlayersFromAllTeams()
+        readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+          future_promise()
       }) 
       
       output$teamOverview <- renderReactable({

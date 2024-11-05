@@ -497,7 +497,7 @@ h1, h2, h3, h4, h5 {
 
 .navbarHead {
   display: flex;
-  padding: 20px 0px;
+  /* padding: 20px 0px;*/
   flex-direction: row;
 }
 

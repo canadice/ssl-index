@@ -23,124 +23,100 @@
 #   }
 # }
 
-getPlayerDataAsync <- function(uid = NULL, pid = NULL){
-  future_promise({
-    if(pid %>% is.null()){
-      portalQuery(
-        paste(
-          "SELECT *
-        FROM playerdata
-        WHERE uid =", uid, " AND status_p = 1",
-          "ORDER BY pid DESC LIMIT 1;"
-        )
-        # ORDER BY pid DESC
-        
-        ## NEED TO ADD SOMETHING THAT ONLY TAKES BACK ONE PLAYER IF SOMEONE HAS RECREATED
-      )
-    } else {
-      portalQuery(
-        paste(
-          "SELECT pd.*, mb.username AS username, us.desc AS `userStatus`, ps.desc AS `playerStatus`
-        FROM playerdata pd
-        LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
-        LEFT JOIN useractivity ua ON pd.uid = ua.uid
-        LEFT JOIN userstatuses us ON ua.status_u = us.status
-        LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
-        WHERE pd.pid = ", pid,";"
-        )
-      )
-    }
-  })
-}
+# getPlayerDataAsync <- function(uid = NULL, pid = NULL){
+#   future_promise({
+#     if(pid %>% is.null()){
+#       portalQuery(
+#         paste(
+#           "SELECT *
+#         FROM playerdata
+#         WHERE uid =", uid, " AND status_p = 1",
+#           "ORDER BY pid DESC LIMIT 1;"
+#         )
+#         # ORDER BY pid DESC
+#         
+#         ## NEED TO ADD SOMETHING THAT ONLY TAKES BACK ONE PLAYER IF SOMEONE HAS RECREATED
+#       )
+#     } else {
+#       portalQuery(
+#         paste(
+#           "SELECT pd.*, mb.username AS username, us.desc AS `userStatus`, ps.desc AS `playerStatus`
+#         FROM playerdata pd
+#         LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
+#         LEFT JOIN useractivity ua ON pd.uid = ua.uid
+#         LEFT JOIN userstatuses us ON ua.status_u = us.status
+#         LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
+#         WHERE pd.pid = ", pid,";"
+#         )
+#       )
+#     }
+#   })
+# }
 
-hasActivePlayer <- function(uid){
+hasActivePlayer <- function(userID){
   res <- 
-    portalQuery(
-      paste(
-        "SELECT *
-          FROM playerdata
-          WHERE uid =", uid, " AND status_p = 1"
-      )
-    ) 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+    filter(uid == userID)
   
   nrow(res) > 0
 }
 
-getPlayerNameFromUsername <- function(username){
-  portalQuery(
-    paste(
-      "SELECT pd.pid, pd.name
-        FROM playerdata AS pd
-        JOIN mybbdb.mybb_users AS mbb ON pd.uid = mbb.uid
-        WHERE mbb.username = ", paste0("'", username, "'"), " AND pd.status_p = 1;"
-    )
-  ) %>% 
+getPlayerNameFromUsername <- function(userName){
+  readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
+    filter(username == userName) %>% 
+    select(pid, name) %>% 
     future_promise()
 }
 
-getPlayerName <- function(uid = NULL, pid = NULL){
+getPlayerName <- function(userID = NULL, playerID = NULL){
   future_promise({
-    if(pid %>% is.null()){
-      portalQuery(
-        paste(
-          "SELECT pid, name, class
-        FROM playerdata
-        WHERE uid =", uid, " AND status_p = 1",
-          "ORDER BY pid DESC LIMIT 1;"
-        )
-        # ORDER BY pid DESC
+    if(playerID %>% is.null()){
+      readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
+        filter(uid == userID) %>% 
+        select(pid, name, class) %>% 
+        arrange(pid %>% desc()) %>% 
+        slice_head()
         
-        ## NEED TO ADD SOMETHING THAT ONLY TAKES BACK ONE PLAYER IF SOMEONE HAS RECREATED
-      )
     } else {
-      portalQuery(
-        paste(
-          "SELECT pid, name, class
-        FROM playerdata
-        WHERE pid = ", pid, " AND status_p = 1"
-        )
-      )
+      readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
+        filter(pid == playerID) %>% 
+        select(pid, name, class)
+      
     }
   }) %>% 
     suppressWarnings()
 }
 
-getPlayerID <- function(name){
-  portalQuery(
-    paste(
-      "SELECT pid
-        FROM playerdata
-        WHERE name = '", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "' AND status_p > 0;",
-      sep = ""
-    )
-  )
+getPlayerID <- function(playerName){
+  readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
+    filter(name == playerName %>% str_replace_all(pattern = "'", replacement = "\\\\'")) %>% 
+    select(pid)
 }
 
-getPlayerTraits <- function(pid){
+getPlayerTraits <- function(playerID){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT traits
-        FROM playerdata
-        WHERE pid =", pid, ";"
-      )
-    ) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
+      filter(pid == playerID) %>%
+      select(traits) %>%
       str_split(
         pattern = traitSep
-      ) %>% 
-      unlist()
+      ) %>%
+      unlist() %>%
+      {
+        if(all(. == "")){
+          NULL
+        } else {
+          .
+        }
+      }
   })
 }
 
-getPlayerPositions <- function(pid){
+getPlayerPositions <- function(playerID){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT pos_st, pos_lam, pos_cam, pos_ram, pos_lm, pos_cm, pos_rm, pos_lwb, pos_cdm, pos_rwb, pos_ld, pos_cd, pos_rd, pos_gk
-        FROM playerdata
-        WHERE pid =", pid, ";"
-      )
-    ) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+      filter(pid == playerID) %>% 
+      select(pos_st:pos_gk)%>% 
       pivot_longer(everything()) %>% 
       mutate(
         name = str_remove(name, pattern = "pos_") %>% str_to_upper()
@@ -150,110 +126,51 @@ getPlayerPositions <- function(pid){
 
 getAllPlayerPositions <- function(){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT ua.status_u AS status, pd.pos_st, pd.pos_lam, pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, 
-        pd.pos_lwb, pd.pos_cdm, pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk
-        FROM playerdata pd
-        JOIN useractivity ua ON pd.uid = ua.uid
-        WHERE pd.status_p = 1;"
-      )
-    ) 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+      select(status = userStatus, pos_st:pos_gk)
   })
 }
 
-getPlayerFootedness <- function(pid){
+getPlayerFootedness <- function(playerID){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT `left foot`, `right foot`
-        FROM playerdata
-        WHERE pid =", pid, ";"
-      )
-    ) 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+      filter(pid == playerID) %>% 
+      select(`left foot`, `right foot`)
   })
 }
 
-getPlayerTeam <- function(pid){
+getPlayerTeam <- function(playerID){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT t.name AS team
-          FROM playerdata pd
-          LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
-          WHERE pd.pid =", pid, ";"
-      )
-    )
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+      filter(pid == playerID) %>% 
+      select(team)
   })
 }
 
 getPlayersFromTeam <- function(uid){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT us.desc AS `user status`, ps.desc AS `player status`, pd.name, pd.class, pd.tpe, pd.tpebank, `left foot`, `right foot`, pd.position, (CASE WHEN teams.affiliate = 2 THEN 'Minor' ELSE 'Major' END) AS affiliate, pid
-      FROM playerdata pd
-      JOIN useractivity ua ON pd.uid = ua.uid
-      JOIN userstatuses us ON ua.status_u = us.status
-      JOIN playerstatuses ps ON pd.status_p = ps.status
-      JOIN teams ON pd.team = teams.orgID AND pd.affiliate = teams.affiliate
-      WHERE pd.team IN (
-        SELECT orgID
-        FROM managers
-        WHERE orgManager = ", uid, " OR assManager1 = ", uid, "OR assManager2 = ", uid, "
-      );"
-      )
-    ) %>% 
-      arrange(affiliate, tpe %>% desc())
-  })
-}
-
-getPlayersFromAllTeams <- function(){
-  future_promise({
-    portalQuery(
-      paste(
-        "SELECT pd.name, pd.class, pd.tpe, pd.tpebank, pd.position, teams.name AS organization, (CASE WHEN teams.affiliate = 2 THEN 'Minor' ELSE 'Major' END) AS affiliate, pid
-      FROM playerdata AS pd
-      LEFT JOIN teams ON pd.team = teams.orgID AND pd.affiliate = teams.affiliate
-      WHERE status_p > 0 AND team > -3;
-      "
-      )
-    )
+    readAPI("https://api.simulationsoccer.com/organization/getPlayersFromOrg", query = list(uid = uid))
   })
 }
 
 getPlayerNames <- function(){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT pd.name, pd.pid, mb.username, pd.team, pd.status_p
-      FROM playerdata pd
-      LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid;
-      "
-      )
-    )
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "false")) %>% 
+      select(name, pid, username, team, status_p)
+    
   })
 }
 
 getRecentCreates <- function(){
-  portalQuery(
-    paste(
-      "SELECT 
-            pd.position AS Pos,
-            pd.name AS Name,
-            mbb.username AS Username
-        FROM 
-            playerdata pd
-        LEFT JOIN
-            mybbdb.mybb_users mbb ON pd.uid = mbb.uid
-        WHERE 
-            pd.status_p > 0
-        ORDER BY 
-            created DESC
-        LIMIT 5;"
-    )
-  ) %>% 
-    future_promise()
+  
+  future_promise({
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+      arrange(created %>% desc()) %>% 
+      slice_head(n = 5) %>% 
+      select(Pos = position, Name = name, Username = username) 
+      
+  })
+  
 }
 
 getChangedBuilds <- function(){
@@ -284,16 +201,11 @@ getChangedBuilds <- function(){
     future_promise()
 }
 
-getPlayerStatus <- function(pid){
+getPlayerStatus <- function(playerID){
   future_promise({
-    portalQuery(
-      paste(
-        "SELECT status.desc
-        FROM playerdata pd
-        JOIN playerstatuses status ON pd.status_p = status.status
-        WHERE pd.pid =", pid, ";"
-      )
-    )
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "false")) %>% 
+      filter(pid == playerID) %>% 
+      select(playerStatus)    
   })
 }
 

@@ -35,15 +35,18 @@ bankProcessServer <- function(id, userinfo) {
       updated <- reactiveVal({0})
       
       transactions <- reactive({
-        getBankTransactionsForApproval()
+        readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
+                query = list(status = 0)
+        ) %>% 
+          future_promise()
       }) %>% 
         bindEvent(
           updated()
         )
       
       allTransactions <- reactive({
-        ## -99 returns all approved transactions
-        getBankTransactions(pid = -99)
+        readAPI("https://api.simulationsoccer.com/bank/getBankTransactions") %>% 
+          future_promise()
       }) %>% 
         bindEvent(
           updated()
@@ -66,7 +69,7 @@ bankProcessServer <- function(id, userinfo) {
                   columns = 
                     list(
                       Time = colDef(format = colFormat(datetime = TRUE)),
-                      Amount = colDef(style = function(value){list(color = if_else(value < 0, red, "white"))},
+                      Transaction = colDef(style = function(value){list(color = if_else(value < 0, red, "white"))},
                                       format = colFormat(prefix = "$", separators = TRUE, digits = 0))
                     )
                 )

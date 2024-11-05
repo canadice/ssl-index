@@ -27,14 +27,6 @@ yourPlayerUI <- function(id) {
               )
             )
         ),
-        box(title = "Bank History", collapsed = TRUE, collapsible = TRUE,width = NULL,
-            fluidRow(
-              column(
-                width = 12,
-                reactableOutput(ns("historyBank"))
-              )
-            )
-        ),
         br(),
         br()
       )
@@ -59,7 +51,8 @@ yourPlayerServer <- function(id, uid, parent, updated) {
       
       playerData <- 
         reactive({
-          getPlayerDataAsync(uid = uid)
+          readAPI("https://api.simulationsoccer.com/player/getPlayer", query = list(uid = uid)) %>% 
+            future_promise()
         }) %>% 
         bindEvent(
           updated()
@@ -85,17 +78,6 @@ yourPlayerServer <- function(id, uid, parent, updated) {
               }
             )
         })
-      
-      historyBank <- 
-        reactive({
-          playerData() %>% 
-            then(
-              onFulfilled = function(value){
-                getBankTransactions(value$pid)
-              }
-            )
-        })
-      
       
       #### OUTPUTS ####
       output$historyTPE <- renderReactable({
@@ -130,26 +112,6 @@ yourPlayerServer <- function(id, uid, parent, updated) {
                   columns = 
                     list(
                       Time = colDef(format = colFormat(datetime = TRUE))
-                    )
-                )
-            },
-            onRejected = NULL
-          )
-      })
-      
-      output$historyBank <- renderReactable({
-        historyBank() %>% 
-          then(
-            onFulfilled = function(value){
-              value %>% 
-                mutate(
-                  Time = as_datetime(Time)
-                ) %>% 
-                reactable(
-                  columns = 
-                    list(
-                      Time = colDef(format = colFormat(datetime = TRUE)),
-                      Transaction = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
                     )
                 )
             },

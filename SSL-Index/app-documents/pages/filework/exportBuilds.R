@@ -51,7 +51,8 @@ exportBuildServer <- function(id) {
       build <- reactive({
         pid <- getPlayerID(input$selectedPlayer)
         
-        getPlayerDataAsync(pid = pid$pid)      
+        readAPI("https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) %>% 
+          future_promise()
       })
       
       downloadPlayer <- function(temp){
@@ -146,7 +147,9 @@ exportBuildServer <- function(id) {
           ),
           ',"PreferredMoves":', traits,
           ',"Born":"', 
-          ("2004-07-01" %>% as_date()) - years(currentSeason$season - (temp$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
+          # ("2004-07-01" %>% as_date()) - years(currentSeason$season - (temp$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
+          # Changed to give all players the same age
+          "2000-01-01",
           '","DocumentType":"Player"}',
           sep = ""
         )
@@ -216,7 +219,8 @@ exportBuildServer <- function(id) {
       
       #### SINGLE PLAYER BUILD ####
       output$singles <- renderUI({
-        getPlayersFromAllTeams() %>% 
+        readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+          future_promise() %>% 
           then(
             onFulfilled = function(data){
               selectizeInput(

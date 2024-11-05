@@ -20,7 +20,8 @@ assignManagerServer <- function(id, userinfo) {
       updated <- reactiveVal({0})
       
       data <- reactive({
-        getManagers()
+        readAPI("https://api.simulationsoccer.com/organization/getManagers") %>% 
+          future_promise()
       }) %>% 
         bindEvent(
           updated()

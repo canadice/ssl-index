@@ -1,3 +1,4 @@
+## THESE ARE FOR FILEWORK PURPOSES AND SHOULD NOT BE EXPOSED TO API
 getKeeperSeasonTotal <- function(season){
   indexQuery(
     paste(
@@ -31,7 +32,6 @@ getKeeperSeasonTotal <- function(season){
     )
   )  
 }
-
 
 getOutfieldSeasonTotal <- function(season){
   indexQuery(
@@ -101,8 +101,3 @@ getOutfieldSeasonTotal <- function(season){
     )
   )  
 }
-
-
-
-
-

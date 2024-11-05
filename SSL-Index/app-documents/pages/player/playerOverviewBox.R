@@ -55,7 +55,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
           } else {
             actionButton(
               inputId = session$ns("goToRegression"),
-              "Regress",
+              tippy("Regress", "You do not need to regress your player", theme = "material"),
               disabled = ""
             )
           }
@@ -71,7 +71,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 } else {
                   actionButton(
                     inputId = session$ns("goToRegression"),
-                    "Regress",
+                    tippy("Regress", "You do not need to regress your player", theme = "material"),
                     disabled = ""
                   )
                 }
@@ -90,7 +90,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
           } else {
             actionButton(
               inputId = session$ns("goToUpdate"),
-              "Update",
+              tippy("Update", "You cannot update your player. You must first regress them.", theme = "material"),
               disabled = ""
             )
           }
@@ -106,7 +106,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 } else {
                   actionButton(
                     inputId = session$ns("goToUpdate"),
-                    "Update",
+                    tippy("Update", "You cannot update your player. You must first regress them.", theme = "material"),
                     disabled = ""
                   )
                 }

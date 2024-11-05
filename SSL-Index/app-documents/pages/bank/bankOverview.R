@@ -66,7 +66,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       
       
       player <- reactive({
-        getPlayerName(uid = uid)
+        getPlayerName(userID = uid)
       }) %>% 
         bindEvent(
           purchased(),
@@ -93,7 +93,11 @@ bankOverviewServer <- function(id, uid, parent, updated) {
           player() %>% 
             then(
               onFulfilled = function(value){
-                getBankTransactions(value$pid)
+                readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
+                        query = list(pid = value$pid)
+                ) %>% 
+                  future_promise()
+                # getBankTransactions(value$pid)
               }
             )
         })
@@ -163,7 +167,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerTraits(pid = data$pid) %>% 
+              getPlayerTraits(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentTraits){
                     nrTraits <- length(currentTraits)
@@ -343,7 +347,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerTraits(pid = data$pid) %>% 
+              getPlayerTraits(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentTraits){
                     nrTraits <- length(currentTraits)
@@ -368,7 +372,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerPositions(pid = data$pid) %>% 
+              getPlayerPositions(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentPositions){
                     if(currentPositions %>% filter(name == "GK") %>% .$value != 20){
@@ -426,7 +430,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerPositions(pid = data$pid) %>% 
+              getPlayerPositions(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentPositions){
                     summary <- 
@@ -528,7 +532,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerFootedness(pid = data$pid) %>% 
+              getPlayerFootedness(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentFootedness){
                     tagList(
@@ -554,7 +558,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         player() %>%
           then(
             onFulfilled = function(data){
-              getPlayerFootedness(pid = data$pid) %>%
+              getPlayerFootedness(playerID = data$pid) %>%
                 then(
                   onFulfilled = function(currentFootedness){
                     if(input$left %>% is.na() | input$right %>% is.na()){
@@ -607,7 +611,8 @@ bankOverviewServer <- function(id, uid, parent, updated) {
           player() %>% 
             then(
               onFulfilled = function(data){
-                getBankTotal(pid = data$pid) %>% 
+                readAPI(url = "https://api.simulationsoccer.com/bank/getBankBalance", query = list(name = data$name)) %>% 
+                  future_promise() %>% 
                   then(
                     onFulfilled = function(balance){
                       if(totalCost > balance$balance){
@@ -722,8 +727,8 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                   update <- 
                     tibble(
                       attribute = c("traits"),
-                      old = paste("'", paste0(traits, collapse = " \\\\ "), "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = " \\\\ "), "'", sep = "")
+                      old = paste("'", paste0(traits, collapse = " \\\\ ") %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", paste0(input$traits, collapse = " \\\\ ") %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     ) %>% 
                     add_row(
                       attribute = "left foot",

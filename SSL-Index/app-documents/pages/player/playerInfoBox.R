@@ -28,28 +28,27 @@ playerInfoBoxServer <- function(id, pid, mainSession) {
     function(input, output, session) {
       
       output$name <- renderUI({
-        promise_all(
-          name = getPlayerName(pid = pid),
-          player = getPlayerStatus(pid = pid),
-          user = getUserStatus(pid = pid)
-        ) %...>% 
-          with(
-            tagList(
-              h2(name$name %>% paste(paste("(", name$class, ")", sep = ""), sep = ", ")),
-              h4(paste("Player: "), player$desc),
-              h4(paste("User: "), user$desc)
-            )
+        readAPI(url = "https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) %>% 
+          future_promise() %>% 
+          then(
+            onFulfilled = function(data){
+              tagList(
+                h2(data$name %>% paste(paste("(", data$class, ")", sep = ""), sep = ", ")),
+                h4(paste("Player: "), data$playerStatus),
+                h4(paste("User: "), data$userStatus)
+              )
+            }
           )
-        
       })
       
       output$bank <- renderUI({
-        getBankTotal(pid = pid) %>% 
+        readAPI(url = "https://api.simulationsoccer.com/bank/getBankBalance", query = list(pid = pid)) %>% 
+          future_promise() %>% 
           then(
             onFulfilled = function(bank){
               tagList(
                 h4(paste("Bank Balance: ") %>% HTML()),
-                actionLink(inputId = session$ns("gotobank"), label = bank$balance %>% dollar())  
+                actionLink(inputId = session$ns("gotobank"), label = bank$balanceStr)  
               )
             }
           )
@@ -66,7 +65,7 @@ playerInfoBoxServer <- function(id, pid, mainSession) {
       
       
       output$traits <- renderUI({
-        getPlayerTraits(pid = pid) %>% 
+        getPlayerTraits(playerID = pid) %>% 
           then(
             onFulfilled = function(value){
               tagList(
@@ -85,7 +84,7 @@ playerInfoBoxServer <- function(id, pid, mainSession) {
       })
       
       output$positions <- renderUI({
-        getPlayerPositions(pid = pid) %>% 
+        getPlayerPositions(playerID = pid) %>% 
           then(
             onFulfilled = function(value){
               tagList(

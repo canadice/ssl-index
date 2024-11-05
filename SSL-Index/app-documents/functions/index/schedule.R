@@ -1,3 +1,5 @@
+## THESE FUNCTIONS ARE ONLY FOR JOB WORKERS SO SHOULD NOT BE API
+
 getUnfinishedSchedule <- function(){
   indexQuery(
     paste(

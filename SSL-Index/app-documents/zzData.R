@@ -18,18 +18,14 @@ traitSep <- " \\\\ "
 
 
 ## Loads common and small tables
-tpeCost <- 
-  portalQuery("SELECT * FROM tpetable")
+tpeCost <- readAPI(url = "https://api.simulationsoccer.com/admin/tpeTable")
 
-attributes <- 
-  portalQuery("SELECT * FROM attributes")
+attributes <- readAPI(url = "https://api.simulationsoccer.com/admin/attributes")
+  
+currentSeason <- readAPI(url = "https://api.simulationsoccer.com/admin/getCurrentSeason")
 
-currentSeason <- 
-  indexQuery("SELECT * FROM seasoninfo ORDER BY startDate DESC LIMIT 1")
-
-statisticsLegend <- 
-  indexQuery("SELECT * FROM statlegend")
-
+statisticsLegend <- readAPI(url = "https://api.simulationsoccer.com/admin/statistics")
+  
 positionalCoord <-
   tibble::tibble(
     x = c(375, 130, 375, 620, 130, 375, 620, 130, 375, 620, 130, 375, 620, 375),

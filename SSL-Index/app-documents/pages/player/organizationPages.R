@@ -45,7 +45,7 @@ organizationPagesServer <- function(id) {
           future_promise()
       })
       
-      organizations <- portalQuery("SELECT o.ID, o.name AS organization, t.name, t.primaryColor, t.secondaryColor, t.city FROM teams AS t LEFT JOIN organizations AS o ON t.orgID = o.ID ORDER BY o.ID") %>% 
+      organizations <- readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
         filter(!is.na(organization))
       
       output$tabs <- renderUI({

@@ -40,7 +40,9 @@ editScheduleServer <- function(id, userinfo) {
         )
       
       teams <- reactive({
-        getActiveTeams()
+        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
+          filter(ID >= 0) %>% 
+          future_promise()
       })
       
       # Render tables dynamically for each organization

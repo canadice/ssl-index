@@ -63,7 +63,11 @@ contractProcessServer <- function(id, uid) {
         )
       
       organizations <- reactive({
-        getOrganizations()
+        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
+          select(id = ID, name = organization, abbr = abbreviation) %>% 
+          filter(!is.na(name)) %>% 
+          unique() %>% 
+          future_promise()
       })
         
       

@@ -7,7 +7,7 @@
 ###########################################################################
 ###########################################################################
 
-version <- "v2.1"
+version <- "v2.2"
 
 suppressMessages({
   ## Data handling
@@ -223,14 +223,7 @@ ui <- function(request){
             href = "favicon.png"),
           tags$title("SSL Portal")
         ),
-        class = "dropdown",
-        div(
-          class = "navbarHead",
-          tags$p(actionButton(inputId = "gotoportal",
-                            label = "Portal")),
-          tags$p(actionButton(inputId = "gotoindex",
-                            label = "Index"))
-        )
+        class = "dropdown"
       )
     ),
     dashboardSidebar(
@@ -370,7 +363,7 @@ server <- function(input, output, session) {
       tabItem("leagueindex",leagueIndexUI(id = "leagueindex")),
       tabItem("createplayer",createPlayerUI(id = "createplayer")),
       tabItem("playerapprove",playerApproveUI(id = "playerapprove")),
-      tabItem("teamView",managerTeamUI(id = "managerteam")),
+      tabItem("managerTeam",managerTeamUI(id = "managerTeam")),
       tabItem("welcome",welcomeUI(id = "welcome"),active = TRUE),
       tabItem("bodoverview",bodTeamUI(id = "bodoverview")),
       tabItem("assignManager",assignManagerUI("assignManager")),
@@ -434,129 +427,145 @@ server <- function(input, output, session) {
   output$sidebarpanel <- renderUI({
     if(menuGroup() %% 2 == 0){
       #### PORTAL SIDEBAR MENU ####
-      sidebarMenu(
-        id = "tabs",
-        menuItem("Welcome",tabName = "welcome",selected = TRUE),
-        {
-          if(!any(c(0,5) %in% authOutput()$usergroup)){
-            tagList(
-              menuItemOutput("playerTabs"),
-              
-              ### BANK MENU
-              menuItem("SSL Bank",
+      tagList(
+        tags$div(
+          class = "navbarHead",
+          tags$p(actionButton(inputId = "gotoportal",
+                              label = "Portal")),
+          tags$p(actionButton(inputId = "gotoindex",
+                              label = "Index"))
+        ),
+        sidebarMenu(
+          id = "tabs",
+          menuItem("Welcome",tabName = "welcome",selected = TRUE),
+          {
+            if(!any(c(0,5) %in% authOutput()$usergroup)){
+              tagList(
+                menuItemOutput("playerTabs"),
+                
+                ### BANK MENU
+                menuItem("SSL Bank",
+                         {
+                           if(hasActivePlayer(authOutput()$uid)){
+                             menuSubItem("Player Store",tabName = "bankOverview")
+                           }
+                         },
+                         {
+                           # BoD, Commissioner, Manager, PT Team and Banker
+                           if(any(c(3, 4, 8, 11, 12) %in% authOutput()$usergroup)){
+                             menuSubItem("Bank Deposits",tabName = "bankDeposit")
+                           }
+                         },
+                         {
+                           # Banker (12), BoD (3), Commissioner (4)
+                           if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
+                             menuSubItem("Process Bank Transactions",tabName = "bankProcess")
+                           }
+                         }
+                ),
+                
+                menuItem("Player Pages",tabName = "playerPages"),
+                menuItem("Organization Pages",tabName = "organizationPages"),
+                menuItem("Draft Class Tracker",tabName = "draftClass"),
+                if(!any(c(2) %in% authOutput()$usergroup)){hr()},
+                # menuItem(
+                #   "SSL Budget",
+                #   menuSubItem(
+                #     "Budget Overview",
+                #     tabName = "budgetOverview"
+                #   ),
+                #   {
+                #     # Banker (12), BoD (3), Commissioner (4)
+                #     if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
+                #       tagList(
+                #         menuSubItem(
+                #           "Process Contracts",
+                #           tabName = "contractProcess"
+                #         ),
+                #         menuSubItem(
+                #           "Process Trade",
+                #           tabName = "tradeProcess"
+                #         )
+                #       )
+                #     }
+                #   }
+                # ),
+                ### PT TOOLS
                 {
-                  if(hasActivePlayer(authOutput()$uid)){
-                    menuSubItem("Player Store",tabName = "bankOverview")
+                  # PT (11), Commissioner (4)
+                  if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
+                    menuItem("PT Tools",
+                             menuSubItem("Submit Graded PT",tabName = "submitPT")
+                    )
                   }
                 },
+                
+                ### FILEWORKER TOOLS
                 {
-                  # BoD, Commissioner, Manager, PT Team and Banker
-                  if(any(c(3, 4, 8, 11, 12) %in% authOutput()$usergroup)){
-                    menuSubItem("Bank Deposits",tabName = "bankDeposit")
+                  # Fileworker (14), Commissioner (4)
+                  if(any(c(4, 3, 14) %in% authOutput()$usergroup)){
+                    menuItem(
+                      "File Work Tools",
+                      menuSubItem("Export Builds",tabName = "exportBuild"),
+                      menuSubItem("Upload Game Stats",tabName = "uploadGame"),
+                      menuSubItem("Upload Academy Stats",tabName = "academyUpload"),
+                      menuSubItem("Edit Schedule",tabName = "editSchedule")
+                    )
                   }
                 },
+                
+                ### MANAGER TOOLS
                 {
-                  # Banker (12), BoD (3), Commissioner (4)
-                  if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
-                    menuSubItem("Process Bank Transactions",tabName = "bankProcess")
+                  # Manager (8)
+                  if(any(c(3, 4, 8) %in% authOutput()$usergroup)){
+                    menuItem(
+                      "Manager Tools",
+                      menuSubItem("Your Team",tabName = "managerTeam")
+                    )
+                  }
+                },
+                
+                ### BOD TOOLS
+                {
+                  # BoD (3), Commissioner (4) or Intern (15)
+                  if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
+                    menuItem(
+                      "BoD Tools",
+                      menuSubItem("Player Approvals",tabName = "playerapprove"),
+                      menuSubItem("Edit Player",tabName = "playerEdit"),
+                      menuSubItem("Assign Managers",tabName = "assignManager"),
+                      menuSubItem("Organizational Overview",tabName = "bodoverview"),
+                      menuSubItem("Edit Schedule",tabName = "editSchedule")
+                    )
                   }
                 }
-              ),
-              
-              menuItem("Player Pages",tabName = "playerPages"),
-              menuItem("Organization Pages",tabName = "organizationPages"),
-              menuItem("Draft Class Tracker",tabName = "draftClass"),
-              if(!any(c(2) %in% authOutput()$usergroup)){hr()},
-              # menuItem(
-              #   "SSL Budget",
-              #   menuSubItem(
-              #     "Budget Overview",
-              #     tabName = "budgetOverview"
-              #   ),
-              #   {
-              #     # Banker (12), BoD (3), Commissioner (4)
-              #     if(any(c(3, 4, 12) %in% authOutput()$usergroup)){
-              #       tagList(
-              #         menuSubItem(
-              #           "Process Contracts",
-              #           tabName = "contractProcess"
-              #         ),
-              #         menuSubItem(
-              #           "Process Trade",
-              #           tabName = "tradeProcess"
-              #         )
-              #       )
-              #     }
-              #   }
-              # ),
-              ### PT TOOLS
-              {
-                # PT (11), Commissioner (4)
-                if(any(c(3, 4, 11) %in% authOutput()$usergroup)){
-                  menuItem("PT Tools",
-                    menuSubItem("Submit Graded PT",tabName = "submitPT")
-                  )
-                }
-              },
-              
-              ### FILEWORKER TOOLS
-              {
-                # Fileworker (14), Commissioner (4)
-                if(any(c(4, 3, 14) %in% authOutput()$usergroup)){
-                  menuItem(
-                    "File Work Tools",
-                    menuSubItem("Export Builds",tabName = "exportBuild"),
-                    menuSubItem("Upload Game Stats",tabName = "uploadGame"),
-                    menuSubItem("Upload Academy Stats",tabName = "academyUpload"),
-                    menuSubItem("Edit Schedule",tabName = "editSchedule")
-                  )
-                }
-              },
-              
-              ### MANAGER TOOLS
-              {
-                # Manager (8)
-                if(any(c(3, 4, 8) %in% authOutput()$usergroup)){
-                  menuItem(
-                    "Manager Tools",
-                    menuSubItem("Your Team",tabName = "teamView")
-                  )
-                }
-              },
-              
-              ### BOD TOOLS
-              {
-                # BoD (3), Commissioner (4) or Intern (15)
-                if(any(c(3, 4, 15) %in% authOutput()$usergroup)){
-                  menuItem(
-                    "BoD Tools",
-                    menuSubItem("Player Approvals",tabName = "playerapprove"),
-                    menuSubItem("Edit Player",tabName = "playerEdit"),
-                    menuSubItem("Assign Managers",tabName = "assignManager"),
-                    menuSubItem("Organizational Overview",tabName = "bodoverview"),
-                    menuSubItem("Edit Schedule",tabName = "editSchedule")
-                  )
-                }
-              }
-            )
-          }
-        },
-        hr(),
-        {
-          if(!any(c(0,5) %in% authOutput()$usergroup)){
-            menuItem("Your User",href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = ""))
-          } else {
-            menuItem("Register a user",href = paste("https://forum.simulationsoccer.com/member.php?action=register"))
-          }
-        },
-        menuItem("SSL Forum",icon = icon("external-link-alt"),href = "https://forum.simulationsoccer.com/"),
-        div(class = "stickyFooter",
-            tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
+              )
+            }
+          },
+          hr(),
+          {
+            if(!any(c(0,5) %in% authOutput()$usergroup)){
+              menuItem("Your User",href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = ""))
+            } else {
+              menuItem("Register a user",href = paste("https://forum.simulationsoccer.com/member.php?action=register"))
+            }
+          },
+          menuItem("SSL Forum",icon = icon("external-link-alt"),href = "https://forum.simulationsoccer.com/"),
+          div(class = "stickyFooter",
+              tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
+        )
       )
     } else {
       #### INDEX SIDEBAR MENU ####
       sidebarMenu(
         id = "tabs",
+        tags$div(
+          class = "navbarHead",
+          tags$p(actionButton(inputId = "gotoportal",
+                              label = "Portal")),
+          tags$p(actionButton(inputId = "gotoindex",
+                              label = "Index"))
+        ),
         menuItem("Welcome",tabName = "welcome",selected = TRUE),
         menuItem("Academy Index",tabName = "academyIndex"),
         menuItem("League Index",tabName = "leagueindex"),
@@ -644,7 +653,7 @@ server <- function(input, output, session) {
       create = FALSE, player = FALSE, index = FALSE, academyIndex = FALSE, uploadGame = FALSE,
       bankOverview = FALSE, welcome = FALSE, records = FALSE, playerPages = FALSE, contractProcess = FALSE,
       tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
-      leagueStandings = FALSE, leagueSchedule = FALSE, managerteam = FALSE, assignManager = FALSE,
+      leagueStandings = FALSE, leagueSchedule = FALSE, managerTeam = FALSE, assignManager = FALSE,
       bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE,
       nationTracker = FALSE
     )
@@ -737,10 +746,10 @@ server <- function(input, output, session) {
       uploadGameServer("uploadGame")
       loadedPage$uploadGame <- TRUE
     
-    } else if(!loadedPage$managerteam & input$tabs == "managerteam"){
+    } else if(!loadedPage$managerTeam & input$tabs == "managerTeam"){
       req(authOutput())
-      managerTeamServer("managerteam", userinfo = authOutput())
-      loadedPage$managerteam <- TRUE
+      managerTeamServer("managerTeam", userinfo = authOutput())
+      loadedPage$managerTeam <- TRUE
       
     } else if(!loadedPage$assignManager & input$tabs == "assignManager"){
       req(authOutput())
