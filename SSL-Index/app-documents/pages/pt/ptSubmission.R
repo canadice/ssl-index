@@ -72,43 +72,15 @@ submitPTServer <- function(id, userinfo) {
           if(all(c("username", "tpe") %in% (colnames(file) %>% str_to_lower()))){
             colnames(file) <- colnames(file) %>% str_to_lower()
             
+            players <- readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))
+            
             pids <- 
-              promise_map(
-              .x = file$username,
-              .f = function(x){
-                res <- getPlayerNameFromUsername(x)
-                
-                res %>% 
-                  then(
-                    onFulfilled = function(name){
-                      if(name %>% nrow() == 0){
-                        tibble(
-                          pid = -99
-                        )
-                      } else {
-                        name
-                      }
-                    }
-                  )
-              }
-            ) %>% 
-              then(
-                onFulfilled = function(names){
-                  names %>%
-                    do.call(args = ., what = plyr::rbind.fill)
-                }
+              file %>% 
+              left_join(players %>% select(username, uid, pid, name), by = "username") %>% 
+              mutate(
+                pid = if_else(pid %>% is.na(), -99, pid)
               )
               
-            pids %>%
-              then(
-                onFulfilled = function(data){
-                  file %>%
-                    mutate(
-                      pid = data$pid %>% unlist(),
-                      player = data$name %>% unlist()
-                    )
-                }
-              )
           } else {
             showToast("error", "The file does not contain the headers 'username' and/or 'tpe'.")
             
@@ -133,21 +105,16 @@ submitPTServer <- function(id, userinfo) {
           }
           
           taskSource() %>% 
-            then(
-              onFulfilled = function(data){
-                data %>% 
-                  mutate(
-                    source = input$taskName
-                  ) %>% 
-                  rename_with(str_to_upper) %>% 
-                  reactable(
-                    pagination = FALSE,
-                    rowStyle = function(index){
-                      if(.[index, "PID"] < 0){
-                        list(background = "#FFCCCB", color = "black")
-                      }
-                    }
-                  )
+            mutate(
+              source = input$taskName
+            ) %>% 
+            rename_with(str_to_upper) %>% 
+            reactable(
+              pagination = FALSE,
+              rowStyle = function(index){
+                if(.[index, "PID"] < 0){
+                  list(background = "#FFCCCB", color = "black")
+                }
               }
             )
         }
@@ -160,16 +127,11 @@ submitPTServer <- function(id, userinfo) {
         },
         content = function(file) {
           taskSource() %>% 
-            then(
-              onFulfilled = function(data){
-                data %>% 
-                  filter(
-                    pid == -99
-                  ) %>% 
-                  select(!pid) %>% 
-                  write.csv(file, row.names = FALSE)
-              }
-            )
+            filter(
+              pid == -99
+            ) %>% 
+            select(!pid) %>% 
+            write.csv(file, row.names = FALSE)
         })
       
       output$downloadTemplate <- downloadHandler(
@@ -184,6 +146,7 @@ submitPTServer <- function(id, userinfo) {
       #### OBSERVERS ####
       observe({
         taskSource() %>% 
+          future_promise() %>% 
           then(
             onFulfilled = function(data){
               if(any(data$pid == -99)){
@@ -226,6 +189,7 @@ submitPTServer <- function(id, userinfo) {
       
       observe({
         taskSource() %>% 
+          future_promise() %>% 
           then(
             onFulfilled = function(data){
               removeModal()
