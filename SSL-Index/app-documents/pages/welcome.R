@@ -44,7 +44,18 @@ welcomeUI <- function(id) {
                  withSpinnerMedium() %>% 
                  div(class = "plotlyBorder"))
       ) %>% 
-      column(width = 12)
+      column(width = 8),
+
+    box(title = "Current Standings", width = NULL,
+        h5("Major League"),
+        reactableOutput(ns("standings_1")) %>% 
+          withSpinnerSmall(),
+        h5("Minor League"),
+        reactableOutput(ns("standings_2")) %>% 
+          withSpinnerSmall()
+        ) %>% 
+      column(width = 4)
+
   )
 }
 
@@ -69,30 +80,28 @@ welcomeServer <- function(id, usergroup) {
       lapply(1:2,
              FUN = function(division){
                output[[paste0("standings_", division)]] <- renderReactable({
-                 standings <- getStandings(division, season = currentSeason$season) 
-                 
-                 if(!(standings %>% is_empty())){
-                   standings %>% 
-                     select(
-                       Team, 
-                       Wins:Losses,
-                       Points
-                     ) %>% 
-                     reactable(
-                       defaultColDef = colDef(minWidth = 50),
-                       columns = 
-                         list(
-                           Team = colDef(
-                             # width = 25,
-                             cell = function(value){
-                               image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)  
-                               
-                               list <- 
-                                 tagList(
-                                   div(style = "display: inline-block; width: 25px;", image)
-                                 )
-                             }
-                           )
+                 getStandings(division, season = currentSeason$season) %>% 
+                   select(
+                     Team, 
+                     Wins:Losses,
+                     Points
+                   ) %>% 
+                   reactable(
+                     defaultColDef = colDef(minWidth = 40),
+                     columns = 
+                       list(
+                         Team = colDef(
+                            minWidth = 100,
+                            cell = function(value){
+                              image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)
+                              list <-
+                                tagList(
+                                  flexRow(style = "align-items: center; gap: 4px;", tagList(
+                                    image,
+                                    span(class = "truncated-text", value)
+                                  ))
+                                )
+                            }
                          )
                      )
                  }
