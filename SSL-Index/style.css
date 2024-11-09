@@ -564,3 +564,19 @@ h1, h2, h3, h4, h5 {
 .highcharts-background{
   fill: #efefef;
 }
+
+.flex-col-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row-wrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+.truncated-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
