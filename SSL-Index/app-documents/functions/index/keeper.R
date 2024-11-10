@@ -9,6 +9,7 @@ getKeeperCareer <- function(league){
 getKeeperMatchStats <- function(name){
   future_promise({
     readAPI(url = "https://api.simulationsoccer.com/index/keeperGameByGame", query = list(name = name)) %>%
-    select(1:8)
+      select(1:8) %>% 
+      slice_head(n = 5)
   })
 }

@@ -9,6 +9,7 @@ getOutfieldCareer <- function(league){
 getOutfieldMatchStats <- function(name){
   future_promise({
     readAPI(url = "https://api.simulationsoccer.com/index/outfieldGameByGame", query = list(name = name)) %>%
-    select(1:10)
+      select(1:10) %>% 
+      slice_head(n = 5)
   })
 }
