@@ -59,7 +59,7 @@ function(name){
 
 #* Get bank transactions from player using pid or all of a specific status
 #* @get /getBankTransactions
-#* @serializer json
+#* @serializer json list(digits = 5)
 #* @param pid The player ID, leave blank to get all players
 #* @param status The status of the transaction where 0 is pending approval and 1 is approved
 #* 
@@ -79,8 +79,5 @@ function(pid = -1, status = 1){
       LEFT JOIN playerdata pd ON bt.pid = pd.pid",
           if_else(pid < 0, paste("WHERE bt.status = ", status), paste("WHERE bt.pid = ", pid, " AND bt.status =  ", status)),
           "ORDER BY Time DESC;")
-  ) %>% 
-    mutate(
-      Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
-    )
+  ) 
 }
