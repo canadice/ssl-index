@@ -278,7 +278,13 @@ playerPagesServer <- function(id) {
                   mutate(WeekStart = floor_date(Time, "week", week_start = 1)) %>% 
                   group_by(WeekStart) %>% 
                   summarize(total = sum(`TPE Change`, na.rm = TRUE)) %>% 
-                  complete(WeekStart = seq(min(WeekStart), max(WeekStart), by = "week"), 
+                  complete(WeekStart = 
+                             seq(
+                               min(WeekStart), 
+                               floor_date(today(), "week", week_start = 1) %>% 
+                                 as_datetime(tz = "US/Pacific"), 
+                               by = "week"
+                             ), 
                            fill = list(total = 0)) %>% 
                   ungroup() %>% 
                   mutate(cumulative = cumsum(total), week = 1:n()) %>% 
