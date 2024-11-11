@@ -60,7 +60,7 @@ bankProcessServer <- function(id, userinfo) {
             onFulfilled = function(data){
               data %>% 
                 mutate(
-                  Time = as_datetime(Time)
+                  Time = as_datetime(Time, tz = "US/Pacific")
                 ) %>% 
                 reactable(
                   selection = "multiple",
