@@ -68,6 +68,7 @@ function(pid = -1, status = 1){
     paste("SELECT 
           bt.time AS Time,
           pd.name AS Player,
+          pd.pid AS pid,
           mbb.username AS Username,
           bt.source AS Source,
           bt.transaction AS Transaction

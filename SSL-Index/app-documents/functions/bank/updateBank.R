@@ -77,9 +77,6 @@ addBankTransaction <- function(uid, pid, source, transaction, status = 1){
 }
 
 approveTransaction <- function(data, uid){
-  print(data$Time)
-  
-  
   for(i in 1:nrow(data)){
     portalQuery(
       paste(

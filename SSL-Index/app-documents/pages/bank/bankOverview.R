@@ -93,10 +93,12 @@ bankOverviewServer <- function(id, uid, parent, updated) {
           player() %>% 
             then(
               onFulfilled = function(value){
-                readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
-                        query = list(pid = value$pid)
-                ) %>% 
-                  future_promise()
+                future_promise({
+                  readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
+                          query = list(pid = value$pid)
+                  ) %>%
+                    select(!pid)
+                })
                 # getBankTransactions(value$pid)
               }
             )
