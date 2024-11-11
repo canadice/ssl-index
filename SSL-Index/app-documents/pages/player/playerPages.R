@@ -247,7 +247,7 @@ playerPagesServer <- function(id) {
               if(nrow(data) < 2){
                 plot_ly() %>%
                   add_annotations(
-                    text = "The player has had no TPE progression<br> in the Portal",
+                    text = "The player has had no TPE<br>progression in the Portal",
                     x = 0.5, y = 0.5,
                     xref = "paper", yref = "paper",
                     showarrow = FALSE,
@@ -275,9 +275,11 @@ playerPagesServer <- function(id) {
               } else {
                 visData <- 
                   data %>% 
-                  mutate(week = week(Time), year = year(Time)) %>% 
-                  group_by(year, week) %>% 
+                  mutate(WeekStart = floor_date(Time, "week", week_start = 1)) %>% 
+                  group_by(WeekStart) %>% 
                   summarize(total = sum(`TPE Change`, na.rm = TRUE)) %>% 
+                  complete(WeekStart = seq(min(WeekStart), max(WeekStart), by = "week"), 
+                           fill = list(total = 0)) %>% 
                   ungroup() %>% 
                   mutate(cumulative = cumsum(total), week = 1:n()) %>% 
                   suppressMessages()
@@ -338,19 +340,23 @@ playerPagesServer <- function(id) {
         
         data <- playerData()
         
-        if(data$pos_gk == 20){
-          matches <- getKeeperMatchStats(data$name)
-        } else {
-          matches <- getOutfieldMatchStats(data$name)
+        if(data$team != "Academy"){
+          if(data$pos_gk == 20){
+            matches <- getKeeperMatchStats(data$name)
+          } else {
+            matches <- getOutfieldMatchStats(data$name)
+          }
+          
+          matches %>% 
+            then(
+              onFulfilled = function(stats){
+                if(nrow(stats) > 0){
+                  stats %>% 
+                    leaderReactable()  
+                }
+              }
+            )
         }
-        
-        matches %>% 
-          then(
-            onFulfilled = function(stats){
-              stats %>% 
-                leaderReactable()
-            }
-          )
       })
       
       output$historyTPE <- renderReactable({
