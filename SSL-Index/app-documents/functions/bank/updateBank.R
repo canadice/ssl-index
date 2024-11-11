@@ -82,7 +82,7 @@ approveTransaction <- function(data, uid){
       paste(
         "UPDATE banktransactions 
         SET status = 1, approvedBy = ", uid, " 
-        WHERE status = 0 AND time = ", data[i, "Time"], " AND pid = ", data[i, "pid"], " AND source = '", data[i,"Source"], "';",
+        WHERE status = 0 AND time = ", data[i, "Time"] %>% with_tz("US/Pacific") %>% as.numeric(), " AND pid = ", data[i, "pid"], " AND source = '", data[i,"Source"], "';",
         sep = ""
       )
     )
@@ -95,7 +95,7 @@ rejectTransaction <- function(data, uid){
       paste(
         "UPDATE banktransactions 
         SET status = -1, approvedBy = ", uid, " 
-        WHERE status = 0 AND time = ", data[i, "Time"], " AND pid = ", data[i, "pid"], " AND source = '", data[i,"Source"], "';",
+        WHERE status = 0 AND time = ", data[i, "Time"] %>% with_tz("US/Pacific") %>% as.numeric(), " AND pid = ", data[i, "pid"], " AND source = '", data[i,"Source"], "';",
         sep = ""
       )
     )
