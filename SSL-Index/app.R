@@ -306,7 +306,7 @@ ui <-
                           label = "Continue as guest"))
       )
     ),
-    fab_position = "bottom-left"
+    fab_position = "top-right"
   )
   
 server <- function(input, output, session) {

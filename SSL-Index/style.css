@@ -490,7 +490,7 @@ h1, h2, h3, h4, h5 {
   position:fixed;
   bottom:0;
   right:90%;
-  left:60px;
+  left:0;
   padding:10px;
   box-sizing:border-box;
 }
