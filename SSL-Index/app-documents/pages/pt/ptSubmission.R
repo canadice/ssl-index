@@ -72,7 +72,8 @@ submitPTServer <- function(id, userinfo) {
           if(all(c("username", "tpe") %in% (colnames(file) %>% str_to_lower()))){
             colnames(file) <- colnames(file) %>% str_to_lower()
             
-            players <- readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))
+            players <- readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+              filter(playerStatus == "Active")
             
             pids <- 
               file %>% 
