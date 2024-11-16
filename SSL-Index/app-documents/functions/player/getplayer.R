@@ -63,7 +63,7 @@ hasActivePlayer <- function(userID){
 
 getPlayerNameFromUsername <- function(userName){
   readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
-    filter(username == userName) %>% 
+    filter(username == userName, status_p == 1) %>% 
     select(pid, name) %>% 
     future_promise()
 }
@@ -72,7 +72,7 @@ getPlayerName <- function(userID = NULL, playerID = NULL){
   future_promise({
     if(playerID %>% is.null()){
       readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
-        filter(uid == userID) %>% 
+        filter(uid == userID, status_p == 1) %>% 
         select(pid, name, class) %>% 
         arrange(pid %>% desc()) %>% 
         slice_head()
