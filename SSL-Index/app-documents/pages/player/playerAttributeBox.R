@@ -84,9 +84,9 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
     function(input, output, session) {
       playerData <- 
         reactive({
-          
-          getPlayerDataAsync(pid = pid)
-          
+          future_promise({
+            readAPI("https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid))   
+          })
         })
       
       output$tpeRemaining <- renderText({
