@@ -56,7 +56,7 @@
 hasActivePlayer <- function(userID){
   res <- 
     readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
-    filter(uid == userID)
+    filter(uid == userID, status_p == 1)
   
   nrow(res) > 0
 }
