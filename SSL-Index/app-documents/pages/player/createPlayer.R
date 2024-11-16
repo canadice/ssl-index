@@ -336,7 +336,7 @@ createPlayerServer <- function(id, userinfo, parent) {
                 data <- 
                   data %>% 
                   filter(
-                    status == 1
+                    status == "Active"
                   )  
               }
               
