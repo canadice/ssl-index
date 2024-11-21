@@ -840,22 +840,24 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 )
               )
               
-              data %>% 
-                select(acceleration:throwing) %>% 
-                select(!c(`natural fitness`, stamina)) %>% 
-                colnames() %>% 
-                map(
-                  .x = .,
-                  .f = function(x){
-                    updateNumericInput(
-                      session = session,
-                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                      value = data[, x],
-                      min = 5,
-                      max = 20
-                    )
-                  }
-                )
+              delay(500,{
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!c(`natural fitness`, stamina)) %>% 
+                  colnames() %>% 
+                  map(
+                    .x = .,
+                    .f = function(x){
+                      updateNumericInput(
+                        session = session,
+                        inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                        value = data[, x],
+                        min = 5,
+                        max = 20
+                      )
+                    }
+                  )
+              })
               
               data %>% 
                 select(acceleration:throwing) %>% 
@@ -909,22 +911,24 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 )
               )
               
-              data %>% 
-                select(acceleration:throwing) %>% 
-                select(!c(`natural fitness`, stamina)) %>% 
-                colnames() %>% 
-                map(
-                  .x = .,
-                  .f = function(x){
-                    updateNumericInput(
-                      session = session,
-                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
-                      value = 5,
-                      min = 5,
-                      max = 20
-                    )
-                  }
-                )
+              delay(500,{
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!c(`natural fitness`, stamina)) %>% 
+                  colnames() %>% 
+                  map(
+                    .x = .,
+                    .f = function(x){
+                      updateNumericInput(
+                        session = session,
+                        inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                        value = 5,
+                        min = 5,
+                        max = 20
+                      )
+                    }
+                  )
+              })
               
               data %>% 
                 select(acceleration:throwing) %>% 
