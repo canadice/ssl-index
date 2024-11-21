@@ -98,7 +98,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
           tpeBanked() %>% 
             then(
               onFulfilled = function(bank){
-                if(bank > 0) {
+                if(bank >= 0) {
                   actionButton(
                     inputId = session$ns("goToUpdate"),
                     "Update"
