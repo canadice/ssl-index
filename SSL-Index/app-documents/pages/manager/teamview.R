@@ -36,8 +36,6 @@ managerTeamServer <- function(id, userinfo) {
       )
       
       playerData <- reactive({
-        print(0)
-        
         getPlayersFromTeam(userinfo$uid) 
       }) %>% 
         bindEvent(
@@ -46,10 +44,6 @@ managerTeamServer <- function(id, userinfo) {
         )
       
       output$teamOverview <- renderReactable({
-        print(userinfo$uid)
-        
-        print(rv$bank)
-        
          playerData() %>% 
           then(
             onFulfilled = function(value){
