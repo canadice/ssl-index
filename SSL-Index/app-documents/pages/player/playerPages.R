@@ -275,14 +275,14 @@ playerPagesServer <- function(id) {
               } else {
                 visData <- 
                   data %>% 
-                  mutate(WeekStart = floor_date(Time, "week", week_start = 1)) %>% 
+                  mutate(WeekStart = floor_date(Time %>% as_date(), "week", week_start = 1)) %>% 
                   group_by(WeekStart) %>% 
                   summarize(total = sum(`TPE Change`, na.rm = TRUE)) %>% 
                   complete(WeekStart = 
                              seq(
                                min(WeekStart), 
-                               floor_date(today(), "week", week_start = 1) %>% 
-                                 as_datetime(tz = "US/Pacific"), 
+                               floor_date(today() %>% as_date(tz = "US/Pacific"), 
+                                          "week", week_start = 1), 
                                by = "week"
                              ), 
                            fill = list(total = 0)) %>% 
