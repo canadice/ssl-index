@@ -53,7 +53,7 @@ playerUpdateBoxUI <- function(id) {
           title = "Player Traits and Positions",
           solidHeader = TRUE,
           collapsible = TRUE,
-          collapsed = TRUE,
+          collapsed = FALSE,
           status = "info",
           width = NULL,
           fluidRow(
@@ -719,8 +719,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                       ) %>% 
                       add_row(
                         attribute = "traits",
-                        old = data$traits,
-                        new = paste0(input$traits, collapse = traitSep)
+                        old = data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"),
+                        new = paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'")
                       )
                     
                     # Add pos_ variables for each position
@@ -772,8 +772,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                       ) %>% 
                       add_row(
                         attribute = "traits",
-                        old = data$traits,
-                        new = "NO TRAITS"
+                        old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                        new = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                       )
                     
                     # Add pos_ variables for each position
@@ -1057,8 +1057,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     ) %>% 
                     add_row(
                       attribute = "traits",
-                      old = paste("'", data$traits, "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = traitSep), "'", sep = "")
+                      old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
@@ -1099,8 +1099,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     ) %>% 
                     add_row(
                       attribute = "traits",
-                      old = paste("'", data$traits, "'", sep = ""),
-                      new = "'NO TRAITS'"
+                      old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
@@ -1136,8 +1136,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     ) %>% 
                     add_row(
                       attribute = "traits",
-                      old = paste("'", data$traits, "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = traitSep), "'", sep = "")
+                      old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
@@ -1173,8 +1173,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     ) %>%
                     add_row(
                       attribute = "traits",
-                      old = paste("'", data$traits, "'", sep = ""),
-                      new = "'NO TRAITS'"
+                      old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
