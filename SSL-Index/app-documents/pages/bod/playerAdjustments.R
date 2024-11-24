@@ -409,7 +409,7 @@ playerEditServer <- function(id, uid) {
               old <- 
                 data %>% 
                 select(team = organization, affiliate, position, `left foot`, `right foot`, traits, pos_st:pos_gk, render) %>% 
-                mutate(across(where(is.character), ~paste0("'", .x, "'"))) %>% 
+                mutate(across(where(is.character), ~paste0("'", .x, "'") %>% str_replace_all(pattern = "'", replacement = "\\\\'"))) %>% 
                 pivot_longer(
                   everything(),
                   values_transform = as.character
