@@ -356,7 +356,7 @@ playerPagesServer <- function(id) {
           matches %>% 
             then(
               onFulfilled = function(stats){
-                if(nrow(stats) > 0){
+                if(!(stats %>% is.null())){
                   stats %>% 
                     leaderReactable()  
                 }
