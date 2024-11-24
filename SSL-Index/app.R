@@ -383,7 +383,8 @@ server <- function(input, output, session) {
       tabItem("draftClass",draftClassUI(id = "draftClass")),
       tabItem("organizationPages",organizationPagesUI(id = "organizationPages")),
       tabItem("leagueSchedule",leagueScheduleUI(id = "leagueSchedule")),
-      tabItem("nationTracker",nationTrackerUI(id = "nationTracker")
+      tabItem("nationTracker",nationTrackerUI(id = "nationTracker")),
+      tabItem("positionTracker",positionTrackerUI(id = "positionTracker")
       # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
       # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
       # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
@@ -463,10 +464,13 @@ server <- function(input, output, session) {
                            }
                          }
                 ),
-                
-                menuItem("Player Pages",tabName = "playerPages"),
-                menuItem("Organization Pages",tabName = "organizationPages"),
-                menuItem("Draft Class Tracker",tabName = "draftClass"),
+                menuItem("Players and Organizations",
+                         menuSubItem("Player Pages",tabName = "playerPages"),
+                         menuSubItem("Organization Pages",tabName = "organizationPages")),
+                menuItem("Trackers",
+                         menuSubItem("Draft Class Tracker",tabName = "draftClass"),
+                         menuSubItem("Position Tracker", tabName = "positionTracker"),
+                         menuSubItem("WSFC Nation Tracker", tabName = "nationTracker")),
                 if(!any(c(2) %in% authOutput()$usergroup)){hr()},
                 # menuItem(
                 #   "SSL Budget",
@@ -572,11 +576,6 @@ server <- function(input, output, session) {
         menuItem("Standings", tabName = "leagueStandings"),
         menuItem("Schedule", tabName = "leagueSchedule"),
         menuItem("Career Records",tabName = "careerRecords"),
-        hr(),
-        menuItem("WSFC",
-                 menuSubItem("Nation Tracker", tabName = "nationTracker")
-         ),
-        hr(),
         {
           if(!any(0 %in% authOutput()$usergroup)){
             menuItem("Your User",href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = ""))
@@ -655,7 +654,7 @@ server <- function(input, output, session) {
       tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
       leagueStandings = FALSE, leagueSchedule = FALSE, managerTeam = FALSE, assignManager = FALSE,
       bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE,
-      nationTracker = FALSE
+      nationTracker = FALSE, positionTracker = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -775,6 +774,10 @@ server <- function(input, output, session) {
     } else if(!loadedPage$nationTracker & input$tabs == "nationTracker"){
       nationTrackerServer("nationTracker")
       loadedPage$nationTracker <- TRUE
+    
+    } else if(!loadedPage$positionTracker & input$tabs == "positionTracker"){
+      positionTrackerServer("positionTracker")
+      loadedPage$positionTracker <- TRUE
       
     } else if(!loadedPage$bankOverview & input$tabs == "bankOverview"){
       req(authOutput())
