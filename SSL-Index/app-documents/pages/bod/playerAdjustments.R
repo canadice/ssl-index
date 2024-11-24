@@ -390,7 +390,7 @@ playerEditServer <- function(id, uid) {
                   position = paste0("'", input$position, "'"),
                   `left foot` = input$left,
                   `right foot` = input$right,
-                  traits = paste0("'", paste0(input$traits, collapse = traitSep), "'"),
+                  traits = paste0("'", paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'"),
                   render = paste0("'", input$render, "'")
                 ) 
               
