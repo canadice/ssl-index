@@ -765,9 +765,8 @@ server <- function(input, output, session) {
       exportBuildServer("exportBuild")
       loadedPage$exportBuild <- TRUE
     
-    } else if(!loadedPage$organizationPages & input$tabs == "organizationPages"){
+    } else if(input$tabs == "organizationPages"){
       organizationPagesServer("organizationPages")
-      loadedPage$organizationPages <- TRUE
       
     } else if(!loadedPage$draftClass & input$tabs == "draftClass"){
       draftClassServer("draftClass")
