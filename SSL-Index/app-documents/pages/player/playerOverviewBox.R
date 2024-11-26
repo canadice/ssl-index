@@ -46,7 +46,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       #### BUTTONS ####
       
       output$buttonRegression <- renderUI({
-        if(tpeBanked() %>% class() == "numeric"){
+        if(tpeBanked() %>% class() %in% c("numeric", "integer")){
           if(tpeBanked() < 0) {
             actionButton(
               inputId = session$ns("goToRegression"),
@@ -81,7 +81,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       })
       
       output$buttonUpdate <- renderUI({
-        if(tpeBanked() %>% class() == "numeric"){
+        if(tpeBanked() %>% class() %in% c("numeric", "integer")){
           if(tpeBanked() > 0) {
             actionButton(
               inputId = session$ns("goToUpdate"),

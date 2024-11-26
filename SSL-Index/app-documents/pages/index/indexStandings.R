@@ -116,48 +116,53 @@ leagueStandingsServer <- function(id) {
         standings() %>% 
           then(
             onFulfilled = function(data){
-              data %>% 
-                reactable(
-                  pagination = FALSE,
-                  defaultColDef = colDef(
-                    minWidth = 60,
-                    align = "center",
-                    style = function(value, index){
-                      list(
-                        background = 
-                          ifelse(index > 6 & relegation & league == 1, 
-                                 red, 
-                                 ifelse(index < 3 & relegation & league == 2, 
-                                        green, 
-                                        NA)
-                                 ),
-                        # color = 
-                        #   ifelse(index > 6, "white", "black"),
-                        borderTop = 
-                          ifelse((index == 7 & relegation & league == 1)|(index == 3 & relegation & league == 2), 
-                                 "solid", 
-                                 "none")
-                      )
-                    }
-                  ),
-                  columns = list(
-                    Team = colDef(name = "", width = 200, align = "left", cell = function(value){
-                      image <- img(src = sprintf("%s.png", value), style = "height: 30px;", alt = value, title = value)  
-                      
-                      list <- 
-                        tagList(
-                          div(
-                            class = "tableClubName",
-                            div(style = "display: inline-block; width: 30px;", image),
-                            span(value)  
-                          )
+              if(data %>% is_empty()){
+                NULL 
+              } else {
+                data %>% 
+                  reactable(
+                    pagination = FALSE,
+                    defaultColDef = colDef(
+                      minWidth = 60,
+                      align = "center",
+                      style = function(value, index){
+                        list(
+                          background = 
+                            ifelse(index > 6 & relegation & league == 1, 
+                                   red, 
+                                   ifelse(index < 3 & relegation & league == 2, 
+                                          green, 
+                                          NA)
+                            ),
+                          # color = 
+                          #   ifelse(index > 6, "white", "black"),
+                          borderTop = 
+                            ifelse((index == 7 & relegation & league == 1)|(index == 3 & relegation & league == 2), 
+                                   "solid", 
+                                   "none")
                         )
-                    }),
-                    MatchesPlayed = colDef(header = tippy("GP", "Games played", placement = "top", theme = "material")),
-                    GoalsFor = colDef(header = tippy("GF", "Goals scored", placement = "top", theme = "material")),
-                    GoalsAgainst = colDef(header = tippy("GA", "Goals conceded", placement = "top", theme = "material"))
+                      }
+                    ),
+                    columns = list(
+                      Team = colDef(name = "", width = 200, align = "left", cell = function(value){
+                        image <- img(src = sprintf("%s.png", value), style = "height: 30px;", alt = value, title = value)  
+                        
+                        list <- 
+                          tagList(
+                            div(
+                              class = "tableClubName",
+                              div(style = "display: inline-block; width: 30px;", image),
+                              span(value)  
+                            )
+                          )
+                      }),
+                      MatchesPlayed = colDef(header = tippy("GP", "Games played", placement = "top", theme = "material")),
+                      GoalsFor = colDef(header = tippy("GF", "Goals scored", placement = "top", theme = "material")),
+                      GoalsAgainst = colDef(header = tippy("GA", "Goals conceded", placement = "top", theme = "material"))
+                    )
                   )
-              )
+              }
+              
             }
           )
       })
