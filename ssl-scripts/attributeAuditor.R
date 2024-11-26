@@ -14,35 +14,9 @@ require(plyr)
 require(dplyr)
 require(tidyr)
 require(arsenal)
-require(DBI)
-require(dbplyr)
-require(RSQLite)
+require(sslrtools)
 
-# source("D:/GitHubs/ssl-index/SSL-Index/app-documents/dataLoader.R")
-
-# con <- 
-#   dbConnect(
-#     SQLite(), 
-#     "database/SSL_Database.db"
-#   )
-
-## Downloads a local file for the database
-dbFile <- tempfile(fileext = ".db")
-
-dbUrl <- ("https://github.com/canadice/ssl-index/blob/main/database/SSL_Database.db?raw=true")
-
-download.file(dbUrl, destfile = dbFile, mode = "wb")
-
-con <- 
-  dbConnect(
-    SQLite(), 
-    dbFile
-  )
-
-playerData <- 
-  dbGetQuery(con, "SELECT * from Daily_Scrape")
-
-dbDisconnect(con)
+playerData <- readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))
 
 auditFunction <- function(path) {
   FMAttributes <- 
@@ -60,8 +34,7 @@ auditFunction <- function(path) {
         .[,1]
     ) %>% 
     select(
-      -"Inf",
-      -"Rec"
+      -"Inf"
     ) %>% 
     mutate(
       Name = 
@@ -72,85 +45,87 @@ auditFunction <- function(path) {
           TRUE ~ Name)
     ) %>% 
     relocate(
-      c(Pun, Ref, TRO),
-      .after = `1v1`
-    )
+      c(Pun, TRO),
+      .after = Tec
+    ) %>% 
+    select(Name, Acc:Wor)
   
   colnames(FMAttributes) <- 
     c(
-      "Name",
+      "name",
       # Attributes
       playerData %>% 
         select(
-          Acceleration:Throwing
+          acceleration:throwing
         ) %>% 
-        colnames(),
+        colnames() %>% 
+        sort(),
       # Hidden traits
-      "Versatility", "Temperament", "Sportmanship", "Important Matches", "Proffessionalism", "Pressure", "Loyalty", "Injury Proneness", 
-      "Dirtiness", "Controversy", "Consistency", "Adaptability", "Ambition" 
+      "versatility", "temperament", "sportmanship", "important matches", "proffessionalism", "pressure", "loyalty", "injury proneness", 
+      "dirtiness", "controversy", "consistency", "adaptability", "ambition" 
     )
   
   audit <- 
     playerData %>% 
     filter(
-      !(Team %in% c("FA", "Retired"))
+      !(team %in% c("Free Agent", "Retired"))
     ) %>% 
     select(
-      Name,
-      Acceleration:Throwing
+      name,
+      acceleration:`work rate`
     ) %>% 
     left_join(
       FMAttributes,
-      by = "Name", 
+      by = "name", 
       suffix = c(".Forum", ".FM")
     ) %>% 
     relocate(
       sort(colnames(.))
     ) %>% 
     relocate(
-      contains("Name"),
-      .before = "Acceleration.FM"
+      contains("name"),
+      .before = "acceleration.FM"
     ) %>% 
     relocate(
       contains("."),
-      .after = "Name"
+      .after = "name"
     )
   
   comparison <- 
     comparedf(
       FMAttributes %>% 
-        arrange(Name) %>% 
+        arrange(name) %>% 
         select(
-          Name,
-          Acceleration:Throwing
+          name,
+          acceleration:`work rate`
         ) %>% 
         dplyr::mutate(
           across(
-            Acceleration:Throwing,
+            acceleration:`work rate`,
             ~ as.numeric(.x))
         ),
       playerData %>% 
         filter(
-          !(Team %in% c("FA", "Retired"))
+          !(team %in% c("Free Agent", "Retired"))
         ) %>% 
-        arrange(Name) %>% 
+        arrange(name) %>% 
         select(
-          Name,
-          Acceleration:Throwing
+          name,
+          acceleration:`work rate`
         )%>% 
         dplyr::mutate(
           across(
-            Acceleration:Throwing,
+            acceleration:`work rate`,
             ~ as.numeric(.x))
         ),
-      by = "Name"
+      by = "name"
     ) 
   
   auditAttributes <- 
     comparison %>% 
     summary() %>% 
     .$diffs.table %>% 
-    arrange(Name) %>% 
+    arrange(name) %>% 
     filter(
       !is.na(values.y)
     )
@@ -174,7 +149,7 @@ auditFunction <- function(path) {
     comparison %>% 
     summary() %>% 
     .$obs.table %>% 
-    arrange(Name) %>% 
+    arrange(name) %>% 
     mutate(
       version = if_else(version == "x", "FM", "Forum")
     )
@@ -187,7 +162,7 @@ auditFunction <- function(path) {
 }
 
 list <- 
-  auditFunction("D:/Football Manager 2022/screenshots/attributes.html")
+  auditFunction("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/attributes.html")
 
 attributes <- list$Attributes
 
