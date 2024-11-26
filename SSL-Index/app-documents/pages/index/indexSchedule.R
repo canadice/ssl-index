@@ -110,6 +110,18 @@ leagueScheduleServer <- function(id) {
           NULL 
         } else {
           schedule() %>% 
+            {
+              if (!"HomeScore" %in% names(.)) mutate(., HomeScore = NA_character_) else .
+            } %>%
+            {
+              if (!"AwayScore" %in% names(.)) mutate(., AwayScore = NA_character_) else .
+            } %>%
+            {
+              if (!"Penalties" %in% names(.)) mutate(., Penalties = NA_character_) else .
+            } %>%
+            {
+              if (!"ExtraTime" %in% names(.)) mutate(., ExtraTime = NA_character_) else .
+            } %>%
             rename(
               Date = IRLDate
             ) %>% 
