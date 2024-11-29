@@ -220,7 +220,7 @@ welcomeServer <- function(id, usergroup) {
             ),
             yaxis = list(
               title = "#ACs",
-              range = c(0, 150),
+              range = c(0, 200),
               tickfont = list(color = "white"),  # Set y-axis tick labels color to white
               titlefont = list(color = "white"),  # Set y-axis title color to white
               dtick = 20,  # Show tickmarks at intervals of 200
