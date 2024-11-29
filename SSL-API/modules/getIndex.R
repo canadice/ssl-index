@@ -393,7 +393,7 @@ function(season, league = "ALL"){
     paste(
       "SELECT IRLDate, MatchType, MatchDay, Home, Away, HomeScore, AwayScore, ExtraTime, Penalties
       FROM schedule
-      WHERE season = ", season, "AND MatchType",  if_else(league == "ALL", '< 10', paste0("=", league)),
+      WHERE season ", if_else(season == "ALL", "> 0", paste0("=", season)), "AND MatchType",  if_else(league == "ALL", '< 10', paste0("=", league)),
       "ORDER BY IRLDate;"
     )
   )
