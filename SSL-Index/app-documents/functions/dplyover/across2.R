@@ -1,7 +1,7 @@
 across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
   
   .data <- tryCatch({
-    dplyr::cur_data()
+    dplyr::pick(everything())
   }, error = function(e) {
     rlang::abort("`across2()` must only be used inside dplyr verbs.")
   })
@@ -66,7 +66,7 @@ across2_setup <- function(xcols, ycols, fns, names, data, names_fn) {
   }
   
   # setup: cols
-  data <- dplyr::cur_data()[1, ]
+  data <- dplyr::pick(everything())[1, ]
   
   # setup error_output
   err_out <- list(data = data,
@@ -226,7 +226,7 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
   comb <- match.arg(.comb, c("all", "unique", "minimal"), several.ok = FALSE)
   
   .data <- tryCatch({
-    dplyr::cur_data()
+    dplyr::pick(everything())
   }, error = function(e) {
     rlang::abort("`across2x()` must only be used inside dplyr verbs.")
   })
@@ -319,7 +319,7 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
 across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, comb) {
   
   # setup: cols
-  data <- dplyr::cur_data()[1, ]
+  data <- dplyr::pick(everything())[1, ]
   xcols <- rlang::quo_set_env(xcols,
                               data_mask_top(rlang::quo_get_env(xcols),
                                             recursive = FALSE,
