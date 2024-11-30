@@ -337,63 +337,86 @@ function(username){
     floor_date("week", week_start = "Monday") %>% 
     as.numeric()
   
-  tasks <- 
+  
+  # Step 1: Query for players in the same organization
+  playersInSameTeam <- mybbQuery(
+    paste0("
+    WITH current_season AS (
+        SELECT MAX(season) AS current_season
+        FROM indexdb.seasoninfo
+    ), 
+    player_info AS (
+        SELECT 
+            pd.team, 
+            CONCAT('S', MAX(CAST(SUBSTRING(pd.class, 2) AS UNSIGNED))) AS class
+        FROM 
+            portaldb.playerdata pd
+        JOIN 
+            mybbdb.mybb_users mbb ON pd.uid = mbb.uid
+        WHERE
+            mbb.username = '", username, "' AND pd.status_p > 0
+        GROUP BY pd.team
+    ), 
+    same_team_players AS (
+        SELECT 
+            pd.pid, 
+            pd.name, 
+            pd.team, 
+            mbb.username 
+        FROM 
+            portaldb.playerdata pd
+        JOIN 
+            mybbdb.mybb_users mbb ON pd.uid = mbb.uid
+        WHERE 
+            pd.team = (SELECT team FROM player_info)
+    )
+    SELECT 
+        sop.username AS user,
+        sop.name AS player_name,
+        sop.team AS team_id
+    FROM 
+        same_team_players sop
+    ORDER BY sop.username;"
+    )
+  )
+  
+  # Step 2: Iterate through each user and query their tasks
+  allTasks <- purrr::map_df(playersInSameTeam$user, function(currentUsername) {
     mybbQuery(
-      paste0(
-        "WITH current_season AS (
+      paste0("
+      WITH current_season AS (
           SELECT MAX(season) AS current_season
           FROM indexdb.seasoninfo
       ), 
-      player_info AS (
-          SELECT 
-              pd.team, 
-              CONCAT('S', MAX(CAST(SUBSTRING(pd.class, 2) AS UNSIGNED))) AS class
+      player_class AS (
+          SELECT CONCAT('S', MAX(CAST(SUBSTRING(pd.class, 2) AS UNSIGNED))) AS class
           FROM 
               portaldb.playerdata pd
           JOIN 
               mybbdb.mybb_users mbb ON pd.uid = mbb.uid
           WHERE
-              mbb.username = '", username, "'
-          GROUP BY pd.team
-      ), 
-      same_org_players AS (
-          SELECT 
-              pd.pid, 
-              pd.name, 
-              pd.team, 
-              mbb.username 
-          FROM 
-              portaldb.playerdata pd
-          JOIN 
-              mybbdb.mybb_users mbb ON pd.uid = mbb.uid
-          WHERE 
-              pd.team = (SELECT team FROM player_info)
+              mbb.username = '", currentUsername, "'
       )
-      
       SELECT 
           p.username AS user, 
           COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count, 
           t.tid, 
           CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link, 
           t.subject, 
-          t.username AS op,
-          sop.pid AS playerID
+          t.username AS op
       FROM 
           mybbdb.mybb_threads t
       JOIN 
           mybbdb.mybb_posts p ON p.tid = t.tid
       JOIN 
-          player_info pi ON 1=1
+          player_class pc ON 1=1
       JOIN 
           current_season cs ON 1=1
-      JOIN 
-          same_org_players sop ON sop.username = p.username
       WHERE 
           (
-              (pi.class <> CONCAT('S', cs.current_season + 1) AND t.fid IN (22, 49, 25, 24, 122))
+              (pc.class <> CONCAT('S', cs.current_season + 1) AND t.fid IN (22, 49, 25, 24, 122))
               OR 
-              -- Check for extended forum IDs for S18 players
-              (pi.class = CONCAT('S', cs.current_season + 1) AND 
+              (pc.class = CONCAT('S', cs.current_season + 1) AND 
               t.fid IN (22, 49, 25, 24, 122, 179, 180, 181, 182, 183) AND
               NOT (t.subject LIKE CONCAT('%S', cs.current_season, ' Minor%') OR t.subject LIKE CONCAT('%S', cs.current_season, ' Major%')) )
           )
@@ -403,34 +426,42 @@ function(username){
           p.username, 
           t.tid, 
           t.subject, 
-          t.username, 
-          sop.pid;"
+          t.username;"
       )
     ) %>% 
-    group_by(user, subject, link) %>% 
-    summarize(posted = dplyr::if_else(count > 0, TRUE, FALSE) %>% 
-                tidyr::replace_na(replace = FALSE)) %>% 
-    ungroup() %>% 
-    add_row(
-      tibble(
-        subject = "Activity Check",
-        link = "https://index.simulationsoccer.com",
-        posted = (portalQuery(
-          paste("SELECT * 
+      group_by(subject, link) %>% 
+      summarize(
+        posted = dplyr::if_else(
+          any(str_to_lower(user) == str_to_lower(currentUsername) & count > 0), 
+          TRUE, 
+          FALSE
+        ) %>% tidyr::replace_na(replace = FALSE)
+      ) %>% 
+      ungroup() %>% 
+      add_row(
+        tibble(
+          subject = "Activity Check",
+          link = "https://index.simulationsoccer.com",
+          posted = (portalQuery(
+            paste("SELECT * 
           FROM tpehistory 
           WHERE pid = (
               SELECT pd.pid
               FROM playerdata AS pd
               JOIN mybbdb.mybb_users AS mbb ON pd.uid = mbb.uid
-              WHERE mbb.username = ", paste0("'", username, "'"), " 
+              WHERE mbb.username = ", paste0("'", currentUsername, "'"), " 
                 AND pd.status_p = 1
           ) 
           AND source LIKE '%Activity Check' 
           AND time > ", weekStart)
-        ) %>% nrow()) > 0
-      )
-    ) %>% 
-    suppressWarnings()
+          ) %>% nrow()) > 0
+        )
+      ) %>% 
+      mutate(
+        user = currentUsername
+      ) %>% 
+      suppressWarnings()
+  })
 }
 
 
