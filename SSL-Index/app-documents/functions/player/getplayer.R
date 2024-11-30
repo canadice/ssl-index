@@ -103,7 +103,7 @@ getPlayerTraits <- function(playerID){
       ) %>%
       unlist() %>%
       {
-        if(all(. == "")|. == "NO TRAITS"){
+        if(all(. == "")|all(. == "NO TRAITS")){
           NULL
         } else {
           .
