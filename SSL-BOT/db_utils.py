@@ -12,7 +12,7 @@ def create_connection():
     conn = None
     try:
         conn = sqlite3.connect("database/discordBotUser.db")
-    except Error as e:
+    except Exception as e:
         print(e)
 
     return conn
@@ -76,4 +76,16 @@ def get_username(discord_id):
     session.close()
     
     return(name)
+
+def get_discord_id(username):
+    session = create_connection()
+    with session:
+        table = pd.read_sql_query("SELECT * from discordUser WHERE username = " + str(username), session)
+        if(table.shape[0] > 0):
+            id = table["discordID"][0]
+        else:
+            id = None
+    session.close()
+    return(id)
+
 

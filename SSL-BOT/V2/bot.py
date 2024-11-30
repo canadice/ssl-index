@@ -18,8 +18,8 @@ bot = discord.Bot()
 @bot.event
 async def on_ready():
     print(f"{bot.user} is ready and online!")
-
-@bot.slash_command(name="store", description="Store your forum username in the bot.")
+    
+@bot.command(name="store", description="Store your forum username in the bot.")
 async def store(ctx: discord.ApplicationContext, *, username: str):
     discord_id = ctx.author.id
     discord_user = ctx.author.name
@@ -52,8 +52,8 @@ async def store(ctx: discord.ApplicationContext, *, username: str):
           
       session.close()
 
-@bot.slash_command(name="whoami", description="Shows who you are to the bot.")
-async def store(ctx: discord.ApplicationContext):
+@bot.command(name="whoami", description="Shows who you are to the bot.")
+async def whoami(ctx: discord.ApplicationContext):
   discord_id = ctx.author.id
   discord_name = ctx.author.name
   session = create_connection()
@@ -76,17 +76,17 @@ async def store(ctx: discord.ApplicationContext):
       
   session.close()
 
-@bot.slash_command(name="reload", description="Reloading some cogs")
+@bot.command(name="reload", description="Reloading some cogs")
 async def reload(ctx: discord.ApplicationContext, extension: str):
   if ctx.author.id != OWNER_ID:
-        await ctx.respond("You do not have permission to use this command.")
-        return
+    await ctx.respond("You do not have permission to use this command.")
+    return
   else:
     bot.unload_extension(f'cogs.{extension}')
     bot.load_extension(f'cogs.{extension}')
     await ctx.respond("Extension is being reloaded.")
 
-@bot.slash_command(name="hello", description="Say hello to the bot")
+@bot.command(name="hello", description="Say hello to the bot")
 async def hello(ctx: discord.ApplicationContext):
     await ctx.respond("Why are you the only command that shows up???")
 
@@ -97,30 +97,18 @@ cogs_list = [
 ]
 
 for cog in cogs_list:
-    bot.load_extension(f'cogs.{cog}')
+    try:
+        bot.load_extension(f'cogs.{cog}')
+        print(f"Loaded cog: {cog}")
+    except Exception as e:
+        print(f"Failed to load cog {cog}: {e}")
+
 
 async def main():
     async with bot:
-        await bot.start(TOKEN)  # Run the bot with the token
+        await bot.start(TOKEN)
 
-try:
-    # Check if there is already a running event loop
-    loop = asyncio.get_running_loop()
-    # Create a task to run the bot in the existing event loop
-    loop.create_task(main())
-    loop.run_forever()
-except RuntimeError:
-    # If no running loop is found, create a new event loop
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        # Run the bot using the new event loop
-        loop.run_until_complete(main())
-    except KeyboardInterrupt:
-        # Gracefully handle the shutdown
-        pass
-    finally:
-        # Close the loop
-        loop.close()
+if __name__ == '__main__':
+    asyncio.run(main())
 
 
