@@ -1,9 +1,9 @@
 SET @uid = 1; -- Variable for user ID
-SET @pid = 2697; -- Variable for player ID
-SET @new_value = 'Zambia'; -- New value for nationality
+SET @pid = 5484; -- Variable for player ID
+SET @new_value = 'Switzerland'; -- New value for nationality
 
 -- Get the current time in the USA/Pacific timezone as a UNIX timestamp
-SET @current_time = UNIX_TIMESTAMP(CONVERT_TZ(NOW(), @@global.time_zone, 'America/Los_Angeles'));
+SET @current_time = UNIX_TIMESTAMP(NOW());
 
 -- Insert into the updatehistory table
 INSERT INTO updatehistory (time, uid, pid, attribute, old, new)
