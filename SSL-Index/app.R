@@ -44,6 +44,9 @@ suppressMessages({
   ## Package for handling date and time
   require(lubridate, quietly = FALSE)
   
+  ## Package for int overflow
+  require(bit64, quietly = FALSE)
+  
   ## Packages for handling strings
   require(stringr, quietly = FALSE)
   require(stringi, quietly = FALSE)

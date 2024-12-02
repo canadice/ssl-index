@@ -65,7 +65,7 @@ exportBuildServer <- function(id) {
           } %>% 
           which() %>% 
           {
-            sum(2^(.-1))
+            sum(as.integer64(2)^(.-1))
           }
         
         paste(
