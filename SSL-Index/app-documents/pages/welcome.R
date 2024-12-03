@@ -80,28 +80,37 @@ welcomeServer <- function(id, usergroup) {
       lapply(1:2,
              FUN = function(division){
                output[[paste0("standings_", division)]] <- renderReactable({
-                 getStandings(division, season = currentSeason$season) %>% 
-                   select(
-                     Team, 
-                     Wins:Losses,
-                     Points
-                   ) %>% 
-                   reactable(
-                     defaultColDef = colDef(minWidth = 40),
-                     columns = 
-                       list(
-                         Team = colDef(
-                            minWidth = 100,
-                            cell = function(value){
-                              image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)
-                              list <-
+                 standings <- getStandings(division, season = currentSeason$season) 
+                 
+                 if(!(standings %>% is_empty())){
+                   standings %>% 
+                     select(
+                       Team, 
+                       Wins:Losses,
+                       Points
+                     ) %>% 
+                     reactable(
+                        defaultColDef = colDef(minWidth = 30),
+                       columns = 
+                         list(
+                           Team = colDef(
+                             minWidth = 100,
+                             cell = function(value){
+                               image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)  
+                               
+                               list <-
                                 tagList(
-                                  flexRow(style = "align-items: center; gap: 4px;", tagList(
+                                  flexRow(style = "align-items: center; gap: 8px;", tagList(
                                     image,
                                     span(class = "truncated-text", value)
                                   ))
                                 )
-                            }
+                             }
+                           ),
+                           Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "material")),
+                           Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "material")),
+                           Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "material")),
+                           Points = colDef(header = tippy("P", "Points", placement = "top", theme = "material"))
                          )
                      )
                  }

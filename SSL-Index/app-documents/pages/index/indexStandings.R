@@ -146,16 +146,19 @@ leagueStandingsServer <- function(id) {
                       
                       list <- 
                         tagList(
-                          div(
-                            class = "tableClubName",
-                            div(style = "display: inline-block; width: 30px;", image),
-                            span(value)  
-                          )
+                          flexRow(style = "align-items: center; gap: 8px;", tagList(
+                            image,
+                            span(class = "truncated-text", value)
+                          ))
                         )
                     }),
                     MatchesPlayed = colDef(header = tippy("GP", "Games played", placement = "top", theme = "material")),
+                    Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "material")),
+                    Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "material")),
+                    Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "material")),
                     GoalsFor = colDef(header = tippy("GF", "Goals scored", placement = "top", theme = "material")),
-                    GoalsAgainst = colDef(header = tippy("GA", "Goals conceded", placement = "top", theme = "material"))
+                    GoalsAgainst = colDef(header = tippy("GA", "Goals conceded", placement = "top", theme = "material")),
+                    Points = colDef(header = tippy("P", "Points", placement = "top", theme = "material"))
                   )
               )
             }
