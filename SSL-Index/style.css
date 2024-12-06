@@ -565,6 +565,12 @@ h1, h2, h3, h4, h5 {
   fill: #efefef;
 }
 
+.centered-flex-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .flex-col-wrapper {
   display: flex;
   flex-direction: column;
@@ -579,4 +585,38 @@ h1, h2, h3, h4, h5 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.homemade-user-fab {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 18px;
+  margin-right: 12px;
+  height: 45px;
+  width: 45px;
+  background: white;
+  border-radius: 99999999px;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.homemade-user-fab:hover .fab-action-buttons {
+  opacity: 1;
+}
+
+.fab-action-buttons {
+  opacity: 0;
+  transition: opacity 200ms;
+  position: absolute;
+  top: 30px;
+  right: 0;
+  padding-top: 20px;
+}
+
+.fab-action-buttons button {
+  width: 120px;
+  color: black;
 }

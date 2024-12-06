@@ -197,10 +197,10 @@ sapply(
 ##################################################################
 
 # Custom tags
-flexCol <<- function(cont, style) {
+flexCol <<- function(cont, style = "") {
   shiny::tag("div", varArgs = list(cont, class = "flex-col-wrapper", style = style))
 }
-flexRow <<- function(cont, style) {
+flexRow <<- function(cont, style = "") {
   shiny::tag("div", varArgs = list(cont, class = "flex-row-wrapper", style = style))
 }
 
@@ -242,7 +242,37 @@ ui <- function(request){
       includeCSS('style.css'),
       useShinyFeedback(), # include shinyFeedback
       useShinyjs(), # include shinyjs
-      uiOutput("body")
+      uiOutput("body"),
+
+      # User menu FAB
+      tags$div(
+        class = "homemade-user-fab",
+        icon("user", class = "fa-solid", style = "color: black; font-size: 28px;"),
+        div(
+          class = "fab-action-buttons",
+          tagList(
+            flexCol(
+              style = "gap: 4px;",
+              tagList(
+                actionButton(
+                  inputId = "player",
+                  label = "Your Player",
+                  icon = icon("futbol"),
+                  class = "centered-flex-content",
+                  style = "justify-content: flex-start; gap: 8px;"
+                ),
+                actionButton(
+                  inputId = "logout",
+                  label = "Logout",
+                  icon = icon("door-open"),
+                  class = "centered-flex-content",
+                  style = "justify-content: flex-start; gap: 8px;"
+                )
+              )
+            )
+          )
+        )
+      )
     )
   )
 }
@@ -306,7 +336,7 @@ ui <-
                           label = "Continue as guest"))
       )
     ),
-    fab_position = "top-right"
+    fab_position = "none"
   )
   
 server <- function(input, output, session) {
@@ -391,14 +421,11 @@ server <- function(input, output, session) {
       tabItem("organizationPages",organizationPagesUI(id = "organizationPages")),
       tabItem("leagueSchedule",leagueScheduleUI(id = "leagueSchedule")),
       tabItem("nationTracker",nationTrackerUI(id = "nationTracker")),
-      tabItem("positionTracker",positionTrackerUI(id = "positionTracker")
+      tabItem("positionTracker",positionTrackerUI(id = "positionTracker"))
       # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
       # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
       # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
-      
       # tabItem("teamindex",teamIndexUI(id = "teamindex")),
-      )
-      
     )
   })
   
