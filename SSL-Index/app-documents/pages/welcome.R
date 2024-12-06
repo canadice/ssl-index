@@ -44,18 +44,7 @@ welcomeUI <- function(id) {
                  withSpinnerMedium() %>% 
                  div(class = "plotlyBorder"))
       ) %>% 
-      column(width = 8),
-
-    box(title = "Current Standings", width = NULL,
-        h5("Major League"),
-        reactableOutput(ns("standings_1")) %>% 
-          withSpinnerSmall(),
-        h5("Minor League"),
-        reactableOutput(ns("standings_2")) %>% 
-          withSpinnerSmall()
-        ) %>% 
-      column(width = 4)
-
+      column(width = 12)
   )
 }
 
@@ -90,7 +79,7 @@ welcomeServer <- function(id, usergroup) {
                        Points
                      ) %>% 
                      reactable(
-                        defaultColDef = colDef(minWidth = 30),
+                       defaultColDef = colDef(minWidth = 30),
                        columns = 
                          list(
                            Team = colDef(
