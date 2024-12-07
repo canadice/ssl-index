@@ -643,3 +643,19 @@ h1, h2, h3, h4, h5 {
   border-color: #070B51;
   color: white;
 }
+
+.career-record-button {
+  width: 300px;
+  min-height: 72px;
+  background: white;
+  text-align: left;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: black;
+  margin-bottom: 8px;
+  border-color: #BD9523;
+
+  @media (max-width: 767px) {
+    width: 100%;
+  }
+}

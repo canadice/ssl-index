@@ -129,16 +129,28 @@ careerRecordsServer <- function(id) {
                   ) %>% 
                   arrange(!!sym(stat) %>% desc()) %>% 
                   slice_head(n = 1)
-                
-                infoBox(
-                  title = 
-                    tags$b(paste(stat %>% str_to_title())),
-                  color = "light-blue",
-                  width = NULL,
-                  icon = tags$i(class = "fas fa-exclamation", style="font-size: 36px; color: white"),
-                  fill = TRUE,
-                  value = tags$p(paste(leader$name, "with", leader[,stat] %>% round(2), stat, sep = " "), style = "font-size: 75%;")
-                ) 
+
+                tags$button(
+                  flexRow(
+                    tagList(
+                      flexCol(
+                        tagList(
+                          tags$b(paste(stat %>% str_to_title()), style = "font-size: 18px;"),
+                          tags$b(leader[,stat] %>% round(2))
+                        )
+                      ),
+                      flexCol(
+                        tagList(
+                          icon("crown", style = "color: #BD9523;"),
+                          tags$span(leader$name, style = "font-size: 16px;")
+                        ),
+                        style = "align-items: center; justify-content: flex-start; gap: 4px;"
+                      )
+                    ),
+                    style = "align-items: center; justify-content: space-between;"
+                  ),
+                  class = "career-record-button"
+                )
               }
             )
         })
@@ -157,15 +169,27 @@ careerRecordsServer <- function(id) {
                   arrange(!!sym(stat) %>% desc()) %>% 
                   slice_head(n = 1)
                 
-                infoBox(
-                  title = 
-                    tags$b(paste(stat %>% str_to_title())),
-                  color = "light-blue",
-                  width = NULL,
-                  icon = tags$i(class = "fas fa-exclamation", style="font-size: 36px; color: white"),
-                  fill = TRUE,
-                  value = tags$p(paste(leader$name, "with", leader[,stat] %>% round(2), stat, sep = " "), style = "font-size: 75%;")
-                ) 
+                tags$button(
+                  flexRow(
+                    tagList(
+                      flexCol(
+                        tagList(
+                          tags$b(paste(stat %>% str_to_title()), style = "font-size: 18px;"),
+                          tags$b(leader[,stat] %>% round(2))
+                        )
+                      ),
+                      flexCol(
+                        tagList(
+                          icon("crown", style = "color: #BD9523;"),
+                          tags$span(leader$name, style = "font-size: 16px;")
+                        ),
+                        style = "align-items: center; justify-content: flex-start; gap: 4px;"
+                      )
+                    ),
+                    style = "align-items: center; justify-content: space-between;"
+                  ),
+                  class = "career-record-button"
+                )
               }
             )
         })
