@@ -245,19 +245,37 @@ ui <- function(request){
       uiOutput("body"),
 
       # User menu FAB
+      # Wasn't able to fully customize the Rshiny FAB, so I created a new one
       tags$div(
         class = "homemade-user-fab",
         icon("user", class = "fa-solid", style = "color: black; font-size: 28px;"),
+        role = "button",
+        # Support showing and hiding user options on mobile
+        ontouchstart = "
+          var buttons = document.querySelector('.fab-action-buttons');
+          var isShowing = getComputedStyle(buttons).opacity === '1';
+          buttons.style.opacity = isShowing ? 0 : 1;
+          buttons.style.visibility = isShowing ? 'hidden' : 'visible';
+        ",
         div(
           class = "fab-action-buttons",
           tagList(
             flexCol(
               style = "gap: 4px;",
               tagList(
+                # User menu items. Can be extended by adding more actionButtons.
+                # Just remember to connect any button's click event to an action server-side.
                 actionButton(
                   inputId = "player",
                   label = "Your Player",
                   icon = icon("futbol"),
+                  class = "centered-flex-content",
+                  style = "justify-content: flex-start; gap: 8px;"
+                ),
+                actionButton(
+                  inputId = "userbank",
+                  label = "Bank/Store",
+                  icon = icon("building-columns"),
                   class = "centered-flex-content",
                   style = "justify-content: flex-start; gap: 8px;"
                 ),
@@ -427,6 +445,31 @@ server <- function(input, output, session) {
       # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
       # tabItem("teamindex",teamIndexUI(id = "teamindex")),
     )
+  })
+
+
+  #### User FAB ###
+
+  # Hides the user FAB if visitor isn't logged in
+  observe({
+    if (any(c(0,5) %in% authOutput()$usergroup)) {
+      removeUI(
+        selector = ".homemade-user-fab"
+      )
+    }
+  }) %>%
+    bindEvent(authOutput())
+
+  observeEvent(input$player, {
+    updateTabItems(session, "tabs", "yourPlayer")
+  })
+
+  observeEvent(input$userbank, {
+    updateTabItems(session, "tabs", "bankOverview")
+  })
+
+  observeEvent(input$logout, {
+    session$reload()
   })
   
   #### SIDEBAR ####

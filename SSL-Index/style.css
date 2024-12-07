@@ -592,7 +592,7 @@ h1, h2, h3, h4, h5 {
   top: 0;
   right: 0;
   margin-top: 18px;
-  margin-right: 12px;
+  margin-right: 24px;
   height: 45px;
   width: 45px;
   background: white;
@@ -601,14 +601,19 @@ h1, h2, h3, h4, h5 {
   display: flex;
   align-items: center;
   justify-content: center;
+  -moz-box-shadow: 0 0 5px white;
+  -webkit-box-shadow: 0 0 5px white;
+  box-shadow: 0 0 5px white;
 }
 
 .homemade-user-fab:hover .fab-action-buttons {
   opacity: 1;
+  visibility: visible;
 }
 
 .fab-action-buttons {
   opacity: 0;
+  visibility: hidden;
   transition: opacity 200ms;
   position: absolute;
   top: 30px;
@@ -616,7 +621,18 @@ h1, h2, h3, h4, h5 {
   padding-top: 20px;
 }
 
+.fab-action-buttons div {
+  -moz-box-shadow: 0 0 30px black;
+  -webkit-box-shadow: 0 0 30px black;
+  box-shadow: 0 0 30px black;
+}
+
 .fab-action-buttons button {
   width: 120px;
   color: black;
+}
+
+.fab-action-buttons button:hover {
+  background: #4b8dad;
+  color: white;
 }
