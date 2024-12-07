@@ -25,7 +25,6 @@ playerOverviewBoxUI <- function(id) {
                 uiOutput(
                   outputId = ns("buttonGoToRetire")
                 ),
-                # actionButton(ns("goToRetire"), label = "Retire")
               ),
               style = "justify-content: flex-end; gap: 8px;"
             )
