@@ -248,15 +248,19 @@ ui <- function(request){
       # Wasn't able to fully customize the Rshiny FAB, so I created a new one
       tags$div(
         class = "homemade-user-fab",
-        icon("user", class = "fa-solid", style = "color: black; font-size: 28px;"),
+        icon(
+          "user",
+          class = "fa-solid",
+          style = "color: black; font-size: 28px; padding: 8px;",
+          # Support showing and hiding user options on mobile
+          ontouchstart = "
+            var buttons = document.querySelector('.fab-action-buttons');
+            var isShowing = getComputedStyle(buttons).opacity === '1';
+            buttons.style.opacity = isShowing ? 0 : 1;
+            buttons.style.visibility = isShowing ? 'hidden' : 'visible';
+          "
+        ),
         role = "button",
-        # Support showing and hiding user options on mobile
-        ontouchstart = "
-          var buttons = document.querySelector('.fab-action-buttons');
-          var isShowing = getComputedStyle(buttons).opacity === '1';
-          buttons.style.opacity = isShowing ? 0 : 1;
-          buttons.style.visibility = isShowing ? 'hidden' : 'visible';
-        ",
         div(
           class = "fab-action-buttons",
           tagList(
