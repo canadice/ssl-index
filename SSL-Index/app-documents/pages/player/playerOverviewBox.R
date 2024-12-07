@@ -7,22 +7,28 @@ playerOverviewBoxUI <- function(id) {
         column(
           width = 12,
           align = "right", 
-          dropMenu(
-            actionButton("go0", label = NULL, icon = icon("chevron-down")),
-            uiOutput(
-              outputId = ns("buttonRegression")
-            ),
-            uiOutput(
-              outputId = ns("buttonUpdate")
-            ),
-            uiOutput(
-              outputId = ns("buttonReroll")
-            ),
-            uiOutput(
-              outputId = ns("buttonRedistribution")
-            ),
-            actionButton(ns("goToRetire"), label = "Retire"),
-            placement = "left-end"
+          tagList(
+            flexRow(
+              tagList(
+                uiOutput(
+                  outputId = ns("buttonUpdate")
+                ),
+                uiOutput(
+                  outputId = ns("buttonRegression")
+                ),
+                uiOutput(
+                  outputId = ns("buttonReroll")
+                ),
+                uiOutput(
+                  outputId = ns("buttonRedistribution")
+                ),
+                uiOutput(
+                  outputId = ns("buttonGoToRetire")
+                ),
+                # actionButton(ns("goToRetire"), label = "Retire")
+              ),
+              style = "justify-content: flex-end; gap: 8px;"
+            )
           )
         )
       ),
@@ -56,7 +62,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
             actionButton(
               inputId = session$ns("goToRegression"),
               tippy("Regress", "You do not need to regress your player", theme = "material"),
-              disabled = ""
+              disabled = TRUE
             )
           }
         } else {
@@ -72,7 +78,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                   actionButton(
                     inputId = session$ns("goToRegression"),
                     tippy("Regress", "You do not need to regress your player", theme = "material"),
-                    disabled = ""
+                    disabled = TRUE
                   )
                 }
               }
@@ -85,13 +91,14 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
           if(tpeBanked() > 0) {
             actionButton(
               inputId = session$ns("goToUpdate"),
-              "Update"
+              "Update",
+              class = "primary-button"
             )
           } else {
             actionButton(
               inputId = session$ns("goToUpdate"),
               tippy("Update", "You cannot update your player. You must first regress them.", theme = "material"),
-              disabled = ""
+              disabled = TRUE
             )
           }
         } else {
@@ -101,13 +108,14 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 if(bank >= 0) {
                   actionButton(
                     inputId = session$ns("goToUpdate"),
-                    "Update"
+                    "Update",
+                    class = "primary-button"
                   )
                 } else {
                   actionButton(
                     inputId = session$ns("goToUpdate"),
                     tippy("Update", "You cannot update your player. You must first regress them.", theme = "material"),
-                    disabled = ""
+                    disabled = TRUE
                   )
                 }
               }
@@ -131,12 +139,9 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 )
               } else {
                 # SHOW NOTHING
-                
-                # actionButton(
-                #   inputId = session$ns("goToReroll"),
-                #   "Reroll",
-                #   disabled = ""
-                # )
+                removeUI(
+                  selector = "#yourPlayer-playerBuild-buttonReroll"
+                )
               }
             }
           )
@@ -158,13 +163,22 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 )
               } else {
                 # SHOW NOTHING
-                
-                # actionButton(
-                #   inputId = session$ns("goToRedist"),
-                #   "Redistribute",
-                #   disabled = ""
-                # )
+                removeUI(
+                  selector = "#yourPlayer-playerBuild-buttonRedistribution"
+                )
               }
+            }
+          )
+      })
+
+      output$buttonGoToRetire <- renderUI({
+        data() %>% 
+          then(
+            onFulfilled = function(data){
+              actionButton(
+                inputId = session$ns("goToRetire"),
+                "Retire"
+              )
             }
           )
       })

@@ -634,5 +634,12 @@ h1, h2, h3, h4, h5 {
 
 .fab-action-buttons button:hover {
   background: #4b8dad;
+  border-color: #070B51;
+  color: white;
+}
+
+.primary-button {
+  background-color: #4b8dad;
+  border-color: #070B51;
   color: white;
 }
