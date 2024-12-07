@@ -512,10 +512,19 @@ server <- function(input, output, session) {
       tagList(
         tags$div(
           class = "navbarHead",
-          tags$p(actionButton(inputId = "gotoportal",
-                              label = "Portal")),
-          tags$p(actionButton(inputId = "gotoindex",
-                              label = "Index"))
+          tags$p(
+            actionButton(
+              inputId = "gotoportal",
+              label = "Portal",
+              style = "background: #BD9523;"
+            )
+          ),
+          tags$p(
+            actionButton(
+              inputId = "gotoindex",
+              label = "Index"
+            )
+          )
         ),
         sidebarMenu(
           id = "tabs",
@@ -646,10 +655,19 @@ server <- function(input, output, session) {
         id = "tabs",
         tags$div(
           class = "navbarHead",
-          tags$p(actionButton(inputId = "gotoportal",
-                              label = "Portal")),
-          tags$p(actionButton(inputId = "gotoindex",
-                              label = "Index"))
+          tags$p(
+            actionButton(
+              inputId = "gotoportal",
+              label = "Portal"
+            )
+          ),
+          tags$p(
+            actionButton(
+              inputId = "gotoindex",
+              label = "Index",
+              style = "background: #BD9523;"
+            )
+          )
         ),
         menuItem("Welcome",tabName = "welcome",selected = TRUE),
         menuItem("Academy Index",tabName = "academyIndex"),
