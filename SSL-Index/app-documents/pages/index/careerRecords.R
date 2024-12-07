@@ -129,6 +129,7 @@ careerRecordsServer <- function(id) {
                   ) %>% 
                   arrange(!!sym(stat) %>% desc()) %>% 
                   slice_head(n = 1)
+                selectedStat <- currentStatistic()
 
                 tags$button(
                   flexRow(
@@ -149,7 +150,8 @@ careerRecordsServer <- function(id) {
                     ),
                     style = "align-items: center; justify-content: space-between;"
                   ),
-                  class = "career-record-button"
+                  class = "career-record-button",
+                  style = ifelse(selectedStat == stat, "background: #4b8dad; color: white;", "")
                 )
               }
             )
@@ -168,6 +170,7 @@ careerRecordsServer <- function(id) {
                   ) %>% 
                   arrange(!!sym(stat) %>% desc()) %>% 
                   slice_head(n = 1)
+                selectedStat <- currentStatisticKeeper()
                 
                 tags$button(
                   flexRow(
@@ -188,7 +191,8 @@ careerRecordsServer <- function(id) {
                     ),
                     style = "align-items: center; justify-content: space-between;"
                   ),
-                  class = "career-record-button"
+                  class = "career-record-button",
+                  style = ifelse(selectedStat == stat, "background: #4b8dad; color: white;", "")
                 )
               }
             )
