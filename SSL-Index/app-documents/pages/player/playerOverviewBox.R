@@ -138,9 +138,9 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 )
               } else {
                 # SHOW NOTHING
-                removeUI(
-                  selector = "#yourPlayer-playerBuild-buttonReroll"
-                )
+                # removeUI(
+                #   selector = "#yourPlayer-playerBuild-buttonReroll"
+                # )
               }
             }
           )
@@ -162,9 +162,9 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 )
               } else {
                 # SHOW NOTHING
-                removeUI(
-                  selector = "#yourPlayer-playerBuild-buttonRedistribution"
-                )
+                # removeUI(
+                #   selector = "#yourPlayer-playerBuild-buttonRedistribution"
+                # )
               }
             }
           )
