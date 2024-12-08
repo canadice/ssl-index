@@ -130,17 +130,19 @@ careerRecordsServer <- function(id) {
                   arrange(!!sym(stat) %>% desc()) %>% 
                   slice_head(n = 1)
                 selectedStat <- currentStatistic()
+                # Remove parenthesis from distance stat to make its label shorter
+                trimmedStatTitle = gsub("\\s\\(.+\\)", "", stat)
 
                 tags$button(
                   flexRow(
                     tagList(
                       flexCol(
                         tagList(
-                          tags$b(paste(stat %>% str_to_title()), style = "font-size: 18px;"),
+                          tags$b(paste(trimmedStatTitle %>% str_to_title()), style = "font-size: 16px; text-transform: uppercase;"),
                           tags$b(leader[,stat] %>% round(2))
                         )
                       ),
-                      flexCol(
+                      flexRow(
                         tagList(
                           icon("crown", style = "color: #BD9523;"),
                           tags$span(leader$name, style = "font-size: 16px;")
@@ -151,7 +153,7 @@ careerRecordsServer <- function(id) {
                     style = "align-items: center; justify-content: space-between;"
                   ),
                   class = "career-record-button",
-                  style = ifelse(selectedStat == stat, "background: #4b8dad; color: white;", "")
+                  style = ifelse(selectedStat == stat, "background-image: linear-gradient(to right, #4b8dad, white 40%);", "")
                 )
               }
             )
@@ -177,7 +179,7 @@ careerRecordsServer <- function(id) {
                     tagList(
                       flexCol(
                         tagList(
-                          tags$b(paste(stat %>% str_to_title()), style = "font-size: 18px;"),
+                          tags$b(paste(stat %>% str_to_title()), style = "font-size: 16px; text-transform: uppercase;"),
                           tags$b(leader[,stat] %>% round(2))
                         )
                       ),
@@ -192,7 +194,7 @@ careerRecordsServer <- function(id) {
                     style = "align-items: center; justify-content: space-between;"
                   ),
                   class = "career-record-button",
-                  style = ifelse(selectedStat == stat, "background: #4b8dad; color: white;", "")
+                  style = ifelse(selectedStat == stat, "background-image: linear-gradient(to right, #4b8dad, white 40%);", "")
                 )
               }
             )
