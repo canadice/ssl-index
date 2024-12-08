@@ -16,12 +16,12 @@ playerOverviewBoxUI <- function(id) {
                 uiOutput(
                   outputId = ns("buttonRegression")
                 ),
-                uiOutput(
-                  outputId = ns("buttonReroll")
-                ),
-                uiOutput(
-                  outputId = ns("buttonRedistribution")
-                ),
+                # uiOutput(
+                #   outputId = ns("buttonReroll")
+                # ),
+                # uiOutput(
+                #   outputId = ns("buttonRedistribution")
+                # ),
                 uiOutput(
                   outputId = ns("buttonGoToRetire")
                 ),
@@ -51,7 +51,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       #### BUTTONS ####
       
       output$buttonRegression <- renderUI({
-        if(tpeBanked() %>% class() == "numeric"){
+        if(tpeBanked() %>% class() %in% c("numeric", "integer")){
           if(tpeBanked() < 0) {
             actionButton(
               inputId = session$ns("goToRegression"),
@@ -86,7 +86,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       })
       
       output$buttonUpdate <- renderUI({
-        if(tpeBanked() %>% class() == "numeric"){
+        if(tpeBanked() %>% class() %in% c("numeric", "integer")){
           if(tpeBanked() > 0) {
             actionButton(
               inputId = session$ns("goToUpdate"),
@@ -122,7 +122,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
         }
       })
       
-      output$buttonReroll <- renderUI({
+      observe({
         data() %>% 
           then(
             onFulfilled = function(data){
@@ -132,44 +132,36 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 (data$rerollused == 0)
               
               if(check) {
-                actionButton(
-                  inputId = session$ns("goToReroll"),
-                  "Reroll"
+                insertUI(
+                  selector = "#yourPlayer-playerBuild-buttonGoToRetire",
+                  where = "beforeBegin",
+                  ui = actionButton(
+                    inputId = session$ns("goToReroll"),
+                    "Reroll"
+                  )
                 )
-              } else {
-                # SHOW NOTHING
-                # removeUI(
-                #   selector = "#yourPlayer-playerBuild-buttonReroll"
-                # )
               }
-            }
-          )
-      })
-      
-      output$buttonRedistribution <- renderUI({
-        data() %>% 
-          then(
-            onFulfilled = function(data){
+              
               # Redistributions can be made by users in their first season in the SSL League proper
               check <- 
                 ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 1)) & 
                 (data$redistused == 0)
               
               if(check) {
-                actionButton(
-                  inputId = session$ns("goToRedist"),
-                  "Redistribute"
+                insertUI(
+                  selector = "#yourPlayer-playerBuild-buttonGoToRetire",
+                  where = "beforeBegin",
+                  ui = actionButton(
+                    inputId = session$ns("goToRedist"),
+                    "Redistribute"
+                  )
                 )
-              } else {
-                # SHOW NOTHING
-                # removeUI(
-                #   selector = "#yourPlayer-playerBuild-buttonRedistribution"
-                # )
               }
             }
           )
-      })
-
+      }) %>% 
+        bindEvent(data())
+      
       output$buttonGoToRetire <- renderUI({
         data() %>% 
           then(
