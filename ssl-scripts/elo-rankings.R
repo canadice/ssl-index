@@ -23,7 +23,6 @@ schedule <- readAPI("https://api.simulationsoccer.com/index/schedule", query = l
   )
 
 teams <- tibble(teams = c(schedule$Home, schedule$Away) %>% unique(),
-                time = 0,
                 ELO = 1200)
 
 # Define the weight function
