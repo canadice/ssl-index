@@ -153,7 +153,7 @@ careerRecordsServer <- function(id) {
                     style = "align-items: center; justify-content: space-between;"
                   ),
                   class = "career-record-button",
-                  style = ifelse(selectedStat == stat, "background-image: linear-gradient(to right, #4b8dad, white 40%);", "")
+                  style = ifelse(selectedStat == stat, "background-image: linear-gradient(to right, #4b8dad, #e5e5e5 40%);", "")
                 )
               }
             )
@@ -194,7 +194,7 @@ careerRecordsServer <- function(id) {
                     style = "align-items: center; justify-content: space-between;"
                   ),
                   class = "career-record-button",
-                  style = ifelse(selectedStat == stat, "background-image: linear-gradient(to right, #4b8dad, white 40%);", "")
+                  style = ifelse(selectedStat == stat, "background-image: linear-gradient(to right, #4b8dad, #e5e5e5 40%);", "")
                 )
               }
             )

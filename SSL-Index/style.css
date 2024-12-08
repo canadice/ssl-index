@@ -647,7 +647,7 @@ h1, h2, h3, h4, h5 {
 .career-record-button {
   width: 300px;
   min-height: 72px;
-  background: white;
+  background: #e5e5e5;
   text-align: left;
   padding: 0 8px;
   border-radius: 8px;
