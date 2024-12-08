@@ -183,7 +183,7 @@ careerRecordsServer <- function(id) {
                           tags$b(leader[,stat] %>% round(2))
                         )
                       ),
-                      flexCol(
+                      flexRow(
                         tagList(
                           icon("crown", style = "color: #BD9523;"),
                           tags$span(leader$name, style = "font-size: 16px;")
