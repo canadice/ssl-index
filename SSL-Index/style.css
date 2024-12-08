@@ -490,7 +490,7 @@ h1, h2, h3, h4, h5 {
   position:fixed;
   bottom:0;
   right:90%;
-  left:60px;
+  left:0;
   padding:10px;
   box-sizing:border-box;
 }
@@ -563,4 +563,99 @@ h1, h2, h3, h4, h5 {
 
 .highcharts-background{
   fill: #efefef;
+}
+
+.centered-flex-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-col-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row-wrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+.truncated-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.homemade-user-fab {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 18px;
+  margin-right: 24px;
+  height: 45px;
+  width: 45px;
+  background: white;
+  border-radius: 99999999px;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -moz-box-shadow: 0 0 5px white;
+  -webkit-box-shadow: 0 0 5px white;
+  box-shadow: 0 0 5px white;
+}
+
+.homemade-user-fab:hover .fab-action-buttons {
+  opacity: 1;
+  visibility: visible;
+}
+
+.fab-action-buttons {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms;
+  position: absolute;
+  top: 30px;
+  right: 0;
+  padding-top: 20px;
+}
+
+.fab-action-buttons div {
+  -moz-box-shadow: 0 0 30px black;
+  -webkit-box-shadow: 0 0 30px black;
+  box-shadow: 0 0 30px black;
+}
+
+.fab-action-buttons button {
+  width: 120px;
+  color: black;
+}
+
+.fab-action-buttons button:hover {
+  background: #4b8dad;
+  border-color: #070B51;
+  color: white;
+}
+
+.primary-button {
+  background-color: #4b8dad;
+  border-color: #070B51;
+  color: white;
+}
+
+.career-record-button {
+  width: 300px;
+  min-height: 72px;
+  background: #e5e5e5;
+  text-align: left;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: black;
+  margin-bottom: 8px;
+  border-color: #BD9523;
+
+  @media (max-width: 767px) {
+    width: 100%;
+  }
 }

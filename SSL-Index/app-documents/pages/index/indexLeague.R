@@ -154,14 +154,14 @@ leagueIndexServer <- function(id) {
       outstatistics <- c("goals", "assists", "player of the match", "distance run (km)", "successful passes", "chances created", "tackles won", "interceptions", "yellow cards", "red cards")
       
       output$outfieldLeaders <- renderUI({
-        # Split statistics into pairs
-        statisticPairs <- split(outstatistics, (seq_along(outstatistics) - 1) %/% 2)
+        # Split statistics into threes
+        statisticThrees <- split(outstatistics, (seq_along(outstatistics) - 1) %/% 3)
         
-        # Create fluidRows for each pair
-        lapply(statisticPairs, function(pair) {
+        # Create fluidRows for each table
+        lapply(statisticThrees, function(table) {
           fluidRow(
-            lapply(pair, function(stat) {
-              column(width = 6,
+            lapply(table, function(stat) {
+              column(width = 4,
                      reactableOutput(session$ns(paste0(stat, "_leader"))) %>% 
                        div(class = "leaderTable")
               )
@@ -190,14 +190,14 @@ leagueIndexServer <- function(id) {
       keepstatistics <- c("won", "clean sheets", "conceded", "save%")
       
       output$keeperLeaders <- renderUI({
-        # Split statistics into pairs
-        statisticPairs <- split(keepstatistics, (seq_along(keepstatistics) - 1) %/% 2)
+        # Split statistics into threes
+        statisticThrees <- split(keepstatistics, (seq_along(keepstatistics) - 1) %/% 3)
         
         # Create fluidRows for each pair
-        lapply(statisticPairs, function(pair) {
+        lapply(statisticThrees, function(table) {
           fluidRow(
-            lapply(pair, function(stat) {
-              column(width = 6,
+            lapply(table, function(stat) {
+              column(width = 4,
                      reactableOutput(session$ns(paste0(stat, "_leader"))) %>% 
                        div(class = "leaderTable")
               )
