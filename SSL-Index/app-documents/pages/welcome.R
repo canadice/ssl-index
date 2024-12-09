@@ -79,20 +79,27 @@ welcomeServer <- function(id, usergroup) {
                        Points
                      ) %>% 
                      reactable(
-                       defaultColDef = colDef(minWidth = 50),
+                       defaultColDef = colDef(minWidth = 30),
                        columns = 
                          list(
                            Team = colDef(
-                             # width = 25,
+                             minWidth = 100,
                              cell = function(value){
                                image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)  
                                
-                               list <- 
-                                 tagList(
-                                   div(style = "display: inline-block; width: 25px;", image)
-                                 )
+                               list <-
+                                tagList(
+                                  flexRow(style = "align-items: center; gap: 8px;", tagList(
+                                    image,
+                                    span(class = "truncated-text", value)
+                                  ))
+                                )
                              }
-                           )
+                           ),
+                           Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "material")),
+                           Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "material")),
+                           Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "material")),
+                           Points = colDef(header = tippy("P", "Points", placement = "top", theme = "material"))
                          )
                      )
                  }

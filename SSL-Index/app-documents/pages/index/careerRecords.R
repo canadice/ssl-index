@@ -129,16 +129,32 @@ careerRecordsServer <- function(id) {
                   ) %>% 
                   arrange(!!sym(stat) %>% desc()) %>% 
                   slice_head(n = 1)
-                
-                infoBox(
-                  title = 
-                    tags$b(paste(stat %>% str_to_title())),
-                  color = "light-blue",
-                  width = NULL,
-                  icon = tags$i(class = "fas fa-exclamation", style="font-size: 36px; color: white"),
-                  fill = TRUE,
-                  value = tags$p(paste(leader$name, "with", leader[,stat] %>% round(2), stat, sep = " "), style = "font-size: 75%;")
-                ) 
+                selectedStat <- currentStatistic()
+                # Remove parenthesis from distance stat to make its label shorter
+                trimmedStatTitle = gsub("\\s\\(.+\\)", "", stat)
+
+                tags$button(
+                  flexRow(
+                    tagList(
+                      flexCol(
+                        tagList(
+                          tags$b(paste(trimmedStatTitle %>% str_to_title()), style = "font-size: 16px; text-transform: uppercase;"),
+                          tags$b(leader[,stat] %>% round(2))
+                        )
+                      ),
+                      flexRow(
+                        tagList(
+                          icon("crown", style = "color: #BD9523;"),
+                          tags$span(leader$name, style = "font-size: 16px;")
+                        ),
+                        style = "align-items: center; justify-content: flex-start; gap: 4px;"
+                      )
+                    ),
+                    style = "align-items: center; justify-content: space-between;"
+                  ),
+                  class = "career-record-button",
+                  style = ifelse(selectedStat == stat, "background-image: linear-gradient(to right, #4b8dad, #e5e5e5 40%);", "")
+                )
               }
             )
         })
@@ -156,16 +172,30 @@ careerRecordsServer <- function(id) {
                   ) %>% 
                   arrange(!!sym(stat) %>% desc()) %>% 
                   slice_head(n = 1)
+                selectedStat <- currentStatisticKeeper()
                 
-                infoBox(
-                  title = 
-                    tags$b(paste(stat %>% str_to_title())),
-                  color = "light-blue",
-                  width = NULL,
-                  icon = tags$i(class = "fas fa-exclamation", style="font-size: 36px; color: white"),
-                  fill = TRUE,
-                  value = tags$p(paste(leader$name, "with", leader[,stat] %>% round(2), stat, sep = " "), style = "font-size: 75%;")
-                ) 
+                tags$button(
+                  flexRow(
+                    tagList(
+                      flexCol(
+                        tagList(
+                          tags$b(paste(stat %>% str_to_title()), style = "font-size: 16px; text-transform: uppercase;"),
+                          tags$b(leader[,stat] %>% round(2))
+                        )
+                      ),
+                      flexRow(
+                        tagList(
+                          icon("crown", style = "color: #BD9523;"),
+                          tags$span(leader$name, style = "font-size: 16px;")
+                        ),
+                        style = "align-items: center; justify-content: flex-start; gap: 4px;"
+                      )
+                    ),
+                    style = "align-items: center; justify-content: space-between;"
+                  ),
+                  class = "career-record-button",
+                  style = ifelse(selectedStat == stat, "background-image: linear-gradient(to right, #4b8dad, #e5e5e5 40%);", "")
+                )
               }
             )
         })

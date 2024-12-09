@@ -90,7 +90,7 @@ playerUpdateBoxUI <- function(id) {
         column(
           width = 12,
           align = "center",
-          style = "display: flex; justify-content: center;",
+          style = "display: flex; justify-content: center; gap: 8px;",
           actionButton(
             inputId = ns("backUpdate"),
             "Go back"
@@ -119,7 +119,8 @@ playerUpdateBoxUI <- function(id) {
           ),
           actionButton(
             inputId = ns("verifyRegression"),
-            "Regress"
+            "Regress",
+            class = "primary-button"
           )
         )
       ) %>%
@@ -549,7 +550,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       output$verifyButton <- renderUI({
         actionButton(
           inputId = session$ns("verifyUpdate"),
-          if_else(updating() == "updating", "Update", if_else(updating() == "redistributing", "Redistribute", "Reroll"))
+          if_else(updating() == "updating", "Update", if_else(updating() == "redistributing", "Redistribute", "Reroll")),
+          class = "primary-button"
         )
       })
       

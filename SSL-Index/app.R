@@ -7,7 +7,7 @@
 ###########################################################################
 ###########################################################################
 
-version <- "v2.2"
+version <- "v2.3"
 
 suppressMessages({
   ## Data handling
@@ -199,7 +199,6 @@ sapply(
 ##                  The UI and Server function                  ##
 ##################################################################
 
-
 ui <- function(request){
   
   dashboardPage(
@@ -238,7 +237,59 @@ ui <- function(request){
       includeCSS('style.css'),
       useShinyFeedback(), # include shinyFeedback
       useShinyjs(), # include shinyjs
-      uiOutput("body")
+      uiOutput("body"),
+
+      # User menu FAB
+      # Wasn't able to fully customize the Rshiny FAB, so I created a new one
+      tags$div(
+        class = "homemade-user-fab",
+        icon(
+          "user",
+          class = "fa-solid",
+          style = "color: black; font-size: 28px; padding: 8px;",
+          # Support showing and hiding user options on mobile
+          ontouchstart = "
+            var buttons = document.querySelector('.fab-action-buttons');
+            var isShowing = getComputedStyle(buttons).opacity === '1';
+            buttons.style.opacity = isShowing ? 0 : 1;
+            buttons.style.visibility = isShowing ? 'hidden' : 'visible';
+          "
+        ),
+        role = "button",
+        div(
+          class = "fab-action-buttons",
+          tagList(
+            flexCol(
+              style = "gap: 4px;",
+              tagList(
+                # User menu items. Can be extended by adding more actionButtons.
+                # Just remember to connect any button's click event to an action server-side.
+                actionButton(
+                  inputId = "player",
+                  label = "Your Player",
+                  icon = icon("futbol"),
+                  class = "centered-flex-content",
+                  style = "justify-content: flex-start; gap: 8px;"
+                ),
+                actionButton(
+                  inputId = "userbank",
+                  label = "Bank/Store",
+                  icon = icon("building-columns"),
+                  class = "centered-flex-content",
+                  style = "justify-content: flex-start; gap: 8px;"
+                ),
+                actionButton(
+                  inputId = "logout",
+                  label = "Logout",
+                  icon = icon("door-open"),
+                  class = "centered-flex-content",
+                  style = "justify-content: flex-start; gap: 8px;"
+                )
+              )
+            )
+          )
+        )
+      )
     )
   )
 }
@@ -302,7 +353,7 @@ ui <-
                           label = "Continue as guest"))
       )
     ),
-    fab_position = "bottom-left"
+    fab_position = "none"
   )
   
 server <- function(input, output, session) {
@@ -386,15 +437,38 @@ server <- function(input, output, session) {
       tabItem("draftClass",draftClassUI(id = "draftClass")),
       tabItem("organizationPages",organizationPagesUI(id = "organizationPages")),
       tabItem("leagueSchedule",leagueScheduleUI(id = "leagueSchedule")),
-      tabItem("nationTracker",nationTrackerUI(id = "nationTracker")
+      tabItem("nationTracker",nationTrackerUI(id = "nationTracker")),
+      tabItem("positionTracker",positionTrackerUI(id = "positionTracker"))
       # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
       # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
       # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
-      
       # tabItem("teamindex",teamIndexUI(id = "teamindex")),
-      )
-      
     )
+  })
+
+
+  #### User FAB ###
+
+  # Hides the user FAB if visitor isn't logged in
+  observe({
+    if (any(c(0,5) %in% authOutput()$usergroup)) {
+      removeUI(
+        selector = ".homemade-user-fab"
+      )
+    }
+  }) %>%
+    bindEvent(authOutput())
+
+  observeEvent(input$player, {
+    updateTabItems(session, "tabs", "yourPlayer")
+  })
+
+  observeEvent(input$userbank, {
+    updateTabItems(session, "tabs", "bankOverview")
+  })
+
+  observeEvent(input$logout, {
+    session$reload()
   })
   
   #### SIDEBAR ####
@@ -433,10 +507,19 @@ server <- function(input, output, session) {
       tagList(
         tags$div(
           class = "navbarHead",
-          tags$p(actionButton(inputId = "gotoportal",
-                              label = "Portal")),
-          tags$p(actionButton(inputId = "gotoindex",
-                              label = "Index"))
+          tags$p(
+            actionButton(
+              inputId = "gotoportal",
+              label = "Portal",
+              style = "background: #BD9523;"
+            )
+          ),
+          tags$p(
+            actionButton(
+              inputId = "gotoindex",
+              label = "Index"
+            )
+          )
         ),
         sidebarMenu(
           id = "tabs",
@@ -466,10 +549,13 @@ server <- function(input, output, session) {
                            }
                          }
                 ),
-                
-                menuItem("Player Pages",tabName = "playerPages"),
-                menuItem("Organization Pages",tabName = "organizationPages"),
-                menuItem("Draft Class Tracker",tabName = "draftClass"),
+                menuItem("Players and Organizations",
+                         menuSubItem("Player Pages",tabName = "playerPages"),
+                         menuSubItem("Organization Pages",tabName = "organizationPages")),
+                menuItem("Trackers",
+                         menuSubItem("Draft Class Tracker",tabName = "draftClass"),
+                         menuSubItem("Position Tracker", tabName = "positionTracker"),
+                         menuSubItem("WSFC Nation Tracker", tabName = "nationTracker")),
                 if(!any(c(2) %in% authOutput()$usergroup)){hr()},
                 # menuItem(
                 #   "SSL Budget",
@@ -564,10 +650,19 @@ server <- function(input, output, session) {
         id = "tabs",
         tags$div(
           class = "navbarHead",
-          tags$p(actionButton(inputId = "gotoportal",
-                              label = "Portal")),
-          tags$p(actionButton(inputId = "gotoindex",
-                              label = "Index"))
+          tags$p(
+            actionButton(
+              inputId = "gotoportal",
+              label = "Portal"
+            )
+          ),
+          tags$p(
+            actionButton(
+              inputId = "gotoindex",
+              label = "Index",
+              style = "background: #BD9523;"
+            )
+          )
         ),
         menuItem("Welcome",tabName = "welcome",selected = TRUE),
         menuItem("Academy Index",tabName = "academyIndex"),
@@ -575,11 +670,6 @@ server <- function(input, output, session) {
         menuItem("Standings", tabName = "leagueStandings"),
         menuItem("Schedule", tabName = "leagueSchedule"),
         menuItem("Career Records",tabName = "careerRecords"),
-        hr(),
-        menuItem("WSFC",
-                 menuSubItem("Nation Tracker", tabName = "nationTracker")
-         ),
-        hr(),
         {
           if(!any(0 %in% authOutput()$usergroup)){
             menuItem("Your User",href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = ""))
@@ -658,7 +748,7 @@ server <- function(input, output, session) {
       tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
       leagueStandings = FALSE, leagueSchedule = FALSE, managerTeam = FALSE, assignManager = FALSE,
       bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE,
-      nationTracker = FALSE
+      nationTracker = FALSE, positionTracker = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -778,6 +868,10 @@ server <- function(input, output, session) {
     } else if(!loadedPage$nationTracker & input$tabs == "nationTracker"){
       nationTrackerServer("nationTracker")
       loadedPage$nationTracker <- TRUE
+    
+    } else if(!loadedPage$positionTracker & input$tabs == "positionTracker"){
+      positionTrackerServer("positionTracker")
+      loadedPage$positionTracker <- TRUE
       
     } else if(!loadedPage$bankOverview & input$tabs == "bankOverview"){
       req(authOutput())
