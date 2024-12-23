@@ -10,7 +10,7 @@ welcomeUI <- function(id) {
         div("Latest Results", style = "width: 100%;"),
         div(
           uiOutput(ns("leagueSelector")),
-          style = "font-weight: normal;"
+          style = "font-size: 14px; font-weight: 400;"
         )
       ),
       style = "align-items: center; justify-content: space-between;"
