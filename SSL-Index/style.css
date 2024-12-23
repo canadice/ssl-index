@@ -266,6 +266,14 @@ h1, h2, h3, h4, h5 {
     text-align: center;
 }
 
+.box-header .box-title {
+  display: inline-block;
+  font-size: 18px;
+  margin: 0;
+  line-height: 1;
+  width: 100%;
+}
+
 .box.box-primary {
     border-top-color: var(--sslGold);
 }
@@ -581,6 +589,11 @@ h1, h2, h3, h4, h5 {
   flex-direction: row;
 }
 
+.flex-col-wrapper .shiny-input-container,
+.flex-row-wrapper .shiny-input-container {
+  margin-bottom: 0;
+}
+
 .truncated-text {
   white-space: nowrap;
   overflow: hidden;
@@ -657,5 +670,11 @@ h1, h2, h3, h4, h5 {
 
   @media (max-width: 767px) {
     width: 100%;
+  }
+}
+
+.hide-in-mobile {
+  @media (max-width: 767px) {
+    display: none;
   }
 }
