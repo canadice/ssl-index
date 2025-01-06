@@ -210,7 +210,7 @@ welcomeServer <- function(id, usergroup) {
       
       output$activityChecks <- renderPlotly({
         readAPI("https://api.simulationsoccer.com/player/acHistory") %>% 
-          mutate(weekYear = paste(paste0("W", week), year, sep ="\n")) %>% 
+          mutate(weekYear = paste(paste0("W", nweeks))) %>% 
           plot_ly(x = ~weekYear, y= ~count, type = "scatter", mode = "lines+markers",
                   hoverinfo = "text",
                   line = list(color = sslGold),
@@ -222,7 +222,7 @@ welcomeServer <- function(id, usergroup) {
               title = "Time",
               tickfont = list(color = "white"),  # Set x-axis tick labels color to white
               titlefont = list(color = "white"),  # Set x-axis title color to white
-              dtick = 1,
+              dtick = 2,
               showgrid = FALSE
             ),
             yaxis = list(
