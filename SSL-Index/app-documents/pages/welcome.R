@@ -139,7 +139,8 @@ welcomeServer <- function(id, usergroup) {
                                        "Cup",
                                        if_else(schedule[i, "MatchType"] == 1, 
                                                "Major League",
-                                               if_else(schedule[i, "MatchType"] == 2, "Minor League", "Friendlies"))),
+                                               if_else(schedule[i, "MatchType"] == 2, "Minor League", 
+                                                       if_else(schedule[i, "MatchType"] == 5, "WSFC","Friendlies")))),
                                schedule[i, "MatchDay"], sep = ", "
                              ),
                              paste(
