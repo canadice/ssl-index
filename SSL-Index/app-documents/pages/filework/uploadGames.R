@@ -409,6 +409,10 @@ uploadGameServer <- function(id) {
                 Club %in% c("Montréal U.", "Montréal") ~ "Montréal United",
                 Club == "North Shore" ~ "North Shore United",
                 Club == "Football Club de Rio" ~ "FC Rio",
+                Club == "Alps" ~ "Alpen",
+                Club == "Pyrénees" ~ "Pyrenees",
+                Club == "Central America Caribbean" ~ "Central America",
+                Club == "Eastern Europe" ~ "East Europe",
                 TRUE ~ Club
               )
           ) %>% 
