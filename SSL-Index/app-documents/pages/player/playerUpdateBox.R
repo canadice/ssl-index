@@ -1111,8 +1111,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     update <- update %>%
                       add_row(
                         attribute = paste0("pos_", tolower(pos)),
-                        old = data[paste0("pos_", tolower(pos))],
-                        new = 0
+                        old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                        new = 0 %>% as.character()
                       )
                   }
                   
@@ -1120,8 +1120,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     update %>% 
                     add_row(
                       attribute = "pos_gk",
-                      old = data$pos_gk,
-                      new = 20
+                      old = data$pos_gk %>% as.character(),
+                      new = 20 %>% as.character()
                     )
                 }
               }
