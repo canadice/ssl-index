@@ -74,7 +74,7 @@ indexReactable <- function(currentData){
               ..1 =
                 colDef(
                   header =
-                    tippy(..1 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
+                    tippy(..1 %>% str_to_upper(), ..2, placement = "top", theme = "ssl", arrow = TRUE),
                   html = TRUE
                 )
             }
@@ -162,7 +162,7 @@ leaderReactable <- function(currentData){
               ..1 =
                 colDef(
                   header =
-                    tippy(..3 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
+                    tippy(..3 %>% str_to_upper(), ..2, placement = "top", theme = "ssl", arrow = TRUE),
                   html = TRUE,
                   minWidth = 50
                 )
@@ -244,7 +244,7 @@ recordReactable <- function(currentData){
               ..1 =
                 colDef(
                   header =
-                    tippy(..1 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
+                    tippy(..1 %>% str_to_upper(), ..2, placement = "top", theme = "ssl", arrow = TRUE),
                   html = TRUE,
                   minWidth = 50
                 )
