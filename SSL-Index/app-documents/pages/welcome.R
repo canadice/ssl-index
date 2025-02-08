@@ -172,27 +172,28 @@ welcomeServer <- function(id, usergroup) {
                         status = "primary",
                         h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") %>% 
                               str_replace_all(pattern = "NA", replacement = " ")
-                        ),
-                        footer = 
-                          paste(
-                            paste(
-                              if_else(schedule[i, "MatchType"] == 0, 
-                                      "Cup",
-                                      if_else(schedule[i, "MatchType"] == 1, 
-                                              "Major League",
-                                              if_else(schedule[i, "MatchType"] == 2, "Minor League", "Friendlies"))),
-                              schedule[i, "MatchDay"], sep = ", "
-                            ),
-                            paste(
-                              schedule[i, "IRLDate"]
-                            ),
-                            sep = "<br>"
-                          ) %>% 
-                          HTML() %>% 
-                          div(align = "center")
-                      )
-                      
-                    })
+                         ),
+                         footer = 
+                           paste(
+                             paste(
+                               if_else(schedule[i, "MatchType"] == 0, 
+                                       "Cup",
+                                       if_else(schedule[i, "MatchType"] == 1, 
+                                               "Major League",
+                                               if_else(schedule[i, "MatchType"] == 2, "Minor League", 
+                                                       if_else(schedule[i, "MatchType"] == 5, "WSFC","Friendlies")))),
+                               schedule[i, "MatchDay"], sep = ", "
+                             ),
+                             paste(
+                               schedule[i, "IRLDate"]
+                             ),
+                             sep = "<br>"
+                           ) %>% 
+                           HTML() %>% 
+                           div(align = "center")
+                       )
+                       
+                     })
             ),
             tags$script(HTML("
             $(document).ready(function() {
@@ -251,7 +252,7 @@ welcomeServer <- function(id, usergroup) {
       
       output$activityChecks <- renderPlotly({
         readAPI("https://api.simulationsoccer.com/player/acHistory") %>% 
-          mutate(weekYear = paste(paste0("W", week), year, sep ="\n")) %>% 
+          mutate(weekYear = paste(paste0("W", nweeks))) %>% 
           plot_ly(x = ~weekYear, y= ~count, type = "scatter", mode = "lines+markers",
                   hoverinfo = "text",
                   line = list(color = sslGold),
@@ -263,7 +264,7 @@ welcomeServer <- function(id, usergroup) {
               title = "Time",
               tickfont = list(color = "white"),  # Set x-axis tick labels color to white
               titlefont = list(color = "white"),  # Set x-axis title color to white
-              dtick = 1,
+              dtick = 2,
               showgrid = FALSE
             ),
             yaxis = list(

@@ -320,14 +320,21 @@ function(league = "ALL", season = "ALL"){
         WHEN (Home = Team AND HomeScore > AwayScore) OR (Away = Team AND AwayScore > HomeScore) THEN 3
         WHEN (HomeScore = AwayScore) THEN 1
         ELSE 0
-    END) AS Points
+    END) AS Points,
+    SUM(CASE
+        WHEN (Home = Team) THEN HomeScore
+        ELSE AwayScore
+    END) - SUM(CASE
+        WHEN (Home = Team) THEN AwayScore
+        ELSE HomeScore
+    END) AS GoalDifference
 FROM (
     SELECT Home AS Team, Home, Away, HomeScore, AwayScore FROM schedule WHERE HomeScore IS NOT NULL AND matchtype ", if_else(league == "ALL", '>= 0', paste0("=", league)), if_else(season == "ALL", "", paste0(" AND Season = ", season)),  
       "UNION ALL
     SELECT Away AS Team, Home, Away, HomeScore, AwayScore FROM schedule WHERE HomeScore IS NOT NULL AND matchtype ", if_else(league == "ALL", '>= 0', paste0("=", league)), if_else(season == "ALL", "", paste0(" AND Season = ", season)),
       ") AS combined
 GROUP BY Team
-ORDER BY Points DESC, GoalsFor DESC, GoalsAgainst ASC;"
+ORDER BY Points DESC, GoalDifference DESC, GoalsFor DESC;"
     )
   ) %>% 
     suppressWarnings()

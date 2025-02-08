@@ -224,13 +224,15 @@ function(class = NULL) {
 function(){
   portalQuery(
     "SELECT 
-        YEAR(CONVERT_TZ(FROM_UNIXTIME(time), 'UTC', 'America/Los_Angeles')) AS year,
-        WEEK(CONVERT_TZ(FROM_UNIXTIME(time), 'UTC', 'America/Los_Angeles'), 3) AS week,
+        FLOOR(DATEDIFF(
+        CONVERT_TZ(FROM_UNIXTIME(time), 'UTC', 'America/Los_Angeles'),
+        '2024-07-22' -- Start of week 30 in 2024 (adjust the date as needed)
+    ) / 7) + 140 AS nweeks,
         COUNT(*) AS count
     FROM tpehistory
     WHERE source = 'Activity Check'
-    GROUP BY year, week
-    ORDER BY year, week;"
+    GROUP BY nweeks
+    ORDER BY nweeks;"
   )
 }
 

@@ -31,7 +31,7 @@ editScheduleServer <- function(id, userinfo) {
         getUnfinishedSchedule() %>% 
           then(
             onFulfilled = function(data){
-              data[1:8,]
+              data[1:min(8, nrow(data)),]
             }
           )
       }) %>% 
@@ -42,6 +42,10 @@ editScheduleServer <- function(id, userinfo) {
       teams <- reactive({
         readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
           filter(ID >= 0) %>% 
+          add_row(tibble(name = c("Canada", "Benelux", "Eurasia", "Norden", "West Africa",
+                                  "South America", "Oceania", "Pyrenees", "Alpen", 
+                                  "East Europe", "British Isles", "Central America", 
+                                  "East Africa", "Asia", "Central Europe", "USA"))) %>% 
           future_promise()
       })
       
