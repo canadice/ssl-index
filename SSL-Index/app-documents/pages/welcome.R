@@ -4,7 +4,17 @@ welcomeUI <- function(id) {
     
     uiOutput(ns("information")),
     
-    box(title = "Latest Results", width = NULL,
+    box(title = flexRow(
+      tagList(
+        uiOutput(ns("scheduleTitlePadder")),
+        div("Latest Results", style = "width: 100%;"),
+        div(
+          uiOutput(ns("leagueSelector")),
+          style = "font-size: 14px; font-weight: 400;"
+        )
+      ),
+      style = "align-items: center; justify-content: space-between;"
+    ), width = NULL,
         uiOutput(ns("schedule")) %>% 
           withSpinnerSmall()
         ) %>% 
@@ -105,31 +115,62 @@ welcomeServer <- function(id, usergroup) {
                  }
                })
              })
-      
-      
+
       #### Latest results ####
+      schedule <- reactive({
+        req(input$selectedLeague)
+        readAPI(
+          url = "https://api.simulationsoccer.com/index/schedule",
+          query = list(league = input$selectedLeague, season = currentSeason$season)
+        )
+      })
+
+      # Empty element with width matching selector to make spacing of title elements easier
+      output$scheduleTitlePadder <- renderUI({
+        div(style = "width: 150px;", class = "hide-in-mobile")
+      })
+
+      output$leagueSelector <- renderUI({
+        div(
+          selectInput(
+            inputId = session$ns("selectedLeague"),
+            label = NULL,
+            choices = 
+              c(
+                "All Leagues" = "ALL",
+                "Major" = "1",
+                "Minor" = "2",
+                "Cup" = "0"
+              ),
+            width = "150px"
+          )
+        )
+      })
+
       output$schedule <- renderUI({
-        schedule <- readAPI(url = "https://api.simulationsoccer.com/index/schedule", query = list(season = currentSeason$season))
-        
-        if(length(schedule) == 0){
+        league <- input$selectedLeague
+
+        if(schedule() %>% is_empty()){
           "No schedule is available yet"
         } else {
+          schedule <- schedule()
+
           tagList(
             div(
               class = "results",
               id = "results-scroll",
               lapply(1:nrow(schedule),
-                     function(i){
-                       box(
-                         title = div(
-                           div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"], title = schedule[i, "Home"])), 
-                           strong(" - "), 
-                           div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"], title = schedule[i, "Away"])),
-                           align = "center"
-                         ),
-                         width = NULL,
-                         status = "primary",
-                         h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") %>% 
+                    function(i){
+                      box(
+                        title = div(
+                          div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"], title = schedule[i, "Home"])), 
+                          strong(" - "), 
+                          div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"], title = schedule[i, "Away"])),
+                          align = "center"
+                        ),
+                        width = NULL,
+                        status = "primary",
+                        h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") %>% 
                               str_replace_all(pattern = "NA", replacement = " ")
                          ),
                          footer = 
