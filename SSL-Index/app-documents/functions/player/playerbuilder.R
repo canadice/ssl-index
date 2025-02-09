@@ -17,7 +17,8 @@ checkBuild <- function(input, tpebank, session){
     ) %>% 
     mutate(
       `left foot` = if_else(input$footedness == "Right", 10, 20),
-      `right foot` = if_else(input$footedness == "Left", 10, 20)
+      `right foot` = if_else(input$footedness == "Left", 10, 20),
+      render = input$render %>% str_replace_all("'", "\\\\'")
     )
   
   

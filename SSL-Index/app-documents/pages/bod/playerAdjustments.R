@@ -391,7 +391,7 @@ playerEditServer <- function(id, uid) {
                   `left foot` = input$left,
                   `right foot` = input$right,
                   traits = paste0("'", paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'"),
-                  render = paste0("'", input$render, "'")
+                  render = paste0("'", input$render %>% str_replace_all("'", "\\\\'"), "'")
                 ) 
               
               for(pos in names(positionsGK)){
