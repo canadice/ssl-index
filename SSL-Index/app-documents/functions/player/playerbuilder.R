@@ -259,7 +259,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
     error = function(e) showToast("error", paste("Error in adding academy contract.", e, sep = "\n"))
   )
   
-  today <- (now() %>% as_date() %>% as.numeric())
+  today <- (now() %>% with_tz("US/Pacific") %>% as_date() %>% as.numeric())
   start <- (currentSeason$startDate %>% as_date()) %>% as.numeric()
   
   tpe <- 
