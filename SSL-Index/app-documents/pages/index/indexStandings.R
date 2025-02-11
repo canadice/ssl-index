@@ -155,13 +155,13 @@ leagueStandingsServer <- function(id) {
                             ))
                           )
                       }),
-                      MatchesPlayed = colDef(header = tippy("GP", "Games played", placement = "top", theme = "material")),
-                      Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "material")),
-                      Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "material")),
-                      Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "material")),
-                      GoalsFor = colDef(header = tippy("GF", "Goals scored", placement = "top", theme = "material")),
-                      GoalsAgainst = colDef(header = tippy("GA", "Goals conceded", placement = "top", theme = "material")),
-                      Points = colDef(header = tippy("P", "Points", placement = "top", theme = "material"))
+                      MatchesPlayed = colDef(header = tippy("GP", "Games played", placement = "top", theme = "ssl", arrow = TRUE)),
+                      Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "ssl", arrow = TRUE)),
+                      Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "ssl", arrow = TRUE)),
+                      Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "ssl", arrow = TRUE)),
+                      GoalsFor = colDef(header = tippy("GF", "Goals scored", placement = "top", theme = "ssl", arrow = TRUE)),
+                      GoalsAgainst = colDef(header = tippy("GA", "Goals conceded", placement = "top", theme = "ssl", arrow = TRUE)),
+                      Points = colDef(header = tippy("P", "Points", placement = "top", theme = "ssl", arrow = TRUE))
                     )
                   )
               }

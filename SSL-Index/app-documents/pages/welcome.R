@@ -106,10 +106,10 @@ welcomeServer <- function(id, usergroup) {
                                 )
                              }
                            ),
-                           Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "material")),
-                           Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "material")),
-                           Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "material")),
-                           Points = colDef(header = tippy("P", "Points", placement = "top", theme = "material"))
+                           Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "ssl", arrow = TRUE)),
+                           Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "ssl", arrow = TRUE)),
+                           Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "ssl", arrow = TRUE)),
+                           Points = colDef(header = tippy("P", "Points", placement = "top", theme = "ssl", arrow = TRUE))
                          )
                      )
                  }

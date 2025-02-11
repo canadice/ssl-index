@@ -102,7 +102,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
               if(completedActivityCheck(data$pid)){
                 actionButton(
                   session$ns("activityCheck"),
-                  tippy("Activity Check", "You have already completed this week's Activity Check.", theme = "material"),
+                  tippy("Activity Check", "You have already completed this week's Activity Check.", theme = "ssl", arrow = TRUE),
                   disabled = ""
                 )  
               } else {
