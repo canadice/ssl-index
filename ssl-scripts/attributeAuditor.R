@@ -16,7 +16,7 @@ require(tidyr)
 require(arsenal)
 require(sslrtools)
 
-playerData <- readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))
+playerData <- readAPI(url = "https://api.simulationsoccer.com/player/getUpdatedBuilds")
 
 auditFunction <- function(path) {
   FMAttributes <- 
@@ -48,11 +48,11 @@ auditFunction <- function(path) {
       c(Pun, TRO),
       .after = Tec
     ) %>% 
-    select(Name, Acc:Wor)
+    select(Name, Club, Acc:Wor)
   
   colnames(FMAttributes) <- 
     c(
-      "name",
+      "name", "club",
       # Attributes
       playerData %>% 
         select(
@@ -75,7 +75,7 @@ auditFunction <- function(path) {
       acceleration:`work rate`
     ) %>% 
     left_join(
-      FMAttributes,
+      FMAttributes %>% select(!club),
       by = "name", 
       suffix = c(".Forum", ".FM")
     ) %>% 
@@ -154,17 +154,29 @@ auditFunction <- function(path) {
       version = if_else(version == "x", "FM", "Forum")
     )
   
+  auditTeams <- 
+    playerData %>% 
+    select(name, team) %>% 
+    left_join(
+      FMAttributes %>% select(name, club),
+      by = c("name")
+    ) %>% 
+    filter(team != club)
+  
   list(
     "Attributes" = auditAttributes,
-    "Players" = auditPlayers
+    "Players" = auditPlayers,
+    "Teams" = auditTeams
   ) %>% 
     return()
 }
 
 list <- 
-  auditFunction("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/attributes.html")
+  auditFunction("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/academy.html")
 
-attributes <- list$Attributes
+attributes <- list$Attributes 
+teams <- list$Teams
+
 
 
 
