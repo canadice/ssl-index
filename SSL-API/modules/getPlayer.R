@@ -109,6 +109,83 @@ function(active = FALSE) {
     )
 }
 
+#* Get all players from the portal database
+#* @get /getUpdatedBuilds
+#* @serializer json
+#* 
+function() {
+  portalQuery(
+    paste(
+      "SELECT pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
+      pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name AS team, pd.affiliate, pd.birthplace, 
+      -- Check if nationality is 3 letters and map it to the full name from portaldb.nationality, else show pd.nationality
+        CASE 
+            WHEN LENGTH(pd.nationality) = 3 THEN n.name
+            ELSE pd.nationality 
+        END AS nationality,
+      pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
+      pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
+      pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
+      pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk, pd.acceleration, pd.agility,
+      pd.balance, pd.`jumping reach`, pd.`natural fitness`, pd.pace, pd.stamina, pd.strength, 
+      pd.corners, pd.crossing, pd.dribbling, pd.finishing, pd.`first touch`, pd.`free kick`, 
+      pd.heading, pd.`long shots`, pd.`long throws`, pd.marking, pd.passing, pd.`penalty taking`, 
+      pd.tackling, pd.technique, pd.aggression, pd.anticipation, pd.bravery, pd.composure, 
+      pd.concentration, pd.decisions, pd.determination, pd.flair, pd.leadership, pd.`off the ball`, 
+      pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
+      pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
+      pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
+      mb.username, mbuf.fid4 AS discord, us.desc AS `userStatus`, ps.desc AS `playerStatus`, 
+            CASE 
+              WHEN pd.tpe <= 350 THEN 1000000
+              WHEN pd.tpe BETWEEN 351 AND 500 THEN 1500000
+              WHEN pd.tpe BETWEEN 501 AND 650 THEN 2000000
+              WHEN pd.tpe BETWEEN 651 AND 800 THEN 2500000
+              WHEN pd.tpe BETWEEN 801 AND 950 THEN 3000000
+              WHEN pd.tpe BETWEEN 951 AND 1100 THEN 3500000
+              WHEN pd.tpe BETWEEN 1101 AND 1250 THEN 4000000
+              WHEN pd.tpe BETWEEN 1251 AND 1400 THEN 4500000
+              WHEN pd.tpe BETWEEN 1401 AND 1550 THEN 5000000
+              WHEN pd.tpe BETWEEN 1551 AND 1700 THEN 5500000
+              WHEN pd.tpe > 1700 THEN 6000000
+              ELSE NULL
+          END AS `minimum salary`,
+          SUM(CASE WHEN bt.status = 1 THEN bt.transaction ELSE 0 END) AS bankBalance,
+          n.region,
+          o.name AS organization
+        FROM weeklybuilds pd
+        LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
+        LEFT JOIN useractivity ua ON pd.uid = ua.uid
+        LEFT JOIN userstatuses us ON ua.status_u = us.status
+        LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
+        LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
+        LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
+        LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation OR pd.nationality = n.name
+        LEFT JOIN banktransactions bt ON pd.pid = bt.pid
+        LEFT JOIN organizations o ON pd.team = o.id
+        GROUP BY pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
+         pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name, pd.affiliate, pd.birthplace, 
+         n.name, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
+         pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
+         pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
+         pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk, pd.acceleration, pd.agility,
+         pd.balance, pd.`jumping reach`, pd.`natural fitness`, pd.pace, pd.stamina, pd.strength, 
+         pd.corners, pd.crossing, pd.dribbling, pd.finishing, pd.`first touch`, pd.`free kick`, 
+         pd.heading, pd.`long shots`, pd.`long throws`, pd.marking, pd.passing, pd.`penalty taking`, 
+         pd.tackling, pd.technique, pd.aggression, pd.anticipation, pd.bravery, pd.composure, 
+         pd.concentration, pd.decisions, pd.determination, pd.flair, pd.leadership, pd.`off the ball`, 
+         pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
+         pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
+         pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
+         mb.username, mbuf.fid4, us.desc, ps.desc, n.region
+        ORDER BY pd.created;"
+    )
+  ) %>% 
+    mutate(
+      across(where(is.numeric), ~replace_na(.x, 5))
+    )
+}
+
 #* Get single players from the portal database, only one of `name` and `pid` or `username` and `uid` should be used at the same time
 #* @get /getPlayer
 #* @serializer json
