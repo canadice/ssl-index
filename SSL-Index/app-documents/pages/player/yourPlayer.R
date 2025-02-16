@@ -130,7 +130,7 @@ yourPlayerServer <- function(id, uid, parent, updated) {
               playerInfoBoxServer(id = "playerInfo", pid = value$pid, mainSession = parent)
             },
             onRejected = function(reason) {
-              showToast("error", "An error occurred when loading your player. Please notify the BoD.")
+              showToast(.options = myToastOptions,"error", "An error occurred when loading your player. Please notify the BoD.")
             }
           )
       }) %>% 

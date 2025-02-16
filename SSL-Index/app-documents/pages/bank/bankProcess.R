@@ -142,7 +142,7 @@ bankProcessServer <- function(id, userinfo) {
               
               approveTransaction(data[selected,], uid = userinfo$uid)
               
-              showToast("success", "The selected transactions have successfully been approved.")
+              showToast(.options = myToastOptions,"success", "The selected transactions have successfully been approved.")
               
               updated(updated() + 1)
             }
@@ -161,7 +161,7 @@ bankProcessServer <- function(id, userinfo) {
               
               rejectTransaction(data[selected,], uid = userinfo$uid)
               
-              showToast("success", "The selected transactions have successfully been rejected.")
+              showToast(.options = myToastOptions,"success", "The selected transactions have successfully been rejected.")
               
               updated(updated() + 1)
             }

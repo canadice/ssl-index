@@ -212,7 +212,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
               
               completeRetirement(pid = data$pid)
               
-              showToast(type = "success", "You have now retired your player.")
+              showToast(.options = myToastOptions,type = "success", "You have now retired your player.")
               
               updateTabItems(mainSession, "tabs", "welcome")
             }

@@ -839,11 +839,11 @@ createPlayerServer <- function(id, userinfo, parent) {
         # editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% print()
         
         if(checkIfAlreadyApproving(userinfo$uid)) {
-          showToast("error", "You already have a player waiting for approval. You cannot submit another one.")
+          showToast(.options = myToastOptions,"error", "You already have a player waiting for approval. You cannot submit another one.")
         } else if(sapply(c(input$lastName, input$nationality, input$footedness, input$hairColor, input$hairLength, input$skinColor), FUN = function(x) x == "", simplify = TRUE) %>% any() | 
            (input$playerType == "Outfield" & (input$traits %>% length() != 2 | input$primary %>% length() != 1 | input$secondary %>% length() != 2))){
           
-          showToast("error", "You have missed to input some information. Please take a look at the highlighted inputs and correct the issues.")
+          showToast(.options = myToastOptions,"error", "You have missed to input some information. Please take a look at the highlighted inputs and correct the issues.")
           
           feedbackDanger("lastName", input$lastName == "", "Please enter at least a last name for your player. If you only want to use one name, please enter it here instead of as a first name.")
           feedbackDanger("nationality", input$nationality == "", "Please enter the nationality of your player.")
@@ -853,25 +853,25 @@ createPlayerServer <- function(id, userinfo, parent) {
           feedbackDanger("skinColor", input$skinColor == "", "Please enter the skin tone for your player.")
           
           if(input$traits %>% length() != 2){
-            showToast("error", "Please select two (2) traits.")
+            showToast(.options = myToastOptions,"error", "Please select two (2) traits.")
           }
           
           if(input$primary %>% length() != 1){
-            showToast("error", "You can select one (1) primary position.")
+            showToast(.options = myToastOptions,"error", "You can select one (1) primary position.")
           }
           
           if(input$secondary %>% length() != 2){
-            showToast("error", "You can select two (2) secondary positions.")
+            showToast(.options = myToastOptions,"error", "You can select two (2) secondary positions.")
           }
           
         } else if(checkDuplicatedName(input$firstName, input$lastName)){
-          showToast("error", "Another player in the league's history have used this name. Please change it to something else.")
+          showToast(.options = myToastOptions,"error", "Another player in the league's history have used this name. Please change it to something else.")
         } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
-          showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
+          showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
         } else if(tpeBanked() < 0){
-          showToast("error", "You have spent too much TPE. Please adjust and resubmit.")
+          showToast(.options = myToastOptions,"error", "You have spent too much TPE. Please adjust and resubmit.")
         } else if(tpeBanked() > 100){
-          showToast("error", "Please allocate as much of the TPE you are given as possible. If you need help with your build, reach out to an Academy coach on Discord.")
+          showToast(.options = myToastOptions,"error", "Please allocate as much of the TPE you are given as possible. If you need help with your build, reach out to an Academy coach on Discord.")
         } else {
           checkBuild(input, tpeBanked(), session)
         }
@@ -885,7 +885,7 @@ createPlayerServer <- function(id, userinfo, parent) {
         
         submitBuild(input, tpeBanked(), userinfo)
         
-        showToast("success", "Your player has been submitted for approval. You will be notified via the forum or Discord by a member of the BoD when the approval has been completed or if there are any issues.")        
+        showToast(.options = myToastOptions,"success", "Your player has been submitted for approval. You will be notified via the forum or Discord by a member of the BoD when the approval has been completed or if there are any issues.")        
         
         updateTabItems(parent, "tabs", "welcome")
       }) %>% 

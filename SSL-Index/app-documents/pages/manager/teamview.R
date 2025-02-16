@@ -96,7 +96,7 @@ managerTeamServer <- function(id, userinfo) {
                 
               } else {
                 shinyjs::hide("selectedPlayer")
-                showToast(type = "error", "The chosen player does not need to regress.")
+                showToast(.options = myToastOptions,type = "error", "The chosen player does not need to regress.")
               }
                     
             }

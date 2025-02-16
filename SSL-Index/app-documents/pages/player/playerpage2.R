@@ -755,7 +755,7 @@ playerPage2Server <- function(id, uid, parent) {
               playerInfoBoxServer(id = "playerInfo", pid = value$pid)
             },
             onRejected = function(reason) {
-              showToast("error", "An error occurred when loading your player. Please notify the BoD.")
+              showToast(.options = myToastOptions,"error", "An error occurred when loading your player. Please notify the BoD.")
             }
           )
       }) %>% 
@@ -1158,7 +1158,7 @@ playerPage2Server <- function(id, uid, parent) {
             if(bank < 0){
               modalOverdraft()
             } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
-              showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
+              showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
             } else {
               update <- updateSummary(current = current, inputs = input) %>% 
                 left_join(
@@ -1189,7 +1189,7 @@ playerPage2Server <- function(id, uid, parent) {
               
               if(nrow(update) > 0){
                 if(!(redistributing() | rerolling()) & any((update$old - update$new) > 0) ){
-                  showToast("error", paste("You cannot reduce attributes in a regular update.",
+                  showToast(.options = myToastOptions,"error", paste("You cannot reduce attributes in a regular update.",
                                            paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")))
                   # Checks for the total sum of reduced attributes
                 } else if(redistributing()){
@@ -1214,11 +1214,11 @@ playerPage2Server <- function(id, uid, parent) {
                     nrTraits <- length(currentTraits)
                     
                     if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
-                      showToast("error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
+                      showToast(.options = myToastOptions,"error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
                     } else if(input$traits %>% length() != nrTraits) {
-                      showToast("error", "You have selected the wrong number of traits.")
+                      showToast(.options = myToastOptions,"error", "You have selected the wrong number of traits.")
                     } else if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
-                      showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                      showToast(.options = myToastOptions,"error", "You have removed more than the allowed 100 TPE in the redistribution.")  
                     } else {
                       update <- 
                         update %>% 
@@ -1232,7 +1232,7 @@ playerPage2Server <- function(id, uid, parent) {
                     }
                   } else {
                     if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
-                      showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                      showToast(.options = myToastOptions,"error", "You have removed more than the allowed 100 TPE in the redistribution.")  
                     } else {
                       modalVerify(update, session = session)
                     }
@@ -1259,9 +1259,9 @@ playerPage2Server <- function(id, uid, parent) {
                     nrTraits <- length(currentTraits)
                     
                     if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
-                      showToast("error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
+                      showToast(.options = myToastOptions,"error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
                     } else if(input$traits %>% length() != nrTraits) {
-                      showToast("error", "You have selected the wrong number of traits.")
+                      showToast(.options = myToastOptions,"error", "You have selected the wrong number of traits.")
                     } else {
                       update <- 
                         update %>% 
@@ -1309,24 +1309,24 @@ playerPage2Server <- function(id, uid, parent) {
         ) %...>%
           with({
             if(bank < 0){
-              showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+              showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
             } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
-              showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
+              showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
             } else if(bank > 24){
               # Error shown if user has regressed too much
-              showToast("error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
+              showToast(.options = myToastOptions,"error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
             } else {
               update <- updateSummary(current = current, inputs = input)
               
               if(nrow(update) > 0){
                 if(any((update$old - update$new) < 0)){
-                  showToast("error", paste("You cannot increase attributes in a regression update.",
+                  showToast(.options = myToastOptions,"error", paste("You cannot increase attributes in a regression update.",
                                            paste("Return ", paste0(update$attribute[(update$old - update$new) < 0], collapse = ", "), " to their original values.")))
                 } else {
                   modalVerify(update, session = session)
                 }
               } else {
-                showToast(type = "warning", "You have not changed your build yet, there is nothing to update.")
+                showToast(.options = myToastOptions,type = "warning", "You have not changed your build yet, there is nothing to update.")
               }
             }
           })
@@ -1446,7 +1446,7 @@ playerPage2Server <- function(id, uid, parent) {
               
               updateTPE(pid = value$pid, tpe = tpeSummary)
               
-              showToast(type = "success", "You have successfully claimed your Activity Check for the week!")
+              showToast(.options = myToastOptions,type = "success", "You have successfully claimed your Activity Check for the week!")
               
               tpeBanked(
                 tpeBanked() %>% 
@@ -1497,7 +1497,7 @@ playerPage2Server <- function(id, uid, parent) {
               
               updateTPE(pid = value$pid, tpe = tpeSummary)
               
-              showToast(type = "success", "You have successfully claimed your Training Camp for the season.")
+              showToast(.options = myToastOptions,type = "success", "You have successfully claimed your Training Camp for the season.")
               
               tpeBanked(
                 tpeBanked() %>% 
@@ -1547,7 +1547,7 @@ playerPage2Server <- function(id, uid, parent) {
             onFulfilled = function(value){
               completeRetirement(pid = value$pid)
               
-              showToast(type = "success", "You have now retired your player.")
+              showToast(.options = myToastOptions,type = "success", "You have now retired your player.")
               
               updateTabItems(parent, "tabs", "welcome")
             }

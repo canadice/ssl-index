@@ -74,7 +74,7 @@ bankDepositServer <- function(id, userinfo) {
                 }
               )
           } else {
-            showToast("error", "The file does not contain the headers 'player' and/or 'amount'.")
+            showToast(.options = myToastOptions,"error", "The file does not contain the headers 'player' and/or 'amount'.")
             
             NULL
           }
@@ -173,9 +173,9 @@ bankDepositServer <- function(id, userinfo) {
                 )
               
               if(processed$pid %>% duplicated() %>% any()){
-                showToast("error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same player listed twice.")  
+                showToast(.options = myToastOptions,"error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same player listed twice.")  
               } else if(any(data$pid == -99)){
-                showToast("warning", "At least one player in the submitted csv cannot be found on the forum. They are found in the downloaded csv file for checking and re-import.")
+                showToast(.options = myToastOptions,"warning", "At least one player in the submitted csv cannot be found on the forum. They are found in the downloaded csv file for checking and re-import.")
                 
                 click("downloadData")
                 
@@ -187,7 +187,7 @@ bankDepositServer <- function(id, userinfo) {
                 
                 addBankTransaction(uid = userinfo$uid, pid = data$pid, source = data$source, transaction = data$amount, status = 0)
                 
-                showToast(type = "success", "You have successfully deposited a subset of the transactions.")
+                showToast(.options = myToastOptions,type = "success", "You have successfully deposited a subset of the transactions.")
                 
                 output$informationUI <- renderUI({
                   tagList(
@@ -204,7 +204,7 @@ bankDepositServer <- function(id, userinfo) {
                 
                 addBankTransaction(uid = userinfo$uid, pid = data$pid, source = data$source, transaction = data$amount, status = 0)
                 
-                showToast(type = "success", "You have successfully deposited the transaction.")
+                showToast(.options = myToastOptions,type = "success", "You have successfully deposited the transaction.")
                 
                 output$informationUI <- renderUI({
                   tagList(

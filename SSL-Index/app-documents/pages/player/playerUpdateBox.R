@@ -605,9 +605,9 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               bank <- tpeBanked()
               
               if(bank < 0){
-                showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+                showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
               } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
-                showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
+                showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
               } else if(updating() == "updating"){
                 ##### UPDATING #####
                 update <- 
@@ -629,13 +629,13 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 
                 if(nrow(update) > 0){
                   if(any((update$old - update$new) > 0)){
-                    showToast("error", paste("You cannot reduce attributes in a regular update.",
+                    showToast(.options = myToastOptions,"error", paste("You cannot reduce attributes in a regular update.",
                                              paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")))
                   } else {
                     modalVerify(update, session = session)
                   }
                 } else {
-                  showToast(type = "warning", "You have not changed your build yet, there is nothing to update.")
+                  showToast(.options = myToastOptions,type = "warning", "You have not changed your build yet, there is nothing to update.")
                 }
               } else {
                 ##### REDISTRIBUTING and REROLLING #####
@@ -707,11 +707,11 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   }
                   
                   if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
-                    showToast("error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
+                    showToast(.options = myToastOptions,"error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
                   } else if(input$traits %>% length() != nrTraits) {
-                    showToast("error", "You have selected the wrong number of traits.")
+                    showToast(.options = myToastOptions,"error", "You have selected the wrong number of traits.")
                   } else if(updating() == "redistributing" & (changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
-                    showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                    showToast(.options = myToastOptions,"error", "You have removed more than the allowed 100 TPE in the redistribution.")  
                   } else {
                     update <- 
                       update %>% 
@@ -758,13 +758,13 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     if(nrow(update) > 0){
                       modalVerify(update, session)  
                     } else {
-                      showToast("warning", "You haven't changed anything in your build.")
+                      showToast(.options = myToastOptions,"warning", "You haven't changed anything in your build.")
                     }
                     
                   }
                 } else {
                   if(updating() == "redistributing" & (changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
-                    showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                    showToast(.options = myToastOptions,"error", "You have removed more than the allowed 100 TPE in the redistribution.")  
                   } else {
                     update <- 
                       update %>% 
@@ -806,7 +806,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     if(nrow(update) > 0){
                       modalVerify(update, session)  
                     } else {
-                      showToast("warning", "You haven't changed anything in your build.")
+                      showToast(.options = myToastOptions,"warning", "You haven't changed anything in your build.")
                     }
                   }
                 }
@@ -1006,24 +1006,24 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               bank <- tpeBanked()
               
               if(bank < 0){
-                showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+                showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
               } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
-                showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
+                showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
               } else if(bank > 24){
                 # Error shown if user has regressed too much
-                showToast("error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
+                showToast(.options = myToastOptions,"error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
               } else {
                 update <- updateSummary(current = data, inputs = input)
                 
                 if(nrow(update) > 0){
                   if(any((update$old - update$new) < 0)){
-                    showToast("error", paste("You cannot increase attributes in a regression update.",
+                    showToast(.options = myToastOptions,"error", paste("You cannot increase attributes in a regression update.",
                                              paste("Return ", paste0(update$attribute[(update$old - update$new) < 0], collapse = ", "), " to their original values.")))
                   } else {
                     modalVerify(update, session = session)
                   }
                 } else {
-                  showToast(type = "warning", "You have not changed your build yet, there is nothing to update.")
+                  showToast(.options = myToastOptions,type = "warning", "You have not changed your build yet, there is nothing to update.")
                 }
               }
             }
@@ -1214,7 +1214,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               updating("")
               
-              showToast("success", "You have successfully updated your player!")
+              showToast(.options = myToastOptions,"success", "You have successfully updated your player!")
               
               shinyjs::show("attributeOverview")
               shinyjs::hide("attributeUpdate")

@@ -201,7 +201,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
       WHERE uid = ", uid, "AND status_p = -1;"
       )
     ),
-    error = function(e) showToast("error", paste("Error in inserting TPE History.", e, sep = "\n"))
+    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in inserting TPE History.", e, sep = "\n"))
   )
   
   data <- portalQuery(
@@ -240,7 +240,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
         ";"
       )
     ),
-    error = function(e) showToast("error", paste("Error in inserting Update History.", e, sep = "\n"))
+    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in inserting Update History.", e, sep = "\n"))
   )
   
   data <- 
@@ -256,7 +256,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
   
   tryCatch(
     addBankTransaction(uid = 1, pid = data$pid, source = "Academy Contract", transaction = 3000000, status = 1),
-    error = function(e) showToast("error", paste("Error in adding academy contract.", e, sep = "\n"))
+    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in adding academy contract.", e, sep = "\n"))
   )
   
   today <- (now() %>% with_tz("US/Pacific") %>% as_date() %>% as.numeric())
@@ -271,18 +271,18 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
   if(tpe$tpe > 0){
     tryCatch(
       tpeLog(uid = 1, pid = data$pid, tpe = tpe),
-      error = function(e) showToast("error", paste("Error in logging catch-up TPE.", e, sep = "\n"))
+      error = function(e) showToast(.options = myToastOptions,"error", paste("Error in logging catch-up TPE.", e, sep = "\n"))
     )
     
     tryCatch(
       updateTPE(pid = data$pid, tpe = tpe),
-      error = function(e) showToast("error", paste("Error in adding catch-up TPE.", e, sep = "\n"))
+      error = function(e) showToast(.options = myToastOptions,"error", paste("Error in adding catch-up TPE.", e, sep = "\n"))
     )
   }
   
   tryCatch(
     sendApprovedCreate(data),
-    error = function(e) showToast("error", paste("Error in sending approved create to Discord.", e, sep = "\n"))
+    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in sending approved create to Discord.", e, sep = "\n"))
   )
   
   tryCatch(
@@ -291,7 +291,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
             "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
             "WHERE uid = ", uid, "AND status_p = -1;")
     ),
-    error = function(e) showToast("error", paste("Error in updating player data.", e, sep = "\n"))
+    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in updating player data.", e, sep = "\n"))
   )
   
 }

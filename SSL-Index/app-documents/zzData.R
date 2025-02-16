@@ -539,3 +539,24 @@ roleAttributes <- list(
   'Wing Back - Defend' = list('Acceleration' = 2,'AerialReach' = 0,'Aggression' = 0,'Agility' = 1,'Anticipation' = 2,'Balance' = 0,'Bravery' = 0,'CommandOfArea' = 0,'Communication' = 0,'Composure' = 0,'Concentration' = 1,'Corners' = 0,'Crossing' = 1,'Decisions' = 1,'Determination' = 0,'Dribbling' = 1,'Eccentricity' = 0,'Finishing' = 0,'FirstTouch' = 1,'Flair' = 0,'FreeKick' = 0,'Handling' = 0,'Heading' = 0,'JumpingReach' = 0,'Kicking' = 0,'Leadership' = 0,'LongShots' = 0,'LongThrows' = 0,'Marking' = 2,'NaturalFitness' = 0,'OffTheBall' = 1,'OneOnOnes' = 0,'Pace' = 1,'Passing' = 1,'PenaltyTaking' = 0,'Positioning' = 2,'TendencyToPunch' = 0,'Reflexes' = 0,'TendencyToRush' = 0,'Stamina' = 2,'Strength' = 0,'Tackling' = 2,'Teamwork' = 2,'Technique' = 1,'Throwing' = 0,'Vision' = 0,'WorkRate' = 2),
   'Wing Back - Support' = list('Acceleration' = 2,'AerialReach' = 0,'Aggression' = 0,'Agility' = 1,'Anticipation' = 1,'Balance' = 0,'Bravery' = 0,'CommandOfArea' = 0,'Communication' = 0,'Composure' = 0,'Concentration' = 1,'Corners' = 0,'Crossing' = 2,'Decisions' = 1,'Determination' = 0,'Dribbling' = 2,'Eccentricity' = 0,'Finishing' = 0,'FirstTouch' = 1,'Flair' = 0,'FreeKick' = 0,'Handling' = 0,'Heading' = 0,'JumpingReach' = 0,'Kicking' = 0,'Leadership' = 0,'LongShots' = 0,'LongThrows' = 0,'Marking' = 2,'NaturalFitness' = 0,'OffTheBall' = 2,'OneOnOnes' = 0,'Pace' = 1,'Passing' = 1,'PenaltyTaking' = 0,'Positioning' = 1,'TendencyToPunch' = 0,'Reflexes' = 0,'TendencyToRush' = 0,'Stamina' = 2,'Strength' = 0,'Tackling' = 2,'Teamwork' = 2,'Technique' = 1,'Throwing' = 0,'Vision' = 0,'WorkRate' = 2)
 )
+
+# use this list for all your toasts
+myToastOptions <- list(
+  positionClass = "toast-bottom-center",
+  progressBar = TRUE,
+  # The length the toast is shown
+  timeOut = 10000,
+  closeButton = TRUE,
+  newestOnTop = TRUE,
+  preventDuplicates = FALSE,
+  # How long it takes for toast to appear
+  showDuration = 500,
+  # How long it takes for toast to disappear
+  hideDuration = 1000,
+  # How long the toast is shown after hovering over it
+  extendedTimeOut = 2500,
+  showEasing = "linear",
+  hideEasing = "linear",
+  showMethod = "fadeIn",
+  hideMethod = "fadeOut"
+)

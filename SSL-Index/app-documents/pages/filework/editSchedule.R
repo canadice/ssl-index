@@ -102,7 +102,7 @@ editScheduleServer <- function(id, userinfo) {
                   
                   updated(updated() + 1)
                   
-                  showToast(type = "success", "The schedule has been updated!")
+                  showToast(.options = myToastOptions,type = "success", "The schedule has been updated!")
                 }) %>% 
                   bindEvent(
                     input[[paste0("update_", i)]]

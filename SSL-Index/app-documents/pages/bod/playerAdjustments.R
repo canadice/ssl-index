@@ -436,7 +436,7 @@ playerEditServer <- function(id, uid) {
               
               updated(updated() + 1)
               
-              showToast(type = "success", "The player has been updated!")
+              showToast(.options = myToastOptions,type = "success", "The player has been updated!")
             }
           )
       }) %>% 

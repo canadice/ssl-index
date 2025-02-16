@@ -182,7 +182,7 @@ contractProcessServer <- function(id, uid) {
         
         updated(updated() + 1)
         
-        showToast(type = "success", "The contract has been updated!")
+        showToast(.options = myToastOptions,type = "success", "The contract has been updated!")
       }) %>% 
         bindEvent(
           input$update

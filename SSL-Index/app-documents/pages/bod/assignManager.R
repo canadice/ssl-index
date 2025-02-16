@@ -68,7 +68,7 @@ assignManagerServer <- function(id, userinfo) {
           
           updated(updated() + 1)
           
-          showToast(type = "success", "The managers have been updated!")
+          showToast(.options = myToastOptions,type = "success", "The managers have been updated!")
         }) %>% 
           bindEvent(
             input[[paste0("update_", i)]]

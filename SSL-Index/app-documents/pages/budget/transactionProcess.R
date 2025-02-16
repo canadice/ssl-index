@@ -144,7 +144,7 @@ tradeProcessServer <- function(id, uid) {
           ((input$playerB_0 %>% is.null()) & (input$pickB_0 %>% is.null())) |
           ((input$playerB_0 == "") & (input$pickB_0 == ""))
         ){
-          showToast("error", "At least one asset must be sent by both teams.")
+          showToast(.options = myToastOptions,"error", "At least one asset must be sent by both teams.")
         } else {
           
           players <- tibble(
@@ -174,7 +174,7 @@ tradeProcessServer <- function(id, uid) {
           
           updateTransaction(transaction = transaction, players = players, picks = picks)
           
-          showToast(type = "success", "The trade has been processed!")
+          showToast(.options = myToastOptions,type = "success", "The trade has been processed!")
         }
       }) %>% 
         bindEvent(

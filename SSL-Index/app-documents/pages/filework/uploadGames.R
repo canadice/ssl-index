@@ -600,7 +600,7 @@ uploadGameServer <- function(id) {
         
         disable("uploadData")
         
-        showToast("success", "You have successfully uploaded the recent matchday!")
+        showToast(.options = myToastOptions,"success", "You have successfully uploaded the recent matchday!")
         
       }) %>% 
         bindEvent(

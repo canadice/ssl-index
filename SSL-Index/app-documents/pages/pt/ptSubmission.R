@@ -83,7 +83,7 @@ submitPTServer <- function(id, userinfo) {
               )
               
           } else {
-            showToast("error", "The file does not contain the headers 'username' and/or 'tpe'.")
+            showToast(.options = myToastOptions,"error", "The file does not contain the headers 'username' and/or 'tpe'.")
             
             NULL
           }
@@ -151,7 +151,7 @@ submitPTServer <- function(id, userinfo) {
           then(
             onFulfilled = function(data){
               if(any(data$pid == -99)){
-                showToast("warning", "At least one user in the submitted csv cannot be found on the forum. They are found in the downloaded csv file for checking and re-import.")
+                showToast(.options = myToastOptions,"warning", "At least one user in the submitted csv cannot be found on the forum. They are found in the downloaded csv file for checking and re-import.")
                 
                 click("downloadData")
                 
@@ -168,9 +168,9 @@ submitPTServer <- function(id, userinfo) {
                   ptGradingVerify(session = session)
                 
               } else if(data$pid %>% duplicated() %>% any()){
-                showToast("error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same user listed twice.")
+                showToast(.options = myToastOptions,"error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same user listed twice.")
               } else if(nchar(input$taskName) > 32){
-                showToast("error", "You need to shorten the task name.")
+                showToast(.options = myToastOptions,"error", "You need to shorten the task name.")
                 
                 shinyFeedback::feedbackDanger("taskName", show = TRUE, text = "You need to enter a shorter task name!")  
               } else {
@@ -216,7 +216,7 @@ submitPTServer <- function(id, userinfo) {
                   }
                 )
               
-              showToast(type = "success", "You have successfully submitted a graded PT task.")
+              showToast(.options = myToastOptions,type = "success", "You have successfully submitted a graded PT task.")
               
               sendGradedTPE(source = input$taskName, tpe = data)
               # sendTest()
