@@ -63,14 +63,18 @@ academyIndexServer <- function(id) {
         outfieldData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data %>% 
-                select(
-                  name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
-                ) 
-              
-              currentData %>% 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
           
@@ -80,18 +84,22 @@ academyIndexServer <- function(id) {
         outfieldData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data %>% 
-                select(
-                  name:club, 
-                  xg,
-                  xa:`fk shots`,
-                  `open play key passes`:`goals outside box`,
-                  `press%`:`pen adj xG`
-                ) 
-              
-              currentData %>% 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:club, 
+                    xg,
+                    xa:`fk shots`,
+                    `open play key passes`:`goals outside box`,
+                    `press%`:`pen adj xG`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         
@@ -101,14 +109,18 @@ academyIndexServer <- function(id) {
         keeperData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data %>% 
-                select(
-                  name:`save%`
-                ) 
-              
-              currentData %>% 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:`save%`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         
@@ -118,15 +130,19 @@ academyIndexServer <- function(id) {
         keeperData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data %>% 
-                select(
-                  name:club, 
-                  `penalties faced`:`xg prevented`
-                ) 
-              
-              currentData %>% 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:club, 
+                    `penalties faced`:`xg prevented`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         
