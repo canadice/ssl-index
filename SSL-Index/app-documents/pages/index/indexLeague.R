@@ -98,7 +98,7 @@ leagueIndexServer <- function(id) {
                   "Cup"
                 )
             )
-          } else if (season == 12){
+          } else if (season %in% c(12, 18)){
             selectInput(
               inputId = session$ns("selectedLeague"),
               label = "League",
@@ -108,7 +108,7 @@ leagueIndexServer <- function(id) {
                   "Major" = "1",
                   "Minor" = "2",
                   "Cup",
-                  "WSFC"
+                  "WSFC" = "5"
                 )
             )
           } else if (season < 12){
@@ -175,13 +175,17 @@ leagueIndexServer <- function(id) {
           outfieldData() %>% 
             then(
               onFulfilled = function(data){
-                data %>% 
-                  select(
-                    name, club, !!sym(stat)
-                  ) %>% 
-                  arrange(!!sym(stat) %>% desc()) %>% 
-                  slice_head(n = 10) %>% 
-                  leaderReactable()
+                if(data %>% is_empty()){
+                  # SHOW NOTHING
+                } else {
+                  data %>% 
+                    select(
+                      name, club, !!sym(stat)
+                    ) %>% 
+                    arrange(!!sym(stat) %>% desc()) %>% 
+                    slice_head(n = 10) %>% 
+                    leaderReactable()
+                }
               }
             )
         })
@@ -211,13 +215,17 @@ leagueIndexServer <- function(id) {
           keeperData() %>% 
             then(
               onFulfilled = function(data){
-                data %>% 
-                  select(
-                    name, club, !!sym(stat)
-                  ) %>% 
-                  arrange(!!sym(stat) %>% desc()) %>% 
-                  slice_head(n = 10) %>% 
-                  leaderReactable()
+                if(data %>% is_empty()){
+                  # SHOW NOTHING
+                } else {
+                  data %>% 
+                    select(
+                      name, club, !!sym(stat)
+                    ) %>% 
+                    arrange(!!sym(stat) %>% desc()) %>% 
+                    slice_head(n = 10) %>% 
+                    leaderReactable()
+                }
               }
             )
         })
@@ -228,14 +236,18 @@ leagueIndexServer <- function(id) {
         outfieldData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data %>% 
-                select(
-                  name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
-                ) 
-              
-              currentData %>% 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
           
@@ -245,18 +257,22 @@ leagueIndexServer <- function(id) {
         outfieldData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data %>% 
-                select(
-                  name:club, 
-                  xg,
-                  xa:`fk shots`,
-                  `open play key passes`:`goals outside box`,
-                  `press%`:`pen adj xG`
-                ) 
-              
-              currentData %>% 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:club, 
+                    xg,
+                    xa:`fk shots`,
+                    `open play key passes`:`goals outside box`,
+                    `press%`:`pen adj xG`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         
@@ -266,14 +282,18 @@ leagueIndexServer <- function(id) {
         keeperData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data %>% 
-                select(
-                  name:`save%`
-                ) 
-              
-              currentData %>% 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:`save%`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         
@@ -283,15 +303,19 @@ leagueIndexServer <- function(id) {
         keeperData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data %>% 
-                select(
-                  name:club, 
-                  `penalties faced`:`xg prevented`
-                ) 
-              
-              currentData %>% 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:club, 
+                    `penalties faced`:`xg prevented`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         
