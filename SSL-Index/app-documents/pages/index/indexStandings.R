@@ -64,7 +64,7 @@ leagueStandingsServer <- function(id) {
                 "Cup" = "0"
               )
           )
-        } else if (season == 12){
+        } else if (season %in% c(12, 18)){
           selectInput(
             inputId = session$ns("selectedLeague"),
             label = "League",
@@ -72,7 +72,8 @@ leagueStandingsServer <- function(id) {
               c(
                 "Major" = "1",
                 "Minor" = "2",
-                "Cup" = "0"
+                "Cup" = "0",
+                "WSFC" = "5"
               )
           )
         } else if (season < 12){
