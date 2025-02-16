@@ -63,7 +63,7 @@ leagueScheduleServer <- function(id) {
                 "Cup" = "0"
               )
           )
-        } else if (season == 12){
+        } else if (season %in% c(12, 18)){
           selectInput(
             inputId = session$ns("selectedLeague"),
             label = "League",
@@ -72,7 +72,8 @@ leagueScheduleServer <- function(id) {
                 "ALL",
                 "Major" = "1",
                 "Minor" = "2",
-                "Cup" = "0"
+                "Cup" = "0",
+                "WSFC" = "5"
               )
           )
         } else if (season < 12){
@@ -141,6 +142,7 @@ leagueScheduleServer <- function(id) {
                 MatchType == -1 ~ "Friendlies",
                 MatchType == 0 ~ "Cup",
                 MatchType == 1 ~ "Major League",
+                MatchType == 5 ~ "WSFC",
                 TRUE ~ "Minor League"
               )
             ) %>% 
