@@ -120,6 +120,7 @@ leagueStandingsServer <- function(id) {
                 NULL 
               } else {
                 data %>% 
+                  select(!GoalDifferential) %>% 
                   reactable(
                     pagination = FALSE,
                     defaultColDef = colDef(
