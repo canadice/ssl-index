@@ -172,7 +172,7 @@ auditFunction <- function(path) {
 }
 
 list <- 
-  auditFunction("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/academy.html")
+  auditFunction("D:/Documents/Sports Interactive/Football Manager 2024/EXPORTS/academy attributes.html")
 
 attributes <- list$Attributes 
 teams <- list$Teams

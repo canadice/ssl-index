@@ -1,10 +1,10 @@
 SET @uid = 1; -- Variable for user ID
-SET @pid = 5600; -- Variable for player ID
+SET @pid = 5563; -- Variable for player ID
 
 -- New values
-SET @new_first = 'Denis'; 
-SET @new_last = 'Mobek'; 
-SET @new_name = 'Denis Mobek'; 
+SET @new_first = 'Kim'; 
+SET @new_last = 'Minjeong'; 
+SET @new_name = 'Kim Minjeong'; 
 SET @new_skin = '1'; 
 SET @new_height = 76; 
 SET @new_weight = 220; 
