@@ -471,40 +471,35 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                       ) %>% 
                       ungroup()
                     
+                    
+                    
                     ## Calculates number of swaps
-                    add <- 
-                      summary %>% 
-                      filter(
-                        change %in% c("Addition", "Remove")
+                    swaps <- 
+                      summary %>%
+                      summarize(
+                        Addition = if_else(str_detect(change, "Addition"), n, 0),
+                        Remove = if_else(str_detect(change, "Remove"), n, 0),
+                        Upgrade = if_else(str_detect(change, "Upgrade"), n, 0),
+                        Downgrade = if_else(str_detect(change, "Downgrade"), n, 0)
+                      ) %>% 
+                      summarise(
+                        Addition = sum(Addition),
+                        Remove = sum(Remove),
+                        Upgrade = sum(Upgrade),
+                        Downgrade = sum(Downgrade)
+                      ) %>% 
+                      summarize(
+                        swaps = floor((Addition + Remove)/2) + floor((Upgrade + Downgrade)/2)
                       )
                     
-                    upgrade <- 
+                    summary <-
                       summary %>% 
-                      filter(
-                        change %in% c("Upgrade", "Downgrade")
+                      mutate(
+                        cost = if_else(change == "No Change", cost + if_else(swaps$swaps > 0, swaps$swaps, 0) * 5000000, cost)
                       )
                     
-                    full <- 
-                      summary %>% 
-                      filter(
-                        change %in% c("Addition + Upgrade", "Downgrade + Remove")
-                      )
                     
-                    x <- list(add, upgrade, full)
-                    
-                    for(i in 1:length(x)){
-                      data <- x[[i]]
-                      
-                      if(nrow(data) == 2){
-                        swap <- (sum(data$n) + diff(data$n)) / 2
-                        
-                        summary <-
-                          summary %>% 
-                          mutate(
-                            cost = if_else(change == "No Change", cost + swap * 5000000, cost)
-                          )
-                      } 
-                    }
+                    print(summary)
                     
                     ## Only calculate cost if all 13 positions are accounted for
                     if(summary$n %>% sum() == 13){
@@ -514,9 +509,13 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                     
                     
                     if(summary$cost %>% sum() < 0){
-                      showToast(.options = myToastOptions,"error", "You cannot remove positions from your build, please adjust your positional purchase.")
+                      showToast(.options = myToastOptions,"error", "You cannot only remove positions from your build, please adjust your positional purchase.")
                       
-                      updateActionButton(inputId = session$ns("verifyPurchase"))
+                      updateActionButton(inputId = "verifyPurchase", label = "You cannot only remove positions!")
+                      disable(id = "verifyPurchase")
+                    } else {
+                      updateActionButton(inputId = "verifyPurchase", label = "Verify purchase")
+                      enable(id = "verifyPurchase")
                     }
                     
                   }
@@ -609,7 +608,9 @@ bankOverviewServer <- function(id, uid, parent, updated) {
             footSum()
           ) %>% as.numeric())
         
-        if(totalCost == 0){
+        if(totalCost < 0){
+          showToast(.options = myToastOptions,"error", "You cannot make a negative purchase!")
+        } else if(totalCost == 0){
           showToast(.options = myToastOptions,"warning", "You have not purchased anything yet.")
         } else {
           player() %>% 
