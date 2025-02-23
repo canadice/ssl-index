@@ -89,7 +89,7 @@ suppressMessages({
   
   ## Package for login
   require(sodium, quietly = FALSE)
-  require(shinymanager, quietly = FALSE)
+  # require(shinymanager, quietly = FALSE)
 })
 
 ## Sets up that evaluating futures is done in parallell
@@ -213,6 +213,33 @@ ui <- function(request){
             "dist/js.cookie.min.js"
           )
         ),
+        ## js function for storing cookies
+        tags$script(
+          src = paste0(
+            "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
+            "dist/js.cookie.min.js"
+          )
+        ),
+        tags$script("// script.js
+                      function getCookies(){
+                        var res = Cookies.get();
+                        Shiny.setInputValue('cookies', res);
+                      }
+                    
+                    // script.js
+                      Shiny.addCustomMessageHandler('cookie-set', function(msg){
+                        Cookies.set(msg.name, msg.value);
+                        getCookies();
+                      })
+                      
+                      Shiny.addCustomMessageHandler('cookie-remove', function(msg){
+                        Cookies.remove(msg.name);
+                        getCookies();
+                      })
+                    
+                    $(document).on('shiny:connected', function(ev){
+                      getCookies();
+                    });"),
         tags$script("Shiny.addCustomMessageHandler('cookie-remove', function(msg){
                         Cookies.remove(msg.name);
                         getCookies();
@@ -262,29 +289,7 @@ ui <- function(request){
             flexCol(
               style = "gap: 4px;",
               tagList(
-                # User menu items. Can be extended by adding more actionButtons.
-                # Just remember to connect any button's click event to an action server-side.
-                actionButton(
-                  inputId = "player",
-                  label = "Your Player",
-                  icon = icon("futbol"),
-                  class = "centered-flex-content",
-                  style = "justify-content: flex-start; gap: 8px;"
-                ),
-                actionButton(
-                  inputId = "userbank",
-                  label = "Bank/Store",
-                  icon = icon("building-columns"),
-                  class = "centered-flex-content",
-                  style = "justify-content: flex-start; gap: 8px;"
-                ),
-                actionButton(
-                  inputId = "logout",
-                  label = "Logout",
-                  icon = icon("door-open"),
-                  class = "centered-flex-content",
-                  style = "justify-content: flex-start; gap: 8px;"
-                )
+                uiOutput("fabOutput")  
               )
             )
           )
@@ -294,121 +299,82 @@ ui <- function(request){
   )
 }
 
-## Adds shinymanager authentication to the app
-ui <- 
-  secure_app(
-    ui,
-    lan = "en",
-    status = "primary",
-    ## Login page functionality
-    tags_top = 
-      list(
-        ## js function for storing cookies
-        tags$script(
-          src = paste0(
-            "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
-            "dist/js.cookie.min.js"
-          )
-        ),
-        tags$script("// script.js
-                      function getCookies(){
-                        var res = Cookies.get();
-                        Shiny.setInputValue('cookies', res);
-                      }
-                    
-                    // script.js
-                      Shiny.addCustomMessageHandler('cookie-set', function(msg){
-                        Cookies.set(msg.name, msg.value);
-                        getCookies();
-                      })
-                      
-                      Shiny.addCustomMessageHandler('cookie-remove', function(msg){
-                        Cookies.remove(msg.name);
-                        getCookies();
-                      })
-                    
-                    $(document).on('shiny:connected', function(ev){
-                      getCookies();
-                    });"),
-        tags$div(
-          tags$h4("SSL Portal", style = "align:center"),
-          tags$img(src = "FA.png", width = 100)
-        ),
-        tags$style(
-          type="text/css",
-          "body {font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;}
-          h1, h2, h3, h4, h5 {
-            font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
-            font-weight: 800; font-style: normal;
-          }"
-        )
-      ),
-    tags_bottom = tags$div(
-      tags$a("Register a new user!", href = "https://forum.simulationsoccer.com/member.php?action=register", target = "_blank", style = "float: left;"),
-      tags$a("Forgot password?", href = "https://forum.simulationsoccer.com/member.php?action=lostpw", target = "_blank", style = "float:right;"),
-      tags$br(),
-      div(
-        align = "center",
-        tags$p(actionButton(inputId = "login_guest",
-                          label = "Continue as guest"))
-      )
-    ),
-    fab_position = "none"
-  )
-  
 server <- function(input, output, session) {
   
-  resAuth <- secure_server(
-    check_credentials = customCheckCredentials(),
-    timeout = 45,
-    session = session
+  resAuth <- reactiveValues(
+    uid = NULL, 
+    username = NULL, 
+    usergroup = NULL
   )
   
-  # login as guest
-  observe({
-    token <- shinymanager:::.tok$generate("guest")
-    shinymanager:::.tok$add(token, list(user = "guest", role = "guest", usergroup = 0))
-    shinymanager:::addAuthToQuery(session, token, "en")
-    session$reload()
-  }) %>% 
-    bindEvent(input$login_guest)
-  
-  # Checks saved cookie for automatic login
-  observe({
-    refreshtoken <- getRefreshToken(input$cookies$token)
-    if(refreshtoken %>% nrow() > 0){
-      if((now() %>% as.numeric()) < refreshtoken$expires_at){
-        token <- shinymanager:::.tok$generate(refreshtoken$username)
-        shinymanager:::.tok$add(token, list(
-          uid = refreshtoken$uid, 
-          username = refreshtoken$username, 
-          usergroup = 
-            paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") %>% 
-            str_split(pattern = ",", simplify = TRUE) %>%
-            as.numeric() %>% 
-            as.list()
-        ))
-        shinymanager:::addAuthToQuery(session, token, "en")
-        
-        setRefreshToken(uid = refreshtoken$uid, token = refreshtoken$token)
-        
-        session$reload()
-      }
-    }
-  }) %>% 
-    bindEvent(input$cookies$token, ignoreNULL = TRUE)
-  
+  # # Checks saved cookie for automatic login
+  # observe({
+  #   refreshtoken <- getRefreshToken(input$cookies$token)
+  #   if(refreshtoken %>% nrow() > 0){
+  #     if((now() %>% as.numeric()) < refreshtoken$expires_at){
+  #       token <- shinymanager:::.tok$generate(refreshtoken$username)
+  #       shinymanager:::.tok$add(token, list(
+  #         uid = refreshtoken$uid,
+  #         username = refreshtoken$username,
+  #         usergroup =
+  #           paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") %>%
+  #           str_split(pattern = ",", simplify = TRUE) %>%
+  #           as.numeric() %>%
+  #           as.list()
+  #       ))
+  #       shinymanager:::addAuthToQuery(session, token, "en")
+  # 
+  #       setRefreshToken(uid = refreshtoken$uid, token = refreshtoken$token)
+  # 
+  #       session$reload()
+  #     }
+  #   }
+  # }) %>%
+  #   bindEvent(input$cookies$token, ignoreNULL = TRUE)
+
   ## Removes cookie when logging out
   observe({
     msg <- list(name = "token")
     session$sendCustomMessage("cookie-remove", msg)
-  }) %>% 
+  }) %>%
     bindEvent(input$.shinymanager_logout)
+  
+  observe({
+    showModal(
+      modalDialog(
+        textInput("user", label = "Username:"),
+        passwordInput("password", label = "Password:"),
+        footer = tagList(
+          modalButton("Cancel"), actionButton("loggingIn", "Login"),
+          tags$div(
+            tags$a("Register a new user!", href = "https://forum.simulationsoccer.com/member.php?action=register", target = "_blank", style = "float: left;"),
+            tags$a("Forgot password?", href = "https://forum.simulationsoccer.com/member.php?action=lostpw", target = "_blank", style = "float:right;")  
+          )
+        )
+      )
+    )
+  }) %>% 
+    bindEvent(input$login)
+  
+  observe({
+    res <- customCheckCredentials(user = input$user, password = input$password)
+    
+    if(res$result){
+      removeModal()
+      resAuth$uid <- res$userInfo$uid
+      resAuth$username <- res$userInfo$username
+      resAuth$usergroup <- res$userInfo$usergroup
+    } else {
+      feedbackWarning("password", show = TRUE, text = "Password is incorrect.")
+    }
+  }) %>% 
+    bindEvent(input$loggingIn)
+  
   
   ## Adds all authentication list to a reactive object
   authOutput <- reactive({
     reactiveValuesToList(resAuth)
-  })
+  }) 
   
   #### BODY ####
   output$body <- renderUI({
@@ -449,16 +415,50 @@ server <- function(input, output, session) {
 
   #### User FAB ###
 
-  # Hides the user FAB if visitor isn't logged in
-  observe({
-    if (any(c(0,5) %in% authOutput()$usergroup)) {
-      removeUI(
-        selector = ".homemade-user-fab"
-      )
-    }
-  }) %>%
-    bindEvent(authOutput())
-
+  output$fabOutput <- renderUI({
+    tagList(
+      if(authOutput()$usergroup %>% is.null()){
+        tagList(
+          actionButton(
+            inputId = "login",
+            label = "Login",
+            icon = icon("sign-in"),
+            class = "centered-flex-content",
+            style = "justify-content: flex-start; gap: 8px;"
+          )
+        )
+      } else if(any(c(0,5) %in% authOutput()$usergroup)) {
+        p("You are a banned user.")
+      } else {
+        tagList(
+          # User menu items. Can be extended by adding more actionButtons.
+          # Just remember to connect any button's click event to an action server-side.
+          actionButton(
+            inputId = "player",
+            label = "Your Player",
+            icon = icon("futbol"),
+            class = "centered-flex-content",
+            style = "justify-content: flex-start; gap: 8px;"
+          ),
+          actionButton(
+            inputId = "userbank",
+            label = "Bank/Store",
+            icon = icon("building-columns"),
+            class = "centered-flex-content",
+            style = "justify-content: flex-start; gap: 8px;"
+          ),
+          actionButton(
+            inputId = "logout",
+            label = "Logout",
+            icon = icon("door-open"),
+            class = "centered-flex-content",
+            style = "justify-content: flex-start; gap: 8px;"
+          )
+        )
+      }
+    )
+  })
+  
   observeEvent(input$player, {
     updateTabItems(session, "tabs", "yourPlayer")
   })
@@ -525,7 +525,7 @@ server <- function(input, output, session) {
           id = "tabs",
           menuItem("Welcome",tabName = "welcome",selected = TRUE),
           {
-            if(!any(c(0,5) %in% authOutput()$usergroup)){
+            if(!(any(c(0,5) %in% authOutput()$usergroup) | is.null(authOutput()$usergroup))){
               tagList(
                 menuItemOutput("playerTabs"),
                 
@@ -629,11 +629,13 @@ server <- function(input, output, session) {
                   }
                 }
               )
+            } else {
+              
             }
           },
           hr(),
           {
-            if(!any(c(0,5) %in% authOutput()$usergroup)){
+            if(!(any(c(0,5) %in% authOutput()$usergroup) | is.null(authOutput()$usergroup))){
               menuItem("Your User",href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = ""))
             } else {
               menuItem("Register a user",href = paste("https://forum.simulationsoccer.com/member.php?action=register"))
@@ -641,7 +643,7 @@ server <- function(input, output, session) {
           },
           menuItem("SSL Forum",icon = icon("external-link-alt"),href = "https://forum.simulationsoccer.com/"),
           div(class = "stickyFooter",
-              tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
+              tags$a("Made by SSL Devs", href = "https://github.com/canadice/ssl-index", target = "_blank"))
         )
       )
     } else {
@@ -671,7 +673,7 @@ server <- function(input, output, session) {
         menuItem("Schedule", tabName = "leagueSchedule"),
         menuItem("Career Records",tabName = "careerRecords"),
         {
-          if(!any(0 %in% authOutput()$usergroup)){
+          if(!(any(0 %in% authOutput()$usergroup) | is.null(authOutput()$usergroup))){
             menuItem("Your User",href = paste("https://forum.simulationsoccer.com/member.php?action=profile&uid=", authOutput()$uid, sep = ""))
           } else {
             menuItem("Register a user",href = paste("https://forum.simulationsoccer.com/member.php?action=register"))
@@ -679,7 +681,7 @@ server <- function(input, output, session) {
         },
         menuItem("SSL Forum",icon = icon("external-link-alt"),href = "https://forum.simulationsoccer.com/"),
         div(class = "stickyFooter",
-            tags$a("Made by Canadice", href = "https://github.com/canadice/ssl-index", target = "_blank"))
+            tags$a("Made by SSL Devs", href = "https://github.com/canadice/ssl-index", target = "_blank"))
       )
     }
   }) 

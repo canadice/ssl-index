@@ -4,10 +4,20 @@ welcomeUI <- function(id) {
     
     uiOutput(ns("information")),
     
-    box(title = "Latest Results", width = NULL,
-        uiOutput(ns("schedule")) %>% 
-          withSpinnerSmall()
-        ) %>% 
+    box(title = flexRow(
+      tagList(
+        uiOutput(ns("scheduleTitlePadder")),
+        div("Latest Results", style = "width: 100%;"),
+        div(
+          uiOutput(ns("leagueSelector")),
+          style = "font-size: 14px; font-weight: 400;"
+        )
+      ),
+      style = "align-items: center; justify-content: space-between;"
+    ), width = NULL,
+    uiOutput(ns("schedule")) %>% 
+      withSpinnerSmall()
+    ) %>% 
       column(width = 12),
     box(title = "Current Standings", width = NULL,
         column(
@@ -15,7 +25,7 @@ welcomeUI <- function(id) {
           h5("Major League"),
           reactableOutput(ns("standings_1")) %>% 
             withSpinnerSmall()
-          ),
+        ),
         column(
           6,
           h5("Minor League"),
@@ -43,7 +53,7 @@ welcomeUI <- function(id) {
                plotlyOutput(ns("activityChecks")) %>% 
                  withSpinnerMedium() %>% 
                  div(class = "plotlyBorder"))
-      ) %>% 
+    ) %>% 
       column(width = 12)
   )
 }
@@ -88,32 +98,63 @@ welcomeServer <- function(id, usergroup) {
                                image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)  
                                
                                list <-
-                                tagList(
-                                  flexRow(style = "align-items: center; gap: 8px;", tagList(
-                                    image,
-                                    span(class = "truncated-text", value)
-                                  ))
-                                )
+                                 tagList(
+                                   flexRow(style = "align-items: center; gap: 8px;", tagList(
+                                     image,
+                                     span(class = "truncated-text", value)
+                                   ))
+                                 )
                              }
                            ),
-                           Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "material")),
-                           Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "material")),
-                           Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "material")),
-                           Points = colDef(header = tippy("P", "Points", placement = "top", theme = "material"))
+                           Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "ssl", arrow = TRUE)),
+                           Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "ssl", arrow = TRUE)),
+                           Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "ssl", arrow = TRUE)),
+                           Points = colDef(header = tippy("P", "Points", placement = "top", theme = "ssl", arrow = TRUE))
                          )
                      )
                  }
                })
              })
       
-      
       #### Latest results ####
+      schedule <- reactive({
+        req(input$selectedLeague)
+        readAPI(
+          url = "https://api.simulationsoccer.com/index/schedule",
+          query = list(league = input$selectedLeague, season = currentSeason$season)
+        )
+      })
+      
+      # Empty element with width matching selector to make spacing of title elements easier
+      output$scheduleTitlePadder <- renderUI({
+        div(style = "width: 150px;", class = "hide-in-mobile")
+      })
+      
+      output$leagueSelector <- renderUI({
+        div(
+          selectInput(
+            inputId = session$ns("selectedLeague"),
+            label = NULL,
+            choices = 
+              c(
+                "All Leagues" = "ALL",
+                "Major" = "1",
+                "Minor" = "2",
+                "Cup" = "0"
+              ),
+            width = "150px"
+          )
+        )
+      })
+      
       output$schedule <- renderUI({
-        schedule <- readAPI(url = "https://api.simulationsoccer.com/index/schedule", query = list(season = currentSeason$season))
+        league <- input$selectedLeague
         
-        if(length(schedule) == 0){
+        if(schedule() %>% is_empty()){
           "No schedule is available yet"
         } else {
+          schedule <- schedule()
+          
           tagList(
             div(
               class = "results",
@@ -139,7 +180,8 @@ welcomeServer <- function(id, usergroup) {
                                        "Cup",
                                        if_else(schedule[i, "MatchType"] == 1, 
                                                "Major League",
-                                               if_else(schedule[i, "MatchType"] == 2, "Minor League", "Friendlies"))),
+                                               if_else(schedule[i, "MatchType"] == 2, "Minor League", 
+                                                       if_else(schedule[i, "MatchType"] == 5, "WSFC","Friendlies")))),
                                schedule[i, "MatchDay"], sep = ", "
                              ),
                              paste(
@@ -210,24 +252,24 @@ welcomeServer <- function(id, usergroup) {
       
       output$activityChecks <- renderPlotly({
         readAPI("https://api.simulationsoccer.com/player/acHistory") %>% 
-          mutate(weekYear = paste(paste0("W", week), year, sep ="\n")) %>% 
+          mutate(weekYear = paste(paste0("W", nweeks))) %>% 
           plot_ly(x = ~weekYear, y= ~count, type = "scatter", mode = "lines+markers",
                   hoverinfo = "text",
                   line = list(color = sslGold),
                   marker = list(size = 5, color = sslGold),
                   text = ~paste("#AC: ", count)
-                  ) %>% 
+          ) %>% 
           layout(
             xaxis = list(
               title = "Time",
               tickfont = list(color = "white"),  # Set x-axis tick labels color to white
               titlefont = list(color = "white"),  # Set x-axis title color to white
-              dtick = 1,
+              dtick = 2,
               showgrid = FALSE
             ),
             yaxis = list(
               title = "#ACs",
-              range = c(0, 200),
+              range = c(0, 220),
               tickfont = list(color = "white"),  # Set y-axis tick labels color to white
               titlefont = list(color = "white"),  # Set y-axis title color to white
               dtick = 20,  # Show tickmarks at intervals of 200
