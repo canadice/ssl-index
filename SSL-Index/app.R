@@ -331,13 +331,6 @@ server <- function(input, output, session) {
   #   }
   # }) %>%
   #   bindEvent(input$cookies$token, ignoreNULL = TRUE)
-
-  ## Removes cookie when logging out
-  observe({
-    msg <- list(name = "token")
-    session$sendCustomMessage("cookie-remove", msg)
-  }) %>%
-    bindEvent(input$.shinymanager_logout)
   
   observe({
     showModal(
@@ -459,17 +452,26 @@ server <- function(input, output, session) {
     )
   })
   
-  observeEvent(input$player, {
+  observe({
     updateTabItems(session, "tabs", "yourPlayer")
-  })
+  }) %>% 
+    bindEvent(input$player)
 
-  observeEvent(input$userbank, {
+  observe({
     updateTabItems(session, "tabs", "bankOverview")
-  })
+  }) %>% 
+    bindEvent(input$userbank)
 
-  observeEvent(input$logout, {
-    session$reload()
-  })
+  observe({
+    resAuth$uid <- NULL
+    resAuth$username <- NULL
+    resAuth$usergroup <- NULL
+    
+    # Removes cookie when logging out
+    msg <- list(name = "token")
+    session$sendCustomMessage("cookie-remove", msg)
+  }) %>% 
+    bindEvent(input$logout)
   
   #### SIDEBAR ####
   
