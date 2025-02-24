@@ -307,30 +307,26 @@ server <- function(input, output, session) {
     usergroup = NULL
   )
   
-  # # Checks saved cookie for automatic login
-  # observe({
-  #   refreshtoken <- getRefreshToken(input$cookies$token)
-  #   if(refreshtoken %>% nrow() > 0){
-  #     if((now() %>% as.numeric()) < refreshtoken$expires_at){
-  #       token <- shinymanager:::.tok$generate(refreshtoken$username)
-  #       shinymanager:::.tok$add(token, list(
-  #         uid = refreshtoken$uid,
-  #         username = refreshtoken$username,
-  #         usergroup =
-  #           paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") %>%
-  #           str_split(pattern = ",", simplify = TRUE) %>%
-  #           as.numeric() %>%
-  #           as.list()
-  #       ))
-  #       shinymanager:::addAuthToQuery(session, token, "en")
-  # 
-  #       setRefreshToken(uid = refreshtoken$uid, token = refreshtoken$token)
-  # 
-  #       session$reload()
-  #     }
-  #   }
-  # }) %>%
-  #   bindEvent(input$cookies$token, ignoreNULL = TRUE)
+  # Checks saved cookie for automatic login
+  observe({
+    refreshtoken <- getRefreshToken(input$cookies$token)
+    if(refreshtoken %>% nrow() > 0){
+      if((now() %>% as.numeric()) < refreshtoken$expires_at){
+        resAuth$uid <- refreshtoken$uid
+        resAuth$username <- refreshtoken$username
+        resAuth$usergroup <- 
+          paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") %>%
+          str_split(pattern = ",", simplify = TRUE) %>%
+          as.numeric() %>%
+          as.list()
+        
+        setRefreshToken(uid = refreshtoken$uid, token = refreshtoken$token)
+
+        # session$reload()
+      }
+    }
+  }) %>%
+    bindEvent(input$cookies$token, ignoreNULL = TRUE, once = TRUE)
   
   observe({
     showModal(
@@ -480,11 +476,11 @@ server <- function(input, output, session) {
   
   observe({
     menuGroup(1)
-    if(!(input$tabs %>% is.null())){
-      if(input$tabs != "welcome"){
-        updateTabItems(session, "tabs", "welcome")  
-      }  
-    }
+    # if(!(input$tabs %>% is.null())){
+    #   if(input$tabs != "welcome"){
+    #     updateTabItems(session, "tabs", "welcome")  
+    #   }  
+    # }
   }) %>% 
     bindEvent(
       input$gotoindex
@@ -492,11 +488,11 @@ server <- function(input, output, session) {
   
   observe({
     menuGroup(0)
-    if(!(input$tabs %>% is.null())){
-      if(input$tabs != "welcome"){
-        updateTabItems(session, "tabs", "welcome")  
-      }  
-    }
+    # if(!(input$tabs %>% is.null())){
+    #   if(input$tabs != "welcome"){
+    #     updateTabItems(session, "tabs", "welcome")  
+    #   }  
+    # }
   }) %>% 
     bindEvent(
       input$gotoportal
@@ -691,7 +687,7 @@ server <- function(input, output, session) {
   ##----------------------------------------------------------------
   
   ### Sets the url for each tab
-  observeEvent(input$tabs,{
+  observe({
     ## Writes a different url based on the tab
     newURL <- paste0(
       session$clientData$url_protocol,
@@ -704,20 +700,22 @@ server <- function(input, output, session) {
       input$tabs
     )
     updateQueryString(newURL, mode = "replace", session)
-  })
+  }) %>% 
+    bindEvent(input$tabs)
   
   observe({
     currentTab <- sub("#", "", session$clientData$url_hash)
     if(!is.null(currentTab)){
       updateTabItems(session, "tabs", selected = currentTab)
     }
-  })
+  }) %>% 
+    bindEvent(authOutput())
   
-  # Goes to welcome tab after logging in successfully
-  observe({
-    updateTabItems(session, "tabs", selected = "welcome")
-  }) %>%
-    bindEvent(authOutput(),once = TRUE)
+  # # Goes to welcome tab after logging in successfully
+  # observe({
+  #   updateTabItems(session, "tabs", selected = "welcome")
+  # }) %>%
+  #   bindEvent(authOutput(),once = TRUE)
   
   # Different player menu based on if you have a current player or not
   output$playerTabs <- renderMenu({
@@ -732,18 +730,6 @@ server <- function(input, output, session) {
     }
   }) %>% 
     bindEvent(input$tabs,ignoreInit = FALSE,ignoreNULL = FALSE)
-  
-  observe({
-    req(authOutput()$uid)
-    
-    # print("Authenticating")
-    # print(authOutput())
-    # 
-    ## Loads the different server modules
-    
-    
-  }) %>% 
-    bindEvent(authOutput(),ignoreInit = FALSE)
   
   loadedPage <- 
     reactiveValues(
