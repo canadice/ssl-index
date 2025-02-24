@@ -16,7 +16,7 @@ require(tidyr)
 require(arsenal)
 require(sslrtools)
 
-playerData <- readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))
+playerData <- readAPI(url = "https://api.simulationsoccer.com/player/getUpdatedBuilds")
 
 auditFunction <- function(path) {
   FMAttributes <- 
