@@ -1,15 +1,20 @@
 
 box::use(
-  shiny[moduleServer, NS, tagList, uiOutput, column, div, h4, h5, renderUI, reactive],
-  dplyr,
+  shiny[moduleServer, NS, tagList, uiOutput, column, div, h4, h5, renderUI, reactive, selectInput, req, img, strong, HTML, tags],
+  dplyr[select, if_else],
   shinydashboard[box],
   reactable[reactableOutput, renderReactable],
   plotly[plotlyOutput, renderPlotly],
+  rlang[is_empty],
+  reactable[reactable, colDef],
+  stringr[str_replace_all],
 )
 
 box::use(
   app/logic/ui/tags[flexRow, flexCol],
   app/logic/ui/spinner[withSpinnerCustom],
+  app/logic/db/api,
+  app/logic/constant,
 )
 
 #' @export
@@ -95,7 +100,7 @@ server <- function(id, usergroup) {
       lapply(1:2,
              FUN = function(division){
                output[[paste0("standings_", division)]] <- renderReactable({
-                 standings <- getStandings(division, season = currentSeason$season) 
+                 standings <- api$readAPI(url = "https://api.simulationsoccer.com/index/standings", query = list(league = division, season = constant$currentSeason$season))
                  
                  if(!(standings |> is_empty())){
                    standings |> 
@@ -135,9 +140,8 @@ server <- function(id, usergroup) {
       #### Latest results ####
       schedule <- reactive({
         req(input$selectedLeague)
-        readAPI(
-          url = "https://api.simulationsoccer.com/index/schedule",
-          query = list(league = input$selectedLeague, season = currentSeason$season)
+        api$readAPI(url = "https://api.simulationsoccer.com/index/schedule", 
+                    query = list(league = input$selectedLeague, season = constant$currentSeason$season)
         )
       })
       
