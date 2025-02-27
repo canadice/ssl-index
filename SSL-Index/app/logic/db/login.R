@@ -3,7 +3,7 @@ box::use(
   digest,
   stringr[str_split],
   stringi[stri_rand_strings],
-  lubridate[now],
+  lubridate[now, hours],
 )
 
 box::use(

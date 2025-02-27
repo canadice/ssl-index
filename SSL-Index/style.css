@@ -167,6 +167,38 @@ h1, h2, h3, h4, h5 {
   width: -webkit-fill-available;
 }
 
+/* Custom Tippy theme */
+
+.tippy-tooltip.ssl-theme {
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+}
+
+.tippy-popper[x-placement^="bottom"] .ssl-theme .tippy-arrow {
+  border-bottom: 8px solid white;
+}
+
+.tippy-popper[x-placement^="top"] .ssl-theme .tippy-arrow {
+  border-top: 8px solid white;
+}
+
+.tippy-tooltip.ssl-theme .tippy-arrow {
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+}
+
+.tippy-tooltip.ssl-theme .tippy-backdrop {
+  background-color: white;
+}
+
+.tippy-tooltip.ssl-theme .tippy-content {
+  position: relative;
+  padding: 5px 9px;
+  z-index: 1;
+  font-size: 14px;
+}
+
 /* Header navbar with logo */
 .main-header {
   max-height: 200px;

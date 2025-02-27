@@ -1,6 +1,6 @@
 box::use(
   shiny[moduleServer, NS, tagList, tags, icon, div, uiOutput, renderUI, observe, bindEvent, a, actionButton, p, showModal, removeModal, modalDialog, modalButton, textInput, passwordInput],
-  shiny.router[route_link],
+  shiny.router[route_link, change_page],
   shinyFeedback[feedbackWarning]
 )
 
@@ -64,7 +64,7 @@ ui <- function(id) {
       tags$ul(
         class = "nav navbar-nav",
         tags$li(
-          a("Welcome", href = route_link("welcome"))
+          a("Intro", href = route_link("/"))
         ),
         tags$li(
           a("Chart", href = route_link("chart"))
@@ -104,7 +104,7 @@ ui <- function(id) {
 }
 
 #' @export
-server <- function(id, auth) {
+server <- function(id, auth, resAuth) {
   moduleServer(id, function(input, output, session) {
     # Checks saved cookie for automatic login
     observe({
@@ -146,8 +146,6 @@ server <- function(id, auth) {
     
     observe({
       res <- customCheckCredentials(user = input$user, password = input$password)
-      print(res)
-      
       if(res$result){
         removeModal()
         resAuth$uid <- res$userInfo$uid
@@ -205,18 +203,19 @@ server <- function(id, auth) {
     
     # Observers tied to the actionButtons in the FAB
     observe({
-      updateTabItems(session, "tabs", "yourPlayer")
+      change_page("yourPlayer")
     }) |> 
       bindEvent(input$player)
     
     observe({
-      updateTabItems(session, "tabs", "bankOverview")
+      change_page("playerStore")
     }) |> 
       bindEvent(input$userbank)
     
     observe({
       resAuth$uid <- resAuth$username <- resAuth$usergroup <- NULL
       
+      change_page("/")
       # Removes cookies when logging out
       session$sendCustomMessage("cookie-remove", list(name = "token"))
     }) |> 
