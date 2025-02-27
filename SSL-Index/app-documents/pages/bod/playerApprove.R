@@ -22,10 +22,10 @@ playerApproveServer <- function(id, userinfo) {
       })
       
       output$needApproval <- renderReactable({
-        playerForApproval() %>% 
+        playerForApproval() |> 
           select(
             !c(uid, pid)
-          ) %>% 
+          ) |> 
           reactable(
             selection = "single",
             onClick = "select"
@@ -43,7 +43,7 @@ playerApproveServer <- function(id, userinfo) {
           playerForApproval(getPlayersForApproval())
           
           updateReactable("needApproval", playerForApproval())
-      }) %>% 
+      }) |> 
         bindEvent(
           input$goApprove
         )

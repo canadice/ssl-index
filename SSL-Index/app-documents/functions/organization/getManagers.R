@@ -18,9 +18,9 @@
 editManagers <- function(managers, id){
   portalQuery(
     paste(
-      "UPDATE managers SET orgManager = ", if_else(managers[1] == "", "NULL", managers[1] %>% as.character()), 
-      ", assManager1 = ", if_else(managers[2] == "","NULL", managers[2] %>% as.character()), 
-      ", assManager2 = ", if_else(managers[3] == "", "NULL", managers[3] %>% as.character()),
+      "UPDATE managers SET orgManager = ", if_else(managers[1] == "", "NULL", managers[1] |> as.character()), 
+      ", assManager1 = ", if_else(managers[2] == "","NULL", managers[2] |> as.character()), 
+      ", assManager2 = ", if_else(managers[3] == "", "NULL", managers[3] |> as.character()),
       "WHERE orgID = ", id, ";"
     )
   )

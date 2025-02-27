@@ -1,6 +1,6 @@
 # 
 # getPlayerData <- function(uid = NULL, pid = NULL){
-#   if(pid %>% is.null()){
+#   if(pid |> is.null()){
 #     portalQuery(
 #       paste(
 #         "SELECT *
@@ -25,7 +25,7 @@
 
 # getPlayerDataAsync <- function(uid = NULL, pid = NULL){
 #   future_promise({
-#     if(pid %>% is.null()){
+#     if(pid |> is.null()){
 #       portalQuery(
 #         paste(
 #           "SELECT *
@@ -55,53 +55,53 @@
 
 hasActivePlayer <- function(userID){
   res <- 
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
     filter(uid == userID, status_p == 1)
   
   nrow(res) > 0
 }
 
 getPlayerNameFromUsername <- function(userName){
-  readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
-    filter(username == userName, status_p == 1) %>% 
-    select(pid, name) %>% 
+  readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |>
+    filter(username == userName, status_p == 1) |> 
+    select(pid, name) |> 
     future_promise()
 }
 
 getPlayerName <- function(userID = NULL, playerID = NULL){
   future_promise({
-    if(playerID %>% is.null()){
-      readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
-        filter(uid == userID, status_p == 1) %>% 
-        select(pid, name, class) %>% 
-        arrange(pid %>% desc()) %>% 
+    if(playerID |> is.null()){
+      readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |>
+        filter(uid == userID, status_p == 1) |> 
+        select(pid, name, class) |> 
+        arrange(pid |> desc()) |> 
         slice_head()
         
     } else {
-      readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
-        filter(pid == playerID) %>% 
+      readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |>
+        filter(pid == playerID) |> 
         select(pid, name, class)
       
     }
-  }) %>% 
+  }) |> 
     suppressWarnings()
 }
 
 getPlayerID <- function(playerName){
-  readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
-    filter(name == playerName) %>% 
+  readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |>
+    filter(name == playerName) |> 
     select(pid)
 }
 
 getPlayerTraits <- function(playerID){
   future_promise({
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
-      filter(pid == playerID) %>%
-      select(traits) %>%
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |>
+      filter(pid == playerID) |>
+      select(traits) |>
       str_split(
         pattern = traitSep
-      ) %>%
-      unlist() %>%
+      ) |>
+      unlist() |>
       {
         if(all(. == "")|all(. == "NO TRAITS")){
           NULL
@@ -114,35 +114,35 @@ getPlayerTraits <- function(playerID){
 
 getPlayerPositions <- function(playerID){
   future_promise({
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
-      filter(pid == playerID) %>% 
-      select(pos_st:pos_gk)%>% 
-      pivot_longer(everything()) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
+      filter(pid == playerID) |> 
+      select(pos_st:pos_gk)|> 
+      pivot_longer(everything()) |> 
       mutate(
-        name = str_remove(name, pattern = "pos_") %>% str_to_upper()
+        name = str_remove(name, pattern = "pos_") |> str_to_upper()
       )
   })
 }
 
 getAllPlayerPositions <- function(){
   future_promise({
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
       select(status = userStatus, pos_st:pos_gk)
   })
 }
 
 getPlayerFootedness <- function(playerID){
   future_promise({
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
-      filter(pid == playerID) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
+      filter(pid == playerID) |> 
       select(`left foot`, `right foot`)
   })
 }
 
 getPlayerTeam <- function(playerID){
   future_promise({
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
-      filter(pid == playerID) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
+      filter(pid == playerID) |> 
       select(team)
   })
 }
@@ -155,7 +155,7 @@ getPlayersFromTeam <- function(uid){
 
 getPlayerNames <- function(){
   future_promise({
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "false")) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "false")) |> 
       select(name, pid, username, team, status_p)
     
   })
@@ -164,9 +164,9 @@ getPlayerNames <- function(){
 getRecentCreates <- function(){
   
   future_promise({
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
-      arrange(created %>% desc()) %>% 
-      slice_head(n = 5) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
+      arrange(created |> desc()) |> 
+      slice_head(n = 5) |> 
       select(Pos = position, Name = name, Username = username) 
       
   })
@@ -176,17 +176,17 @@ getRecentCreates <- function(){
 getChangedBuilds <- function(){
   ## Gets date of the start of the week in Pacific
   weekEnd <- 
-    lubridate::now() %>% 
-    with_tz("US/Pacific") %>% 
-    floor_date("week", week_start = "Monday") %>% 
-    as.numeric() %>% 
+    lubridate::now() |> 
+    with_tz("US/Pacific") |> 
+    floor_date("week", week_start = "Monday") |> 
+    as.numeric() |> 
     {. - 1}
   
   weekStart <- 
-    lubridate::now() %>% 
-    with_tz("US/Pacific") %>% 
-    floor_date("week", week_start = "Monday") %>% 
-    as.numeric() %>% 
+    lubridate::now() |> 
+    with_tz("US/Pacific") |> 
+    floor_date("week", week_start = "Monday") |> 
+    as.numeric() |> 
     {. - 604800}
   
   portalQuery(
@@ -197,14 +197,14 @@ getChangedBuilds <- function(){
         LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
         WHERE uh.Time < ", weekEnd, " AND uh.Time > ", weekStart," AND uh.uid <> 1;"
     )
-  ) %>% 
+  ) |> 
     future_promise()
 }
 
 getPlayerStatus <- function(playerID){
   future_promise({
-    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "false")) %>% 
-      filter(pid == playerID) %>% 
+    readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "false")) |> 
+      filter(pid == playerID) |> 
       select(playerStatus)    
   })
 }

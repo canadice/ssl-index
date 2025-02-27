@@ -8,7 +8,7 @@ assignManagerUI <- function(id) {
       column(3, h3("Assistant Manager")),
       column(1)
     ),
-    uiOutput(ns("orgTables")) %>% 
+    uiOutput(ns("orgTables")) |> 
       withSpinnerMedium()
   )
 }
@@ -20,9 +20,9 @@ assignManagerServer <- function(id, userinfo) {
       updated <- reactiveVal({0})
       
       data <- reactive({
-        readAPI("https://api.simulationsoccer.com/organization/getManagers") %>% 
+        readAPI("https://api.simulationsoccer.com/organization/getManagers") |> 
           future_promise()
-      }) %>% 
+      }) |> 
         bindEvent(
           updated()
         )
@@ -46,10 +46,10 @@ assignManagerServer <- function(id, userinfo) {
               
               fluidRow(
                 column(2, h5(org$name)),
-                column(3, selectInput(paste0("manager_", org$id) %>% session$ns(), label = NULL, choices = c("", userVector), selected = org$orgManager)),
-                column(3, selectInput(paste0("assistant1_", org$id) %>% session$ns(), label = NULL, choices = c("", userVector), selected = org$assManager1)),
-                column(3, selectInput(paste0("assistant2_", org$id) %>% session$ns(), label = NULL, choices = c("", userVector), selected = org$assManager2)),
-                column(1, actionButton(paste0("update_", org$id) %>% session$ns(), "Update"))
+                column(3, selectInput(paste0("manager_", org$id) |> session$ns(), label = NULL, choices = c("", userVector), selected = org$orgManager)),
+                column(3, selectInput(paste0("assistant1_", org$id) |> session$ns(), label = NULL, choices = c("", userVector), selected = org$assManager1)),
+                column(3, selectInput(paste0("assistant2_", org$id) |> session$ns(), label = NULL, choices = c("", userVector), selected = org$assManager2)),
+                column(1, actionButton(paste0("update_", org$id) |> session$ns(), "Update"))
               )
             })
           })
@@ -69,7 +69,7 @@ assignManagerServer <- function(id, userinfo) {
           updated(updated() + 1)
           
           showToast(type = "success", "The managers have been updated!")
-        }) %>% 
+        }) |> 
           bindEvent(
             input[[paste0("update_", i)]]
           )

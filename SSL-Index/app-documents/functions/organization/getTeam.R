@@ -3,7 +3,7 @@
 #     paste(
 #       "SELECT * FROM teams WHERE orgID IS NOT NULL;"
 #     )
-#   ) %>% 
+#   ) |> 
 #     future_promise()
 # }
 # 
@@ -12,6 +12,6 @@
   #   paste(
   #     "SELECT * FROM organizations;"
   #   )
-  # ) %>%
+  # ) |>
 #     future_promise()
 # }

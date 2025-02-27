@@ -4,7 +4,7 @@ managerTeamUI <- function(id) {
     fluidRow(
       column(width = 12,
              box(title = "Your Team Overview", width = NULL, solidHeader = TRUE,
-                 reactableOutput(ns("teamOverview")) %>% 
+                 reactableOutput(ns("teamOverview")) |> 
                    withSpinnerMedium(),
                  br(),
                  actionButton(ns("goRegress"), "Regress Player")
@@ -20,8 +20,8 @@ managerTeamUI <- function(id) {
             playerAttributeBoxUI(ns("playerAttributes"))
         )
       )
-    ) %>% 
-      div(id = ns("selectedPlayer")) %>% 
+    ) |> 
+      div(id = ns("selectedPlayer")) |> 
       hidden()
   )
 }
@@ -37,18 +37,18 @@ managerTeamServer <- function(id, userinfo) {
       
       playerData <- reactive({
         getPlayersFromTeam(userinfo$uid) 
-      }) %>% 
+      }) |> 
         bindEvent(
           rv$bank,
           ignoreInit = FALSE
         )
       
       output$teamOverview <- renderReactable({
-         playerData() %>% 
+         playerData() |> 
           then(
             onFulfilled = function(value){
-              value %>% 
-                select(!pid) %>%
+              value |> 
+                select(!pid) |>
                 reactable(
                   selection = "single",
                   onClick = "select",
@@ -66,7 +66,7 @@ managerTeamServer <- function(id, userinfo) {
       
       observe({
         shinyjs::hide("selectedPlayer")
-      }) %>% 
+      }) |> 
         bindEvent(
           rv$bank,
           ignoreInit = FALSE
@@ -76,7 +76,7 @@ managerTeamServer <- function(id, userinfo) {
         selected <- getReactableState("teamOverview", "selected")
         req(selected)
         
-        playerData() %>% 
+        playerData() |> 
           then(
             onFulfilled = function(value){
               selection <- value[selected,]
@@ -102,7 +102,7 @@ managerTeamServer <- function(id, userinfo) {
             }
           )
         
-      }) %>% 
+      }) |> 
         bindEvent(
           input$goRegress
         )

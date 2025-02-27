@@ -14,7 +14,7 @@ checkBuild <- function(input, tpebank, session){
       hair_length = input$hairLength,
       skintone = input$skintone,
       render = input$render
-    ) %>% 
+    ) |> 
     mutate(
       `left foot` = if_else(input$footedness == "Right", 10, 20),
       `right foot` = if_else(input$footedness == "Left", 10, 20)
@@ -27,7 +27,7 @@ checkBuild <- function(input, tpebank, session){
     # Add pos_ variables for each position
     positions <- c("GK", "LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
     for (pos in positions) {
-      playerInfo <- playerInfo %>%
+      playerInfo <- playerInfo |>
         mutate(!!paste0("pos_", tolower(pos)) := case_when(
           input$primary == pos ~ 20,
           pos %in% input$secondary ~ 15,
@@ -42,7 +42,7 @@ checkBuild <- function(input, tpebank, session){
     # Add pos_ variables for each position
     positions <- c("LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
     for (pos in positions) {
-      playerInfo <- playerInfo %>%
+      playerInfo <- playerInfo |>
         mutate(!!paste0("pos_", tolower(pos)) := 0)
     }
     playerInfo$pos_gk <- 20
@@ -50,8 +50,8 @@ checkBuild <- function(input, tpebank, session){
   
   # Add attributes variables for each position
   for (att in attributes$attribute) {
-    playerInfo <- playerInfo %>%
-      mutate(!!tolower(att) := input[[att %>% str_to_title() %>% str_remove_all(pattern = " ")]])
+    playerInfo <- playerInfo |>
+      mutate(!!tolower(att) := input[[att |> str_to_title() |> str_remove_all(pattern = " ")]])
   }
   
   modalVerifyBuild(playerInfo, session)
@@ -76,7 +76,7 @@ submitBuild <- function(input, tpebank, userinfo){
       hair_length = input$hairLength,
       skintone = input$skinColor,
       render = input$render
-    ) %>% 
+    ) |> 
     mutate(
       `left foot` = if_else(input$footedness == "Right", 10, 20),
       `right foot` = if_else(input$footedness == "Left", 10, 20)
@@ -89,7 +89,7 @@ submitBuild <- function(input, tpebank, userinfo){
     # Add pos_ variables for each position
     positions <- c("GK", "LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
     for (pos in positions) {
-      playerInfo <- playerInfo %>%
+      playerInfo <- playerInfo |>
         mutate(!!paste0("pos_", tolower(pos)) := case_when(
           input$primary == pos ~ 20,
           pos %in% input$secondary ~ 15,
@@ -97,14 +97,14 @@ submitBuild <- function(input, tpebank, userinfo){
         ))
     }
     
-    playerInfo$traits <- paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'")
+    playerInfo$traits <- paste0(input$traits, collapse = traitSep) |> str_replace_all(pattern = "'", replacement = "\\\\'")
   } else {
     playerInfo$position <- "GK"
     
     # Add pos_ variables for each position
     positions <- c("LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
     for (pos in positions) {
-      playerInfo <- playerInfo %>%
+      playerInfo <- playerInfo |>
         mutate(!!paste0("pos_", tolower(pos)) := 0)
     }
     playerInfo$pos_gk <- 20
@@ -114,12 +114,12 @@ submitBuild <- function(input, tpebank, userinfo){
   
   # Add attributes variables for each position
   for (att in attributes$attribute) {
-    playerInfo <- playerInfo %>%
-      mutate(!!tolower(att) := input[[att %>% str_to_title() %>% str_remove_all(pattern = " ")]])
+    playerInfo <- playerInfo |>
+      mutate(!!tolower(att) := input[[att |> str_to_title() |> str_remove_all(pattern = " ")]])
   }
   
   playerInfo <- 
-    playerInfo %>% 
+    playerInfo |> 
     mutate(
       across(
         where(is.character),
@@ -165,7 +165,7 @@ checkIfAlreadyApproving <- function(uid){
       )
     )
   
-  current %>% nrow() > 0
+  current |> nrow() > 0
 }
 
 checkDuplicatedName <- function(first, last){
@@ -173,7 +173,7 @@ checkDuplicatedName <- function(first, last){
     paste(
       "SELECT * FROM playerdata WHERE first = '", first, "' AND last = '", last, "';", sep = ""
     )
-  ) %>% 
+  ) |> 
     nrow() > 0
 }
 
@@ -195,7 +195,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
     portalQuery(
       paste(
         "INSERT INTO tpehistory (time, uid, pid, source, tpe) 
-      SELECT ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), ", 1, pid, 'Initial TPE', 350
+      SELECT ", lubridate::now() |> with_tz("US/Pacific") |> as.numeric(), ", 1, pid, 'Initial TPE', 350
       FROM playerdata
       WHERE uid = ", uid, "AND status_p = -1;"
       )
@@ -215,7 +215,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
     `command of area`, `communication`, `eccentricity`, `handling`, `kicking`, `one on ones`, `reflexes`, 
     `tendency to rush`, `tendency to punch`, `throwing`, `traits`, `left foot`, `right foot`
      FROM playerdata WHERE uid = ", uid, "AND status_p = -1;")
-  ) %>% 
+  ) |> 
     pivot_longer(!pid, values_transform = as.character)
   
   tryCatch(
@@ -225,11 +225,11 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
         paste(
           "(",
           paste(
-            paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
+            paste0("'", lubridate::now() |> with_tz("US/Pacific") |> as.numeric(), "'"),
             1,
             data$pid,
-            paste0("'", data$name %>% str_to_upper(), "'"),
-            if_else(data$name %>% str_detect("pos"), '0', if_else(data$name == "traits", "'NO TRAITS'", '5')),
+            paste0("'", data$name |> str_to_upper(), "'"),
+            if_else(data$name |> str_detect("pos"), '0', if_else(data$name == "traits", "'NO TRAITS'", '5')),
             paste0("'", data$value, "'"),
             sep = ","
           ),
@@ -258,8 +258,8 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
     error = function(e) showToast("error", paste("Error in adding academy contract.", e, sep = "\n"))
   )
   
-  today <- (now() %>% as_date() %>% as.numeric())
-  start <- (currentSeason$startDate %>% as_date()) %>% as.numeric()
+  today <- (now() |> as_date() |> as.numeric())
+  start <- (currentSeason$startDate |> as_date()) |> as.numeric()
   
   tpe <- 
     tibble(
@@ -287,7 +287,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
   tryCatch(
     portalQuery(
       paste("UPDATE playerdata SET rerollused = 0, redistused = 0, team = -1, affiliate = 1, status_p = 1, name = concat(first, ' ', last),",
-            "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
+            "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() |> with_tz("US/Pacific") |> as.numeric(), 
             "WHERE uid = ", uid, "AND status_p = -1;")
     ),
     error = function(e) showToast("error", paste("Error in updating player data.", e, sep = "\n"))

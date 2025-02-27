@@ -4,7 +4,7 @@ bankProcessUI <- function(id) {
     fluidRow(
       column(width = 12,
              box(title = "Transactions to approve", width = NULL, solidHeader = TRUE,
-                 reactableOutput(ns("needApproval")) %>% 
+                 reactableOutput(ns("needApproval")) |> 
                    withSpinnerMedium(),
                  br(),
                  fluidRow(
@@ -20,7 +20,7 @@ bankProcessUI <- function(id) {
     fluidRow(
       column(12,
              box(title = "Historical transactions", width = NULL, solidheader = TRUE,
-             reactableOutput(ns("history")) %>% 
+             reactableOutput(ns("history")) |> 
                withSpinnerMedium()
              )
       )
@@ -37,17 +37,17 @@ bankProcessServer <- function(id, userinfo) {
       transactions <- reactive({
         readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
                 query = list(status = 0)
-        ) %>% 
+        ) |> 
           future_promise()
-      }) %>% 
+      }) |> 
         bindEvent(
           updated()
         )
       
       allTransactions <- reactive({
-        readAPI("https://api.simulationsoccer.com/bank/getBankTransactions") %>% 
+        readAPI("https://api.simulationsoccer.com/bank/getBankTransactions") |> 
           future_promise()
-      }) %>% 
+      }) |> 
         bindEvent(
           updated()
         )
@@ -55,13 +55,13 @@ bankProcessServer <- function(id, userinfo) {
       
       #### OUTPUTS ####
       output$needApproval <- renderReactable({
-        transactions() %>% 
+        transactions() |> 
           then(
             onFulfilled = function(data){
-              data %>% 
+              data |> 
                 mutate(
                   Time = as_datetime(Time, tz = "US/Pacific")
-                ) %>% 
+                ) |> 
                 reactable(
                   selection = "multiple",
                   onClick = "select",
@@ -78,13 +78,13 @@ bankProcessServer <- function(id, userinfo) {
       })
       
       output$history <- renderReactable({
-        allTransactions() %>% 
+        allTransactions() |> 
           then(
             onFulfilled = function(bank){
-              bank %>% 
+              bank |> 
                 mutate(
                   Time = as_datetime(Time)
-                ) %>% 
+                ) |> 
                 reactable(
                   searchable = TRUE,
                   columns = 
@@ -100,7 +100,7 @@ bankProcessServer <- function(id, userinfo) {
       
       #### APPROVE OR REJECT OBSERVERS ####
       observe({
-        transactions() %>% 
+        transactions() |> 
           then(
             onFulfilled = function(data){
               selected <- getReactableState("needApproval", "selected")
@@ -109,13 +109,13 @@ bankProcessServer <- function(id, userinfo) {
               bankVerify(transactions = data[selected,], session = session, approve = TRUE)
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(
           input$goApprove
         )
       
       observe({
-        transactions() %>% 
+        transactions() |> 
           then(
             onFulfilled = function(data){
               selected <- getReactableState("needApproval", "selected")
@@ -126,13 +126,13 @@ bankProcessServer <- function(id, userinfo) {
               # updateReactable("needApproval", playerForApproval())
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(
           input$goReject
         )
       
       observe({
-        transactions() %>% 
+        transactions() |> 
           then(
             onFulfilled = function(data){
               selected <- getReactableState("needApproval", "selected")
@@ -147,11 +147,11 @@ bankProcessServer <- function(id, userinfo) {
               updated(updated() + 1)
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(input$confirmApprove)
       
       observe({
-        transactions() %>% 
+        transactions() |> 
           then(
             onFulfilled = function(data){
               selected <- getReactableState("needApproval", "selected")
@@ -166,7 +166,7 @@ bankProcessServer <- function(id, userinfo) {
               updated(updated() + 1)
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(input$confirmReject)
     }
   )

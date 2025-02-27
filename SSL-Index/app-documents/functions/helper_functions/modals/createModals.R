@@ -2,7 +2,7 @@ modalVerifyBuild <- function(data, session){
   showModal(
     modalDialog(
       span(
-        "Check the information in the build." %>% strong(),
+        "Check the information in the build." |> strong(),
         style = "color: red;"
       ),
       br(),
@@ -12,24 +12,24 @@ modalVerifyBuild <- function(data, session){
         helpText(
           paste(
             apply(
-              data %>% 
-                t() %>% 
-                tibble() %>% 
+              data |> 
+                t() |> 
+                tibble() |> 
                 mutate(
                   ` ` = colnames(data)
-                ) %>% 
+                ) |> 
                 relocate(
                   ` `
                 ),
               MARGIN = 1,
               FUN = function(x) {
-                paste(x[1] %>% str_to_title(), x[2], sep = ": ")
+                paste(x[1] |> str_to_title(), x[2], sep = ": ")
               }
             ),
             collapse = "<br>"
-          ) %>% 
+          ) |> 
             HTML()
-        ) %>% 
+        ) |> 
           div(
             style = "background: #f0f0f0; border: #656565"
           )

@@ -2,13 +2,13 @@
 indexReactable <- function(currentData){
   statisticsTooltips <- statisticsLegend[statisticsLegend$statistic %in% colnames(currentData),]
   
-  currentData %>%
+  currentData |>
     mutate(
       across(
         where(is.numeric),
         ~ round(.x, 2)
       )
-    ) %>% 
+    ) |> 
     reactable(
       pagination = TRUE,
       searchable = TRUE,
@@ -22,12 +22,12 @@ indexReactable <- function(currentData){
             headerClass = "stickyReactableHeader",
             cell = 
               function(value, index){
-                Club <- currentData %>% 
-                  .$club %>% 
+                Club <- currentData |> 
+                  .$club |> 
                   .[index]
                 
-                if(Club %>% str_detect(",")){
-                  clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
+                if(Club |> str_detect(",")){
+                  clubs <- str_split(Club, pattern = ",", simplify = TRUE) |> c() |> rev()
                   
                   list <- 
                     tagList(
@@ -43,7 +43,7 @@ indexReactable <- function(currentData){
                     )
                   
                 } else {
-                  # file.exists(sprintf("%s.png", Club)) %>% print()
+                  # file.exists(sprintf("%s.png", Club)) |> print()
                   
                   image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club, title = Club)  
                   
@@ -67,19 +67,19 @@ indexReactable <- function(currentData){
               show = FALSE,
               searchable = TRUE
             )
-        ) %>% 
+        ) |> 
         append(
           pmap(statisticsTooltips, ~ {
             if((..1) %in% names(currentData)) {
               ..1 =
                 colDef(
                   header =
-                    tippy(..1 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
+                    tippy(..1 |> str_to_upper(), ..2, placement = "top", theme = "material"),
                   html = TRUE
                 )
             }
-          }) %>%
-            setNames(statisticsTooltips$statistic) %>%
+          }) |>
+            setNames(statisticsTooltips$statistic) |>
             Filter(Negate(is.null), .)
         ) 
     )
@@ -88,13 +88,13 @@ indexReactable <- function(currentData){
 leaderReactable <- function(currentData){
   statisticsTooltips <- statisticsLegend[statisticsLegend$statistic %in% colnames(currentData),]
   
-  currentData %>%
+  currentData |>
     mutate(
       across(
         where(is.numeric),
         ~ round(.x, 2)
       )
-    ) %>% 
+    ) |> 
     reactable(
       pagination = FALSE,
       searchable = FALSE,
@@ -107,12 +107,12 @@ leaderReactable <- function(currentData){
             maxWidth = 1000,
             cell = 
               function(value, index){
-                Club <- currentData %>% 
-                  .$club %>% 
+                Club <- currentData |> 
+                  .$club |> 
                   .[index]
                 
-                if(Club %>% str_detect(",")){
-                  clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
+                if(Club |> str_detect(",")){
+                  clubs <- str_split(Club, pattern = ",", simplify = TRUE) |> c() |> rev()
                   
                   list <- 
                     tagList(
@@ -128,7 +128,7 @@ leaderReactable <- function(currentData){
                     )
                   
                 } else {
-                  # file.exists(sprintf("%s.png", Club)) %>% print()
+                  # file.exists(sprintf("%s.png", Club)) |> print()
                   
                   image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club, title = Club)  
                   
@@ -155,20 +155,20 @@ leaderReactable <- function(currentData){
           matchday = 
             colDef(header = "MATCHDAY",
                    width = 100)
-        ) %>% 
+        ) |> 
         append(
           pmap(statisticsTooltips, ~ {
             if((..1) %in% names(currentData)) {
               ..1 =
                 colDef(
                   header =
-                    tippy(..3 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
+                    tippy(..3 |> str_to_upper(), ..2, placement = "top", theme = "material"),
                   html = TRUE,
                   minWidth = 50
                 )
             }
-          }) %>%
-            setNames(statisticsTooltips$statistic) %>%
+          }) |>
+            setNames(statisticsTooltips$statistic) |>
             Filter(Negate(is.null), .)
         ) 
     )
@@ -177,13 +177,13 @@ leaderReactable <- function(currentData){
 recordReactable <- function(currentData){
   statisticsTooltips <- statisticsLegend[statisticsLegend$statistic %in% colnames(currentData),]
   
-  currentData %>%
+  currentData |>
     mutate(
       across(
         where(is.numeric),
         ~ round(.x, 2)
       )
-    ) %>% 
+    ) |> 
     reactable(
       pagination = FALSE,
       searchable = FALSE,
@@ -195,12 +195,12 @@ recordReactable <- function(currentData){
             maxWidth = 1000,
             cell = 
               function(value, index){
-                Club <- currentData %>% 
-                  .$club %>% 
+                Club <- currentData |> 
+                  .$club |> 
                   .[index]
                 
-                if(Club %>% str_detect(",")){
-                  clubs <- str_split(Club, pattern = ",", simplify = TRUE) %>% c() %>% rev()
+                if(Club |> str_detect(",")){
+                  clubs <- str_split(Club, pattern = ",", simplify = TRUE) |> c() |> rev()
                   
                   list <- 
                     tagList(
@@ -216,7 +216,7 @@ recordReactable <- function(currentData){
                     )
                   
                 } else {
-                  # file.exists(sprintf("%s.png", Club)) %>% print()
+                  # file.exists(sprintf("%s.png", Club)) |> print()
                   
                   image <- img(src = sprintf("%s.png", Club), style = "height: 25px;", alt = Club, title = Club)  
                   
@@ -237,20 +237,20 @@ recordReactable <- function(currentData){
           ),
           club = colDef(show = FALSE,searchable = TRUE),
           RANK = colDef(width = 60)
-        ) %>% 
+        ) |> 
         append(
           pmap(statisticsTooltips, ~ {
             if((..1) %in% names(currentData)) {
               ..1 =
                 colDef(
                   header =
-                    tippy(..1 %>% str_to_upper(), ..2, placement = "top", theme = "material"),
+                    tippy(..1 |> str_to_upper(), ..2, placement = "top", theme = "material"),
                   html = TRUE,
                   minWidth = 50
                 )
             }
-          }) %>%
-            setNames(statisticsTooltips$statistic) %>%
+          }) |>
+            setNames(statisticsTooltips$statistic) |>
             Filter(Negate(is.null), .)
         ) 
     )

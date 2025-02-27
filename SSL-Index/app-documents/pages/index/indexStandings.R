@@ -11,7 +11,7 @@ leagueStandingsUI <- function(id) {
             label = "Select a season",
             choices = 
               c(
-                1:currentSeason$season %>% 
+                1:currentSeason$season |> 
                 sort(decreasing = TRUE),
                 "ALL"
               )
@@ -45,14 +45,14 @@ leagueStandingsServer <- function(id) {
         
         readAPI(url = "https://api.simulationsoccer.com/index/standings", 
                 query = list(league = input$selectedLeague, season = input$selectedSeason)
-        ) %>% 
+        ) |> 
           future_promise()
       })
       
       
       #### UI OUTPUT ####
       output$leagueSelector <- renderUI({
-        season <- input$selectedSeason %>% as.numeric()
+        season <- input$selectedSeason |> as.numeric()
         
         if(season < 5){
           selectInput(
@@ -106,20 +106,20 @@ leagueStandingsServer <- function(id) {
         
         if(season == "ALL"){
           relegation <- FALSE
-        } else if(season %>% as.numeric() < 5 | season %>% as.numeric() > 11){
+        } else if(season |> as.numeric() < 5 | season |> as.numeric() > 11){
           relegation <- FALSE
         } else {
           relegation <- TRUE
         } 
         
         
-        standings() %>% 
+        standings() |> 
           then(
             onFulfilled = function(data){
-              if(data %>% is_empty()){
+              if(data |> is_empty()){
                 NULL 
               } else {
-                data %>% 
+                data |> 
                   reactable(
                     pagination = FALSE,
                     defaultColDef = colDef(

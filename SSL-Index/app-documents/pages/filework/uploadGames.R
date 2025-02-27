@@ -8,7 +8,7 @@ uploadGameUI <- function(id) {
         "In case you do not have the view for the League Observer Manager, download and import the view via", 
         tags$a("this link.", href = "https://drive.google.com/open?id=1b4yz5gkXN6BFSvDBigL3Tp2pUBbu-PJ3&usp=drive_fs", target = "_blank"),
         "The view should be exported as an .HTML file and make sure to scroll through every player in the shortlist as FM only exports players it has 'seen'."
-        ) %>% HTML()
+        ) |> HTML()
     ),
     fluidRow(
       uiOutput(ns("informationUI"))
@@ -20,12 +20,12 @@ uploadGameUI <- function(id) {
         h5("Checks"),
         reactableOutput(
           outputId = ns("outputMinutes")
-        ) %>% 
+        ) |> 
           withSpinnerSmall(),
         h5("Players per Team"),
         reactableOutput(
           outputId = ns("outputPlayers")
-        ) %>% 
+        ) |> 
           withSpinnerSmall()
       )
     ),
@@ -35,12 +35,12 @@ uploadGameUI <- function(id) {
         h5("Keeper"),
         reactableOutput(
           outputId = ns("keeperCheck")
-        ) %>% 
+        ) |> 
           withSpinnerSmall(),
         h5("Outfield"),
         reactableOutput(
           outputId = ns("outfieldCheck")
-        ) %>% 
+        ) |> 
           withSpinnerSmall()
       )
     ),
@@ -73,34 +73,34 @@ uploadGameServer <- function(id) {
         outfieldTotals <- getOutfieldSeasonTotal(input$season)
         
         current <- 
-          current %>% 
+          current |> 
           rename_with(
             .cols = !c(Acc:`Right Foot`, Position, Won, Lost, Drawn),
             .fn = function(x){
-              intersect(x %>% str_to_lower(),
-                        c(colnames(outfieldTotals), colnames(keeperTotals)) %>% 
+              intersect(x |> str_to_lower(),
+                        c(colnames(outfieldTotals), colnames(keeperTotals)) |> 
                           unique())
             } 
-          ) %>% 
+          ) |> 
           relocate(
-            c(colnames(outfieldTotals), colnames(keeperTotals)) %>% 
+            c(colnames(outfieldTotals), colnames(keeperTotals)) |> 
               unique()
-          ) %>% 
+          ) |> 
           rename_with(
             str_to_lower
           )
         
         splitKeeper <- 
-          current %>%
-          filter(position == "GK") %>% 
-          select(colnames(keeperTotals)) %>% 
+          current |>
+          filter(position == "GK") |> 
+          select(colnames(keeperTotals)) |> 
           full_join(
             keeperTotals,
             by = c("name", "club")
-          ) %>% 
+          ) |> 
           group_by(
             name, club
-          ) %>% 
+          ) |> 
           mutate(
             across2(
               .xcols = ends_with(".x"),
@@ -111,25 +111,25 @@ uploadGameServer <- function(id) {
                 ),
               .names = "{xcol}"
             )
-          ) %>% 
+          ) |> 
           select(
             !contains(".y")
-          ) %>% 
+          ) |> 
           rename_with(
             ~ str_replace(.x, "\\.x", "")
-          ) %>% 
+          ) |> 
           filter(
             `minutes played`>0
-          ) %>% 
+          ) |> 
           left_join(
-            keeperTotals %>% 
+            keeperTotals |> 
               select(
                 name, club, `average rating`, `xsave%`, apps
               ),
             by = c("name", "club"),
             suffix = c("day", "season")
-          ) %>% 
-          group_by(name) %>% 
+          ) |> 
+          group_by(name) |> 
           mutate(
             `average ratingday` = 
               case_when(
@@ -139,8 +139,8 @@ uploadGameServer <- function(id) {
                     (`appsseason` + 1) -
                     `average ratingseason`*`appsseason`
                 )
-              ) %>% round(2),
-            `save%` = ((`saves parried`+`saves held`+`saves tipped`)/(`saves parried`+`saves held`+`saves tipped`+conceded)) %>% round(4) * 100,
+              ) |> round(2),
+            `save%` = ((`saves parried`+`saves held`+`saves tipped`)/(`saves parried`+`saves held`+`saves tipped`+conceded)) |> round(4) * 100,
             `xsave%day` = 
               case_when(
                 is.na(`xsave%season`) | `xsave%season` == 0 ~ `xsave%day`,
@@ -148,26 +148,26 @@ uploadGameServer <- function(id) {
                   ((`xsave%day` + `xsave%season`) -
                      `xsave%season`/2)*2
                 )
-              ) %>% round(2) 
-          ) %>% 
+              ) |> round(2) 
+          ) |> 
           select(
             !contains("season"),
             `average rating` = `average ratingday`,
             `xsave%` = `xsave%day`,
             `apps` = `appsday`
-          ) %>% 
+          ) |> 
           mutate(
             apps = 
               case_when(
                 `minutes played` > 45 ~ 1,
                 TRUE ~ 0.5
               )
-          ) %>%
-          ungroup() %>% 
+          ) |>
+          ungroup() |> 
           left_join(
             nextGame(),
             by = c("club" = "team")
-          ) %>% 
+          ) |> 
           mutate(
             across(
               !(name:club),
@@ -176,15 +176,15 @@ uploadGameServer <- function(id) {
           )
         
         splitOutfield <- 
-          current %>% 
-          select(colnames(outfieldTotals)) %>% 
+          current |> 
+          select(colnames(outfieldTotals)) |> 
           full_join(
             outfieldTotals,
             by = c("name", "club")
-          ) %>% 
+          ) |> 
           group_by(
             name, club
-          ) %>% 
+          ) |> 
           mutate(
             across2(
               .xcols = ends_with(".x"),
@@ -195,23 +195,23 @@ uploadGameServer <- function(id) {
                 ),
               .names = "{xcol}"
             )
-          ) %>% 
+          ) |> 
           select(
             !contains(".y")
-          ) %>% 
+          ) |> 
           rename_with(
             ~ str_replace(.x, "\\.x", "")
-          ) %>% 
+          ) |> 
           filter(
             `minutes played`>0
-          ) %>% 
+          ) |> 
           left_join(
-            outfieldTotals %>% 
+            outfieldTotals |> 
               select(name, club, `average rating`, apps),
             by = c("name", "club"),
             suffix = c("day", "season")
-          ) %>% 
-          group_by(name) %>% 
+          ) |> 
+          group_by(name) |> 
           mutate(
             `average ratingday` = 
               case_when(
@@ -221,39 +221,39 @@ uploadGameServer <- function(id) {
                     (`appsseason` + 1) -
                     `average ratingseason`*`appsseason`
                 )
-              ) %>% round(2),
-            `pass%` = (`successful passes` %>% as.numeric()/`attempted passes` %>% as.numeric()) %>% round(4)*100,
-            `header%` = (`successful headers` %>% as.numeric()/`attempted headers` %>% as.numeric()) %>% round(4)*100,
-            `cross%` = (`successful crosses` %>% as.numeric()/`attempted crosses` %>% as.numeric()) %>% round(4)*100,
-            `tackle%` = (`tackles won` %>% as.numeric()/`attempted tackles` %>% as.numeric()) %>% round(4)*100,
+              ) |> round(2),
+            `pass%` = (`successful passes` |> as.numeric()/`attempted passes` |> as.numeric()) |> round(4)*100,
+            `header%` = (`successful headers` |> as.numeric()/`attempted headers` |> as.numeric()) |> round(4)*100,
+            `cross%` = (`successful crosses` |> as.numeric()/`attempted crosses` |> as.numeric()) |> round(4)*100,
+            `tackle%` = (`tackles won` |> as.numeric()/`attempted tackles` |> as.numeric()) |> round(4)*100,
             clearances = if_else(is.na(clearances), 0, clearances)
-          ) %>% 
+          ) |> 
           select(
             !contains("season"),
             `average rating` = `average ratingday`,
             `apps` = `appsday`
-          ) %>% 
+          ) |> 
           mutate(
             apps = 
               case_when(
                 `minutes played` > 45 ~ 1,
                 TRUE ~ 0.5
               )
-          ) %>% 
-          ungroup() %>% 
+          ) |> 
+          ungroup() |> 
           left_join(
             nextGame(),
             by = c("club" = "team")
-          ) %>% 
+          ) |> 
           left_join(
-            current %>% 
+            current |> 
               select(name, club, position, acc:wor),
             by = c("name", "club")
-          ) %>% 
+          ) |> 
           relocate(
             c(position, acc:wor),
             .after = club
-          ) %>% 
+          ) |> 
           mutate(
             across(
               !(name:position),
@@ -265,15 +265,15 @@ uploadGameServer <- function(id) {
           k = splitKeeper,
           o = splitOutfield,
           checks = tibble(
-            `Outfield Minutes` = (sum(splitOutfield$`minutes played`)/length(splitOutfield$`club` %>% unique())/11) %>% round(1),
-            `Keeper Minutes` = sum(splitKeeper$`minutes played`)/length(splitKeeper$`club` %>% unique()) %>% round(1),
-            `Red Cards` = splitOutfield$`red cards` %>% sum()
+            `Outfield Minutes` = (sum(splitOutfield$`minutes played`)/length(splitOutfield$`club` |> unique())/11) |> round(1),
+            `Keeper Minutes` = sum(splitKeeper$`minutes played`)/length(splitKeeper$`club` |> unique()) |> round(1),
+            `Red Cards` = splitOutfield$`red cards` |> sum()
           ),
           playersPerTeam = 
-            splitOutfield %>%
-            select(name, club) %>% 
-            pivot_longer(name) %>% 
-            group_by(club) %>% 
+            splitOutfield |>
+            select(name, club) |> 
+            pivot_longer(name) |> 
+            group_by(club) |> 
             summarize(n = n())
         )
         
@@ -282,7 +282,7 @@ uploadGameServer <- function(id) {
       nextGame <- reactive({
         req(input$season)
         readAPI(url = "https://api.simulationsoccer.com/index/nextGame", query = list(season = input$season))
-      }) %>% 
+      }) |> 
         bindEvent(
           input$fm
         )
@@ -290,24 +290,24 @@ uploadGameServer <- function(id) {
       #### FUNCTIONS ####
       fmData <- function(path){
         FM <- 
-          read_html(path, encoding = "UTF-8") %>% 
-          html_elements("table") %>% 
-          html_table() %>% 
-          .[[1]] %>% 
+          read_html(path, encoding = "UTF-8") |> 
+          html_elements("table") |> 
+          html_table() |> 
+          .[[1]] |> 
           mutate(
             Name = 
-              Name %>% 
+              Name |> 
               str_split(
                 pattern = " - ", 
                 simplify = TRUE
-              ) %>% 
+              ) |> 
               .[,1]
-          ) %>% 
+          ) |> 
           select(
             -"Inf",
             ## FM24 does not have Rec as an automatic column
             # -"Rec"
-          ) %>% 
+          ) |> 
           mutate(
             Name = 
               case_when(
@@ -315,11 +315,11 @@ uploadGameServer <- function(id) {
                 # str_detect(Name, "Liang") ~ "Kuai Liang",
                 # str_detect(Name, "Princess") ~ "Princess Changshan",
                 TRUE ~ Name)
-          ) %>% 
+          ) |> 
           relocate(
             c(Pun, Ref, TRO),
             .after = `1v1`
-          ) %>% 
+          ) |> 
           dplyr::rename(
             Apps = Apps,
             `Minutes Played` = Mins,
@@ -387,7 +387,7 @@ uploadGameServer <- function(id) {
             `Clean Sheets` = Shutouts,
             `xSave%`= `xSv %`,
             `xG Prevented` = xGP
-          ) %>% 
+          ) |> 
           dplyr::mutate(
             across(
               c(
@@ -411,12 +411,12 @@ uploadGameServer <- function(id) {
                 Club == "Football Club de Rio" ~ "FC Rio",
                 TRUE ~ Club
               )
-          ) %>% 
+          ) |> 
           dplyr::mutate(
             Club =
-              Club %>%
-              str_split(pattern = "-", simplify = TRUE) %>% 
-              .[,1] %>% 
+              Club |>
+              str_split(pattern = "-", simplify = TRUE) |> 
+              .[,1] |> 
               str_squish(),
             `Left Foot` = 
               case_when(
@@ -430,7 +430,7 @@ uploadGameServer <- function(id) {
                 `Right Foot` == "Strong" ~ 15,
                 TRUE ~ 10
               )
-          ) %>% 
+          ) |> 
           dplyr::mutate(
             across(
               !contains(
@@ -439,18 +439,18 @@ uploadGameServer <- function(id) {
               as.numeric
             ),
             `Pass%` = 
-              (`Successful Passes` %>% as.numeric()/
-                 `Attempted Passes` %>% as.numeric()) %>% 
+              (`Successful Passes` |> as.numeric()/
+                 `Attempted Passes` |> as.numeric()) |> 
               round(4)*100,
             `Cross%` = 
-              (`Successful Crosses` %>% as.numeric()/
-                 `Attempted Crosses` %>% as.numeric()) %>% 
+              (`Successful Crosses` |> as.numeric()/
+                 `Attempted Crosses` |> as.numeric()) |> 
               round(4)*100,
             `Save%` = 
               ((`Saves Parried`+`Saves Held`+`Saves Tipped`)/
-                 (`Saves Parried`+`Saves Held`+`Saves Tipped`+Conceded)) %>% 
+                 (`Saves Parried`+`Saves Held`+`Saves Tipped`+Conceded)) |> 
               round(4) * 100,
-          ) %>% 
+          ) |> 
           suppressWarnings()
       }
       
@@ -475,7 +475,7 @@ uploadGameServer <- function(id) {
       })
       
       output$confirmUI <- renderUI({
-        if(filePath() %>% is.null()){
+        if(filePath() |> is.null()){
           NULL
         } else {
           req(input$fm)
@@ -486,33 +486,33 @@ uploadGameServer <- function(id) {
       })
       
       output$keeperCheck <- renderReactable({
-        if(filePath() %>% is.null()){
+        if(filePath() |> is.null()){
           NULL
         } else {
           req(input$fm)
           reactable(
-            processedGame()$k %>% 
-              relocate(gid) %>% 
+            processedGame()$k |> 
+              relocate(gid) |> 
               arrange(gid)
           )
         }
       })
       
       output$outfieldCheck <- renderReactable({
-        if(filePath() %>% is.null()){
+        if(filePath() |> is.null()){
           NULL
         } else {
           req(input$fm)
           reactable(
-            processedGame()$o %>% 
-              relocate(gid) %>% 
+            processedGame()$o |> 
+              relocate(gid) |> 
               arrange(gid)
           )
         }
       })
       
       output$outputMinutes <- renderReactable({
-        if(filePath() %>% is.null()){
+        if(filePath() |> is.null()){
           NULL
         } else {
           req(input$fm)
@@ -523,12 +523,12 @@ uploadGameServer <- function(id) {
       })
       
       output$outputPlayers <- renderReactable({
-        if(filePath() %>% is.null()){
+        if(filePath() |> is.null()){
           NULL
         } else {
           req(input$fm)
           reactable(
-            processedGame()$playersPerTeam %>% 
+            processedGame()$playersPerTeam |> 
               rename_with(
                 ~ str_to_title(.x)
               )
@@ -540,7 +540,7 @@ uploadGameServer <- function(id) {
       observe({
         req(input$fm)
         
-        keeper <- processedGame()$k %>% 
+        keeper <- processedGame()$k |> 
           mutate(
             across(
               name:club,
@@ -548,7 +548,7 @@ uploadGameServer <- function(id) {
             )
           )
         
-        outfield <- processedGame()$o %>% 
+        outfield <- processedGame()$o |> 
           mutate(
             across(
               name:position,
@@ -560,7 +560,7 @@ uploadGameServer <- function(id) {
         indexQuery(
           paste(
             "INSERT INTO gamedataoutfield VALUES ",
-            do.call(function(...) paste(..., sep = ", "), args = outfield) %>% paste0("(", ., ")", collapse = ", "),
+            do.call(function(...) paste(..., sep = ", "), args = outfield) |> paste0("(", ., ")", collapse = ", "),
             ";"
           )
         )
@@ -568,7 +568,7 @@ uploadGameServer <- function(id) {
         indexQuery(
           paste(
             "INSERT INTO gamedatakeeper VALUES ",
-            do.call(function(...) paste(..., sep = ", "), args = keeper) %>% paste0("(", ., ")", collapse = ", "),
+            do.call(function(...) paste(..., sep = ", "), args = keeper) |> paste0("(", ., ")", collapse = ", "),
             ";"
           )
         )
@@ -598,7 +598,7 @@ uploadGameServer <- function(id) {
         
         showToast("success", "You have successfully uploaded the recent matchday!")
         
-      }) %>% 
+      }) |> 
         bindEvent(
           input$uploadData
         )

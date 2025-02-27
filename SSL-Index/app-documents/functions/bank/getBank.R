@@ -4,7 +4,7 @@
 #       paste(
 #         "SELECT sum(transaction) AS balance FROM banktransactions WHERE pid = ", pid, " AND status = 1;"
 #       )
-#     ) %>% 
+#     ) |> 
 #       suppressWarnings()
 #   })
 # }
@@ -26,9 +26,9 @@
 #         LEFT JOIN playerdata pd ON bt.pid = pd.pid",
 #             if_else(pid < 0, "WHERE bt.status = 1", paste("WHERE bt.pid = ", pid, " AND bt.status = 1")),
 #         "ORDER BY Time DESC;")
-#     ) %>% 
+#     ) |> 
 #       mutate(
-#         Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
+#         Time = Time |> as.numeric() |> as_datetime(tz = "US/Pacific")
 #       )
 #   })
 # }
@@ -52,9 +52,9 @@
 #         WHERE 
 #             status = 0
 #         ORDER BY Time DESC;")
-#     ) %>% 
+#     ) |> 
 #       mutate(
-#         Time = Time %>% as.numeric()
+#         Time = Time |> as.numeric()
 #       )
 #   })
 # }

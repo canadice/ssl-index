@@ -42,17 +42,17 @@ tradeProcessServer <- function(id, uid) {
       })
       
       organizations <- reactive({
-        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
-          select(id = ID, name = organization, abbr = abbreviation) %>% 
-          filter(!is.na(name)) %>% 
-          unique() %>% 
+        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") |> 
+          select(id = ID, name = organization, abbr = abbreviation) |> 
+          filter(!is.na(name)) |> 
+          unique() |> 
           future_promise()
       })
         
       
       #### OUTPUTS ####
       output$organizationA <- renderUI({
-        organizations() %>% 
+        organizations() |> 
           then(
             onFulfilled = function(organizations){
               orgVector <- setNames(organizations$id, organizations$name)
@@ -75,7 +75,7 @@ tradeProcessServer <- function(id, uid) {
       })
       
       output$organizationB <- renderUI({
-        organizations() %>% 
+        organizations() |> 
           then(
             onFulfilled = function(organizations){
               orgVector <- setNames(organizations$id, organizations$name)
@@ -106,14 +106,14 @@ tradeProcessServer <- function(id, uid) {
               with({
                 pickVector<- 
                   setNames(
-                    picks %>% filter(id != input[[paste0("organization", group)]]) %>% select(pickid) %>% unlist(), 
-                    picks %>% filter(id != input[[paste0("organization", group)]]) %>% select(pick) %>% unlist()
+                    picks |> filter(id != input[[paste0("organization", group)]]) |> select(pickid) |> unlist(), 
+                    picks |> filter(id != input[[paste0("organization", group)]]) |> select(pick) |> unlist()
                   )
                 
                 playerVector <- 
                   setNames(
-                    players %>% filter(id != input[[paste0("organization", group)]]) %>% select(pid) %>% unlist(), 
-                    players %>% filter(id != input[[paste0("organization", group)]]) %>% select(player) %>% unlist()
+                    players |> filter(id != input[[paste0("organization", group)]]) |> select(pid) |> unlist(), 
+                    players |> filter(id != input[[paste0("organization", group)]]) |> select(player) |> unlist()
                   )
                 
                 
@@ -133,7 +133,7 @@ tradeProcessServer <- function(id, uid) {
                 )
               })
           })
-        }) %>% 
+        }) |> 
           bindEvent(input[[paste0("organization", group)]])
       }) 
       
@@ -141,7 +141,7 @@ tradeProcessServer <- function(id, uid) {
       #### OBSERVE ####
       observe({
         if(
-          ((input$playerB_0 %>% is.null()) & (input$pickB_0 %>% is.null())) |
+          ((input$playerB_0 |> is.null()) & (input$pickB_0 |> is.null())) |
           ((input$playerB_0 == "") & (input$pickB_0 == ""))
         ){
           showToast("error", "At least one asset must be sent by both teams.")
@@ -151,7 +151,7 @@ tradeProcessServer <- function(id, uid) {
             player = c(input$playerA_0, input$playerA_1, input$playerA_2, input$playerA_3, input$playerA_4,
                        input$playerB_0, input$playerB_1, input$playerB_2, input$playerB_3, input$playerB_4),
             org = c(rep(input$organizationA, times = 5), rep(input$organizationB, times = 5))
-          ) %>% 
+          ) |> 
             filter(
               player != ""
             )
@@ -160,7 +160,7 @@ tradeProcessServer <- function(id, uid) {
             pick = c(input$pickA_0, input$pickA_1, input$pickA_2, input$pickA_3, input$pickA_4,
                      input$pickB_0, input$pickB_1, input$pickB_2, input$pickB_3, input$pickB_4),
             org = c(rep(input$organizationA, times = 5), rep(input$organizationB, times = 5))
-          ) %>% 
+          ) |> 
             filter(
               pick != ""
             )
@@ -176,7 +176,7 @@ tradeProcessServer <- function(id, uid) {
           
           showToast(type = "success", "The trade has been processed!")
         }
-      }) %>% 
+      }) |> 
         bindEvent(
           input$update
         )

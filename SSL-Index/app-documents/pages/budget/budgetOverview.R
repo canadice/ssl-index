@@ -23,14 +23,14 @@ budgetOverviewServer <- function(id) {
       
       #### OUTPUT ####
       output$tabs <- renderUI({
-        budget() %>% 
+        budget() |> 
           then(
             onFulfilled = function(budget){
               do.call(tabsetPanel, 
                       c(list(width = NULL), 
                         lapply(unique(budget$org), function(org) {
                           tabPanel(
-                            title = budget$organization[budget$org == org] %>% unique(),
+                            title = budget$organization[budget$org == org] |> unique(),
                             column(12,
                                    fluidRow(
                                      uiOutput(session$ns(paste0("overview_", org)))
@@ -60,28 +60,28 @@ budgetOverviewServer <- function(id) {
       })
       
       observe({
-        budget() %>% 
+        budget() |> 
           then(
             onFulfilled = function(budget){
               lapply(unique(budget$org), function(i) {
                 lapply(1:2, function(j){
                   output[[paste0("table_", i, j)]] <- renderReactable({
                     data <- 
-                      budget %>% 
-                      filter(org == i, affiliate == j) %>% 
-                      select(position, player, username, class, tpe, signed, link, status_c, contains("salary"), contains("clause")) %>% 
-                      rename_with(str_to_upper) %>%
+                      budget |> 
+                      filter(org == i, affiliate == j) |> 
+                      select(position, player, username, class, tpe, signed, link, status_c, contains("salary"), contains("clause")) |> 
+                      rename_with(str_to_upper) |>
                       mutate(
                         across(
                           contains("salary"),
                           ~.x / 1000000
                         ),
                         STATUS_C = if_else(STATUS_C == 0, "IA", "ACT")
-                      ) %>% 
-                      mutate(SIGNED = sprintf('<a href="%s" target="_blank">S%s</a>', LINK, SIGNED)) %>%
+                      ) |> 
+                      mutate(SIGNED = sprintf('<a href="%s" target="_blank">S%s</a>', LINK, SIGNED)) |>
                       select(-LINK)
                     
-                    data %>% 
+                    data |> 
                       reactable(
                         pagination = FALSE,
                         defaultColDef = colDef(html = TRUE, footerStyle = list(fontWeight = "bold")),
@@ -90,13 +90,13 @@ budgetOverviewServer <- function(id) {
                           PLAYER = colDef(footer = function(values) paste(sum(str_detect(values, "[A-z]+")), "Players")),
                           CLASS = colDef(name = "AGE", width = 50),
                           SIGNED = colDef(width = 75),
-                          TPE = colDef(width = 50, footer = function(values) paste("AVG:", mean(values, na.rm = TRUE) %>% round(0))),
+                          TPE = colDef(width = 50, footer = function(values) paste("AVG:", mean(values, na.rm = TRUE) |> round(0))),
                           STATUS_C = colDef(name = "TYPE", width = 90, footer = function(values) paste(sum(str_detect(values, "IA")), "IA Contracts")),
                           SALARY0 = colDef(
                             width = 75,
                             name = paste0("S", currentSeason$season),
                             cell = function(value, index){
-                              tippy(value %>% dollar(suffix = "M"), tooltip = data$CLAUSE0[index])
+                              tippy(value |> dollar(suffix = "M"), tooltip = data$CLAUSE0[index])
                             },
                             style = "border-left: 1px;",
                             footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
@@ -105,7 +105,7 @@ budgetOverviewServer <- function(id) {
                             width = 75,
                             name = paste0("S", currentSeason$season+1),
                             cell = function(value, index){
-                              tippy(value %>% dollar(suffix = "M"), tooltip = data$CLAUSE1[index])
+                              tippy(value |> dollar(suffix = "M"), tooltip = data$CLAUSE1[index])
                             },
                             style = "border-left: 1px;",
                             footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
@@ -114,7 +114,7 @@ budgetOverviewServer <- function(id) {
                             width = 75,
                             name = paste0("S", currentSeason$season+2),
                             cell = function(value, index){
-                              tippy(value %>% dollar(suffix = "M"), tooltip = data$CLAUSE2[index])
+                              tippy(value |> dollar(suffix = "M"), tooltip = data$CLAUSE2[index])
                             },
                             style = "border-left: 1px;",
                             footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
@@ -123,7 +123,7 @@ budgetOverviewServer <- function(id) {
                             width = 75,
                             name = paste0("S", currentSeason$season+3),
                             cell = function(value, index){
-                              tippy(value %>% dollar(suffix = "M"), tooltip = data$CLAUSE3[index])
+                              tippy(value |> dollar(suffix = "M"), tooltip = data$CLAUSE3[index])
                             },
                             style = "border-left: 1px;",
                             footer = function(values) sprintf("$%.2fM", sum(values, na.rm = TRUE))
@@ -142,14 +142,14 @@ budgetOverviewServer <- function(id) {
       })
       
       observe({
-        budget() %>% 
+        budget() |> 
           then(
             onFulfilled = function(budget){
               lapply(unique(budget$org), function(i) {
                 output[[paste0("overview_", i)]] <- renderUI({
                     data <- 
-                      budget %>% 
-                      filter(org == i) %>% 
+                      budget |> 
+                      filter(org == i) |> 
                       mutate(
                         across(
                           contains("salary"),
@@ -158,8 +158,8 @@ budgetOverviewServer <- function(id) {
                         status_c = if_else(status_c == 0, "IA", "ACT")
                       ) 
                     
-                    majors <- data %>% filter(affiliate == 1)
-                    minors <- data %>% filter(affiliate == 2)
+                    majors <- data |> filter(affiliate == 1)
+                    minors <- data |> filter(affiliate == 2)
                     
                     tagList(
                       column(3, 
@@ -191,37 +191,37 @@ budgetOverviewServer <- function(id) {
             lapply(unique(budget$org), function(i) {
               output[[paste0("trades_", i)]] <- renderReactable({
                 data <- 
-                  transactions %>% 
-                  filter(type == "TRAD") %>% 
-                  select(!type) %>% 
-                  group_by(tid) %>% 
-                  filter(any(toOrg_player == i | toOrg_pick == i)) %>%
+                  transactions |> 
+                  filter(type == "TRAD") |> 
+                  select(!type) |> 
+                  group_by(tid) |> 
+                  filter(any(toOrg_player == i | toOrg_pick == i)) |>
                   pivot_longer(
                     cols = name_player:orgName_pick,
                     names_to = c(".value", "pair"),
                     names_pattern = "(.*)_(.*?)",
                     values_transform = as.character
-                  ) %>% 
-                  unique() %>% 
-                  group_by(tid, link, transfervalue, orgName) %>% 
+                  ) |> 
+                  unique() |> 
+                  group_by(tid, link, transfervalue, orgName) |> 
                   summarize(
                     assets = paste0(name, collapse = ", ")
-                  ) %>% 
+                  ) |> 
                   mutate(
                     to = LETTERS[1:n()]
-                  ) %>% 
-                  group_by(tid, link, transfervalue) %>% 
+                  ) |> 
+                  group_by(tid, link, transfervalue) |> 
                   pivot_wider(
                     names_from = to,
                     values_from = c(orgName, assets)
-                  ) %>% 
+                  ) |> 
                   mutate(
                     tid = sprintf('<a href="%s" target="_blank">%s</a>', link, tid)
-                  ) %>% 
-                  ungroup() %>% 
+                  ) |> 
+                  ungroup() |> 
                   select(tid, contains("_A"), contains("_B"))
                 
-                data %>% 
+                data |> 
                   reactable(
                     defaultColDef = colDef(html = TRUE, minWidth = 50),
                     columns = 

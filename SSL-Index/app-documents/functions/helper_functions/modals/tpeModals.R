@@ -31,7 +31,7 @@ modalVerify <- function(update, session){
     modalDialog(
       tagList(
         span(
-          "Are you sure you want to update these attributes?" %>% strong()
+          "Are you sure you want to update these attributes?" |> strong()
         ),
         br(),
         column(
@@ -48,9 +48,9 @@ modalVerify <- function(update, session){
                 )
               ),
               collapse = "<br>"
-            ) %>% 
+            ) |> 
               HTML()
-          ) %>% 
+          ) |> 
             div(
               class = "verifyBox"
             )

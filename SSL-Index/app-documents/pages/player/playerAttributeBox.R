@@ -6,10 +6,10 @@ playerAttributeBoxUI <- function(id) {
         width = 3,
         offset = 5,
         valueBox(
-          subtitle = "Available TPE" %>% 
+          subtitle = "Available TPE" |> 
             div(align = "center"),
-          value = textOutput(ns("tpeRemaining"), inline = TRUE)  %>% 
-            withSpinner30() %>% 
+          value = textOutput(ns("tpeRemaining"), inline = TRUE)  |> 
+            withSpinner30() |> 
             div(align = "center"), 
           width = NULL
         )
@@ -22,7 +22,7 @@ playerAttributeBoxUI <- function(id) {
           c(
             "acceleration", "agility", "balance", "jumping reach", 
             "natural fitness", "pace", "stamina", "strength"
-          ) %>% 
+          ) |> 
             map(
               .x = .,
               .f = 
@@ -36,7 +36,7 @@ playerAttributeBoxUI <- function(id) {
           "aggression", "anticipation", "bravery", "composure", "concentration", 
           "decisions", "determination", "flair", "leadership", "off the ball", 
           "positioning", "teamwork", "vision", "work rate"
-        ) %>% 
+        ) |> 
           map(
             .x = .,
             .f = 
@@ -52,7 +52,7 @@ playerAttributeBoxUI <- function(id) {
           "Command Of Area", "Communication", "Eccentricity", "Handling",
           "Kicking", "One On Ones", "Tendency To Punch", "Reflexes", 
           "Tendency To Rush", "Throwing"
-        ) %>% 
+        ) |> 
           map(
             .x = .,
             .f = 
@@ -94,7 +94,7 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
       })
       
       ## All the cost outputs
-      editableAttributes %>% 
+      editableAttributes |> 
         lapply(
           X = .,
           FUN = function(x){
@@ -117,18 +117,18 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
       
       # Updates the banked tpe when changing attributes
       tpeBanked <- reactive({
-        playerData() %>% 
+        playerData() |> 
           then(
             onFulfilled = function(value) {
-              editableAttributes %>% 
+              editableAttributes |> 
                 lapply(
                   X = .,
                   FUN = function(x){
                     tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
                   }
-                ) %>% 
-                unlist() %>% 
-                sum() %>% 
+                ) |> 
+                unlist() |> 
+                sum() |> 
                 {
                   value$tpe - .
                 }
@@ -137,11 +137,11 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
               NaN
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(
           # Changes in any input slider
           {
-            editableAttributes %>% 
+            editableAttributes |> 
               lapply(
                 X = .,
                 FUN = function(x){
@@ -159,15 +159,15 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
           data2 = playerData()
         ) %...>% 
           with({
-            data1 %>% 
-              select(acceleration:throwing) %>% 
-              colnames() %>% 
+            data1 |> 
+              select(acceleration:throwing) |> 
+              colnames() |> 
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
                     value = data2[, x],
                     min = 5,
                     max = data2[, x]
@@ -175,28 +175,28 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
                 }
               )
             
-            data1 %>%
-              select(acceleration:throwing) %>%
+            data1 |>
+              select(acceleration:throwing) |>
               select(
                 where(is.na)
-              ) %>%
-              colnames() %>%
+              ) |>
+              colnames() |>
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
                     value = 5,
                     min = 5,
                     max = 5
                   )
                   
-                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
+                  shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
                 }
               )
           })
-      }) %>% 
+      }) |> 
         bindEvent(
           playerData(),
           ignoreInit = FALSE
@@ -209,42 +209,42 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
           data2 = playerData()
         ) %...>% 
           with({
-            data1 %>% 
-              select(acceleration:throwing) %>% 
-              colnames() %>% 
+            data1 |> 
+              select(acceleration:throwing) |> 
+              colnames() |> 
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
                     value = data2[, x]
                   )
                 }
               )
             
-            data1 %>%
-              select(acceleration:throwing) %>%
+            data1 |>
+              select(acceleration:throwing) |>
               select(
                 where(is.na)
-              ) %>%
-              colnames() %>%
+              ) |>
+              colnames() |>
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
                     value = 5,
                     min = 5,
                     max = 5
                   )
                   
-                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
+                  shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
                 }
               )
           })
-      }) %>% 
+      }) |> 
         bindEvent(
           input$resetRegression,
           ignoreInit = TRUE
@@ -277,7 +277,7 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
               }
             }
           })
-      }) %>% 
+      }) |> 
         bindEvent(
           input$verifyRegression,
           ignoreInit = TRUE
@@ -303,7 +303,7 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
             rv$bank <- bank
             
           })
-      }) %>% 
+      }) |> 
         bindEvent(
           input$confirmUpdate,
           ignoreInit = TRUE,

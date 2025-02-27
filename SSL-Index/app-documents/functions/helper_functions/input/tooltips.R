@@ -5,8 +5,8 @@ withTooltip <- function (label, tooltip)
     class = "hovertext", 
     data_hover = tooltip, 
     label
-  ) %>% 
-    as.character() %>% 
+  ) |> 
+    as.character() |> 
     tooltipHTML()
 }
 

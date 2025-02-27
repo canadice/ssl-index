@@ -4,7 +4,7 @@ bodTeamUI <- function(id) {
     fluidRow(
       column(width = 12,
              box(title = "Organizational Overview", width = NULL, solidHeader = TRUE,
-                 reactableOutput(ns("teamOverview")) %>% 
+                 reactableOutput(ns("teamOverview")) |> 
                    withSpinnerMedium()
              )
              
@@ -19,20 +19,20 @@ bodTeamServer <- function(id, userinfo) {
     function(input, output, session) {
       
       playerData <- reactive({
-        readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+        readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
           future_promise()
       }) 
       
       output$teamOverview <- renderReactable({
-         playerData() %>% 
+         playerData() |> 
           then(
             onFulfilled = function(value){
-              value %>% 
+              value |> 
                 arrange(
                   organization,
                   affiliate,
-                  tpe %>% desc()
-                ) %>% 
+                  tpe |> desc()
+                ) |> 
                 reactable(
                   # groupBy = c("team"),
                   pagination = FALSE,

@@ -16,7 +16,7 @@ playerInfoBoxUI <- function(id) {
           width = 2,
           imageOutput(ns("team"), height = NULL)
         )  
-      ) %>% 
+      ) |> 
         withSpinnerSmall()
     )
   )
@@ -28,12 +28,12 @@ playerInfoBoxServer <- function(id, pid, mainSession) {
     function(input, output, session) {
       
       output$name <- renderUI({
-        readAPI(url = "https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) %>% 
-          future_promise() %>% 
+        readAPI(url = "https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) |> 
+          future_promise() |> 
           then(
             onFulfilled = function(data){
               tagList(
-                h2(data$name %>% paste(paste("(", data$class, ")", sep = ""), sep = ", ")),
+                h2(data$name |> paste(paste("(", data$class, ")", sep = ""), sep = ", ")),
                 h4(paste("Player: "), data$playerStatus),
                 h4(paste("User: "), data$userStatus)
               )
@@ -42,12 +42,12 @@ playerInfoBoxServer <- function(id, pid, mainSession) {
       })
       
       output$bank <- renderUI({
-        readAPI(url = "https://api.simulationsoccer.com/bank/getBankBalance", query = list(pid = pid)) %>% 
-          future_promise() %>% 
+        readAPI(url = "https://api.simulationsoccer.com/bank/getBankBalance", query = list(pid = pid)) |> 
+          future_promise() |> 
           then(
             onFulfilled = function(bank){
               tagList(
-                h4(paste("Bank Balance: ") %>% HTML()),
+                h4(paste("Bank Balance: ") |> HTML()),
                 actionLink(inputId = session$ns("gotobank"), label = bank$balanceStr)  
               )
             }
@@ -58,22 +58,22 @@ playerInfoBoxServer <- function(id, pid, mainSession) {
         if(mainSession$input$tabs != "bankOverview"){
           updateTabItems(session = mainSession, "tabs", selected = "bankOverview")  
         }
-      }) %>% 
+      }) |> 
         bindEvent(
           input$gotobank
         )
       
       
       output$traits <- renderUI({
-        getPlayerTraits(playerID = pid) %>% 
+        getPlayerTraits(playerID = pid) |> 
           then(
             onFulfilled = function(value){
               tagList(
                 h4("Player Traits"),
-                if(value %>% length() == 0){
+                if(value |> length() == 0){
                   "No traits"
                 } else {
-                  paste(value, collapse = "<br>") %>% HTML()
+                  paste(value, collapse = "<br>") |> HTML()
                 }
               )
             },
@@ -84,14 +84,14 @@ playerInfoBoxServer <- function(id, pid, mainSession) {
       })
       
       output$positions <- renderUI({
-        getPlayerPositions(playerID = pid) %>% 
+        getPlayerPositions(playerID = pid) |> 
           then(
             onFulfilled = function(value){
               tagList(
                 h4("Primary Position(s)"),
-                value %>% filter(value == 20) %>% select(name) %>% unlist() %>% paste(collapse = ", ") %>% HTML(),
+                value |> filter(value == 20) |> select(name) |> unlist() |> paste(collapse = ", ") |> HTML(),
                 h4("Secondary Position(s)"),
-                value %>% filter(value < 20, value >= 10) %>% select(name)  %>% unlist() %>% paste(collapse = ", ") %>% HTML(),
+                value |> filter(value < 20, value >= 10) |> select(name)  |> unlist() |> paste(collapse = ", ") |> HTML(),
               )
             },
             onRejected = function(error){
@@ -101,7 +101,7 @@ playerInfoBoxServer <- function(id, pid, mainSession) {
       })
       
       output$team <- renderImage({
-        getPlayerTeam(pid) %>%
+        getPlayerTeam(pid) |>
           then(
             onFulfilled = function(value){
               list(

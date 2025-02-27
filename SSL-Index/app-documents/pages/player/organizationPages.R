@@ -4,7 +4,7 @@ organizationPagesUI <- function(id) {
   tagList(
     column(12,
            h2("Organization Overview"),
-           uiOutput(ns("tabs")) %>% 
+           uiOutput(ns("tabs")) |> 
              withSpinnerMedium()
     ) 
   ) # close tagList
@@ -40,12 +40,12 @@ organizationPagesServer <- function(id) {
       
       
       players <- reactive({
-        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") %>% 
-          select(name, class, tpe, tpebank, username, discord, bankBalance, nationality, position, userStatus, playerStatus, render, team, affiliate) %>% 
+        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |> 
+          select(name, class, tpe, tpebank, username, discord, bankBalance, nationality, position, userStatus, playerStatus, render, team, affiliate) |> 
           future_promise()
       })
       
-      organizations <- readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
+      organizations <- readAPI("https://api.simulationsoccer.com/organization/getOrganizations") |> 
         filter(!is.na(organization))
       
       output$tabs <- renderUI({
@@ -66,13 +66,13 @@ organizationPagesServer <- function(id) {
       })
         
       observe({
-        players() %>% 
+        players() |> 
           then(
             onFulfilled = function(data){
               lapply(unique(organizations$ID), function(i) {
                 output[[paste0("overview_", i)]] <- renderUI({
-                  majors <- data %>% filter(team %in% organizations$name[organizations$ID == i] & affiliate == 1)
-                  minors <- data %>% filter(team %in% organizations$name[organizations$ID == i] & affiliate == 2)
+                  majors <- data |> filter(team %in% organizations$name[organizations$ID == i] & affiliate == 1)
+                  minors <- data |> filter(team %in% organizations$name[organizations$ID == i] & affiliate == 2)
                   
                   tagList(
                     

@@ -8,7 +8,7 @@ academyUploadUI <- function(id) {
         "In case you do not have the view for the League Observer Manager, download and import the view via", 
         tags$a("this link.", href = "https://drive.google.com/open?id=1b4yz5gkXN6BFSvDBigL3Tp2pUBbu-PJ3&usp=drive_fs", target = "_blank"),
         "The view should be exported as an .HTML file and make sure to scroll through every player in the shortlist as FM only exports players it has 'seen'."
-        ) %>% HTML()
+        ) |> HTML()
     ),
     fluidRow(
       column(
@@ -32,12 +32,12 @@ academyUploadUI <- function(id) {
         h5("Keeper"),
         reactableOutput(
           outputId = ns("keeperCheck")
-        ) %>% 
+        ) |> 
           withSpinnerSmall(),
         h5("Outfield"),
         reactableOutput(
           outputId = ns("outfieldCheck")
-        ) %>% 
+        ) |> 
           withSpinnerSmall()
       )
     ),
@@ -67,11 +67,11 @@ academyUploadServer <- function(id) {
         current <- fmData(filePath())
         
         splitKeeper <- 
-          current %>%
-          filter(position == "GK", !is.na(`minutes played`)) %>% 
-          select(name:`minutes played`, `average rating`:`player of the match`, won:`xg prevented`) %>% 
-          mutate(season = input$season) %>% 
-          relocate(season) %>% 
+          current |>
+          filter(position == "GK", !is.na(`minutes played`)) |> 
+          select(name:`minutes played`, `average rating`:`player of the match`, won:`xg prevented`) |> 
+          mutate(season = input$season) |> 
+          relocate(season) |> 
           mutate(
             across(
               !(name:position),
@@ -81,11 +81,11 @@ academyUploadServer <- function(id) {
           
         
         splitOutfield <- 
-          current %>% 
-          filter(!is.na(`minutes played`)) %>% 
-          select(name:`attempted presses`) %>% 
-          mutate(season = input$season) %>% 
-          relocate(season) %>% 
+          current |> 
+          filter(!is.na(`minutes played`)) |> 
+          select(name:`attempted presses`) |> 
+          mutate(season = input$season) |> 
+          relocate(season) |> 
           mutate(
             across(
               !(name:position),
@@ -103,28 +103,28 @@ academyUploadServer <- function(id) {
       #### FUNCTIONS ####
       fmData <- function(path){
         FM <- 
-          read_html(path, encoding = "UTF-8") %>% 
-          html_elements("table") %>% 
-          html_table() %>% 
-          .[[1]] %>% 
+          read_html(path, encoding = "UTF-8") |> 
+          html_elements("table") |> 
+          html_table() |> 
+          .[[1]] |> 
           mutate(
             Name = 
-              Name %>% 
+              Name |> 
               str_split(
                 pattern = " - ", 
                 simplify = TRUE
-              ) %>% 
+              ) |> 
               .[,1]
-          ) %>% 
+          ) |> 
           select(
             -"Inf",
             ## FM24 does not have Rec as an automatic column
             # -"Rec"
-          ) %>% 
+          ) |> 
           relocate(
             c(Pun, Ref, TRO),
             .after = `1v1`
-          ) %>% 
+          ) |> 
           dplyr::rename(
             Apps = Apps,
             `Minutes Played` = Mins,
@@ -192,7 +192,7 @@ academyUploadServer <- function(id) {
             `Clean Sheets` = Shutouts,
             `xSave%`= `xSv %`,
             `xG Prevented` = xGP
-          ) %>% 
+          ) |> 
           dplyr::mutate(
             across(
               c(
@@ -203,12 +203,12 @@ academyUploadServer <- function(id) {
               pattern = "[^-\\d\\.]+",
               replacement = ""
             )
-          ) %>% 
+          ) |> 
           dplyr::mutate(
             Club =
-              Club %>%
-              str_split(pattern = "-", simplify = TRUE) %>% 
-              .[,1] %>% 
+              Club |>
+              str_split(pattern = "-", simplify = TRUE) |> 
+              .[,1] |> 
               str_squish(),
             `Left Foot` = 
               case_when(
@@ -222,7 +222,7 @@ academyUploadServer <- function(id) {
                 `Right Foot` == "Strong" ~ 15,
                 TRUE ~ 10
               )
-          ) %>% 
+          ) |> 
           dplyr::mutate(
             across(
               !contains(
@@ -231,30 +231,30 @@ academyUploadServer <- function(id) {
               as.numeric
             ),
             `Pass%` = 
-              (`Successful Passes` %>% as.numeric()/
-                 `Attempted Passes` %>% as.numeric()) %>% 
+              (`Successful Passes` |> as.numeric()/
+                 `Attempted Passes` |> as.numeric()) |> 
               round(4)*100,
             `Cross%` = 
-              (`Successful Crosses` %>% as.numeric()/
-                 `Attempted Crosses` %>% as.numeric()) %>% 
+              (`Successful Crosses` |> as.numeric()/
+                 `Attempted Crosses` |> as.numeric()) |> 
               round(4)*100,
             `Save%` = 
               ((`Saves Parried`+`Saves Held`+`Saves Tipped`)/
-                 (`Saves Parried`+`Saves Held`+`Saves Tipped`+Conceded)) %>% 
+                 (`Saves Parried`+`Saves Held`+`Saves Tipped`+Conceded)) |> 
               round(4) * 100,
-          ) %>% 
+          ) |> 
           rename_with(
             ~ str_to_lower(.x)
-          ) %>% 
+          ) |> 
           relocate(
             `pass%`, .after = `attempted passes`
-          ) %>% 
+          ) |> 
           relocate(
             `cross%`, .after = `attempted crosses`
-          ) %>% 
+          ) |> 
           relocate(
             `save%`, .after = `saves tipped`
-          ) %>% 
+          ) |> 
           suppressWarnings()
       }
       
@@ -277,7 +277,7 @@ academyUploadServer <- function(id) {
       observe({
         req(filePath())
         
-        keeper <- processedGame()$k %>% 
+        keeper <- processedGame()$k |> 
           mutate(
             across(
               name:position,
@@ -285,7 +285,7 @@ academyUploadServer <- function(id) {
             )
           )
         
-        outfield <- processedGame()$o %>% 
+        outfield <- processedGame()$o |> 
           mutate(
             across(
               name:position,
@@ -302,7 +302,7 @@ academyUploadServer <- function(id) {
         indexQuery(
           paste(
             "INSERT INTO academyoutfield VALUES ",
-            do.call(function(...) paste(..., sep = ", "), args = outfield) %>% paste0("(", ., ")", collapse = ", "),
+            do.call(function(...) paste(..., sep = ", "), args = outfield) |> paste0("(", ., ")", collapse = ", "),
             ";"
           )
         )
@@ -316,7 +316,7 @@ academyUploadServer <- function(id) {
         indexQuery(
           paste(
             "INSERT INTO academykeeper VALUES ",
-            do.call(function(...) paste(..., sep = ", "), args = keeper) %>% paste0("(", ., ")", collapse = ", "),
+            do.call(function(...) paste(..., sep = ", "), args = keeper) |> paste0("(", ., ")", collapse = ", "),
             ";"
           )
         )
@@ -325,7 +325,7 @@ academyUploadServer <- function(id) {
         
         showToast("success", "You have successfully uploaded and replaced the Academy statistics!")
         
-      }) %>% 
+      }) |> 
         bindEvent(
           input$uploadData
         )

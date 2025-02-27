@@ -1,30 +1,30 @@
 attributeReactable <- function(data, session, output){
   visData <- 
-    data %>% 
-    select(acceleration:throwing) %>% 
-    select(where(~ !is.na(.x))) %>% 
+    data |> 
+    select(acceleration:throwing) |> 
+    select(where(~ !is.na(.x))) |> 
     pivot_longer(
       cols = everything(),
       values_to = "Value",
       names_to = "Attribute"
-    ) %>% 
+    ) |> 
     mutate(
       Attribute = str_to_title(Attribute)
-    ) %>% 
+    ) |> 
     left_join(
       attributes,
       by = c("Attribute" = "attribute") 
-    ) %>% 
+    ) |> 
     mutate(
-      Attribute = factor(Attribute, levels = sort(Attribute %>% unique(), decreasing = TRUE)),
+      Attribute = factor(Attribute, levels = sort(Attribute |> unique(), decreasing = TRUE)),
       group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
       ValueFill = case_when(
         Value >= 18 ~ 1,
         Value >= 13 ~ 2,
         Value >= 10 ~ 3,
         TRUE ~ 5
-      ) %>% factor()
-    ) %>% 
+      ) |> factor()
+    ) |> 
     {
       if(data$pos_gk == 20){
         filter(
@@ -39,17 +39,17 @@ attributeReactable <- function(data, session, output){
       }
     }
   
-  map(.x = visData$group %>% unique() %>% sort(),
+  map(.x = visData$group |> unique() |> sort(),
       .f = function(chosenGroup){
         output[[chosenGroup]] <- renderReactable({
           temp <- 
-            visData %>% 
+            visData |> 
             filter(
               group == chosenGroup
             )
           
-          temp %>% 
-            select(Attribute, Value) %>% 
+          temp |> 
+            select(Attribute, Value) |> 
             reactable(
               defaultColDef = colDef(
                 style = function(value, index){
@@ -71,12 +71,12 @@ attributeReactable <- function(data, session, output){
         })
       })
   
-  map(.x = visData$group %>% unique() %>% sort(),
+  map(.x = visData$group |> unique() |> sort(),
       .f = function(group){
-        column(width = 12 / length(visData$group %>% unique()),
+        column(width = 12 / length(visData$group |> unique()),
                h4(group),
                reactableOutput(session$ns(group))
         )
-      }) %>% 
+      }) |> 
     tagList()
 }

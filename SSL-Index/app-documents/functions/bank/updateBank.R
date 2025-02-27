@@ -3,7 +3,7 @@ modalBankVerify <- function(update, cost, session){
     modalDialog(
       tagList(
         span(
-          "Are you sure you want to purchase these items?" %>% strong()
+          "Are you sure you want to purchase these items?" |> strong()
         ),
         br(),
         column(
@@ -20,15 +20,15 @@ modalBankVerify <- function(update, cost, session){
                 )
               ),
               collapse = "<br>"
-            ) %>% 
+            ) |> 
               HTML()
-          ) %>% 
+          ) |> 
             div(
               class = "verifyBox"
             )
-        ) %>% 
+        ) |> 
           fluidRow(),
-        paste("Total cost:", cost %>% dollar()),
+        paste("Total cost:", cost |> dollar()),
         br(),
         fluidRow(
           column(width = 4, offset = 1,
@@ -51,7 +51,7 @@ modalBankVerify <- function(update, cost, session){
 
 
 addBankTransaction <- function(uid, pid, source, transaction, status = 1){
-  time <- lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric()
+  time <- lubridate::now() |> with_tz("US/Pacific") |> as.numeric()
   
   portalQuery(
     paste(

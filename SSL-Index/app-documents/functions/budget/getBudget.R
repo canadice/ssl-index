@@ -8,7 +8,7 @@ getBudget <- function(){
       LEFT JOIN portaldb.playerdata pd ON bu.pid = pd.pid
       LEFT JOIN mybbdb.mybb_users mbb ON pd.uid = mbb.uid;"
     )
-  ) %>% 
+  ) |> 
     future_promise()
 }
 
@@ -17,7 +17,7 @@ getBudgetPlayer <- function(pid){
     paste(
       "SELECT * FROM budgetplayers WHERE pid = ", pid, ";"
     )
-  ) %>% 
+  ) |> 
     future_promise()
 }
 
@@ -54,7 +54,7 @@ getOrgTransactions <- function(){
       LEFT JOIN 
           portaldb.organizations org_curr ON dp.current = org_curr.id;"
     )
-  ) %>% 
+  ) |> 
     future_promise()
 }
 
@@ -68,7 +68,7 @@ getPickAssets <- function(){
       LEFT JOIN 
           portaldb.organizations org_orig ON pick.original = org_orig.id;"
     )
-  ) %>% 
+  ) |> 
     future_promise()
 }
 
@@ -82,6 +82,6 @@ getPlayerAssets <- function(){
       LEFT JOIN 
           portaldb.playerdata AS pd ON budget.pid = pd.pid;"
     )
-  ) %>% 
+  ) |> 
     future_promise()
 }

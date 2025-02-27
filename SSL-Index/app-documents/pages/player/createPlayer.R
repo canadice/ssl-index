@@ -10,7 +10,7 @@ createPlayerUI <- function(id) {
         paste("To help you in your process, we have also created a", 
               tags$a("Player Compendium", href = "https://docs.google.com/document/d/1cp4OdU43nX8A7kbQVmOl89xZRD3l13voHcqLNrxFL4Q/edit?usp=sharing"), 
               "that includes detailed descriptions of the player attributes, which are important for different player positions and roles,",
-              "as well as descriptions of player traits.") %>% HTML() %>% p()
+              "as well as descriptions of player traits.") |> HTML() |> p()
       )
     ),
     #### Position Tracker ####
@@ -165,7 +165,7 @@ createPlayerUI <- function(id) {
               ),
               valueBox(
                 subtitle = "Available TPE",
-                value = textOutput(ns("tpeRemaining"), inline = TRUE) %>% 
+                value = textOutput(ns("tpeRemaining"), inline = TRUE) |> 
                   withSpinnerSmall(), 
                 width = 3
               )
@@ -176,7 +176,7 @@ createPlayerUI <- function(id) {
             label = "Outfield or Goalkeeper",
             choices = c("Outfield", "Goalkeeper"),
             selected = "Outfield"
-          ) %>% 
+          ) |> 
             div(align = "center")
         )
       )
@@ -192,7 +192,7 @@ createPlayerUI <- function(id) {
         width = NULL,
         fluidRow(
           ## Selects player roles from a dropdown
-          uiOutput(ns("roleSelector")) %>% column(width = 12),
+          uiOutput(ns("roleSelector")) |> column(width = 12),
         ),
         fluidRow(
           ##---------------------
@@ -201,12 +201,12 @@ createPlayerUI <- function(id) {
           column(
             style = "padding-right: 20px; padding-left: 20px",
             width = 4,
-            h4("Physical " %>% strong(), align = "center"),
+            h4("Physical " |> strong(), align = "center"),
             tagList(
               c(
                 "acceleration", "agility", "balance", "jumping reach", 
                 "natural fitness", "pace", "stamina", "strength"
-              ) %>% 
+              ) |> 
                 map(
                   .x = .,
                   .f = 
@@ -220,12 +220,12 @@ createPlayerUI <- function(id) {
           column(
             style = "padding-right: 20px; padding-left: 20px",
             width = 4,
-            h4("Mental " %>% strong(), align = "center"),
+            h4("Mental " |> strong(), align = "center"),
             c(
               "aggression", "anticipation", "bravery", "composure", "concentration", 
               "decisions", "determination", "flair", "leadership", "off the ball", 
               "positioning", "teamwork", "vision", "work rate"
-            ) %>% 
+            ) |> 
               map(
                 .x = .,
                 .f = 
@@ -238,11 +238,11 @@ createPlayerUI <- function(id) {
           column(
             style = "padding-right: 20px; padding-left: 20px",
             width = 4,
-            h4("Technical " %>% strong(), align = "center"),
+            h4("Technical " |> strong(), align = "center"),
             uiOutput(ns("technical")),
           )
         )
-      ) %>% column(width = 12)
+      ) |> column(width = 12)
     ),
     ##--------------------------
     ##  Player Traits  
@@ -274,9 +274,9 @@ createPlayerUI <- function(id) {
             )
           )
         )
-      ) %>% 
+      ) |> 
         column(width = 12)
-    ) %>% 
+    ) |> 
       div(id = ns("outfieldExtras")),
     tags$script(paste("
         Shiny.addCustomMessageHandler('disableCheckbox', function(checkboxId) {
@@ -297,13 +297,13 @@ createPlayerUI <- function(id) {
             }
           }
         });
-      ", sep = "") %>% HTML()),
+      ", sep = "") |> HTML()),
     div(style = "min-height: 100px;"),
     fluidRow(
       div(
         class = "frozen-bottom",
         div(h4("TPE Remaining: "), 
-        textOutput(ns("tpeRemaining2"), inline = TRUE) %>% 
+        textOutput(ns("tpeRemaining2"), inline = TRUE) |> 
           h4()
         ),
         actionButton(
@@ -329,37 +329,37 @@ createPlayerServer <- function(id, userinfo, parent) {
       
       #### POSITION TRACKER OUTPUT ####
       trackerData <- reactive({
-        getAllPlayerPositions() %>% 
+        getAllPlayerPositions() |> 
           then(
             onFulfilled = function(data){
               if(input$activeStatus == "Yes"){
                 data <- 
-                  data %>% 
+                  data |> 
                   filter(
                     status == "Active"
                   )  
               }
               
-              data %>% 
+              data |> 
                 pivot_longer(
                   !status,
                   names_to = "posExp",
                   values_to = "Value"
-                ) %>% 
+                ) |> 
                 cbind(
                   positionalCoord,
                   .
-                ) %>% 
+                ) |> 
                 filter(
                   Value != 0
-                ) %>% 
-                group_by(position) %>% 
+                ) |> 
+                group_by(position) |> 
                 summarize(
                   x = mean(x),
                   y = mean(y),
                   primary = sum(Value == 20),
                   secondary = sum(Value == 15)
-                ) %>% 
+                ) |> 
                 ungroup()
             }
           )
@@ -370,10 +370,10 @@ createPlayerServer <- function(id, userinfo, parent) {
       })
       
       output$fieldImage <- renderImage({
-        trackerData() %>% 
+        trackerData() |> 
           then(
             onFulfilled = function(data){
-              base <- pitch %>% image_ggplot()
+              base <- pitch |> image_ggplot()
               
               p <- 
                 base + 
@@ -444,8 +444,8 @@ createPlayerServer <- function(id, userinfo, parent) {
               dev.off()
               
               tempImage <- 
-                card %>% 
-                image_crop(geometry = "480x600+160") %>% 
+                card |> 
+                image_crop(geometry = "480x600+160") |> 
                 image_write(tempfile(fileext = "png"), format = "png")
               
               return(
@@ -470,7 +470,7 @@ createPlayerServer <- function(id, userinfo, parent) {
         set tactic. There exists many different roles with different importances given to specific
         attributes. Selecting a role and duty in the list below will highlight the <span
         class='keyAttribute'>very important</span> and
-        <span class='importantAttribute'>important</span>          attributes.") %>% HTML(),
+        <span class='importantAttribute'>important</span>          attributes.") |> HTML(),
           br(),
           selectInput(session$ns("selectedRole"), label = tippy("Select a player role", tooltip = "Please note, the role you play will be determined by your Manager. If you want to play a specific role, make sure to speak with your Manager."), choices = names(roleAttributes))
         )
@@ -478,7 +478,7 @@ createPlayerServer <- function(id, userinfo, parent) {
       
       #### ATTRIBUTE HIGHLIGHTS BASED ON ROLE ####
       observe({
-        editableAttributes %>% 
+        editableAttributes |> 
           lapply(
             X = .,
             FUN = function(x){
@@ -486,7 +486,7 @@ createPlayerServer <- function(id, userinfo, parent) {
                 feedback(
                   session = session,
                   show = TRUE,
-                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
                   color = importantColor,
                   icon = shiny::icon("exclamation-sign", lib = "glyphicon")
                 ) 
@@ -494,29 +494,29 @@ createPlayerServer <- function(id, userinfo, parent) {
                 feedback(
                   session = session,
                   show = TRUE,
-                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
                   color = keyColor,
                   icon = shiny::icon("exclamation-sign", lib = "glyphicon")
                 )
               } else {
                 hideFeedback(
                   session = session,
-                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ")
+                  inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " ")
                 )
               }
               
             }
           )
-      }) %>% bindEvent(input$selectedRole)
+      }) |> bindEvent(input$selectedRole)
       
       ## All the cost outputs
-      editableAttributes %>% 
+      editableAttributes |> 
         lapply(
           X = .,
           FUN = function(x){
             output[[paste0("cost", x)]] <- 
               renderUI({
-                if(session$input[[x]] %>% is.na() | session$input[[x]] < 5 | session$input[[x]] > 20){
+                if(session$input[[x]] |> is.na() | session$input[[x]] < 5 | session$input[[x]] > 20){
                   paste(
                     "You need to input a value between 5 and 20."
                   )
@@ -539,24 +539,24 @@ createPlayerServer <- function(id, userinfo, parent) {
       # Updates the banked tpe when changing attributes
       observe({
         tpeBanked(
-          editableAttributes %>% 
+          editableAttributes |> 
             lapply(
               X = .,
               FUN = function(x){
                 tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
               }
-            ) %>% 
-            unlist() %>% 
-            sum() %>% 
+            ) |> 
+            unlist() |> 
+            sum() |> 
             {
               350 - .
             }
         )
-      }) %>% 
+      }) |> 
         bindEvent(
           # Changes in any input slider
           {
-            editableAttributes %>% 
+            editableAttributes |> 
               lapply(
                 X = .,
                 FUN = function(x){
@@ -569,32 +569,32 @@ createPlayerServer <- function(id, userinfo, parent) {
       
       # Fixes moving away from locked 20 in stamina and natural fitness
       observe({
-        c("natural fitness", "stamina") %>% 
+        c("natural fitness", "stamina") |> 
           map(
             .x = .,
             .f = function(x){
-              if(input[[x]] %>% is.null()){
+              if(input[[x]] |> is.null()){
                 updateNumericInput(
                   session = session,
-                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
                   value = 20
                 ) 
               } else {
                 updateNumericInput(
                   session = session,
-                  inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
+                  inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
                   value = if_else(input[[x]] != 20, 20, input[[x]])
                 )  
               }
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(
           # Changes in any input slider
           {
-            c("Natural Fitness", "Stamina") %>% 
-              stringr::str_to_title() %>% 
-              str_remove_all(pattern = " ") %>% 
+            c("Natural Fitness", "Stamina") |> 
+              stringr::str_to_title() |> 
+              str_remove_all(pattern = " ") |> 
               lapply(
                 X = .,
                 FUN = function(x){
@@ -609,16 +609,16 @@ createPlayerServer <- function(id, userinfo, parent) {
         if(input$playerType == "Outfield"){
           shinyjs::show("outfieldExtras")
           
-          attributes %>% 
+          attributes |> 
             filter(
               group %in% c("Goalkeeper", "Technical"),
               keeper == "TRUE"
-            ) %>% 
+            ) |> 
             select(
               attribute
-            ) %>% 
-            unlist() %>% 
-            unname() %>% 
+            ) |> 
+            unlist() |> 
+            unname() |> 
             map(
               .x = .,
               .f = 
@@ -631,14 +631,14 @@ createPlayerServer <- function(id, userinfo, parent) {
             "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
             "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
             "Passing", "Penalty Taking", "Tackling", "Technique"
-          ) %>% 
+          ) |> 
             map(
               .x = .,
               .f = 
                 ~ attributeInput(ns = session$ns, name = .x, value = 5)
             )
         }
-      }) %>% 
+      }) |> 
         bindEvent(
           input$playerType,
           ignoreInit = TRUE
@@ -651,23 +651,23 @@ createPlayerServer <- function(id, userinfo, parent) {
             "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
             "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
             "Passing", "Penalty Taking", "Tackling", "Technique"
-          ) %>% 
+          ) |> 
             map(
               .x = .,
               .f = 
                 ~ attributeInput(ns = session$ns, name = .x, value = NA)
             )
         } else {
-          attributes %>% 
+          attributes |> 
             filter(
               group %in% c("Goalkeeper", "Technical"),
               keeper == "TRUE"
-            ) %>% 
+            ) |> 
             select(
               attribute
-            ) %>% 
-            unlist() %>% 
-            unname() %>% 
+            ) |> 
+            unlist() |> 
+            unname() |> 
             map(
               .x = .,
               .f = 
@@ -707,7 +707,7 @@ createPlayerServer <- function(id, userinfo, parent) {
       # Dynamic UI for trait selectors
       output$traitSelector <- renderUI({
         tagList(
-          checkboxGroupInput(session$ns("traits"), "Select two (2) traits:", choices = traits %>% unlist(use.names = FALSE)) %>% 
+          checkboxGroupInput(session$ns("traits"), "Select two (2) traits:", choices = traits |> unlist(use.names = FALSE)) |> 
             div(class = "multicol")
         )
       })
@@ -826,8 +826,8 @@ createPlayerServer <- function(id, userinfo, parent) {
         #   disable_list <- "none"
         # }
         
-        session$sendCustomMessage("disableCheckbox", disable_list %>% unique())
-      }) %>% 
+        session$sendCustomMessage("disableCheckbox", disable_list |> unique())
+      }) |> 
         bindEvent(
           input$traits,
           ignoreInit = TRUE,
@@ -836,12 +836,12 @@ createPlayerServer <- function(id, userinfo, parent) {
       
       
       observe({
-        # editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% print()
+        # editableAttributes |> sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) |> unlist() |> print()
         
         if(checkIfAlreadyApproving(userinfo$uid)) {
           showToast("error", "You already have a player waiting for approval. You cannot submit another one.")
-        } else if(sapply(c(input$lastName, input$nationality, input$footedness, input$hairColor, input$hairLength, input$skinColor), FUN = function(x) x == "", simplify = TRUE) %>% any() | 
-           (input$playerType == "Outfield" & (input$traits %>% length() != 2 | input$primary %>% length() != 1 | input$secondary %>% length() != 2))){
+        } else if(sapply(c(input$lastName, input$nationality, input$footedness, input$hairColor, input$hairLength, input$skinColor), FUN = function(x) x == "", simplify = TRUE) |> any() | 
+           (input$playerType == "Outfield" & (input$traits |> length() != 2 | input$primary |> length() != 1 | input$secondary |> length() != 2))){
           
           showToast("error", "You have missed to input some information. Please take a look at the highlighted inputs and correct the issues.")
           
@@ -852,21 +852,21 @@ createPlayerServer <- function(id, userinfo, parent) {
           feedbackDanger("hairLength", input$hairLength == "", "Please enter the hair length for your player.")
           feedbackDanger("skinColor", input$skinColor == "", "Please enter the skin tone for your player.")
           
-          if(input$traits %>% length() != 2){
+          if(input$traits |> length() != 2){
             showToast("error", "Please select two (2) traits.")
           }
           
-          if(input$primary %>% length() != 1){
+          if(input$primary |> length() != 1){
             showToast("error", "You can select one (1) primary position.")
           }
           
-          if(input$secondary %>% length() != 2){
+          if(input$secondary |> length() != 2){
             showToast("error", "You can select two (2) secondary positions.")
           }
           
         } else if(checkDuplicatedName(input$firstName, input$lastName)){
           showToast("error", "Another player in the league's history have used this name. Please change it to something else.")
-        } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
+        } else if(editableAttributes |> sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) |> unlist() |> any()){
           showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
         } else if(tpeBanked() < 0){
           showToast("error", "You have spent too much TPE. Please adjust and resubmit.")
@@ -875,7 +875,7 @@ createPlayerServer <- function(id, userinfo, parent) {
         } else {
           checkBuild(input, tpeBanked(), session)
         }
-      }) %>% 
+      }) |> 
         bindEvent(
           input$submitButton
         )
@@ -888,7 +888,7 @@ createPlayerServer <- function(id, userinfo, parent) {
         showToast("success", "Your player has been submitted for approval. You will be notified via the forum or Discord by a member of the BoD when the approval has been completed or if there are any issues.")        
         
         updateTabItems(parent, "tabs", "welcome")
-      }) %>% 
+      }) |> 
         bindEvent(
           input$confirmBuild,
           ignoreInit = TRUE,

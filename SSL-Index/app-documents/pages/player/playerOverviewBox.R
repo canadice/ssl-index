@@ -34,11 +34,11 @@ playerOverviewBoxUI <- function(id) {
       fluidRow(
         column(
           width = 12,
-          uiOutput(ns("playerOverview")) %>% 
+          uiOutput(ns("playerOverview")) |> 
             withSpinnerMedium()
         )
       )
-    ) %>% 
+    ) |> 
       div(id = ns("attributeOverview"))
   )
 }
@@ -51,7 +51,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       #### BUTTONS ####
       
       output$buttonRegression <- renderUI({
-        if(tpeBanked() %>% class() %in% c("numeric", "integer")){
+        if(tpeBanked() |> class() %in% c("numeric", "integer")){
           if(tpeBanked() < 0) {
             actionButton(
               inputId = session$ns("goToRegression"),
@@ -65,7 +65,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
             )
           }
         } else {
-          tpeBanked() %>% 
+          tpeBanked() |> 
             then(
               onFulfilled = function(bank){
                 if(bank < 0) {
@@ -86,7 +86,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       })
       
       output$buttonUpdate <- renderUI({
-        if(tpeBanked() %>% class() %in% c("numeric", "integer")){
+        if(tpeBanked() |> class() %in% c("numeric", "integer")){
           if(tpeBanked() > 0) {
             actionButton(
               inputId = session$ns("goToUpdate"),
@@ -101,7 +101,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
             )
           }
         } else {
-          tpeBanked() %>% 
+          tpeBanked() |> 
             then(
               onFulfilled = function(bank){
                 if(bank >= 0) {
@@ -123,12 +123,12 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       })
       
       observe({
-        data() %>% 
+        data() |> 
           then(
             onFulfilled = function(data){
               # Rerolls can be made by users in their first two seasons in the SSL League proper
               check <- 
-                ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 2)) & 
+                ((data$class |> str_extract(pattern = "[0-9]+") |> as.numeric()) > (currentSeason$season - 2)) & 
                 (data$rerollused == 0)
               
               if(check) {

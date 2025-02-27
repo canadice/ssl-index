@@ -25,7 +25,7 @@ exportBuildUI <- function(id) {
     fluidRow(
       column(width = 6,
              h4("Select a player and download a single build:"),
-             uiOutput(ns("singles")) %>% 
+             uiOutput(ns("singles")) |> 
                withSpinnerSmall(),
              ),
       column(
@@ -51,19 +51,19 @@ exportBuildServer <- function(id) {
       build <- reactive({
         pid <- getPlayerID(input$selectedPlayer)
         
-        readAPI("https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) %>% 
+        readAPI("https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) |> 
           future_promise()
       })
       
       downloadPlayer <- function(temp){
         traits <- 
-          temp$traits %>% 
-          str_split(pattern = traitSep, simplify = TRUE) %>% 
-          str_to_lower() %>% 
+          temp$traits |> 
+          str_split(pattern = traitSep, simplify = TRUE) |> 
+          str_to_lower() |> 
           {
-            (jsonTraits %>% str_to_lower()) %in% .  
-          } %>% 
-          which() %>% 
+            (jsonTraits |> str_to_lower()) %in% .  
+          } |> 
+          which() |> 
           {
             sum(as.integer64(2)^(.-1))
           }
@@ -72,35 +72,35 @@ exportBuildServer <- function(id) {
           '{"GoalKeeperAttributes":{
           ',
           sapply(
-            temp %>% 
+            temp |> 
               select(`aerial reach`:throwing),
             FUN = function(x) {if_else(is.na(x), 5, x)}
-          ) %>% 
-            paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
-            str_replace_all(pattern = " ", replacement = "") %>% 
-            str_replace(pattern = "TendencyToRush", replacement = "RushingOut") %>% 
+          ) |> 
+            paste(paste('"', names(.) |> str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") |> 
+            str_replace_all(pattern = " ", replacement = "") |> 
+            str_replace(pattern = "TendencyToRush", replacement = "RushingOut") |> 
             str_replace(pattern = "AerialReach", replacement = "AerialAbility"),
           '},
 "MentalAttributes":{
           ',
           sapply(
-            temp %>% 
+            temp |> 
               select(`aggression`:`work rate`),
             FUN = function(x) {if_else(is.na(x), 5, x)}
-          ) %>% 
-            paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
-            str_replace_all(pattern = " ", replacement = "") %>% 
+          ) |> 
+            paste(paste('"', names(.) |> str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") |> 
+            str_replace_all(pattern = " ", replacement = "") |> 
             str_replace(pattern = "WorkRate", replacement = "Workrate"),
           '},
 "PhysicalAttributes":{
           ',
           sapply(
-            temp %>% 
+            temp |> 
               select(`acceleration`:`strength`),
             FUN = function(x) {if_else(is.na(x), 5, x)}
-          ) %>% 
-            paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
-            str_replace_all(pattern = " ", replacement = "") %>% 
+          ) |> 
+            paste(paste('"', names(.) |> str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") |> 
+            str_replace_all(pattern = " ", replacement = "") |> 
             str_replace(pattern = "JumpingReach", replacement = "Jumping"),
           ',"LeftFoot":', temp$`left foot`,
           ',"RightFoot":', temp$`right foot`,
@@ -108,46 +108,46 @@ exportBuildServer <- function(id) {
 "TechnicalAttributes":{
           ',
           sapply(
-            temp %>% 
+            temp |> 
               select(`corners`:`technique`),
             FUN = function(x) {if_else(is.na(x), 5, x)}
-          ) %>% 
-            paste(paste('"', names(.) %>% str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") %>% 
-            str_replace_all(pattern = " ", replacement = "") %>% 
-            str_replace(pattern = "FreeKick", replacement = "Freekicks") %>% 
+          ) |> 
+            paste(paste('"', names(.) |> str_to_title(), '"', sep = ""), ., sep = ":", collapse = ",") |> 
+            str_replace_all(pattern = " ", replacement = "") |> 
+            str_replace(pattern = "FreeKick", replacement = "Freekicks") |> 
             str_replace(pattern = "LongThrows", replacement = "Longthrows"),
           '},
 "Positions":{
           ',
           sapply(
-            temp %>% 
+            temp |> 
               select(`pos_st`:`pos_gk`),
             FUN = function(x) {if_else(is.na(x)|x == 0, 1, as.numeric(x))}
-          ) %>% 
-            paste(paste('"', positionsGK[sapply((names(.) %>% str_remove_all(pattern = "pos_") %>% str_to_upper()), FUN = function(x) which(names(positionsGK) == x)) %>% unlist()], '"', sep = ""), ., sep = ":", collapse = ",") %>% 
-            str_replace_all(pattern = " ", replacement = "") %>% 
-            str_replace_all(pattern = "AttackingMidfielder", replacement = "AttackingMid") %>% 
-            str_replace_all(pattern = "Wingback", replacement = "WingBack") %>% 
+          ) |> 
+            paste(paste('"', positionsGK[sapply((names(.) |> str_remove_all(pattern = "pos_") |> str_to_upper()), FUN = function(x) which(names(positionsGK) == x)) |> unlist()], '"', sep = ""), ., sep = ":", collapse = ",") |> 
+            str_replace_all(pattern = " ", replacement = "") |> 
+            str_replace_all(pattern = "AttackingMidfielder", replacement = "AttackingMid") |> 
+            str_replace_all(pattern = "Wingback", replacement = "WingBack") |> 
             str_replace_all(pattern = "(Left|Right|Central)([A-Za-z]+)(\":\"?[0-9]+)", replacement = "\\2\\1\\3"),
           '},
-"HairColour":"', hairColor[temp$hair_color] %>% names() %>% str_replace_all(pattern = " |\\(|\\)", replacement = ""), 
-          '","HairLength":"', temp$hair_length %>% str_to_title(), 
+"HairColour":"', hairColor[temp$hair_color] |> names() |> str_replace_all(pattern = " |\\(|\\)", replacement = ""), 
+          '","HairLength":"', temp$hair_length |> str_to_title(), 
           '","SkinColour":', temp$skintone, 
           ',"Height":', 
           if_else(
-            !is.na(temp$height %>% as.numeric()), 
-            (temp$height %>% as.numeric()*2.54) %>% as.character(), 
-            temp$height %>% as.character()
+            !is.na(temp$height |> as.numeric()), 
+            (temp$height |> as.numeric()*2.54) |> as.character(), 
+            temp$height |> as.character()
           ),
           ',"Weight":', 
           if_else(
-            !is.na(temp$weight %>% as.numeric()), 
-            (temp$weight %>% as.numeric()*0.453592) %>% as.character(), 
-            temp$weight %>% as.character()
+            !is.na(temp$weight |> as.numeric()), 
+            (temp$weight |> as.numeric()*0.453592) |> as.character(), 
+            temp$weight |> as.character()
           ),
           ',"PreferredMoves":', traits,
           ',"Born":"', 
-          # ("2004-07-01" %>% as_date()) - years(currentSeason$season - (temp$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric())) ,
+          # ("2004-07-01" |> as_date()) - years(currentSeason$season - (temp$class |> str_extract(pattern = "[0-9]+") |> as.numeric())) ,
           # Changed to give all players the same age
           "2000-01-01",
           '","DocumentType":"Player"}',
@@ -157,10 +157,10 @@ exportBuildServer <- function(id) {
       
       #### ALL CHANGED BUILDS ####
       output$changes <- renderReactable({
-         builds() %>% 
+         builds() |> 
           then(
             onFulfilled = function(data){
-              data %>% 
+              data |> 
                 select(
                   Name = name,
                   Team = teamName,
@@ -168,7 +168,7 @@ exportBuildServer <- function(id) {
                   Attribute, 
                   Previous = old,
                   New = new
-                ) %>% 
+                ) |> 
                 reactable(
                   groupBy = c("Team", "Name")
                 )
@@ -181,26 +181,26 @@ exportBuildServer <- function(id) {
           paste(lubridate::today(), "Builds.zip", sep = "")
         },
         content = function(file){
-          builds() %>% 
+          builds() |> 
             then(
               onFulfilled = function(data){
                 temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
                 dir.create(temp_directory)
                 
                 data <- 
-                  data %>% 
-                  select(!c(Attribute, old, new)) %>% 
-                  unique() %>% 
+                  data |> 
+                  select(!c(Attribute, old, new)) |> 
+                  unique() |> 
                   mutate(
                     fileName = paste(teamName, name, sep = "_")
                   )
                 
-                data$fileName %>%
+                data$fileName |>
                   imap(function(x,y){
                     if(!is.null(x)){
                       file_name <- glue::glue("{x}_Build.json")
                       writeLines(
-                        downloadPlayer(data %>% filter(fileName == x)),
+                        downloadPlayer(data |> filter(fileName == x)),
                         file.path(temp_directory, file_name)
                       )
                     }
@@ -219,8 +219,8 @@ exportBuildServer <- function(id) {
       
       #### SINGLE PLAYER BUILD ####
       output$singles <- renderUI({
-        readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
-          future_promise() %>% 
+        readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
+          future_promise() |> 
           then(
             onFulfilled = function(data){
               selectizeInput(
@@ -234,11 +234,11 @@ exportBuildServer <- function(id) {
       
       output$singleNationality <- renderUI({
         req(input$selectedPlayer)
-        build() %>% 
+        build() |> 
           then(
             onFulfilled = function(data){
               
-              if(data$nationality %>% nchar() == 3){
+              if(data$nationality |> nchar() == 3){
                 nationality <- names(sslNations)[sslNations == data$nationality]
               } else {
                 nationality <- data$nationality
@@ -258,7 +258,7 @@ exportBuildServer <- function(id) {
           paste(input$selectedPlayer, " Build.json", sep = "")
         },
         content = function(file){
-          build() %>% 
+          build() |> 
             then(
               onFulfilled = function(data){
                 writeLines(

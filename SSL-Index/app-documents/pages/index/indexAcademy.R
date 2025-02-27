@@ -10,7 +10,7 @@ academyIndexUI <- function(id) {
             inputId = ns("selectedSeason"),
             label = "Select a season",
             choices = 
-              13:currentSeason$season %>% 
+              13:currentSeason$season |> 
               sort(decreasing = TRUE)
           )
         )
@@ -20,20 +20,20 @@ academyIndexUI <- function(id) {
         h1("Outfield"),
         tabsetPanel(
           tabPanel("Statistics",
-                   reactableOutput(ns("outfieldBasic")) %>% 
+                   reactableOutput(ns("outfieldBasic")) |> 
                      withSpinnerMedium()),
           tabPanel("Adv. Statistics",
-                   reactableOutput(ns("outfieldAdvanced")) %>% 
+                   reactableOutput(ns("outfieldAdvanced")) |> 
                      withSpinnerMedium()))
         ),
       fluidRow(
         h1("Keeper"),
         tabsetPanel(
           tabPanel("Statistics",
-                   reactableOutput(ns("keeperBasic")) %>% 
+                   reactableOutput(ns("keeperBasic")) |> 
                      withSpinnerMedium()),
           tabPanel("Adv. Statistics",
-                   reactableOutput(ns("keeperAdvanced")) %>% 
+                   reactableOutput(ns("keeperAdvanced")) |> 
                      withSpinnerMedium()))
         )
     ) # close fluidpage
@@ -48,28 +48,28 @@ academyIndexServer <- function(id) {
       #### DATA GENERATION ####
       outfieldData <- reactive({
         req(input$selectedSeason)
-        readAPI("https://api.simulationsoccer.com/index/academyOutfield", query = list(season = input$selectedSeason)) %>% 
+        readAPI("https://api.simulationsoccer.com/index/academyOutfield", query = list(season = input$selectedSeason)) |> 
           future_promise()
       })
       
       keeperData <- reactive({
         req(input$selectedSeason)
-        readAPI("https://api.simulationsoccer.com/index/academyKeeper", query = list(season = input$selectedSeason)) %>% 
+        readAPI("https://api.simulationsoccer.com/index/academyKeeper", query = list(season = input$selectedSeason)) |> 
           future_promise()
       })
       
       #### REACTABLE OUTPUT ####
       output$outfieldBasic <- renderReactable({
-        outfieldData() %>% 
+        outfieldData() |> 
           then(
             onFulfilled = function(data){
               currentData <- 
-                data %>% 
+                data |> 
                 select(
                   name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
                 ) 
               
-              currentData %>% 
+              currentData |> 
                 indexReactable()
             }
           )
@@ -77,11 +77,11 @@ academyIndexServer <- function(id) {
       })  
       
       output$outfieldAdvanced <- renderReactable({
-        outfieldData() %>% 
+        outfieldData() |> 
           then(
             onFulfilled = function(data){
               currentData <- 
-                data %>% 
+                data |> 
                 select(
                   name:club, 
                   xg,
@@ -90,7 +90,7 @@ academyIndexServer <- function(id) {
                   `press%`:`pen adj xG`
                 ) 
               
-              currentData %>% 
+              currentData |> 
                 indexReactable()
             }
           )
@@ -98,16 +98,16 @@ academyIndexServer <- function(id) {
       }) 
       
       output$keeperBasic <- renderReactable({
-        keeperData() %>% 
+        keeperData() |> 
           then(
             onFulfilled = function(data){
               currentData <- 
-                data %>% 
+                data |> 
                 select(
                   name:`save%`
                 ) 
               
-              currentData %>% 
+              currentData |> 
                 indexReactable()
             }
           )
@@ -115,17 +115,17 @@ academyIndexServer <- function(id) {
       })  
       
       output$keeperAdvanced <- renderReactable({
-        keeperData() %>% 
+        keeperData() |> 
           then(
             onFulfilled = function(data){
               currentData <- 
-                data %>% 
+                data |> 
                 select(
                   name:club, 
                   `penalties faced`:`xg prevented`
                 ) 
               
-              currentData %>% 
+              currentData |> 
                 indexReactable()
             }
           )

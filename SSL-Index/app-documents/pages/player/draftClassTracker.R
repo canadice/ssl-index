@@ -11,7 +11,7 @@ draftClassUI <- function(id) {
             label = "Select a class",
             choices = 
               c(
-                1:(currentSeason$season + 1) %>% 
+                1:(currentSeason$season + 1) |> 
                 sort(decreasing = TRUE)
               )
           )
@@ -27,7 +27,7 @@ draftClassUI <- function(id) {
       ## Second row
       fluidRow(
         h2("Draft Class Tracker"),
-        uiOutput(ns("tracker")) %>% 
+        uiOutput(ns("tracker")) |> 
           withSpinnerMedium()
       )
     ) # close fluidpage
@@ -43,18 +43,18 @@ draftClassServer <- function(id) {
       draftclass <- reactive({
         readAPI(url = "https://api.simulationsoccer.com/player/getDraftClass", 
                 query = list(class = input$selectedClass)
-        ) %>% 
+        ) |> 
           future_promise()
       })
       
       
       output$tracker <- renderUI({
-        draftclass() %>% 
+        draftclass() |> 
           then(
             onFulfilled = function(data){
-              data %>% 
-                rename_with(str_to_upper) %>% 
-                relocate(TEAM, POSITION) %>% 
+              data |> 
+                rename_with(str_to_upper) |> 
+                relocate(TEAM, POSITION) |> 
                 reactable(
                   pagination = FALSE,
                   columns = list(

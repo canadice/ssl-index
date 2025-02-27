@@ -6,7 +6,7 @@ updateTransaction <- function(transaction, players = tibble(), picks = tibble())
 FROM information_schema.TABLES
 WHERE TABLE_SCHEMA = 'budgetdb'
 AND TABLE_NAME = 'transactions';")
-      ) %>% unlist()
+      ) |> unlist()
   
   budgetQuery(
     paste(

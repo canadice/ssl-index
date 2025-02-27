@@ -11,7 +11,7 @@ leagueScheduleUI <- function(id) {
             label = "Select a season",
             choices = 
               c(
-                1:currentSeason$season %>% 
+                1:currentSeason$season |> 
                 sort(decreasing = TRUE)
               )
           )
@@ -50,7 +50,7 @@ leagueScheduleServer <- function(id) {
       
       #### UI OUTPUT ####
       output$leagueSelector <- renderUI({
-        season <- input$selectedSeason %>% as.numeric()
+        season <- input$selectedSeason |> as.numeric()
         
         if(season < 5){
           selectInput(
@@ -106,25 +106,25 @@ leagueScheduleServer <- function(id) {
         season <- input$selectedSeason
         league <- input$selectedLeague
         
-        if(schedule() %>% is_empty()){
+        if(schedule() |> is_empty()){
           NULL 
         } else {
-          schedule() %>% 
+          schedule() |> 
             {
               if (!"HomeScore" %in% names(.)) mutate(., HomeScore = NA_character_) else .
-            } %>%
+            } |>
             {
               if (!"AwayScore" %in% names(.)) mutate(., AwayScore = NA_character_) else .
-            } %>%
+            } |>
             {
               if (!"Penalties" %in% names(.)) mutate(., Penalties = NA_character_) else .
-            } %>%
+            } |>
             {
               if (!"ExtraTime" %in% names(.)) mutate(., ExtraTime = NA_character_) else .
-            } %>%
+            } |>
             rename(
               Date = IRLDate
-            ) %>% 
+            ) |> 
             mutate(
               across(
                 c(HomeScore, AwayScore),
@@ -143,8 +143,8 @@ leagueScheduleServer <- function(id) {
                 MatchType == 1 ~ "Major League",
                 TRUE ~ "Minor League"
               )
-            ) %>% 
-            select(!c(HomeScore, AwayScore, ExtraTime, Penalties)) %>% 
+            ) |> 
+            select(!c(HomeScore, AwayScore, ExtraTime, Penalties)) |> 
             reactable(
               pagination = FALSE,
               searchable = TRUE,

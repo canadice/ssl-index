@@ -9,7 +9,7 @@ customCheckCredentials <- function(user, password, session = shiny::getDefaultRe
         WHERE username = '", user, "'",
         sep = ""
         )
-    ) %>% 
+    ) |> 
     suppressWarnings()
   
   if(nrow(res) == 1){
@@ -25,11 +25,11 @@ customCheckCredentials <- function(user, password, session = shiny::getDefaultRe
           algo = "md5", 
           serialize = F
         ), 
-        sep = "") %>% 
+        sep = "") |> 
       digest::digest(algo = "md5", serialize = F)
     
     if(saltedPASS != res$password) {
-      list(result = FALSE) %>% 
+      list(result = FALSE) |> 
         return()
     } else{
       token <- paste0(replicate(n = 4, expr = stri_rand_strings(1, length = 4)), collapse = "-")
@@ -49,12 +49,12 @@ customCheckCredentials <- function(user, password, session = shiny::getDefaultRe
             uid = res$uid, 
             username = res$username, 
             usergroup = 
-              paste(res$usergroup, res$additionalgroups, sep = ",") %>% 
-              str_split(pattern = ",", simplify = TRUE) %>%
-              as.numeric() %>% 
+              paste(res$usergroup, res$additionalgroups, sep = ",") |> 
+              str_split(pattern = ",", simplify = TRUE) |>
+              as.numeric() |> 
               as.list()
           )
-      ) %>% 
+      ) |> 
         return()
     }
     
@@ -65,7 +65,7 @@ customCheckCredentials <- function(user, password, session = shiny::getDefaultRe
              uid = NULL, 
              username = NULL, 
              usergroup = NULL
-           )) %>% 
+           )) |> 
       return()
   }
 }
@@ -76,12 +76,12 @@ getRefreshToken <- function(token){
               FROM refreshtokens rt 
               JOIN mybbdb.mybb_users mb ON rt.uid = mb.uid 
               WHERE rt.token = '", token, "';", sep = "")
-  ) %>% 
+  ) |> 
     suppressWarnings()
 }
 
 setRefreshToken <- function(uid, token, session = shiny::getDefaultReactiveDomain()){
-  expires <- (now() + hours(72)) %>% as.numeric()
+  expires <- (now() + hours(72)) |> as.numeric()
   
   portalQuery({
     paste("INSERT INTO refreshtokens (uid, expires_at, token)

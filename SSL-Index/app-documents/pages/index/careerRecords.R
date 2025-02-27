@@ -41,7 +41,7 @@ careerRecordsUI <- function(id) {
             column(
               width = 4,
               h3("Record for"),
-              uiOutput(ns("recordList")) %>% 
+              uiOutput(ns("recordList")) |> 
                 withSpinnerMedium()
             ),
             column(
@@ -49,7 +49,7 @@ careerRecordsUI <- function(id) {
               h3("Top 20", align = "center"),
               reactableOutput(
                 outputId = ns("leagueRecord")
-              ) %>% 
+              ) |> 
                 withSpinnerMedium()
             )
           ),
@@ -119,15 +119,15 @@ careerRecordsServer <- function(id) {
       ##
       lapply(outstatistics, function(stat){
         output[[paste0(stat, "_record")]] <- renderUI({
-          outfieldData() %>% 
+          outfieldData() |> 
             then(
               onFulfilled = function(data){
                 leader <- 
-                  data %>% 
+                  data |> 
                   select(
                     name, club, !!sym(stat)
-                  ) %>% 
-                  arrange(!!sym(stat) %>% desc()) %>% 
+                  ) |> 
+                  arrange(!!sym(stat) |> desc()) |> 
                   slice_head(n = 1)
                 selectedStat <- currentStatistic()
                 # Remove parenthesis from distance stat to make its label shorter
@@ -138,8 +138,8 @@ careerRecordsServer <- function(id) {
                     tagList(
                       flexCol(
                         tagList(
-                          tags$b(paste(trimmedStatTitle %>% str_to_title()), style = "font-size: 16px; text-transform: uppercase;"),
-                          tags$b(leader[,stat] %>% round(2))
+                          tags$b(paste(trimmedStatTitle |> str_to_title()), style = "font-size: 16px; text-transform: uppercase;"),
+                          tags$b(leader[,stat] |> round(2))
                         )
                       ),
                       flexRow(
@@ -162,15 +162,15 @@ careerRecordsServer <- function(id) {
       
       lapply(keepstatistics, function(stat){
         output[[paste0(stat, "_record")]] <- renderUI({
-          keeperData() %>% 
+          keeperData() |> 
             then(
               onFulfilled = function(data){
                 leader <- 
-                  data %>% 
+                  data |> 
                   select(
                     name, club, !!sym(stat)
-                  ) %>% 
-                  arrange(!!sym(stat) %>% desc()) %>% 
+                  ) |> 
+                  arrange(!!sym(stat) |> desc()) |> 
                   slice_head(n = 1)
                 selectedStat <- currentStatisticKeeper()
                 
@@ -179,8 +179,8 @@ careerRecordsServer <- function(id) {
                     tagList(
                       flexCol(
                         tagList(
-                          tags$b(paste(stat %>% str_to_title()), style = "font-size: 16px; text-transform: uppercase;"),
-                          tags$b(leader[,stat] %>% round(2))
+                          tags$b(paste(stat |> str_to_title()), style = "font-size: 16px; text-transform: uppercase;"),
+                          tags$b(leader[,stat] |> round(2))
                         )
                       ),
                       flexRow(
@@ -206,7 +206,7 @@ careerRecordsServer <- function(id) {
       lapply(outstatistics, function(stat){
         observe(
           currentStatistic(stat)
-        ) %>% 
+        ) |> 
           bindEvent(
             input[[paste0(stat, "_record_click")]]
           )
@@ -215,7 +215,7 @@ careerRecordsServer <- function(id) {
       lapply(keepstatistics, function(stat){
         observe(
           currentStatisticKeeper(stat)
-        ) %>% 
+        ) |> 
           bindEvent(
             input[[paste0(stat, "_record_click")]]
           )
@@ -223,42 +223,42 @@ careerRecordsServer <- function(id) {
       
       #### REACTABLE OUTPUT ####
       output$leagueRecord <- renderReactable({
-        outfieldData() %>% 
+        outfieldData() |> 
           then(
             onFulfilled = function(data){
               stat <- currentStatistic()
               
-              data %>% 
+              data |> 
                 select(
                   name, club, !!sym(stat)
-                ) %>% 
-                arrange(!!sym(stat) %>% desc()) %>% 
-                slice_head(n = 20) %>% 
+                ) |> 
+                arrange(!!sym(stat) |> desc()) |> 
+                slice_head(n = 20) |> 
                 mutate(
                   RANK = 1:n()
-                ) %>% 
-                relocate(RANK) %>% 
+                ) |> 
+                relocate(RANK) |> 
                 recordReactable()
             }
           )
       })
       
       output$leagueRecordKeeper <- renderReactable({
-        keeperData() %>% 
+        keeperData() |> 
           then(
             onFulfilled = function(data){
               stat <- currentStatisticKeeper()
               
-              data %>% 
+              data |> 
                 select(
                   name, club, !!sym(stat)
-                ) %>% 
-                arrange(!!sym(stat) %>% desc()) %>% 
-                slice_head(n = 20) %>% 
+                ) |> 
+                arrange(!!sym(stat) |> desc()) |> 
+                slice_head(n = 20) |> 
                 mutate(
                   RANK = 1:n()
-                ) %>% 
-                relocate(RANK) %>% 
+                ) |> 
+                relocate(RANK) |> 
                 recordReactable()
             }
           )

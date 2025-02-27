@@ -11,8 +11,8 @@ updateLog <- function(uid, pid, updates){
         paste(
           uid,
           pid,
-          paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
-          paste0("'", updates$attribute %>% str_to_upper(), "'"),
+          paste0("'", lubridate::now() |> with_tz("US/Pacific") |> as.numeric(), "'"),
+          paste0("'", updates$attribute |> str_to_upper(), "'"),
           updates$old,
           updates$new,
           sep = ","
@@ -37,7 +37,7 @@ updateBuild <- function(pid, updates, bank = NULL){
         updates$new,
         collapse = ", "
       ), 
-      if_else(bank %>% is.null(), "", paste(", tpebank = ", bank)),
+      if_else(bank |> is.null(), "", paste(", tpebank = ", bank)),
       "WHERE pid =", pid
     )
   )
@@ -95,9 +95,9 @@ getUpdateHistory <- function(pid){
         WHERE 
             pid = ", pid, "
         ORDER BY Time DESC")
-  ) %>% 
+  ) |> 
     mutate(
-      Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific")
+      Time = Time |> as.numeric() |> as_datetime(tz = "US/Pacific")
     )
 }
 
@@ -106,35 +106,35 @@ updateSummary <- function(current, inputs){
   updates <- 
     tibble(
       attribute = 
-        current %>% 
-        select(acceleration:throwing) %>% 
-        # select(!where(is.na)) %>% 
-        colnames() %>%
+        current |> 
+        select(acceleration:throwing) |> 
+        # select(!where(is.na)) |> 
+        colnames() |>
         str_to_title(),
-      old = current %>% 
-        select(acceleration:throwing) %>% 
-        # select(!where(is.na)) %>% 
-        t() %>% 
+      old = current |> 
+        select(acceleration:throwing) |> 
+        # select(!where(is.na)) |> 
+        t() |> 
         c(),
       new = 
-        attribute %>%
-        str_remove_all(pattern = " ") %>% 
+        attribute |>
+        str_remove_all(pattern = " ") |> 
         sapply(
           X = .,
           FUN = function(x) {
-            if(inputs[[x]] %>% is.null()){
+            if(inputs[[x]] |> is.null()){
               5
             } else {
               inputs[[x]]
             }
           },
           simplify = TRUE
-        ) %>% 
+        ) |> 
         unlist()
-    ) %>% 
+    ) |> 
     mutate(
-      old = if_else(old %>% is.na(), 5, old)
-    ) %>% 
+      old = if_else(old |> is.na(), 5, old)
+    ) |> 
       filter(old != new) 
   
   

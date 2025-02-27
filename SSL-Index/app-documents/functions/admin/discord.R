@@ -34,16 +34,16 @@ sendTest <- function(){
 
 sendGradedTPE <- function(source, tpe){
   
-  gradedString <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
+  gradedString <- apply(tpe |> select(username, tpe), 1, function(row) paste(row, collapse = ": ")) |> 
     paste(collapse = "\\n")
   
   if(nchar(gradedString) > 1024){
-    gradedString1 <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
-      .[1:floor(length(.)/2)] %>% 
+    gradedString1 <- apply(tpe |> select(username, tpe), 1, function(row) paste(row, collapse = ": ")) |> 
+      .[1:floor(length(.)/2)] |> 
       paste(collapse = "\\n")
     
-    gradedString2 <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
-      .[(floor(length(.)/2) + 1):length(.)] %>% 
+    gradedString2 <- apply(tpe |> select(username, tpe), 1, function(row) paste(row, collapse = ": ")) |> 
+      .[(floor(length(.)/2) + 1):length(.)] |> 
       paste(collapse = "\\n")
     
     jscode <- paste0("
@@ -177,7 +177,7 @@ sendNewCreate <- function(data, username){
         author: {
           name: 'A new player has been created'
         },
-        title: '", paste0(data$first, " ", data$last) %>% str_remove_all(pattern = "'") , "',
+        title: '", paste0(data$first, " ", data$last) |> str_remove_all(pattern = "'") , "',
         fields: [
                    {
                       name: 'TPE Banked',
@@ -219,7 +219,7 @@ sendApprovedCreate <- function(data){
         author: {
           name: 'A new player has been approved'
         },
-        title: '", paste0(data$first, " ", data$last) %>% str_remove_all(pattern = "'") , "',
+        title: '", paste0(data$first, " ", data$last) |> str_remove_all(pattern = "'") , "',
         fields: [
                    {
                       name: 'TPE Banked',
@@ -265,7 +265,7 @@ sendRetiredPlayer <- function(data){
         author: {
           name: 'A player has retired'
         },
-        title: '", paste0(data$first, " ", data$last) %>% str_remove_all(pattern = "'") , "',
+        title: '", paste0(data$first, " ", data$last) |> str_remove_all(pattern = "'") , "',
         fields: [
                    {
                       name: 'Team',
@@ -301,7 +301,7 @@ sendRetiredPlayer <- function(data){
         author: {
           name: 'A player has retired'
         },
-        title: '", paste0(data$first, " ", data$last) %>% str_remove_all(pattern = "'") , "',
+        title: '", paste0(data$first, " ", data$last) |> str_remove_all(pattern = "'") , "',
         fields: [
                    {
                       name: 'Team',

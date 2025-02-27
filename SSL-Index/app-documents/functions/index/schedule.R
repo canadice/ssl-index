@@ -5,7 +5,7 @@ getUnfinishedSchedule <- function(){
     paste(
       "SELECT * FROM schedule WHERE HomeScore IS NULL OR AwayScore IS NULL;"
     )
-  ) %>% 
+  ) |> 
     future_promise()
 }
 
