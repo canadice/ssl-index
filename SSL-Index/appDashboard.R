@@ -138,7 +138,7 @@ customLogo <-
     mainText = tags$a(
       href='https://forum.simulationsoccer.com',
       target="_blank",
-      tags$img(src='portalwhite.png', height = "70")
+      tags$img(src='portalblack.png', height = "70")
     ),
     badgeText = version,
     badgeTextColor = "white",

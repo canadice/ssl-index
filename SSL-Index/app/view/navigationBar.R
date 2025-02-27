@@ -63,6 +63,19 @@ ui <- function(id) {
       class = "navbar",
       tags$ul(
         class = "nav navbar-nav",
+        tags$a(
+          href='https://forum.simulationsoccer.com',
+          target="_blank",
+          tags$img(src='static/portalblack.png', height = "70")
+        ),
+        tags$li(
+          a("Index", href = route_link("index/"))
+          ### TODO ADD SUBLINKS FROM THE OLD INDEX MENU
+        ),
+        tags$li(
+          "Jobs"
+          ### TODO ADD SUBLINKS FROM THE OLD INDEX MENU
+        ),
         tags$li(
           a("Intro", href = route_link("/"))
         ),

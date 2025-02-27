@@ -1,45 +1,45 @@
 
 box::use(
-  shiny[moduleServer, NS, tagList, uiOutput, column, div, h4, h5, renderUI, reactive, selectInput, req, img, strong, HTML, tags, span],
-  dplyr[select, if_else, mutate],
-  reactable[reactableOutput, renderReactable],
+  bslib[card, card_header, card_body, card_footer, layout_columns],
+  dplyr[select, if_else, mutate, arrange, slice_head, desc],
+  promises[future_promise, then],
   plotly[plotlyOutput, renderPlotly, plot_ly, layout, config],
+  reactable[reactableOutput, renderReactable, reactable, colDef],
   rlang[is_empty],
-  reactable[reactable, colDef],
+  shiny,
   stringr[str_replace_all],
   tippy[tippy],
-  bslib[card, card_header, card_body, card_footer, layout_columns],
 )
 
 box::use(
   app/logic/ui/tags[flexRow, flexCol],
   app/logic/ui/spinner[withSpinnerCustom],
-  app/logic/db/api,
+  app/logic/db/api[readAPI],
   app/logic/constant,
 )
 
 #' @export
 ui <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny$NS(id)
+  shiny$tagList(
     
-    uiOutput(ns("information")),
+    shiny$uiOutput(ns("information")),
     
     card(
       card_header(
         flexRow(
-          tagList(
-            tags$style("align-items: center; justify-content: space-between;"),
-            uiOutput(ns("scheduleTitlePadder")),
-            div("Latest Results", style = "width: 100%;"),
-            div(
-              uiOutput(ns("leagueSelector")),
+          shiny$tagList(
+            shiny$tags$style("align-items: center; justify-content: space-between;"),
+            shiny$uiOutput(ns("scheduleTitlePadder")),
+            shiny$div("Latest Results", style = "width: 100%;"),
+            shiny$div(
+              shiny$uiOutput(ns("leagueSelector")),
               style = "font-size: 14px; font-weight: 400;"
             )
           )
       ),
       card_body(
-        uiOutput(ns("schedule")) |> 
+        shiny$uiOutput(ns("schedule")) |> 
             withSpinnerCustom(height = 20)
         )
       ),
@@ -49,7 +49,7 @@ ui <- function(id) {
       col_widths = c(6, 6),
       card(
         card_header(
-          h5("Major League Standings")
+          shiny$h5("Major League Standings")
         ),
         card_body(
           reactableOutput(ns("standings_1")) |> 
@@ -58,7 +58,7 @@ ui <- function(id) {
       ),
       card(
         card_header(
-          h5("Minor League Standings")
+          shiny$h5("Minor League Standings")
         ),
         card_body(
           reactableOutput(ns("standings_2")) |> 
@@ -70,7 +70,7 @@ ui <- function(id) {
       col_widths = c(6,6,12),
       card(
         card_header(
-          h4("Weekly top earners")
+          shiny$h4("Weekly top earners")
         ),
         card_body(
           reactableOutput(ns("weeklyLeaders")) |> 
@@ -79,7 +79,7 @@ ui <- function(id) {
       ),
       card(
         card_header(
-          h4("Recent creates")
+          shiny$h4("Recent creates")
         ),
         card_body(
           reactableOutput(ns("created")) |> 
@@ -88,12 +88,12 @@ ui <- function(id) {
       ),
       card(
         card_header(
-          h4("Activity Checks")
+          shiny$h4("Activity Checks")
         ),
         card_body(
           plotlyOutput(ns("activityChecks")) |> 
             withSpinnerCustom(height = 40) |> 
-            div(class = "plotlyBorder"))
+            shiny$div(class = "plotlyBorder"))
         )
       )
     )
@@ -101,12 +101,12 @@ ui <- function(id) {
 
 #' @export
 server <- function(id, usergroup) {
-  moduleServer(
+  shiny$moduleServer(
     id,
     function(input, output, session) {
       
       #### INFORMATION ####
-      output$information <- renderUI({
+      output$information <- shiny$renderUI({
         if(any(5 %in% usergroup)){
           card(
             card_header(
@@ -125,7 +125,7 @@ server <- function(id, usergroup) {
       lapply(1:2,
              FUN = function(division){
                output[[paste0("standings_", division)]] <- renderReactable({
-                 standings <- api$readAPI(url = "https://api.simulationsoccer.com/index/standings", query = list(league = division, season = constant$currentSeason$season))
+                 standings <- readAPI(url = "https://api.simulationsoccer.com/index/standings", query = list(league = division, season = constant$currentSeason$season))
                  
                  if(!(standings |> is_empty())){
                    standings |> 
@@ -141,13 +141,13 @@ server <- function(id, usergroup) {
                            Team = colDef(
                              minWidth = 100,
                              cell = function(value){
-                               image <- img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)  
+                               image <- shiny$img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)  
                                
                                list <-
-                                 tagList(
-                                   flexRow(style = "align-items: center; gap: 8px;", tagList(
+                                 shiny$tagList(
+                                   flexRow(style = "align-items: center; gap: 8px;", shiny$tagList(
                                      image,
-                                     span(class = "truncated-text", value)
+                                     shiny$span(class = "truncated-text", value)
                                    ))
                                  )
                              }
@@ -163,21 +163,21 @@ server <- function(id, usergroup) {
              })
       
       #### Latest results ####
-      schedule <- reactive({
-        req(input$selectedLeague)
-        api$readAPI(url = "https://api.simulationsoccer.com/index/schedule", 
+      schedule <- shiny$reactive({
+        shiny$req(input$selectedLeague)
+        readAPI(url = "https://api.simulationsoccer.com/index/schedule", 
                     query = list(league = input$selectedLeague, season = constant$currentSeason$season)
         )
       })
       
       # Empty element with width matching selector to make spacing of title elements easier
-      output$scheduleTitlePadder <- renderUI({
-        div(style = "width: 150px;", class = "hide-in-mobile")
+      output$scheduleTitlePadder <- shiny$renderUI({
+        shiny$div(style = "width: 150px;", class = "hide-in-mobile")
       })
       
-      output$leagueSelector <- renderUI({
-        div(
-          selectInput(
+      output$leagueSelector <- shiny$renderUI({
+        shiny$div(
+          shiny$selectInput(
             inputId = session$ns("selectedLeague"),
             label = NULL,
             choices = 
@@ -192,7 +192,7 @@ server <- function(id, usergroup) {
         )
       })
       
-      output$schedule <- renderUI({
+      output$schedule <- shiny$renderUI({
         league <- input$selectedLeague
         
         if(schedule() |> is_empty()){
@@ -200,23 +200,23 @@ server <- function(id, usergroup) {
         } else {
           schedule <- schedule()
           
-          tagList(
-            div(
+          shiny$tagList(
+            shiny$div(
               class = "results",
               id = "results-scroll",
               lapply(1:nrow(schedule),
                      function(i){
                        card(
                          card_header(
-                           div(
-                             div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"], title = schedule[i, "Home"])), 
-                             strong(" - "), 
-                             div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"], title = schedule[i, "Away"])),
+                           shiny$div(
+                             shiny$div(style = "display: inline-block; width: 40px;", shiny$img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"], title = schedule[i, "Home"])), 
+                             shiny$strong(" - "), 
+                             shiny$div(style = "display: inline-block; width: 40px;", shiny$img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"], title = schedule[i, "Away"])),
                              align = "center"
                            )
                          ),
                          card_body(
-                           h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") |> 
+                           shiny$h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") |> 
                                 str_replace_all(pattern = "NA", replacement = " ")
                            )
                          ),
@@ -236,13 +236,13 @@ server <- function(id, usergroup) {
                              ),
                              sep = "<br>"
                            ) |> 
-                             HTML() |> 
-                             div(align = "center")
+                             shiny$HTML() |> 
+                             shiny$div(align = "center")
                          )
                        )
                      })
             ),
-            tags$script(HTML("
+            shiny$tags$script(shiny$HTML("
             $(document).ready(function() {
               var div = document.getElementById('results-scroll');
               var width = 0;
@@ -266,7 +266,9 @@ server <- function(id, usergroup) {
       })
       #### Weekly TPE Leaders ####
       output$weeklyLeaders <- renderReactable({
-        data <- topEarners()
+        data <- 
+          readAPI(url = "https://api.simulationsoccer.com/player/topEarners") |> 
+          future_promise()
         
         data |> 
           then(
@@ -281,7 +283,13 @@ server <- function(id, usergroup) {
       
       #### Recently created ####
       output$created <- renderReactable({
-        data <- getRecentCreates()
+        data <- 
+          readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
+          arrange(created |> desc()) |> 
+          slice_head(n = 5) |> 
+          select(Pos = position, Name = name, Username = username) |> 
+          future_promise()
+        
         
         data |> 
           then(
@@ -298,7 +306,7 @@ server <- function(id, usergroup) {
       })
       
       output$activityChecks <- renderPlotly({
-        api$readAPI("https://api.simulationsoccer.com/player/acHistory") |> 
+        readAPI("https://api.simulationsoccer.com/player/acHistory") |> 
           mutate(weekYear = paste(paste0("W", nweeks))) |> 
           plot_ly(x = ~weekYear, y= ~count, type = "scatter", mode = "lines+markers",
                   hoverinfo = "text",
