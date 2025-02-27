@@ -18,6 +18,7 @@
 body {
   font-family: 'Gotham SSm A', 'Gotham SSm B', Helvetica, sans-serif;
   color: white;
+  background: var(--bottomBackground);
 }
 
 h1, h2, h3, h4, h5 {
@@ -155,8 +156,8 @@ h1, h2, h3, h4, h5 {
   padding-left: 5px;
 }
 
-.results .box-header,
-.results .box-body {
+.results .card-header,
+.results .card-body {
   text-align: center;
 }
 
@@ -256,7 +257,7 @@ h1, h2, h3, h4, h5 {
     background-image: url(https://i.imgur.com/9BuU3Op.jpeg);
 }
 
-.box-header {
+.card-header {
     color: var(--sslGold);
     display: block;
     padding: 10px;
@@ -266,12 +267,12 @@ h1, h2, h3, h4, h5 {
     text-align: center;
 }
 
-.box.box-primary {
+.card.card-primary {
     border-top-color: var(--sslGold);
 }
 
 
-.box-footer {
+.card-footer {
     border-top-left-radius: 0;
    border-top-right-radius: 0;
     border-bottom-right-radius: 3px;
@@ -282,7 +283,7 @@ h1, h2, h3, h4, h5 {
     color: #ffffff;
 }
 
-.box {
+.card {
     position: relative;
     border-radius: 3px;
     background: #444444;
@@ -292,14 +293,14 @@ h1, h2, h3, h4, h5 {
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
-.results .box-header, .results .box-body {
+.results .card-header, .results .card-body {
     text-align: center;
     border: 2px solid var(--sslGold);
     color: #ffffff;
     background-color: var(--middleBackground);
 }
 
-.box-body {
+.card-body {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0px;

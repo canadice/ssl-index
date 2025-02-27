@@ -1,13 +1,14 @@
 
 box::use(
-  shiny[moduleServer, NS, tagList, uiOutput, column, div, h4, h5, renderUI, reactive, selectInput, req, img, strong, HTML, tags],
-  dplyr[select, if_else],
-  shinydashboard[box],
+  shiny[moduleServer, NS, tagList, uiOutput, column, div, h4, h5, renderUI, reactive, selectInput, req, img, strong, HTML, tags, span],
+  dplyr[select, if_else, mutate],
   reactable[reactableOutput, renderReactable],
-  plotly[plotlyOutput, renderPlotly],
+  plotly[plotlyOutput, renderPlotly, plot_ly, layout, config],
   rlang[is_empty],
   reactable[reactable, colDef],
   stringr[str_replace_all],
+  tippy[tippy],
+  bslib[card, card_header, card_body, card_footer, layout_columns],
 )
 
 box::use(
@@ -24,58 +25,78 @@ ui <- function(id) {
     
     uiOutput(ns("information")),
     
-    box(title = flexRow(
-      tagList(
-        uiOutput(ns("scheduleTitlePadder")),
-        div("Latest Results", style = "width: 100%;"),
-        div(
-          uiOutput(ns("leagueSelector")),
-          style = "font-size: 14px; font-weight: 400;"
+    card(
+      card_header(
+        flexRow(
+          tagList(
+            tags$style("align-items: center; justify-content: space-between;"),
+            uiOutput(ns("scheduleTitlePadder")),
+            div("Latest Results", style = "width: 100%;"),
+            div(
+              uiOutput(ns("leagueSelector")),
+              style = "font-size: 14px; font-weight: 400;"
+            )
+          )
+      ),
+      card_body(
+        uiOutput(ns("schedule")) |> 
+            withSpinnerCustom(height = 20)
         )
       ),
-      style = "align-items: center; justify-content: space-between;"
-    ), width = NULL,
-    uiOutput(ns("schedule")) |> 
-      withSpinnerCustom(height = 20)
-    ) |> 
-      column(width = 12),
-    box(title = "Current Standings", width = NULL,
-        column(
-          6,
-          h5("Major League"),
+      min_height = "200px"
+    ),
+    layout_columns(
+      col_widths = c(6, 6),
+      card(
+        card_header(
+          h5("Major League Standings")
+        ),
+        card_body(
           reactableOutput(ns("standings_1")) |> 
             withSpinnerCustom(height = 20)
+        )
+      ),
+      card(
+        card_header(
+          h5("Minor League Standings")
         ),
-        column(
-          6,
-          h5("Minor League"),
+        card_body(
           reactableOutput(ns("standings_2")) |> 
             withSpinnerCustom(height = 20)
         )
-    ) |> 
-      column(width = 12),
-    
-    box(title = "News", width = NULL,
-        column(
-          width = 6,
-          h4("Weekly top earners"),
+      )
+    ),
+    layout_columns(
+      col_widths = c(6,6,12),
+      card(
+        card_header(
+          h4("Weekly top earners")
+        ),
+        card_body(
           reactableOutput(ns("weeklyLeaders")) |> 
             withSpinnerCustom(height = 40)
+        )
+      ),
+      card(
+        card_header(
+          h4("Recent creates")
         ),
-        column(
-          width = 6,
-          h4("Recent creates"),
+        card_body(
           reactableOutput(ns("created")) |> 
             withSpinnerCustom(height = 40)
+        )
+      ),
+      card(
+        card_header(
+          h4("Activity Checks")
         ),
-        column(width = 12,
-               h4("Activity Checks"),
-               plotlyOutput(ns("activityChecks")) |> 
-                 withSpinnerCustom(height = 40) |> 
-                 div(class = "plotlyBorder"))
-    ) |> 
-      column(width = 12)
-  )
+        card_body(
+          plotlyOutput(ns("activityChecks")) |> 
+            withSpinnerCustom(height = 40) |> 
+            div(class = "plotlyBorder"))
+        )
+      )
+    )
 }
 
 #' @export
@@ -87,11 +108,15 @@ server <- function(id, usergroup) {
       #### INFORMATION ####
       output$information <- renderUI({
         if(any(5 %in% usergroup)){
-          box(title = "Information", width = NULL, collapsible = TRUE,
+          card(
+            card_header(
+              "Information"
+            ),
+            card_body(
               h2("Your account needs to be activated in order to access the rest of the portal functions. Please check the e-mail used when registering on the SSL forums.") |> 
                 div(class = "Retired")
-          ) |> 
-            column(width = 12)
+            )
+          )
         }
       })
       
@@ -181,19 +206,21 @@ server <- function(id, usergroup) {
               id = "results-scroll",
               lapply(1:nrow(schedule),
                      function(i){
-                       box(
-                         title = div(
-                           div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"], title = schedule[i, "Home"])), 
-                           strong(" - "), 
-                           div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"], title = schedule[i, "Away"])),
-                           align = "center"
+                       card(
+                         card_header(
+                           div(
+                             div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"], title = schedule[i, "Home"])), 
+                             strong(" - "), 
+                             div(style = "display: inline-block; width: 40px;", img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"], title = schedule[i, "Away"])),
+                             align = "center"
+                           )
                          ),
-                         width = NULL,
-                         status = "primary",
-                         h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") |> 
-                              str_replace_all(pattern = "NA", replacement = " ")
+                         card_body(
+                           h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") |> 
+                                str_replace_all(pattern = "NA", replacement = " ")
+                           )
                          ),
-                         footer = 
+                         card_footer(
                            paste(
                              paste(
                                if_else(schedule[i, "MatchType"] == 0, 
@@ -209,10 +236,10 @@ server <- function(id, usergroup) {
                              ),
                              sep = "<br>"
                            ) |> 
-                           HTML() |> 
-                           div(align = "center")
+                             HTML() |> 
+                             div(align = "center")
+                         )
                        )
-                       
                      })
             ),
             tags$script(HTML("
@@ -271,12 +298,12 @@ server <- function(id, usergroup) {
       })
       
       output$activityChecks <- renderPlotly({
-        readAPI("https://api.simulationsoccer.com/player/acHistory") |> 
+        api$readAPI("https://api.simulationsoccer.com/player/acHistory") |> 
           mutate(weekYear = paste(paste0("W", nweeks))) |> 
           plot_ly(x = ~weekYear, y= ~count, type = "scatter", mode = "lines+markers",
                   hoverinfo = "text",
-                  line = list(color = sslGold),
-                  marker = list(size = 5, color = sslGold),
+                  line = list(color = constant$sslGold),
+                  marker = list(size = 5, color = constant$sslGold),
                   text = ~paste("#AC: ", count)
           ) |> 
           layout(
@@ -300,7 +327,7 @@ server <- function(id, usergroup) {
             paper_bgcolor = "#333333",   # plot area background color
             showlegend = FALSE  # Hide legend (optional)
           ) |> 
-          plotly::config(
+          config(
             displayModeBar = TRUE,  # Enable display of mode bar (optional, true by default)
             modeBarButtonsToRemove = list(
               "zoom2d", "pan2d", "select2d",
