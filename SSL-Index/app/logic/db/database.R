@@ -6,7 +6,7 @@ box::use(
   glue
 )
 
-sqlQuery <- function(db){
+sqlQuery <- function(query, db){
   con <- 
     DBI$dbConnect(
       RMySQL$MySQL(),
@@ -36,24 +36,24 @@ sqlQuery <- function(db){
 #' Function for queries to mybb
 #' @export
 mybbQuery <- function(query){
-  sqlQuery("mybb")
+  sqlQuery(query, "mybb")
 }
 
 #' Function for queries to portal
 #' @export
 portalQuery <- function(query){
-  sqlQuery("portal")
+  sqlQuery(query, "portal")
 }
 
 #' Function for queries to index
 #' @export
 indexQuery <- function(query){
-  sqlQuery("index")
+  sqlQuery(query, "index")
 }
 
 #' Function for queries to budget
 #' @export
 budgetQuery <- function(query){
-  sqlQuery("budget")
+  sqlQuery(query, "budget")
 }
 
