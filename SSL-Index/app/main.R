@@ -9,6 +9,7 @@ box::use(
 
 box::use(
   app/view/welcome,
+  app/view/index/careerRecords,
   app/view/navigationBar,
 )
 
@@ -25,7 +26,8 @@ ui <- function(id) {
     # sidebar = "SIDEBAR",
     # theme = theme,
     router_ui(
-      route("/", welcome$ui(ns("message")))
+      route("/", welcome$ui(ns("message"))),
+      route("index/records", careerRecords$ui(ns("records")))
     )
   )
 }
@@ -49,5 +51,6 @@ server <- function(id) {
     router_server("/")
 
     welcome$server("message", usergroup = 1)
+    careerRecords$server("records")
   })
 }

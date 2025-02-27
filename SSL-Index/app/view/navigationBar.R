@@ -69,7 +69,8 @@ ui <- function(id) {
           tags$img(src='static/portalblack.png', height = "70")
         ),
         tags$li(
-          a("Index", href = route_link("index/"))
+          a("Index", href = route_link("index/")),
+          a("Records", href = route_link("index/records"))
           ### TODO ADD SUBLINKS FROM THE OLD INDEX MENU
         ),
         tags$li(
