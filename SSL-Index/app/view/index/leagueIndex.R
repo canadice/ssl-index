@@ -1,13 +1,18 @@
 box::use(
-  shiny,
+  dplyr,
   bslib,
-  reactable[reactable, reactableOutput, renderReactable],
   promises[future_promise, then],
+  reactable[reactable, reactableOutput, renderReactable],
+  shiny,
 )
 
 box::use(
-  app/logic/constant,
   app/logic/ui/spinner[withSpinnerCustom],
+  app/logic/constant,
+  app/logic/db/api[readAPI],
+  app/logic/ui/tags[flexRow, flexCol],
+  app/logic/ui/selector[leagueSelectInput],
+  app/logic/ui/reactableHelper[recordReactable, indexReactable],
 )
 
 #' @export
@@ -23,13 +28,12 @@ ui <- function(id) {
             label = "Select a season",
             choices = 
               c(
-                1:constant$currentSeason$season %>% 
+                1:constant$currentSeason$season |> 
                   sort(decreasing = TRUE),
                 "ALL"
               )
           ),
-          # EMPTY
-          ,
+          "",
           shiny$uiOutput(ns("leagueSelector"))
         )
       ),
@@ -37,25 +41,25 @@ ui <- function(id) {
         shiny$tabsetPanel(
           header = shiny$h1("Outfield"),
           shiny$tabPanel("Statistics",
-                   reactableOutput(ns("outfieldBasic")) %>% 
+                   reactableOutput(ns("outfieldBasic")) |> 
                      withSpinnerCustom(height = 80)),
           shiny$tabPanel("Adv. Statistics",
-                   reactableOutput(ns("outfieldAdvanced")) %>% 
+                   reactableOutput(ns("outfieldAdvanced")) |> 
                      withSpinnerCustom(height = 80)),
           shiny$tabPanel("Leaders",
-                   shiny$uiOutput(ns("outfieldLeaders")) %>% 
+                   shiny$uiOutput(ns("outfieldLeaders")) |> 
                      withSpinnerCustom(height = 80))
         ),
         shiny$tabsetPanel(
           header = shiny$h1("Keeper"),
           shiny$tabPanel("Statistics",
-                   reactableOutput(ns("keeperBasic")) %>% 
+                   reactableOutput(ns("keeperBasic")) |> 
                      withSpinnerCustom(height = 80)),
           shiny$tabPanel("Adv. Statistics",
-                   reactableOutput(ns("keeperAdvanced")) %>% 
+                   reactableOutput(ns("keeperAdvanced")) |> 
                      withSpinnerCustom(height = 80)),
           shiny$tabPanel("Leaders",
-                   shiny$uiOutput(ns("keeperLeaders")) %>% 
+                   shiny$uiOutput(ns("keeperLeaders")) |> 
                      withSpinnerCustom(height = 80))
         )
       )
@@ -63,111 +67,49 @@ ui <- function(id) {
   )
 }
 
-leagueIndexServer <- function(id) {
-  moduleServer(
+#' @export
+server <- function(id) {
+  shiny$moduleServer(
     id,
     function(input, output, session) {
       
       #### DATA GENERATION ####
-      outfieldData <- reactive({
-        req(input$selectedLeague)
+      outfieldData <- shiny$reactive({
+        shiny$req(input$selectedLeague)
         
         readAPI(url = "https://api.simulationsoccer.com/index/outfield", 
                 query = list(league = input$selectedLeague, season = input$selectedSeason)
-        ) %>% 
+        ) |> 
           future_promise()
       })
       
-      keeperData <- reactive({
-        req(input$selectedLeague)
+      keeperData <- shiny$reactive({
+        shiny$req(input$selectedLeague)
+        
         readAPI(url = "https://api.simulationsoccer.com/index/keeper", 
                 query = list(league = input$selectedLeague, season = input$selectedSeason)
-        ) %>% 
+        ) |> 
           future_promise()
       })
       
       #### UI OUTPUT ####
-      output$leagueSelector <- renderUI({
-        if(input$selectedSeason != "ALL"){
-          season <- input$selectedSeason %>% as.numeric()
-          
-          if(season < 5){
-            selectInput(
-              inputId = session$ns("selectedLeague"),
-              label = "League",
-              choices = 
-                c(
-                  "ALL",
-                  "League" = "1",
-                  "Cup"
-                )
-            )
-          } else if (season == 12){
-            selectInput(
-              inputId = session$ns("selectedLeague"),
-              label = "League",
-              choices = 
-                c(
-                  "ALL",
-                  "Major" = "1",
-                  "Minor" = "2",
-                  "Cup",
-                  "WSFC"
-                )
-            )
-          } else if (season < 12){
-            selectInput(
-              inputId = session$ns("selectedLeague"),
-              label = "League",
-              choices = 
-                c(
-                  "ALL",
-                  "Division 1" = "1",
-                  "Division 2" = "2",
-                  "Cup"
-                )
-            )
-          } else {
-            selectInput(
-              inputId = session$ns("selectedLeague"),
-              label = "League",
-              choices = 
-                c(
-                  "ALL",
-                  "Major" = "1",
-                  "Minor" = "2",
-                  "Cup"
-                )
-            )
-          }
-        } else {
-          selectInput(
-            inputId = session$ns("selectedLeague"),
-            label = "League",
-            choices = 
-              c(
-                "ALL",
-                "Major / Division 1" = "1",
-                "Minor / Division 2" = "2",
-                "Cup"
-              )
-          )
-        }
+      output$leagueSelector <- shiny$renderUI({
+        leagueSelectInput(season = input$selectedSeason, session = session)
       })
       
       outstatistics <- c("goals", "assists", "player of the match", "distance run (km)", "successful passes", "chances created", "tackles won", "interceptions", "yellow cards", "red cards")
       
-      output$outfieldLeaders <- renderUI({
+      output$outfieldLeaders <- shiny$renderUI({
         # Split statistics into threes
         statisticThrees <- split(outstatistics, (seq_along(outstatistics) - 1) %/% 3)
         
-        # Create fluidRows for each table
+        # Create fluidFlexes for each table
         lapply(statisticThrees, function(table) {
-          fluidRow(
+          flexRow(
             lapply(table, function(stat) {
-              column(width = 4,
-                     reactableOutput(session$ns(paste0(stat, "_leader"))) %>% 
-                       div(class = "leaderTable")
+              flexCol(
+                reactableOutput(session$ns(paste0(stat, "_leader"))) |>
+                  shiny$div(class = "leaderTable")
               )
             })
           )
@@ -176,16 +118,21 @@ leagueIndexServer <- function(id) {
       
       lapply(outstatistics, function(stat){
         output[[paste0(stat, "_leader")]] <- renderReactable({
-          outfieldData() %>% 
+          outfieldData() |> 
             then(
               onFulfilled = function(data){
-                data %>% 
-                  select(
-                    name, club, !!sym(stat)
-                  ) %>% 
-                  arrange(!!sym(stat) %>% desc()) %>% 
-                  slice_head(n = 10) %>% 
-                  leaderReactable()
+                data |> 
+                  dplyr$select(
+                    name, club, dplyr$all_of(stat)
+                  ) |> 
+                  dplyr$arrange(
+                    dplyr$across(
+                      dplyr$starts_with(stat),
+                      dplyr$desc
+                    )
+                  ) |> 
+                  dplyr$slice_head(n = 10) |> 
+                  recordReactable()
               }
             )
         })
@@ -193,17 +140,17 @@ leagueIndexServer <- function(id) {
       
       keepstatistics <- c("won", "clean sheets", "conceded", "save%")
       
-      output$keeperLeaders <- renderUI({
+      output$keeperLeaders <- shiny$renderUI({
         # Split statistics into threes
         statisticThrees <- split(keepstatistics, (seq_along(keepstatistics) - 1) %/% 3)
         
         # Create fluidRows for each pair
         lapply(statisticThrees, function(table) {
-          fluidRow(
+          flexRow(
             lapply(table, function(stat) {
-              column(width = 4,
-                     reactableOutput(session$ns(paste0(stat, "_leader"))) %>% 
-                       div(class = "leaderTable")
+              flexCol(
+                reactableOutput(session$ns(paste0(stat, "_leader"))) |>
+                  shiny$div(class = "leaderTable")
               )
             })
           )
@@ -212,16 +159,21 @@ leagueIndexServer <- function(id) {
       
       lapply(keepstatistics, function(stat){
         output[[paste0(stat, "_leader")]] <- renderReactable({
-          keeperData() %>% 
+          keeperData() |> 
             then(
               onFulfilled = function(data){
-                data %>% 
-                  select(
-                    name, club, !!sym(stat)
-                  ) %>% 
-                  arrange(!!sym(stat) %>% desc()) %>% 
-                  slice_head(n = 10) %>% 
-                  leaderReactable()
+                data |> 
+                  dplyr$select(
+                    name, club, dplyr$all_of(stat)
+                  ) |> 
+                  dplyr$arrange(
+                    dplyr$across(
+                      dplyr$starts_with(stat),
+                      dplyr$desc
+                    )
+                  ) |> 
+                  dplyr$slice_head(n = 10) |>
+                  recordReactable()
               }
             )
         })
@@ -229,16 +181,16 @@ leagueIndexServer <- function(id) {
       
       #### REACTABLE OUTPUT ####
       output$outfieldBasic <- renderReactable({
-        outfieldData() %>% 
+        outfieldData() |> 
           then(
             onFulfilled = function(data){
               currentData <- 
-                data %>% 
-                select(
+                data |> 
+                dplyr$select(
                   name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
                 ) 
               
-              currentData %>% 
+              currentData |> 
                 indexReactable()
             }
           )
@@ -246,12 +198,12 @@ leagueIndexServer <- function(id) {
       })  
       
       output$outfieldAdvanced <- renderReactable({
-        outfieldData() %>% 
+        outfieldData() |> 
           then(
             onFulfilled = function(data){
               currentData <- 
-                data %>% 
-                select(
+                data |> 
+                dplyr$select(
                   name:club, 
                   xg,
                   xa:`fk shots`,
@@ -259,7 +211,7 @@ leagueIndexServer <- function(id) {
                   `press%`:`pen adj xG`
                 ) 
               
-              currentData %>% 
+              currentData |> 
                 indexReactable()
             }
           )
@@ -267,16 +219,16 @@ leagueIndexServer <- function(id) {
       }) 
       
       output$keeperBasic <- renderReactable({
-        keeperData() %>% 
+        keeperData() |> 
           then(
             onFulfilled = function(data){
               currentData <- 
-                data %>% 
-                select(
+                data |> 
+                dplyr$select(
                   name:`save%`
                 ) 
               
-              currentData %>% 
+              currentData |> 
                 indexReactable()
             }
           )
@@ -284,17 +236,17 @@ leagueIndexServer <- function(id) {
       })  
       
       output$keeperAdvanced <- renderReactable({
-        keeperData() %>% 
+        keeperData() |> 
           then(
             onFulfilled = function(data){
               currentData <- 
-                data %>% 
-                select(
+                data |> 
+                dplyr$select(
                   name:club, 
                   `penalties faced`:`xg prevented`
                 ) 
               
-              currentData %>% 
+              currentData |> 
                 indexReactable()
             }
           )

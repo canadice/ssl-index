@@ -9,6 +9,7 @@ box::use(
 box::use(
   app/view/welcome,
   app/view/index/careerRecords,
+  app/view/index/leagueIndex,
   app/view/navigationBar,
 )
 
@@ -26,7 +27,8 @@ ui <- function(id) {
     # theme = theme,
     router_ui(
       route("/", welcome$ui(ns("message"))),
-      route("index/records", careerRecords$ui(ns("records")))
+      route("index/records", careerRecords$ui(ns("records"))),
+      route("index/", leagueIndex$ui(ns("league")))
     )
   )
 }
@@ -71,6 +73,9 @@ server <- function(id) {
       if(current == "index/records" & !loadedServer$records){
         careerRecords$server("records")
         loadedServer$records <- TRUE
+      } else if(current == "index/" & !loadedServer$index){
+        leagueIndex$server("league")
+        loadedServer$index <- TRUE
       }
     }) |> 
       shiny$bindEvent(session$clientData$url_hash)

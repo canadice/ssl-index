@@ -12,7 +12,7 @@ box::use(
 )
 
 box::use(
-  app/logic/ui/tags[flexRow, flexCol],
+  app/logic/ui/tags[flexRow],
   app/logic/ui/spinner[withSpinnerCustom],
   app/logic/db/api[readAPI],
   app/logic/constant,
@@ -113,8 +113,8 @@ server <- function(id, usergroup) {
               "Information"
             ),
             card_body(
-              h2("Your account needs to be activated in order to access the rest of the portal functions. Please check the e-mail used when registering on the SSL forums.") |> 
-                div(class = "Retired")
+              shiny$h2("Your account needs to be activated in order to access the rest of the portal functions. Please check the e-mail used when registering on the SSL forums.") |> 
+                shiny$div(class = "Retired")
             )
           )
         }
