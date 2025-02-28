@@ -1,10 +1,9 @@
 box::use(
   shiny,
-  bslib,
-  sass,
-  shiny.router[router_ui, router_server, route, route_link],
+  shiny.router[router_ui, router_server, route, route_link, get_page, is_page],
   shinyFeedback[useShinyFeedback],
   shinyjs[useShinyjs],
+  stringr[str_remove],
 )
 
 box::use(
@@ -49,8 +48,33 @@ server <- function(id) {
     navigationBar$server("nav", auth = authOutput, resAuth = resAuth)
     
     router_server("/")
-
-    welcome$server("message", usergroup = 1)
-    careerRecords$server("records")
+  
+    ## Loads the different module servers
+    welcome$server("message", usergroup = authOutput()$usergroup)
+    
+    
+    ## In order to load pages as they are clicked ONCE this is needed
+    loadedServer <- 
+      shiny$reactiveValues(
+        create = FALSE, player = FALSE, index = FALSE, academyIndex = FALSE, uploadGame = FALSE,
+        bankOverview = FALSE, welcome = FALSE, records = FALSE, playerPages = FALSE, contractProcess = FALSE,
+        tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
+        leagueStandings = FALSE, leagueSchedule = FALSE, managerTeam = FALSE, assignManager = FALSE,
+        bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE,
+        nationTracker = FALSE, positionTracker = FALSE
+      )
+    
+    ## Observer that checks the current page and loads the server for the page ONCE
+    shiny$observe({
+      current <- str_remove(session$clientData$url_hash, 
+                            pattern = "#!/")
+      if(current == "index/records" & !loadedServer$records){
+        careerRecords$server("records")
+        loadedServer$records <- TRUE
+      }
+    }) |> 
+      shiny$bindEvent(session$clientData$url_hash)
+    
+    
   })
 }

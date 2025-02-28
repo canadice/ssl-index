@@ -99,6 +99,8 @@ server <- function(id) {
     id,
     function(input, output, session) {
       
+      print("Records server running.")
+      
       #### DATA GENERATION ####
       outfieldData <- shiny$reactive({
         shiny$req(input$selectedLeague)
@@ -148,7 +150,7 @@ server <- function(id) {
             name, club, dplyr$all_of(stat)
           ) |>
           dplyr$filter(
-            dplyr$across(dplyr$all_of(stat),
+            dplyr$if_all(dplyr$all_of(stat),
                          ~ .x == max(.x))
           ) |> 
           dplyr$slice_head(n = 1)
