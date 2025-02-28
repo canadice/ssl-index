@@ -1,62 +1,66 @@
-leagueIndexUI <- function(id) {
-  ns <- NS(id)
-  tagList(
-    fluidPage(
-      ## First row
-      fluidRow(
-        column(
-          width = 4,
-          selectInput(
+box::use(
+  shiny,
+  bslib,
+  reactable[reactable, reactableOutput, renderReactable],
+  promises[future_promise, then],
+)
+
+box::use(
+  app/logic/constant,
+  app/logic/ui/spinner[withSpinnerCustom],
+)
+
+#' @export
+ui <- function(id) {
+  ns <- shiny$NS(id)
+  shiny$tagList(
+    bslib$card(
+      bslib$card_header(
+        bslib$layout_columns(
+          colwidths = c(4, 6, 2),
+          shiny$selectInput(
             inputId = ns("selectedSeason"),
             label = "Select a season",
             choices = 
               c(
-                1:currentSeason$season %>% 
-                sort(decreasing = TRUE),
+                1:constant$currentSeason$season %>% 
+                  sort(decreasing = TRUE),
                 "ALL"
               )
-          )
-        ),
-        column(
-          width = 6
-        ),
-        column(
-          width = 2,
-          uiOutput(ns("leagueSelector"))
+          ),
+          # EMPTY
+          ,
+          shiny$uiOutput(ns("leagueSelector"))
         )
       ),
-      ## Second row
-      fluidRow(
-        h1("Outfield"),
-        tabsetPanel(
-          tabPanel("Statistics",
+      bslib$card_body(
+        shiny$tabsetPanel(
+          header = shiny$h1("Outfield"),
+          shiny$tabPanel("Statistics",
                    reactableOutput(ns("outfieldBasic")) %>% 
-                     withSpinnerMedium()),
-          tabPanel("Adv. Statistics",
+                     withSpinnerCustom(height = 80)),
+          shiny$tabPanel("Adv. Statistics",
                    reactableOutput(ns("outfieldAdvanced")) %>% 
-                     withSpinnerMedium()),
-          tabPanel("Leaders",
-                   uiOutput(ns("outfieldLeaders")) %>% 
-                     withSpinnerMedium())
-          )
+                     withSpinnerCustom(height = 80)),
+          shiny$tabPanel("Leaders",
+                   shiny$uiOutput(ns("outfieldLeaders")) %>% 
+                     withSpinnerCustom(height = 80))
         ),
-      ## Third row
-      fluidRow(
-        h1("Keeper"),
-        tabsetPanel(
-          tabPanel("Statistics",
+        shiny$tabsetPanel(
+          header = shiny$h1("Keeper"),
+          shiny$tabPanel("Statistics",
                    reactableOutput(ns("keeperBasic")) %>% 
-                     withSpinnerMedium()),
-          tabPanel("Adv. Statistics",
+                     withSpinnerCustom(height = 80)),
+          shiny$tabPanel("Adv. Statistics",
                    reactableOutput(ns("keeperAdvanced")) %>% 
-                     withSpinnerMedium()),
-          tabPanel("Leaders",
-                   uiOutput(ns("keeperLeaders")) %>% 
-                     withSpinnerMedium())
+                     withSpinnerCustom(height = 80)),
+          shiny$tabPanel("Leaders",
+                   shiny$uiOutput(ns("keeperLeaders")) %>% 
+                     withSpinnerCustom(height = 80))
         )
       )
-    ) # close fluidpage
-  ) # close tagList
+    )
+  )
 }
 
 leagueIndexServer <- function(id) {
