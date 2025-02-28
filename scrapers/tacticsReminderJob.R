@@ -98,17 +98,43 @@ if(nrow(current) > 0){
       username = 'BOT Producer', 
       set_default = TRUE)
   
+  simmerDeadline <- 
+    paste(
+      "<t:", 
+        c(
+          (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(24)) %>% as.numeric(),
+          (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(48)) %>% as.numeric(),
+          (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(51)) %>% as.numeric()
+        ),
+        ":R>!\n",
+      sep = ""
+    )
+  
+  commentaryDeadline <- 
+    paste(
+      "<t:", 
+      c(
+        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(30)) %>% as.numeric(),
+        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(54)) %>% as.numeric(),
+        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(57)) %>% as.numeric()
+      ),
+      ":R>!\n",
+      sep = ""
+    )
+  
   send_webhook_message(
     paste(
       "## Next set of games\n",
       paste(
         current$Matchday, "\n",
-        "Simmer: @", current$Simmer, "\n",
+        "Simmer: @", current$Simmer, ", Deadline:", 
+        simmerDeadline[1:length(current$Simmer)], "\n",
         "Commentator: ", 
         if_else(is.na(current$`Commentator 1`), "NONE", 
                 paste("@", current$`Commentator 1`, sep = "")), 
         if_else(is.na(current$`Commentator 2`), "", 
                 paste(" & @", current$`Commentator 2`, sep = "")), 
+        ", Deadline:", commentaryDeadline[1:length(current$Simmer)], 
         sep = "",
         collapse = "\n\n"
       ),
