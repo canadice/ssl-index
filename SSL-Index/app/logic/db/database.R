@@ -2,12 +2,12 @@
 box::use(
   config,
   DBI,
+  glue,
   RMySQL,
-  glue
 )
 
-sqlQuery <- function(query, db){
-  con <- 
+sqlQuery <- function(query, db) {
+  con <-
     DBI$dbConnect(
       RMySQL$MySQL(),
       dbname = config$get(config = "mysql", db),
@@ -16,44 +16,43 @@ sqlQuery <- function(query, db){
       user = config$get(config = "mysql", "user"),
       password = config$get(config = "mysql", "pass")
     )
-  
+
   DBI$dbSendQuery(con, "SET NAMES utf8mb4;")
   DBI$dbSendQuery(con, "SET CHARACTER SET utf8mb4;")
   DBI$dbSendQuery(con, "SET character_set_connection=utf8mb4;")
-  
+
   req <- glue$glue_sql(query, .con = con)
-  
+
   req <- DBI$dbSendQuery(con, req)
   res <- DBI$dbFetch(req, n = -1)
-  
+
   DBI$dbClearResult(req)
-  
+
   DBI$dbDisconnect(con)
-  
-  return(res)
+
+  res
 }
 
 #' Function for queries to mybb
 #' @export
-mybbQuery <- function(query){
+mybbQuery <- function(query) {
   sqlQuery(query, "mybb")
 }
 
 #' Function for queries to portal
 #' @export
-portalQuery <- function(query){
+portalQuery <- function(query) {
   sqlQuery(query, "portal")
 }
 
 #' Function for queries to index
 #' @export
-indexQuery <- function(query){
+indexQuery <- function(query) {
   sqlQuery(query, "index")
 }
 
 #' Function for queries to budget
 #' @export
-budgetQuery <- function(query){
+budgetQuery <- function(query) {
   sqlQuery(query, "budget")
 }
-

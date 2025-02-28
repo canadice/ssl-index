@@ -5,9 +5,9 @@ box::use(
 
 
 #' @export
-readAPI <- function (url, ...) {
+readAPI <- function(url, ...) {
   temp <- url |> httr$GET(...)
-  temp$content |> 
-    rawToChar() |> 
-    jsonlite$fromJSON() 
+  temp$content |>
+    rawToChar() |>
+    jsonlite$fromJSON()
 }
