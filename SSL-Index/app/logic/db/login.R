@@ -12,9 +12,9 @@ box::use(
 
 #' Helper function to set the token
 #' @export
-setRefreshToken <- function(uid, token, session = shiny::getDefaultReactiveDomain()){
+setRefreshToken <- function(uid, token, session = shiny::getDefaultReactiveDomain()) {
   expires <- (now() + hours(72)) |> as.numeric()
-  
+
   portalQuery({
     paste("INSERT INTO refreshtokens (uid, expires_at, token)
               VALUES (", uid, ",", expires, ", ", paste0("'", token, "'"), ")
@@ -25,9 +25,9 @@ setRefreshToken <- function(uid, token, session = shiny::getDefaultReactiveDomai
 
 #' @export
 customCheckCredentials <- function(user, password, session = shiny::getDefaultReactiveDomain()) {
-  res <- 
+  res <-
     mybbQuery(
-      query = 
+      query =
         paste(
           "SELECT uid, username, password, salt, usergroup, additionalgroups
         FROM mybb_users
