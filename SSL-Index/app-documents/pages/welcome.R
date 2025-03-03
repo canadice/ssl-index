@@ -15,45 +15,45 @@ welcomeUI <- function(id) {
       ),
       style = "align-items: center; justify-content: space-between;"
     ), width = NULL,
-    uiOutput(ns("schedule")) %>% 
+    uiOutput(ns("schedule")) |> 
       withSpinnerSmall()
-    ) %>% 
+    ) |> 
       column(width = 12),
     box(title = "Current Standings", width = NULL,
         column(
           6,
           h5("Major League"),
-          reactableOutput(ns("standings_1")) %>% 
+          reactableOutput(ns("standings_1")) |> 
             withSpinnerSmall()
         ),
         column(
           6,
           h5("Minor League"),
-          reactableOutput(ns("standings_2")) %>% 
+          reactableOutput(ns("standings_2")) |> 
             withSpinnerSmall()
         )
-    ) %>% 
+    ) |> 
       column(width = 12),
     
     box(title = "News", width = NULL,
         column(
           width = 6,
           h4("Weekly top earners"),
-          reactableOutput(ns("weeklyLeaders")) %>% 
+          reactableOutput(ns("weeklyLeaders")) |> 
             withSpinnerMedium()
         ),
         column(
           width = 6,
           h4("Recent creates"),
-          reactableOutput(ns("created")) %>% 
+          reactableOutput(ns("created")) |> 
             withSpinnerMedium()
         ),
         column(width = 12,
                h4("Activity Checks"),
-               plotlyOutput(ns("activityChecks")) %>% 
-                 withSpinnerMedium() %>% 
+               plotlyOutput(ns("activityChecks")) |> 
+                 withSpinnerMedium() |> 
                  div(class = "plotlyBorder"))
-    ) %>% 
+    ) |> 
       column(width = 12)
   )
 }
@@ -67,9 +67,9 @@ welcomeServer <- function(id, usergroup) {
       output$information <- renderUI({
         if(any(5 %in% usergroup)){
           box(title = "Information", width = NULL, collapsible = TRUE,
-              h2("Your account needs to be activated in order to access the rest of the portal functions. Please check the e-mail used when registering on the SSL forums.") %>% 
+              h2("Your account needs to be activated in order to access the rest of the portal functions. Please check the e-mail used when registering on the SSL forums.") |> 
                 div(class = "Retired")
-          ) %>% 
+          ) |> 
             column(width = 12)
         }
       })
@@ -81,13 +81,13 @@ welcomeServer <- function(id, usergroup) {
                output[[paste0("standings_", division)]] <- renderReactable({
                  standings <- getStandings(division, season = currentSeason$season) 
                  
-                 if(!(standings %>% is_empty())){
-                   standings %>% 
+                 if(!(standings |> is_empty())){
+                   standings |> 
                      select(
                        Team, 
                        Wins:Losses,
                        Points
-                     ) %>% 
+                     ) |> 
                      reactable(
                        defaultColDef = colDef(minWidth = 30),
                        columns = 
@@ -150,7 +150,7 @@ welcomeServer <- function(id, usergroup) {
       output$schedule <- renderUI({
         league <- input$selectedLeague
         
-        if(schedule() %>% is_empty()){
+        if(schedule() |> is_empty()){
           "No schedule is available yet"
         } else {
           schedule <- schedule()
@@ -170,7 +170,7 @@ welcomeServer <- function(id, usergroup) {
                          ),
                          width = NULL,
                          status = "primary",
-                         h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") %>% 
+                         h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") |> 
                               str_replace_all(pattern = "NA", replacement = " ")
                          ),
                          footer = 
@@ -188,8 +188,8 @@ welcomeServer <- function(id, usergroup) {
                                schedule[i, "IRLDate"]
                              ),
                              sep = "<br>"
-                           ) %>% 
-                           HTML() %>% 
+                           ) |> 
+                           HTML() |> 
                            div(align = "center")
                        )
                        
@@ -221,10 +221,10 @@ welcomeServer <- function(id, usergroup) {
       output$weeklyLeaders <- renderReactable({
         data <- topEarners()
         
-        data %>% 
+        data |> 
           then(
             onFulfilled = function(data){
-              data %>% 
+              data |> 
                 reactable(
                   defaultColDef = colDef(minWidth = 75)
                 )
@@ -236,10 +236,10 @@ welcomeServer <- function(id, usergroup) {
       output$created <- renderReactable({
         data <- getRecentCreates()
         
-        data %>% 
+        data |> 
           then(
             onFulfilled = function(data){
-              data %>% 
+              data |> 
                 reactable(
                   defaultColDef = colDef(minWidth = 25),
                   columns = list(
@@ -251,14 +251,14 @@ welcomeServer <- function(id, usergroup) {
       })
       
       output$activityChecks <- renderPlotly({
-        readAPI("https://api.simulationsoccer.com/player/acHistory") %>% 
-          mutate(weekYear = paste(paste0("W", nweeks))) %>% 
+        readAPI("https://api.simulationsoccer.com/player/acHistory") |> 
+          mutate(weekYear = paste(paste0("W", nweeks))) |> 
           plot_ly(x = ~weekYear, y= ~count, type = "scatter", mode = "lines+markers",
                   hoverinfo = "text",
                   line = list(color = sslGold),
                   marker = list(size = 5, color = sslGold),
                   text = ~paste("#AC: ", count)
-          ) %>% 
+          ) |> 
           layout(
             xaxis = list(
               title = "Time",
@@ -279,7 +279,7 @@ welcomeServer <- function(id, usergroup) {
             plot_bgcolor = "#333333",   # background color
             paper_bgcolor = "#333333",   # plot area background color
             showlegend = FALSE  # Hide legend (optional)
-          ) %>% 
+          ) |> 
           plotly::config(
             displayModeBar = TRUE,  # Enable display of mode bar (optional, true by default)
             modeBarButtonsToRemove = list(

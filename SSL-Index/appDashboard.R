@@ -259,11 +259,11 @@ ui <-
       )
     ),
     dashboardSidebar(
-      uiOutput("sidebarpanel") %>% 
+      uiOutput("sidebarpanel") |> 
         withSpinnerSmall()
     ),
     dashboardBody(
-      customTheme %>% use_theme(),
+      customTheme |> use_theme(),
       includeCSS('style.css'),
       useShinyFeedback(), # include shinyFeedback
       useShinyjs(), # include shinyjs
@@ -313,14 +313,14 @@ server <- function(input, output, session) {
   # Checks saved cookie for automatic login
   observe({
     refreshtoken <- getRefreshToken(input$cookies$token)
-    if(refreshtoken %>% nrow() > 0){
-      if((now() %>% as.numeric()) < refreshtoken$expires_at){
+    if(refreshtoken |> nrow() > 0){
+      if((now() |> as.numeric()) < refreshtoken$expires_at){
         resAuth$uid <- refreshtoken$uid
         resAuth$username <- refreshtoken$username
         resAuth$usergroup <- 
-          paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") %>%
-          str_split(pattern = ",", simplify = TRUE) %>%
-          as.numeric() %>%
+          paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") |>
+          str_split(pattern = ",", simplify = TRUE) |>
+          as.numeric() |>
           as.list()
         
         setRefreshToken(uid = refreshtoken$uid, token = refreshtoken$token)
@@ -328,7 +328,7 @@ server <- function(input, output, session) {
         # session$reload()
       }
     }
-  }) %>%
+  }) |>
     bindEvent(input$cookies$token, ignoreNULL = TRUE, once = TRUE)
   
   observe({
@@ -345,7 +345,7 @@ server <- function(input, output, session) {
         )
       )
     )
-  }) %>% 
+  }) |> 
     bindEvent(input$login)
   
   observe({
@@ -359,7 +359,7 @@ server <- function(input, output, session) {
     } else {
       feedbackWarning("password", show = TRUE, text = "Password is incorrect.")
     }
-  }) %>% 
+  }) |> 
     bindEvent(input$loggingIn)
   
   
@@ -407,7 +407,7 @@ server <- function(input, output, session) {
 
   output$fabOutput <- renderUI({
     tagList(
-      if(authOutput()$usergroup %>% is.null()){
+      if(authOutput()$usergroup |> is.null()){
         tagList(
           actionButton(
             inputId = "login",
@@ -452,12 +452,12 @@ server <- function(input, output, session) {
   # Observers tied to the actionButtons in the FAB
   observe({
     updateTabItems(session, "tabs", "yourPlayer")
-  }) %>% 
+  }) |> 
     bindEvent(input$player)
 
   observe({
     updateTabItems(session, "tabs", "bankOverview")
-  }) %>% 
+  }) |> 
     bindEvent(input$userbank)
 
   observe({
@@ -465,7 +465,7 @@ server <- function(input, output, session) {
     
     # Removes cookies when logging out
     session$sendCustomMessage("cookie-remove", list(name = "token"))
-  }) %>% 
+  }) |> 
     bindEvent(input$logout)
   
   #### SIDEBAR ####
@@ -473,9 +473,9 @@ server <- function(input, output, session) {
   ## Navigation between Portal and Index
   menuGroup <- reactiveVal({0})
   
-  observe({menuGroup(1)}) %>% bindEvent(input$gotoindex)
+  observe({menuGroup(1)}) |> bindEvent(input$gotoindex)
   
-  observe({menuGroup(0)}) %>% bindEvent(input$gotoportal)
+  observe({menuGroup(0)}) |> bindEvent(input$gotoportal)
   
   ## Rendered menu in sidebar
   output$sidebarpanel <- renderUI({
@@ -677,7 +677,7 @@ server <- function(input, output, session) {
     
     updateQueryString(newURL, mode = "replace", session)
     
-  }) %>% 
+  }) |> 
     bindEvent(input$tabs)
   
   # Goes to welcome tab after logging in successfully
@@ -698,7 +698,7 @@ server <- function(input, output, session) {
     } else {
       menuItem("Create a player",tabName = "createplayer")
     }
-  }) %>% 
+  }) |> 
     bindEvent(input$tabs,ignoreInit = FALSE,ignoreNULL = FALSE)
   
   loadedPage <- 
@@ -843,7 +843,7 @@ server <- function(input, output, session) {
       
     }
     
-  }) %>% 
+  }) |> 
     bindEvent(input$tabs)
   
 }

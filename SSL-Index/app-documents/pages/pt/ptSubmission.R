@@ -8,7 +8,7 @@ submitPTUI <- function(id) {
             If you are not sure how to do this, follow the instructions in this ", 
                    a("link", href = "https://stackoverflow.com/questions/18693139/how-to-convert-csv-files-encoding-to-utf-8"),
                    ".", sep = ""
-             ) %>% HTML()
+             ) |> HTML()
       ),
       column(width = 3,
              downloadButton(ns("downloadTemplate"), label = "Download template file")
@@ -16,21 +16,21 @@ submitPTUI <- function(id) {
       br(),
       br(),
       uiOutput(ns("informationUI"))
-    ) %>% 
+    ) |> 
       fluidRow(),
     column(
       width = 12,
       p("Rows marked in red have usernames that cannot be found on the forum. Check the spelling of the username and reupload the file."),
-      reactableOutput(outputId = ns("checkImport")) %>% 
+      reactableOutput(outputId = ns("checkImport")) |> 
         withSpinnerMedium()
-    ) %>% 
+    ) |> 
       fluidRow(),
     div(style = "min-height:200px;"),
     column(
       width = 12,
-      uiOutput(ns("confirmationUI")) %>% 
+      uiOutput(ns("confirmationUI")) |> 
         div(class = "frozen-bottom")
-    ) %>% 
+    ) |> 
       fluidRow()
   )
 }
@@ -62,24 +62,24 @@ submitPTServer <- function(id, userinfo) {
       
       #### REACTIVES ####
       taskSource <- reactive({
-        if(input$taskSource %>% is.null()){
+        if(input$taskSource |> is.null()){
           NULL
         } else {
           file <- input$taskSource
           
           file <- read.csv(file$datapath, header = TRUE, encoding = "UTF-8") 
           
-          if(all(c("username", "tpe") %in% (colnames(file) %>% str_to_lower()))){
-            colnames(file) <- colnames(file) %>% str_to_lower()
+          if(all(c("username", "tpe") %in% (colnames(file) |> str_to_lower()))){
+            colnames(file) <- colnames(file) |> str_to_lower()
             
-            players <- readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>% 
+            players <- readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
               filter(playerStatus == "Active")
             
             pids <- 
-              file %>% 
-              left_join(players %>% select(username, uid, pid, name), by = "username") %>% 
+              file |> 
+              left_join(players |> select(username, uid, pid, name), by = "username") |> 
               mutate(
-                pid = if_else(pid %>% is.na(), -99, pid)
+                pid = if_else(pid |> is.na(), -99, pid)
               )
               
           } else {
@@ -94,7 +94,7 @@ submitPTServer <- function(id, userinfo) {
       
       #### CHECKS OUTPUTS ####
       output$checkImport <- renderReactable({
-        if(taskSource() %>% is.null()){
+        if(taskSource() |> is.null()){
           NULL
         } else {
           req(input$taskName)
@@ -105,11 +105,11 @@ submitPTServer <- function(id, userinfo) {
             hideFeedback("taskName")
           }
           
-          taskSource() %>% 
+          taskSource() |> 
             mutate(
               source = input$taskName
-            ) %>% 
-            rename_with(str_to_upper) %>% 
+            ) |> 
+            rename_with(str_to_upper) |> 
             reactable(
               pagination = FALSE,
               rowStyle = function(index){
@@ -127,11 +127,11 @@ submitPTServer <- function(id, userinfo) {
           paste(input$taskName, " Unprocessed ", Sys.Date(), ".csv", sep="")
         },
         content = function(file) {
-          taskSource() %>% 
+          taskSource() |> 
             filter(
               pid == -99
-            ) %>% 
-            select(!pid) %>% 
+            ) |> 
+            select(!pid) |> 
             write.csv(file, row.names = FALSE)
         })
       
@@ -146,8 +146,8 @@ submitPTServer <- function(id, userinfo) {
       
       #### OBSERVERS ####
       observe({
-        taskSource() %>% 
-          future_promise() %>% 
+        taskSource() |> 
+          future_promise() |> 
           then(
             onFulfilled = function(data){
               if(any(data$pid == -99)){
@@ -156,55 +156,55 @@ submitPTServer <- function(id, userinfo) {
                 click("downloadData")
                 
                 processed <- 
-                  data %>% 
+                  data |> 
                   filter(
                     pid != -99
                   )
                 
-                processed %>% 
+                processed |> 
                   mutate(
                     source = input$taskName
-                  ) %>% 
+                  ) |> 
                   ptGradingVerify(session = session)
                 
-              } else if(data$pid %>% duplicated() %>% any()){
+              } else if(data$pid |> duplicated() |> any()){
                 showToast("error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same user listed twice.")
               } else if(nchar(input$taskName) > 32){
                 showToast("error", "You need to shorten the task name.")
                 
                 shinyFeedback::feedbackDanger("taskName", show = TRUE, text = "You need to enter a shorter task name!")  
               } else {
-                data %>% 
+                data |> 
                   mutate(
                     source = input$taskName
-                  ) %>% 
+                  ) |> 
                   ptGradingVerify(session = session)
               }
             }
           )  
-      }) %>% 
+      }) |> 
         bindEvent(
           input$submitTask,
           ignoreInit = TRUE
         )
       
       observe({
-        taskSource() %>% 
-          future_promise() %>% 
+        taskSource() |> 
+          future_promise() |> 
           then(
             onFulfilled = function(data){
               removeModal()
               
               data <- 
-                data %>% 
+                data |> 
                 filter(
                   pid != -99
                 )
               
-              data %>% 
+              data |> 
                 mutate(
                   source = input$taskName
-                ) %>% 
+                ) |> 
                 apply(
                   X = .,
                   MARGIN = 1,
@@ -229,7 +229,7 @@ submitPTServer <- function(id, userinfo) {
               })
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(
           input$confirmSubmission,
           ignoreInit = TRUE

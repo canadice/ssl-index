@@ -18,37 +18,37 @@ positionTrackerServer <- function(id) {
     function(input, output, session) {
       #### POSITION TRACKER OUTPUT ####
       trackerData <- reactive({
-        getAllPlayerPositions() %>% 
+        getAllPlayerPositions() |> 
           then(
             onFulfilled = function(data){
               if(input$activeStatus == "Yes"){
                 data <- 
-                  data %>% 
+                  data |> 
                   filter(
                     status == "Active"
                   )  
               }
               
-              data %>% 
+              data |> 
                 pivot_longer(
                   !status,
                   names_to = "posExp",
                   values_to = "Value"
-                ) %>% 
+                ) |> 
                 cbind(
                   positionalCoord,
                   .
-                ) %>% 
+                ) |> 
                 filter(
                   Value != 0
-                ) %>% 
-                group_by(position) %>% 
+                ) |> 
+                group_by(position) |> 
                 summarize(
                   x = mean(x),
                   y = mean(y),
                   primary = sum(Value == 20),
                   secondary = sum(Value == 15)
-                ) %>% 
+                ) |> 
                 ungroup()
             }
           )
@@ -59,10 +59,10 @@ positionTrackerServer <- function(id) {
       })
       
       output$fieldImage <- renderImage({
-        trackerData() %>% 
+        trackerData() |> 
           then(
             onFulfilled = function(data){
-              base <- pitch %>% image_ggplot()
+              base <- pitch |> image_ggplot()
               
               p <- 
                 base + 
@@ -133,8 +133,8 @@ positionTrackerServer <- function(id) {
               dev.off()
               
               tempImage <- 
-                card %>% 
-                image_crop(geometry = "480x600+160") %>% 
+                card |> 
+                image_crop(geometry = "480x600+160") |> 
                 image_write(tempfile(fileext = "png"), format = "png")
               
               return(

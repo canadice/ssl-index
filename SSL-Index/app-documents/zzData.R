@@ -44,9 +44,9 @@ pitch <-
   )
 
 editableAttributes <- 
-  attributes$attribute %>% 
-  .[!(. %in% c("Natural Fitness", "Stamina"))] %>% 
-  str_to_title() %>% 
+  attributes$attribute |> 
+  .[!(. %in% c("Natural Fitness", "Stamina"))] |> 
+  str_to_title() |> 
   str_remove_all(pattern = " ") 
 
 sslNations <- 

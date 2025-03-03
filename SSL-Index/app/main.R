@@ -11,6 +11,7 @@ box::use(
   app/view/index/careerRecords,
   app/view/index/leagueIndex,
   app/view/navigationBar,
+  app/view/index/standings,
 )
 
 
@@ -28,7 +29,8 @@ ui <- function(id) {
     router_ui(
       route("/", welcome$ui(ns("message"))),
       route("index/records", careerRecords$ui(ns("records"))),
-      route("index/", leagueIndex$ui(ns("league")))
+      route("index/", leagueIndex$ui(ns("league"))),
+      route("index/standings", standings$ui(ns("standings"))),
     )
   )
 }
@@ -61,7 +63,7 @@ server <- function(id) {
         create = FALSE, player = FALSE, index = FALSE, academyIndex = FALSE, uploadGame = FALSE,
         bankOverview = FALSE, welcome = FALSE, records = FALSE, playerPages = FALSE, contractProcess = FALSE,
         tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
-        leagueStandings = FALSE, leagueSchedule = FALSE, managerTeam = FALSE, assignManager = FALSE,
+        standings = FALSE, leagueSchedule = FALSE, managerTeam = FALSE, assignManager = FALSE,
         bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE,
         nationTracker = FALSE, positionTracker = FALSE
       )
@@ -76,6 +78,9 @@ server <- function(id) {
       } else if(current == "index/" & !loadedServer$index){
         leagueIndex$server("league")
         loadedServer$index <- TRUE
+      } else if(current == "index/standings" & !loadedServer$standings){
+        standings$server("standings")
+        loadedServer$standings <- TRUE
       }
     }) |> 
       shiny$bindEvent(session$clientData$url_hash)

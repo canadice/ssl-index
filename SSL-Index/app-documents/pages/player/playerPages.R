@@ -57,7 +57,7 @@ playerPagesUI <- function(id) {
         title = "Updating History", status = "danger", solidHeader = TRUE, collapsed = TRUE, collapsible = TRUE, width = NULL,
         fluidRow(
           column(width = 12,
-                 reactableOutput(ns("historyUpdates")) %>% 
+                 reactableOutput(ns("historyUpdates")) |> 
                    withSpinnerMedium()
           )
         )
@@ -89,7 +89,7 @@ playerPagesServer <- function(id) {
       #### REACTIVE DATA ####
       playerData <- reactive({
         req(input$selectedPlayer)
-        pid <- input$selectedPlayer %>% as.numeric()
+        pid <- input$selectedPlayer |> as.numeric()
         
         readAPI(url = "https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid))
         
@@ -97,17 +97,17 @@ playerPagesServer <- function(id) {
       })
       
       allNames <- reactive({
-        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") %>% 
+        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |> 
           select(
             name, pid, username, team, status_p
-          ) %>% 
+          ) |> 
           future_promise()
       })
       
       historyTPE <- 
         reactive({
           req(input$selectedPlayer)
-          pid <- input$selectedPlayer %>% as.numeric()
+          pid <- input$selectedPlayer |> as.numeric()
           
           getTpeHistory(pid)
         })
@@ -115,7 +115,7 @@ playerPagesServer <- function(id) {
       historyUpdates <- 
         reactive({
           req(input$selectedPlayer)
-          pid <- input$selectedPlayer %>% as.numeric()
+          pid <- input$selectedPlayer |> as.numeric()
           
           getUpdateHistory(pid)
         })
@@ -123,24 +123,24 @@ playerPagesServer <- function(id) {
       historyBank <- 
         reactive({
           req(input$selectedPlayer)
-          pid <- input$selectedPlayer %>% as.numeric()
+          pid <- input$selectedPlayer |> as.numeric()
           
           readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
                   query = list(pid = pid)
-          ) %>% 
+          ) |> 
             future_promise()
         })
       
       #### OUTPUTS ####
       output$selectPlayer <- renderUI({
         req(input$retired, input$freeAgent)
-        allNames() %>% 
+        allNames() |> 
           then(
             onFulfilled = function(names) {
               names <- 
-                names %>%
-                filter(if(input$retired != 1) status_p > 0 else TRUE) %>%
-                filter(if(input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) %>% 
+                names |>
+                filter(if(input$retired != 1) status_p > 0 else TRUE) |>
+                filter(if(input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) |> 
                 arrange(name)
               
               namedVector <- names$pid
@@ -167,7 +167,7 @@ playerPagesServer <- function(id) {
       
       output$clubLogo <- renderImage({
         req(input$selectedPlayer)
-        pid <- input$selectedPlayer %>% as.numeric()
+        pid <- input$selectedPlayer |> as.numeric()
         
         value <- playerData()
         
@@ -217,20 +217,20 @@ playerPagesServer <- function(id) {
         data <- playerData() 
         
         value <- 
-          data %>% select(contains("pos_")) %>% 
-          pivot_longer(everything()) %>% 
+          data |> select(contains("pos_")) |> 
+          pivot_longer(everything()) |> 
           mutate(
-            name = str_remove(name, pattern = "pos_") %>% str_to_upper()
+            name = str_remove(name, pattern = "pos_") |> str_to_upper()
           )
         
         tagList(
           h4("Traits"),
-          data$traits %>% str_split(pattern = traitSep) %>% unlist() %>% paste(collapse = "<br>") %>% HTML(),
+          data$traits |> str_split(pattern = traitSep) |> unlist() |> paste(collapse = "<br>") |> HTML(),
           br(),
           h4("Primary Position(s)"),
-          value %>% filter(value == 20) %>% select(name) %>% unlist() %>% paste(collapse = ", ") %>% HTML(),
+          value |> filter(value == 20) |> select(name) |> unlist() |> paste(collapse = ", ") |> HTML(),
           h4("Secondary Position(s)"),
-          value %>% filter(value < 20, value >= 10) %>% select(name)  %>% unlist() %>% paste(collapse = ", ") %>% HTML()
+          value |> filter(value < 20, value >= 10) |> select(name)  |> unlist() |> paste(collapse = ", ") |> HTML()
         )
         
       })
@@ -240,12 +240,12 @@ playerPagesServer <- function(id) {
         
         pid <- input$selectedPlayer
         
-        getTpeHistory(pid = pid) %>% 
-          future_promise() %>% 
+        getTpeHistory(pid = pid) |> 
+          future_promise() |> 
           then(
             onFulfilled = function(data){
               if(nrow(data) < 2){
-                plot_ly() %>%
+                plot_ly() |>
                   add_annotations(
                     text = "The player has had no TPE<br>progression in the Portal",
                     x = 0.5, y = 0.5,
@@ -255,14 +255,14 @@ playerPagesServer <- function(id) {
                     align = "center",
                     borderpad = 10,
                     bgcolor = "rgba(255, 255, 255, 0.5)"
-                  ) %>%
+                  ) |>
                   layout(
                     xaxis = list(showgrid = FALSE, zeroline = FALSE, showline = FALSE, showticklabels = FALSE),
                     yaxis = list(showgrid = FALSE, zeroline = FALSE, showline = FALSE, showticklabels = FALSE),
                     margin = list(l = 0, r = 0, b = 0, t = 0),
                     plot_bgcolor = "#333333",   # background color
                     paper_bgcolor = "#333333"
-                  ) %>% 
+                  ) |> 
                   plotly::config(
                     displayModeBar = TRUE,  # Enable display of mode bar (optional, true by default)
                     modeBarButtonsToRemove = list(
@@ -274,28 +274,28 @@ playerPagesServer <- function(id) {
                   )
               } else {
                 visData <- 
-                  data %>% 
-                  mutate(WeekStart = floor_date(Time %>% as_date(), "week", week_start = 1)) %>% 
-                  group_by(WeekStart) %>% 
-                  summarize(total = sum(`TPE Change`, na.rm = TRUE)) %>% 
+                  data |> 
+                  mutate(WeekStart = floor_date(Time |> as_date(), "week", week_start = 1)) |> 
+                  group_by(WeekStart) |> 
+                  summarize(total = sum(`TPE Change`, na.rm = TRUE)) |> 
                   complete(WeekStart = 
                              seq(
                                min(WeekStart), 
-                               floor_date(today() %>% as_date(tz = "US/Pacific"), 
+                               floor_date(today() |> as_date(tz = "US/Pacific"), 
                                           "week", week_start = 1), 
                                by = "week"
                              ), 
-                           fill = list(total = 0)) %>% 
-                  ungroup() %>% 
-                  mutate(cumulative = cumsum(total), week = 1:n()) %>% 
+                           fill = list(total = 0)) |> 
+                  ungroup() |> 
+                  mutate(cumulative = cumsum(total), week = 1:n()) |> 
                   suppressMessages()
                 
-                plot_ly(visData, hoverinfo = "text") %>% 
+                plot_ly(visData, hoverinfo = "text") |> 
                   add_trace(x = ~week, y = ~cumulative, type = 'scatter', mode = 'markers+lines',
                             line = list(color = sslGold),
                             marker = list(size = 5, color = sslGold),
                             text = ~paste("Week:", week, "<br>TPE:", cumulative)
-                          ) %>% 
+                          ) |> 
                   layout(
                     title = list(
                       text = "TPE Progression",
@@ -320,7 +320,7 @@ playerPagesServer <- function(id) {
                     plot_bgcolor = "#333333",   # background color
                     paper_bgcolor = "#333333",   # plot area background color
                     showlegend = FALSE  # Hide legend (optional)
-                  ) %>% 
+                  ) |> 
                   plotly::config(
                     displayModeBar = TRUE,  # Enable display of mode bar (optional, true by default)
                     modeBarButtonsToRemove = list(
@@ -353,11 +353,11 @@ playerPagesServer <- function(id) {
             matches <- getOutfieldMatchStats(data$name)
           }
           
-          matches %>% 
+          matches |> 
             then(
               onFulfilled = function(stats){
-                if(!(stats %>% is.null())){
-                  stats %>% 
+                if(!(stats |> is.null())){
+                  stats |> 
                     leaderReactable()  
                 }
               }
@@ -366,10 +366,10 @@ playerPagesServer <- function(id) {
       })
       
       output$historyTPE <- renderReactable({
-        historyTPE() %>%
+        historyTPE() |>
           mutate(
             Time = as_datetime(Time)
-          ) %>% 
+          ) |> 
           reactable(
             columns = 
               list(
@@ -380,10 +380,10 @@ playerPagesServer <- function(id) {
       })
       
       output$historyUpdates <- renderReactable({
-        historyUpdates() %>% 
+        historyUpdates() |> 
           mutate(
             Time = as_datetime(Time)
-          ) %>% 
+          ) |> 
           reactable(
             columns = 
               list(
@@ -393,13 +393,13 @@ playerPagesServer <- function(id) {
       })
       
       output$historyBank <- renderReactable({
-        historyBank() %>% 
+        historyBank() |> 
           then(
             onFulfilled = function(value){
-              value %>% 
+              value |> 
                 mutate(
                   Time = as_datetime(Time)
-                ) %>% 
+                ) |> 
                 reactable(
                   columns = 
                     list(

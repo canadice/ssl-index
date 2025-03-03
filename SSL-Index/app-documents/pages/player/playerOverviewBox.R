@@ -144,7 +144,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
               
               # Redistributions can be made by users in their first season in the SSL League proper
               check <- 
-                ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 1)) & 
+                ((data$class |> str_extract(pattern = "[0-9]+") |> as.numeric()) > (currentSeason$season - 1)) & 
                 (data$redistused == 0)
               
               if(check) {
@@ -159,11 +159,11 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
               }
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(data())
       
       output$buttonGoToRetire <- renderUI({
-        data() %>% 
+        data() |> 
           then(
             onFulfilled = function(data){
               actionButton(
@@ -176,7 +176,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       
       #### TABLES ####
       output$playerOverview <- renderUI({
-        data() %>% 
+        data() |> 
           then(
             onFulfilled = function(data){
               attributeReactable(data, session, output)
@@ -188,7 +188,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       # Retires player
       observe({
         modalRetire(session)
-      }) %>% 
+      }) |> 
         bindEvent(
           input$goToRetire,
           ignoreInit = TRUE,
@@ -197,7 +197,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
       
       observe({
         modalRetire2(session)
-      }) %>% 
+      }) |> 
         bindEvent(
           input$confirmRetirement1,
           ignoreInit = TRUE,
@@ -205,7 +205,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
         )
       
       observe({
-        data() %>% 
+        data() |> 
           then(
             onFulfilled = function(data){
               removeModal()
@@ -217,7 +217,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
               updateTabItems(mainSession, "tabs", "welcome")
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(
           input$confirmRetirement2,
           ignoreInit = TRUE,

@@ -14,7 +14,7 @@ yourPlayerUI <- function(id) {
           title = "Updating History", collapsed = TRUE, collapsible = TRUE, width = NULL,
           fluidRow(
             column(width = 12,
-                   reactableOutput(ns("historyUpdates")) %>% 
+                   reactableOutput(ns("historyUpdates")) |> 
                      withSpinnerMedium()
             )
           )
@@ -51,9 +51,9 @@ yourPlayerServer <- function(id, uid, parent, updated) {
       
       playerData <- 
         reactive({
-          readAPI("https://api.simulationsoccer.com/player/getPlayer", query = list(uid = uid)) %>% 
+          readAPI("https://api.simulationsoccer.com/player/getPlayer", query = list(uid = uid)) |> 
             future_promise()
-        }) %>% 
+        }) |> 
         bindEvent(
           updated()
         )
@@ -61,7 +61,7 @@ yourPlayerServer <- function(id, uid, parent, updated) {
       
       historyTPE <- 
         reactive({
-          playerData() %>% 
+          playerData() |> 
             then(
               onFulfilled = function(value){
                 getTpeHistory(value$pid)
@@ -71,7 +71,7 @@ yourPlayerServer <- function(id, uid, parent, updated) {
       
       historyUpdates <- 
         reactive({
-          playerData() %>% 
+          playerData() |> 
             then(
               onFulfilled = function(value){
                 getUpdateHistory(value$pid)
@@ -81,13 +81,13 @@ yourPlayerServer <- function(id, uid, parent, updated) {
       
       #### OUTPUTS ####
       output$historyTPE <- renderReactable({
-        historyTPE() %>%
+        historyTPE() |>
           then(
             onFulfilled = function(value){
-              value %>% 
+              value |> 
               mutate(
                 Time = as_datetime(Time)
-              ) %>% 
+              ) |> 
               reactable(
                 columns = 
                   list(
@@ -101,13 +101,13 @@ yourPlayerServer <- function(id, uid, parent, updated) {
       })
         
       output$historyUpdates <- renderReactable({
-        historyUpdates() %>% 
+        historyUpdates() |> 
           then(
             onFulfilled = function(value){
-              value %>% 
+              value |> 
                 mutate(
                   Time = as_datetime(Time)
-                ) %>% 
+                ) |> 
                 reactable(
                   columns = 
                     list(
@@ -124,7 +124,7 @@ yourPlayerServer <- function(id, uid, parent, updated) {
       # Observer for the player boxes
       
       observe({
-        playerData() %>% 
+        playerData() |> 
           then(
             onFulfilled = function(value) {
               playerInfoBoxServer(id = "playerInfo", pid = value$pid, mainSession = parent)
@@ -133,7 +133,7 @@ yourPlayerServer <- function(id, uid, parent, updated) {
               showToast("error", "An error occurred when loading your player. Please notify the BoD.")
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(playerData(), ignoreNULL = FALSE)
       
       ## Loading server functions 

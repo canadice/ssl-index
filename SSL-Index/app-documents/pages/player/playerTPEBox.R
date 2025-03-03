@@ -8,13 +8,13 @@ playerTPEBoxUI <- function(id) {
           width = 12, align = "center", style = "display: flex; justify-content: center;",
           valueBox(
             subtitle = "Total Earned TPE",
-            value = textOutput(ns("tpeTotal"), inline = TRUE) %>% 
+            value = textOutput(ns("tpeTotal"), inline = TRUE) |> 
               withSpinnerSmall(),
             width = 3
           ),
           valueBox(
             subtitle = "Available TPE",
-            value = textOutput(ns("tpeRemaining"), inline = TRUE) %>% 
+            value = textOutput(ns("tpeRemaining"), inline = TRUE) |> 
               withSpinnerSmall(), 
             width = 3
           )
@@ -26,7 +26,7 @@ playerTPEBoxUI <- function(id) {
           uiOutput(ns("buttonAC")),
           uiOutput(ns("buttonTrainingCamp"))
         )
-      ) %>% 
+      ) |> 
         div(id = ns("tpeButtons"))
     )
   )
@@ -39,14 +39,14 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
       #### TOTAL TPE ####
       observe({
         tpeTotal(
-          data() %>% 
+          data() |> 
             then(
               onFulfilled = function(data){
                 data$tpe
               }
             )
         ) 
-      }) %>% 
+      }) |> 
         bindEvent(
           updated()
         )
@@ -58,34 +58,34 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
       #### REMAINING TPE ####
       observe({
         tpeBanked(
-          data() %>% 
+          data() |> 
             then(
               onFulfilled = function(data){
-                data %>% 
-                  select(acceleration:throwing) %>% 
-                  select(!`natural fitness` & !stamina) %>% 
+                data |> 
+                  select(acceleration:throwing) |> 
+                  select(!`natural fitness` & !stamina) |> 
                   pivot_longer(
                     cols = everything(),
                     names_to = "attribute",
                     values_to = "value"
-                  ) %>%
+                  ) |>
                   left_join(
-                    tpeCost %>% 
+                    tpeCost |> 
                       select(
                         value,
                         cumCost
                       ),
                     by = "value"
-                  ) %>% 
-                  select(cumCost) %>% 
-                  sum(na.rm = TRUE) %>% 
+                  ) |> 
+                  select(cumCost) |> 
+                  sum(na.rm = TRUE) |> 
                   {
                     data$tpe - .
                   }
               }
             )
           )
-      }) %>% 
+      }) |> 
         bindEvent(
           updated()
         )
@@ -96,7 +96,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
       
       #### AC and TRAINING CAMP ####
       output$buttonAC <- renderUI({
-        data() %>% 
+        data() |> 
           then(
             onFulfilled = function(data){
               if(completedActivityCheck(data$pid)){
@@ -116,7 +116,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
       })
       
       output$buttonTrainingCamp <- renderUI({
-        data() %>% 
+        data() |> 
           then(
             onFulfilled = function(data){
               if(completedTrainingCamp(data$pid)){
@@ -133,7 +133,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
       
       #### OBSERVERS ####
       observe({
-        data() %>% 
+        data() |> 
           then(
             onFulfilled = function(data){
               tpeEarned <- 6
@@ -152,10 +152,10 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
               
               showToast(type = "success", "You have successfully claimed your Activity Check for the week!")
               
-              if(tpeBanked() %>% class() == "numeric"){
+              if(tpeBanked() |> class() == "numeric"){
                 tpeBanked(tpeBanked() + tpeEarned)  
               } else {
-                tpeBanked() %>% 
+                tpeBanked() |> 
                   then(
                     onFulfilled = function(bank){
                       tpeBanked(bank + tpeEarned)
@@ -163,10 +163,10 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
                   )
               }
               
-              if(tpeTotal() %>% class() == "numeric"){
+              if(tpeTotal() |> class() == "numeric"){
                 tpeTotal(tpeTotal() + tpeEarned)  
               } else {
-                tpeTotal() %>% 
+                tpeTotal() |> 
                   then(
                     onFulfilled = function(bank){
                       tpeTotal(bank + tpeEarned)
@@ -177,7 +177,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
               updated(updated() + 1)
             }
           )
-      }) %>% 
+      }) |> 
         bindEvent(
           input$activityCheck,
           ignoreInit = TRUE,
@@ -185,12 +185,12 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
         )
       
       observe({
-        data() %>% 
+        data() |> 
           then(
             onFulfilled = function(data){
               class <- 
-                data$class %>% 
-                str_extract_all(pattern = "[0-9]+") %>% 
+                data$class |> 
+                str_extract_all(pattern = "[0-9]+") |> 
                 as.numeric()
               
               age <- currentSeason$season - class
@@ -214,10 +214,10 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
               
               showToast(type = "success", "You have successfully claimed your Training Camp for the season.")
               
-              if(tpeBanked() %>% class() == "numeric"){
+              if(tpeBanked() |> class() == "numeric"){
                 tpeBanked(tpeBanked() + tpeSummary$tpe)  
               } else {
-                tpeBanked() %>% 
+                tpeBanked() |> 
                   then(
                     onFulfilled = function(bank){
                       tpeBanked(bank + tpeSummary$tpe)
@@ -225,10 +225,10 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
                   )
               }
               
-              if(tpeTotal() %>% class() == "numeric"){
+              if(tpeTotal() |> class() == "numeric"){
                 tpeTotal(tpeTotal() + tpeSummary$tpe)  
               } else {
-                tpeTotal() %>% 
+                tpeTotal() |> 
                   then(
                     onFulfilled = function(bank){
                       tpeTotal(bank + tpeSummary$tpe)
@@ -240,7 +240,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
             }
           )
         
-      }) %>% 
+      }) |> 
         bindEvent(
           input$trainingCamp,
           ignoreInit = TRUE,

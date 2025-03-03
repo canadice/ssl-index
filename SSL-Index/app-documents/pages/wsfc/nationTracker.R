@@ -4,14 +4,14 @@ nationTrackerUI <- function(id) {
     fluidRow(
       column(width = 12,
              h3("Nation Tracker of Players"),
-             highchartOutput(ns("map")) %>% 
+             highchartOutput(ns("map")) |> 
                withSpinnerMedium()
              )
     ),
     fluidRow(
       column(width = 12,
              h3("Regional Rosters"),
-             uiOutput(ns("tabs")) %>% 
+             uiOutput(ns("tabs")) |> 
                withSpinnerMedium())
     )
   )
@@ -59,14 +59,14 @@ nationTrackerServer <- function(id) {
       data("worldgeojson")
       
       players <- reactive({
-        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))  %>% 
-          select(name, class, tpe, tpebank, username, discord, bankBalance, nationality, position, userStatus, playerStatus, render, team, region) %>% 
+        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))  |> 
+          select(name, class, tpe, tpebank, username, discord, bankBalance, nationality, position, userStatus, playerStatus, render, team, region) |> 
           future_promise()
       })
       
       nations <- reactive({
         data <- 
-          readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
+          readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |>
           mutate(
             nationality = case_when(
               nationality == "United States" ~ "United States of America",
@@ -75,24 +75,24 @@ nationTrackerServer <- function(id) {
               nationality %in% c("England", "Scotland", "Wales", "Northern Ireland") ~ "United Kingdom",
               TRUE ~ nationality
             )
-          ) %>% 
+          ) |> 
           future_promise()
         
-        data %>% 
+        data |> 
           then(
             onFulfilled = function(data){
               sumActive <- 
-                data %>% 
-                group_by(nationality, userStatus, region) %>% 
-                summarize(actives = n()) %>% 
-                group_by(nationality) %>% 
-                mutate(n = sum(actives)) %>% 
-                group_by(region) %>% 
+                data |> 
+                group_by(nationality, userStatus, region) |> 
+                summarize(actives = n()) |> 
+                group_by(nationality) |> 
+                mutate(n = sum(actives)) |> 
+                group_by(region) |> 
                 mutate(roster = sum(actives))
               
-              sumActive %>% 
-                ungroup() %>% 
-                pivot_wider(names_from = userStatus, values_from = actives) %>% 
+              sumActive |> 
+                ungroup() |> 
+                pivot_wider(names_from = userStatus, values_from = actives) |> 
                 mutate(
                   across(c(Inactive, Active), ~replace_na(.x, 0))#,
                   # interval = case_when(
@@ -100,7 +100,7 @@ nationTrackerServer <- function(id) {
                   #   n < 11 ~ "6-10",
                   #   n < 16 ~ "11-15",
                   #   TRUE ~ "15+"
-                  # ) %>% 
+                  # ) |> 
                   #   factor(levels = c("1-5", "6-10", "11-15", "15+"))
                 )
             }
@@ -109,7 +109,7 @@ nationTrackerServer <- function(id) {
       
       
       output$map <- renderHighchart({
-        nations() %>% 
+        nations() |> 
           then(
             onFulfilled = function(table){
               highchart(
@@ -118,21 +118,21 @@ nationTrackerServer <- function(id) {
                     zooming = list(type = "xy", singleTouch = TRUE)
                   ),
                   type = "map"
-                ) %>% 
-                hc_title("Nation Tracker of Players") %>% 
+                ) |> 
+                hc_title("Nation Tracker of Players") |> 
                 hc_add_series_map(
                   name = "Nr. Players",
                   worldgeojson, table, value = "n", joinBy = c("name", "nationality")
-                ) %>% 
+                ) |> 
                 hc_colorAxis(
                   dataClasses = 
                     color_classes(
                       c(1, 5, 10, 15, 20, 100),
                       colors = c("#D96F68", "#F5D17E", "#66B38C")
                       )
-                  ) %>%
+                  ) |>
                 hc_tooltip(HTML = TRUE, 
-                           pointFormat = "{point.nationality} has {point.Active} active and {point.Inactive} inactive players.<br>In total the region {point.region} has {point.roster} players.") %>%
+                           pointFormat = "{point.nationality} has {point.Active} active and {point.Inactive} inactive players.<br>In total the region {point.region} has {point.roster} players.") |>
                 hc_mapNavigation(enabled = TRUE)
             }
           )
@@ -140,12 +140,12 @@ nationTrackerServer <- function(id) {
       })
       
       output$tabs <- renderUI({
-        players() %>% 
+        players() |> 
           then(
             onFulfilled = function(data){
               do.call(tabsetPanel, 
                       c(list(width = NULL), 
-                        lapply(unique(data$region) %>% sort(), function(org) {
+                        lapply(unique(data$region) |> sort(), function(org) {
                           tabPanel(
                             title = org,
                             column(12,
@@ -162,12 +162,12 @@ nationTrackerServer <- function(id) {
       })
       
       observe({
-        players() %>% 
+        players() |> 
           then(
             onFulfilled = function(data){
-              lapply(unique(data$region) %>% sort(), function(i) {
+              lapply(unique(data$region) |> sort(), function(i) {
                 output[[paste0("overview_", i)]] <- renderUI({
-                  roster <- data %>% filter(region == i)
+                  roster <- data |> filter(region == i)
                   
                   orgReactable(roster)
                 })
