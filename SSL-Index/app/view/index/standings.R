@@ -36,12 +36,13 @@ ui <- function(id) {
           ),
           "",
           shiny$uiOutput(ns("leagueSelector")) |> 
-            withSpinnerCustom(height = 80)
+            withSpinnerCustom(height = 20)
         )
       ),
       bslib$card_body(
         shiny$h1("Standings"),
-        shiny$uiOutput(ns("standings"))
+        shiny$uiOutput(ns("standings")) |> 
+          withSpinnerCustom(height = 80)
       )
     ) 
   ) 
@@ -81,7 +82,6 @@ server <- function(id) {
           relegation <- TRUE
         } 
         
-        
         standings() |> 
           then(
             onFulfilled = function(data){
@@ -89,6 +89,7 @@ server <- function(id) {
                 NULL 
               } else {
                 data |> 
+                  dplyr$select(!GoalDifference) |> 
                   reactable(
                     pagination = FALSE,
                     defaultColDef = colDef(
