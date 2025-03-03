@@ -1,4 +1,16 @@
-leagueStandingsUI <- function(id) {
+box::use(
+  
+)
+
+box::use(
+
+)
+
+
+
+
+#' @export
+ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidPage(
@@ -34,7 +46,8 @@ leagueStandingsUI <- function(id) {
   ) # close tagList
 }
 
-leagueStandingsServer <- function(id) {
+#' @export
+server <- function(id) {
   moduleServer(
     id,
     function(input, output, session) {
