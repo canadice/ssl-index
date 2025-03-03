@@ -66,14 +66,18 @@ ui <- function(id) {
         tags$a(
           href='https://forum.simulationsoccer.com',
           target="_blank",
-          tags$img(src='static/portalblack.png', height = "70")
+          tags$img(src = 'static/portalblack.png', height = "70")
+        ),
+        tags$li(
+          a("Player")
         ),
         tags$li(
           a("Index", href = route_link("index/")),
           a("Records", href = route_link("index/records")),
           a("Standings", href = route_link("index/standings")),
-          a("Schedule", href = route_link("index/schedule"))
-          ### TODO ADD SUBLINKS FROM THE OLD INDEX MENU
+          a("Schedule", href = route_link("index/schedule")),
+          a("Academy", href = route_link("index/academy"))
+          ### TODO PUT THESE IN A DROPDOWN
         ),
         tags$li(
           "Jobs"

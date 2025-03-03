@@ -15,62 +15,72 @@ box::use(
   app/logic/ui/reactableHelper[recordReactable, indexReactable],
 )
 
-academyIndexUI <- function(id) {
-  ns <- NS(id)
-  tagList(
-    fluidPage(
-      ## First row
-      fluidRow(
-        column(
-          width = 4,
-          selectInput(
+#' @export
+ui <- function(id) {
+  ns <- shiny$NS(id)
+  shiny$tagList(
+    bslib$card(
+      bslib$card_header(
+        bslib$layout_columns(
+          colwidths = c(4, 6, 2),
+          shiny$selectInput(
             inputId = ns("selectedSeason"),
             label = "Select a season",
             choices = 
-              13:currentSeason$season |> 
-              sort(decreasing = TRUE)
-          )
+              c(
+                13:constant$currentSeason$season |> 
+                  sort(decreasing = TRUE)
+              )
+          ),
+          "",
+          ""
         )
       ),
-      ## Second row
-      fluidRow(
-        h1("Outfield"),
-        tabsetPanel(
-          tabPanel("Statistics",
-                   reactableOutput(ns("outfieldBasic")) |> 
-                     withSpinnerMedium()),
-          tabPanel("Adv. Statistics",
-                   reactableOutput(ns("outfieldAdvanced")) |> 
-                     withSpinnerMedium()))
+      bslib$card_body(
+        shiny$tabsetPanel(
+          header = shiny$h1("Outfield"),
+          shiny$tabPanel("Statistics",
+                         reactableOutput(ns("outfieldBasic")) |> 
+                           withSpinnerCustom(height = 80)),
+          shiny$tabPanel("Adv. Statistics",
+                         reactableOutput(ns("outfieldAdvanced")) |> 
+                           withSpinnerCustom(height = 80)),
+          shiny$tabPanel("Leaders",
+                         shiny$uiOutput(ns("outfieldLeaders")) |> 
+                           withSpinnerCustom(height = 80))
         ),
-      fluidRow(
-        h1("Keeper"),
-        tabsetPanel(
-          tabPanel("Statistics",
-                   reactableOutput(ns("keeperBasic")) |> 
-                     withSpinnerMedium()),
-          tabPanel("Adv. Statistics",
-                   reactableOutput(ns("keeperAdvanced")) |> 
-                     withSpinnerMedium()))
+        shiny$tabsetPanel(
+          header = shiny$h1("Keeper"),
+          shiny$tabPanel("Statistics",
+                         reactableOutput(ns("keeperBasic")) |> 
+                           withSpinnerCustom(height = 80)),
+          shiny$tabPanel("Adv. Statistics",
+                         reactableOutput(ns("keeperAdvanced")) |> 
+                           withSpinnerCustom(height = 80)),
+          shiny$tabPanel("Leaders",
+                         shiny$uiOutput(ns("keeperLeaders")) |> 
+                           withSpinnerCustom(height = 80))
         )
-    ) # close fluidpage
-  ) # close tagList
+      )
+    )
+  )
 }
 
-academyIndexServer <- function(id) {
-  moduleServer(
+#' @export
+server <- function(id) {
+  shiny$moduleServer(
     id,
     function(input, output, session) {
 
       #### DATA GENERATION ####
-      outfieldData <- reactive({
-        req(input$selectedSeason)
+      outfieldData <- shiny$reactive({
+        shiny$req(input$selectedSeason)
         readAPI("https://api.simulationsoccer.com/index/academyOutfield", query = list(season = input$selectedSeason)) |> 
           future_promise()
       })
       
-      keeperData <- reactive({
-        req(input$selectedSeason)
+      keeperData <- shiny$reactive({
+        shiny$req(input$selectedSeason)
         readAPI("https://api.simulationsoccer.com/index/academyKeeper", query = list(season = input$selectedSeason)) |> 
           future_promise()
       })
@@ -82,7 +92,7 @@ academyIndexServer <- function(id) {
             onFulfilled = function(data){
               currentData <- 
                 data |> 
-                select(
+                dplyr$select(
                   name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
                 ) 
               
@@ -99,7 +109,7 @@ academyIndexServer <- function(id) {
             onFulfilled = function(data){
               currentData <- 
                 data |> 
-                select(
+                dplyr$select(
                   name:club, 
                   xg,
                   xa:`fk shots`,
@@ -120,7 +130,7 @@ academyIndexServer <- function(id) {
             onFulfilled = function(data){
               currentData <- 
                 data |> 
-                select(
+                dplyr$select(
                   name:`save%`
                 ) 
               
@@ -137,7 +147,7 @@ academyIndexServer <- function(id) {
             onFulfilled = function(data){
               currentData <- 
                 data |> 
-                select(
+                dplyr$select(
                   name:club, 
                   `penalties faced`:`xg prevented`
                 ) 

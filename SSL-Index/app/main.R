@@ -13,6 +13,7 @@ box::use(
   app/view/navigationBar,
   app/view/index/standings,
   app/view/index/schedule,
+  app/view/index/academyIndex,
 )
 
 
@@ -32,7 +33,8 @@ ui <- function(id) {
       route("index/records", careerRecords$ui(ns("records"))),
       route("index/", leagueIndex$ui(ns("league"))),
       route("index/standings", standings$ui(ns("standings"))),
-      route("index/schedule", schedule$ui(ns("schedule")))
+      route("index/schedule", schedule$ui(ns("schedule"))),
+      route("index/academy", academyIndex$ui(ns("academy")))
     )
   )
 }
@@ -62,7 +64,7 @@ server <- function(id) {
     ## In order to load pages as they are clicked ONCE this is needed
     loadedServer <- 
       shiny$reactiveValues(
-        create = FALSE, player = FALSE, index = FALSE, academyIndex = FALSE, uploadGame = FALSE,
+        create = FALSE, player = FALSE, index = FALSE, academy = FALSE, uploadGame = FALSE,
         bankOverview = FALSE, welcome = FALSE, records = FALSE, playerPages = FALSE, contractProcess = FALSE,
         tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
         standings = FALSE, schedule = FALSE, managerTeam = FALSE, assignManager = FALSE,
@@ -86,6 +88,9 @@ server <- function(id) {
       } else if(current == "index/schedule" & !loadedServer$schedule){
         schedule$server("schedule")
         loadedServer$schedule <- TRUE
+      } else if(current == "index/academy" & !loadedServer$academy){
+        academyIndex$server("academy")
+        loadedServer$academy <- TRUE
       }
     }) |> 
       shiny$bindEvent(session$clientData$url_hash)
