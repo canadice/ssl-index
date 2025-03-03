@@ -13,7 +13,7 @@ box::use(
 )
 
 #' @export
-clubLogos <- function(value, index){
+clubLogos <- function(value, index, currentData){
     Club <- currentData |> 
       dplyr$select(club) |> 
       dplyr$slice(index) |> 
@@ -81,52 +81,10 @@ recordReactable <- function(currentData){
           name = colDef(
             name = "PLAYER",
             maxWidth = 1000,
-            cell = 
-              function(value, index){
-                Club <- currentData |> 
-                  dplyr$select(club) |> 
-                  dplyr$slice(index) |> 
-                  c()
-                
-                if(Club |> str_detect(",")){
-                  clubs <- str_split(Club, pattern = ",", simplify = TRUE) |> 
-                    c() |> 
-                    str_trim() |> 
-                    rev()
-                  
-                  list <- 
-                    tagList(
-                      lapply(
-                        clubs,
-                        function(X){
-                          div(
-                            style = "display: inline-block; width: 25px;", 
-                            img(src = sprintf("static/logo/%s.png", X), style = "height: 25px;", alt = X, title = X) 
-                          )
-                        }
-                      )
-                    )
-                  
-                } else {
-                  # file.exists(sprintf("%s.png", Club)) |> print()
-                  
-                  image <- img(src = sprintf("static/logo/%s.png", Club), style = "height: 25px;", alt = Club, title = Club)  
-                  
-                  list <- 
-                    tagList(
-                      div(style = "display: inline-block; width: 25px;", image)
-                    )
-                }
-                
-                tagList(
-                  div(
-                    class = "tableClubName",
-                    span(value),
-                    div(list)
-                  )
-                )
-              }
-          ),
+            cell = function(value, index){
+              clubLogos(value, index, currentData)
+            }
+            ),
           club = colDef(show = FALSE,searchable = TRUE),
           RANK = colDef(width = 60)
         ) |> 
@@ -171,7 +129,9 @@ indexReactable <- function(currentData){
             minWidth = 250,
             class = "stickyReactableColumn",
             headerClass = "stickyReactableHeader",
-            cell = clubLogos(value, index)
+            cell = function(value, index){
+              clubLogos(value, index, currentData)
+            }
           ),
           club = 
             colDef(
@@ -185,7 +145,7 @@ indexReactable <- function(currentData){
               ..1 =
                 colDef(
                   header =
-                    tippy(..1 |> str_to_upper(), ..2, placement = "top", theme = "material"),
+                    tippy(..1 |> str_to_upper(), ..2, placement = "top", theme = "ssl"),
                   html = TRUE
                 )
             }
