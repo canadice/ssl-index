@@ -70,7 +70,8 @@ ui <- function(id) {
         ),
         tags$li(
           a("Index", href = route_link("index/")),
-          a("Records", href = route_link("index/records"))
+          a("Records", href = route_link("index/records")),
+          a("Standings", href = route_link("index/standings"))
           ### TODO ADD SUBLINKS FROM THE OLD INDEX MENU
         ),
         tags$li(
@@ -79,9 +80,6 @@ ui <- function(id) {
         ),
         tags$li(
           a("Intro", href = route_link("/"))
-        ),
-        tags$li(
-          a("Chart", href = route_link("chart"))
         )
       )
     ),
