@@ -71,13 +71,24 @@ ui <- function(id) {
         tags$li(
           a("Player")
         ),
-        tags$li(
-          a("Index", href = route_link("index/")),
-          a("Records", href = route_link("index/records")),
-          a("Standings", href = route_link("index/standings")),
-          a("Schedule", href = route_link("index/schedule")),
-          a("Academy", href = route_link("index/academy"))
-          ### TODO PUT THESE IN A DROPDOWN
+        div(
+          class = "nav-toggle",
+          style = "color: black;",
+          tagList(
+            tags$span("Index Nav"),
+            div(
+              class = "nav-toggle_items",
+              flexCol(
+                tagList(
+                  a("Index", href = route_link("index/")),
+                  a("Records", href = route_link("index/records")),
+                  a("Standings", href = route_link("index/standings")),
+                  a("Schedule", href = route_link("index/schedule")),
+                  a("Academy", href = route_link("index/academy"))
+                )
+              )
+            )
+          )
         ),
         tags$li(
           "Jobs"
