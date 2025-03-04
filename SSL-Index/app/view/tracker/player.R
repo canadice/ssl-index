@@ -1,10 +1,11 @@
 box::use(
   bslib,
   dplyr,
-  lubridate[as_date, floor_date, today],
+  lubridate[as_date, as_datetime, floor_date, today],
   plotly,
-  promises[future_promise, then],
+  promises[future_promise, then, promise_all],
   reactable[colDef, colFormat, reactable, reactableOutput, renderReactable],
+  rlang[is_empty],
   shiny,
   shiny.router[get_query_param, change_page],
   stringr[str_remove, str_split, str_to_upper],
@@ -15,8 +16,8 @@ box::use(
 box::use(
   app/logic/constant,
   app/logic/db/api[readAPI],
-  app/logic/db/get[getUpdateHistory, getTpeHistory],
-  app/logic/ui/reactableHelper[recordReactable, indexReactable],
+  app/logic/db/get[getBankHistory, getUpdateHistory, getTpeHistory],
+  app/logic/ui/reactableHelper[attributeReactable, recordReactable],
   app/logic/ui/selector[leagueSelectInput],
   app/logic/ui/spinner[withSpinnerCustom],
   app/logic/ui/tags[flexCol, flexRow],
@@ -76,7 +77,7 @@ ui <- function(id) {
           ),
           bslib$card(
             bslib$card_header(
-              shiny$h3("Player Attributes")
+              shiny$h3("TPE Progression")
             ),
             bslib$card_body(
               plotly$plotlyOutput(ns("tpeProgression"))
@@ -110,14 +111,7 @@ server <- function(id) {
         future_promise()
     })
     
-    allPlayers <- shiny$reactive({
-      readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |> 
-        dplyr$select(name, pid, username, team, status_p) |> 
-        future_promise()
-    })
-    
-    historyTPE <- 
-      shiny$reactive({
+    historyTPE <- shiny$reactive({
         shiny$req(input$selectedPlayer)
         pid <- input$selectedPlayer |> 
           as.numeric()
@@ -125,26 +119,11 @@ server <- function(id) {
         getTpeHistory(pid)
       })
     
-    historyUpdates <- 
-      shiny$reactive({
-        shiny$req(input$selectedPlayer)
-        pid <- input$selectedPlayer |> 
-          as.numeric()
-        
-        getUpdateHistory(pid)
-      })
-    
-    historyBank <- 
-      shiny$reactive({
-        shiny$req(input$selectedPlayer)
-        pid <- input$selectedPlayer |> 
-          as.numeric()
-        
-        readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
-                query = list(pid = pid)
-        ) |> 
-          future_promise()
-      })
+    allPlayers <- shiny$reactive({
+      readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |> 
+        dplyr$select(name, pid, username, team, status_p) |> 
+        future_promise()
+    })
     
     query <- shiny$reactive({
       shiny$req(allPlayers())
@@ -226,6 +205,46 @@ server <- function(id) {
               )
             })
             
+            output[["matchStatistics"]] <- renderReactable({
+              if (data$pos_gk == 20){
+                matches <- 
+                  readAPI(
+                    url = "https://api.simulationsoccer.com/index/keeperGameByGame", 
+                    query = list(name = data$name)
+                  ) 
+                
+                if (!(matches |> is_empty())){
+                  matches <- 
+                    matches |> 
+                    dplyr$select(1:8) 
+                }
+              } else {
+                matches <- 
+                  readAPI(
+                    url = "https://api.simulationsoccer.com/index/outfieldGameByGame", 
+                    query = list(name = data$name)
+                  )
+                
+                if (!(matches |> is_empty())){
+                  matches <- 
+                    matches |> 
+                    dplyr$select(1:10) 
+                }
+              }
+              
+              if (!(matches |> is_empty())){
+                matches |> 
+                  dplyr$slice_head(n = 5) |> 
+                  recordReactable()
+              } else {
+                NULL
+              }
+            })
+            
+            output[["playerAttributes"]] <- shiny$renderUI({
+              attributeReactable(data, session, output)
+            })
+            
             output[["playerInfo"]] <- shiny$renderUI({
               value <- 
                 data |> 
@@ -280,7 +299,7 @@ server <- function(id) {
                 then(
                   onFulfilled = function(tpe){
                     if(nrow(tpe) < 2){
-                      plotly$plot_ly() |>
+                      plotly$plot_ly(mode = "markers", type = "scatter") |>
                         plotly$add_annotations(
                           text = "The player has had no TPE<br>progression in the Portal",
                           x = 0.5, y = 0.5,
@@ -377,6 +396,58 @@ server <- function(id) {
                           displaylogo = FALSE  # Remove Plotly logo
                         )
                     }
+                  }
+                )
+            })
+            
+            output[["playerHistory"]] <- shiny$renderUI({
+              tpe <- 
+              bank <- getBankHistory(data$pid)
+              update <- getUpdateHistory(data$pid)
+              
+              promise_all(
+                tpe = historyTPE(),
+                bank = getBankHistory(data$pid),
+                updates = getUpdateHistory(data$pid)
+              ) |> 
+                then(
+                  onFulfilled = function(list){
+                    shiny$tabsetPanel(
+                      shiny$tabPanel(
+                        title = "TPE History",
+                        list$tpe |> 
+                          dplyr$mutate(Time = as_datetime(Time)) |> 
+                          reactable(
+                            columns = 
+                              list(
+                                Time = colDef(format = colFormat(datetime = TRUE))
+                              )
+                          )
+                      ), 
+                      shiny$tabPanel(
+                        title = "Update History",
+                        list$updates |> 
+                          dplyr$mutate(Time = as_datetime(Time)) |> 
+                          reactable(
+                            columns = 
+                              list(
+                                Time = colDef(format = colFormat(datetime = TRUE))
+                              )
+                          )
+                      ),
+                      shiny$tabPanel(
+                        title = "Bank History",
+                        list$bank |> 
+                          dplyr$mutate(Time = as_datetime(Time)) |> 
+                          reactable(
+                            columns = 
+                              list(
+                                Time = colDef(format = colFormat(datetime = TRUE)),
+                                Transaction = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
+                              )
+                          )
+                      )
+                    )
                   }
                 )
             })
