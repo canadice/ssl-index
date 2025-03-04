@@ -1,18 +1,18 @@
 box::use(
-  dplyr,
   bslib,
+  dplyr,
   promises[future_promise, then],
-  reactable[reactable, reactableOutput, renderReactable],
+  reactable[reactableOutput, renderReactable],
   shiny,
 )
 
 box::use(
-  app/logic/ui/spinner[withSpinnerCustom],
   app/logic/constant,
   app/logic/db/api[readAPI],
-  app/logic/ui/tags[flexRow, flexCol],
-  app/logic/ui/selector[leagueSelectInput],
   app/logic/ui/reactableHelper[recordReactable, indexReactable],
+  app/logic/ui/selector[leagueSelectInput],
+  app/logic/ui/spinner[withSpinnerCustom],
+  app/logic/ui/tags[flexCol, flexRow],
 )
 
 #' @export
@@ -26,9 +26,9 @@ ui <- function(id) {
           shiny$selectInput(
             inputId = ns("selectedSeason"),
             label = "Select a season",
-            choices = 
+            choices =
               c(
-                1:constant$currentSeason$season |> 
+                1:constant$currentSeason$season |>
                   sort(decreasing = TRUE),
                 "ALL"
               )
@@ -41,26 +41,26 @@ ui <- function(id) {
         shiny$tabsetPanel(
           header = shiny$h1("Outfield"),
           shiny$tabPanel("Statistics",
-                   reactableOutput(ns("outfieldBasic")) |> 
-                     withSpinnerCustom(height = 80)),
+                         reactableOutput(ns("outfieldBasic")) |> 
+                           withSpinnerCustom(height = 80)),
           shiny$tabPanel("Adv. Statistics",
-                   reactableOutput(ns("outfieldAdvanced")) |> 
-                     withSpinnerCustom(height = 80)),
+                         reactableOutput(ns("outfieldAdvanced")) |> 
+                           withSpinnerCustom(height = 80)),
           shiny$tabPanel("Leaders",
-                   shiny$uiOutput(ns("outfieldLeaders")) |> 
-                     withSpinnerCustom(height = 80))
+                         shiny$uiOutput(ns("outfieldLeaders")) |> 
+                           withSpinnerCustom(height = 80))
         ),
         shiny$tabsetPanel(
           header = shiny$h1("Keeper"),
           shiny$tabPanel("Statistics",
-                   reactableOutput(ns("keeperBasic")) |> 
-                     withSpinnerCustom(height = 80)),
+                         reactableOutput(ns("keeperBasic")) |> 
+                           withSpinnerCustom(height = 80)),
           shiny$tabPanel("Adv. Statistics",
-                   reactableOutput(ns("keeperAdvanced")) |> 
-                     withSpinnerCustom(height = 80)),
+                         reactableOutput(ns("keeperAdvanced")) |> 
+                           withSpinnerCustom(height = 80)),
           shiny$tabPanel("Leaders",
-                   shiny$uiOutput(ns("keeperLeaders")) |> 
-                     withSpinnerCustom(height = 80))
+                         shiny$uiOutput(ns("keeperLeaders")) |> 
+                           withSpinnerCustom(height = 80))
         )
       )
     )

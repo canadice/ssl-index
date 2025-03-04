@@ -68,10 +68,16 @@ ui <- function(id) {
           target="_blank",
           tags$img(src = 'static/portalblack.png', height = "70")
         ),
+        uiOutput(ns("yourPlayer")),
         tags$li(
-          a("Player")
+          "Trackers",
+          a("Players", href = route_link("tracker/player")),
+          a("Organizations", href = route_link("tracker/organization")),
+          a("Draft Class", href = route_link("tracker/draftclass"))
+          ### TODO PUT THESE IN A DROPDOWN
         ),
         tags$li(
+          "Index",
           a("Index", href = route_link("index/")),
           a("Records", href = route_link("index/records")),
           a("Standings", href = route_link("index/standings")),
@@ -79,10 +85,7 @@ ui <- function(id) {
           a("Academy", href = route_link("index/academy"))
           ### TODO PUT THESE IN A DROPDOWN
         ),
-        tags$li(
-          "Jobs"
-          ### TODO ADD SUBLINKS FROM THE OLD INDEX MENU
-        ),
+        uiOutput(ns("jobsNavigation")),
         tags$li(
           a("Intro", href = route_link("/"))
         )
@@ -123,6 +126,35 @@ ui <- function(id) {
 #' @export
 server <- function(id, auth, resAuth) {
   moduleServer(id, function(input, output, session) {
+    
+    ### Output
+    output$jobsNavigation <- renderUI({
+      if(any(c(3, 4, 8, 11, 12, 14, 15) %in% auth()$usergroup)){
+        tags$li(
+          "Jobs",
+          ### TODO MAKE ALL THESE SUBLINKS INTO ANOTHER DROPDOWN IN A DROPDOWN
+          if(any(c(4, 3, 14) %in% auth()$usergroup)){
+            tags$li(
+              "File Work",
+              a("Build Exports", href = route_link("filework/export")),
+              a("Index Imports", href = route_link("filework/import")),
+              a("Edit Schedule", href = route_link("filework/schedule"))  
+            )
+          }
+          ### TODO ADD SUBLINKS FROM THE OLD PORTAL MENU
+        )
+      } 
+    }) |> 
+      bindEvent(auth())
+    
+    output$yourPlayer <- renderUI({
+      tags$li(
+        a("Player", href = route_link("myPlayer"))
+      )
+    }) |> 
+      bindEvent(auth())
+    
+    ### Observers
     # Checks saved cookie for automatic login
     observe({
       refreshtoken <- getRefreshToken(input$cookies$token)

@@ -1,7 +1,7 @@
 box::use(
   dplyr,
   shiny[tagList, div, img, span],
-  reactable[reactable, colDef],
+  reactable[reactable, colDef, colFormat],
   stringr[str_detect, str_split, str_to_upper, str_trim],
   tippy[tippy],
   stats[setNames],
@@ -154,4 +154,27 @@ indexReactable <- function(currentData){
             Filter(f = Negate(is.null), x = _)
         ) 
     )
+}
+
+#' @export
+orgReactable <- function(data){
+  reactable(
+    data,
+    defaultColDef = colDef(header = function(value){str_to_upper(value)}),
+    pagination = FALSE,
+    columns = list(
+      bankBalance = colDef(width = 120, format = colFormat(digits = 0, separators = TRUE, currency = "USD")),
+      team = colDef(show = FALSE),
+      affiliate = colDef(show = FALSE),
+      name = colDef(width = 150, cell = function(value) tippy(value, tooltip = value, theme = "ssl")),
+      username = colDef(width = 120, cell = function(value) tippy(value, tooltip = value, theme = "ssl")),
+      discord = colDef(width = 120, cell = function(value) tippy(value, tooltip = value, theme = "ssl")),
+      render = colDef(width = 150, cell = function(value) tippy(value, tooltip = value, theme = "ssl")),
+      class = colDef(width = 75),
+      tpe = colDef(width = 50),
+      tpebank = colDef(width = 75),
+      userStatus = colDef(width = 125),
+      playerStatus = colDef(width = 140)
+    )
+  )
 }
