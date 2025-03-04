@@ -80,11 +80,11 @@ ui <- function(id) {
               class = "nav-toggle_items",
               flexCol(
                 tagList(
-                  a("Index", href = route_link("index/")),
-                  a("Records", href = route_link("index/records")),
-                  a("Standings", href = route_link("index/standings")),
-                  a("Schedule", href = route_link("index/schedule")),
-                  a("Academy", href = route_link("index/academy"))
+                  div(a("Index", href = route_link("index/"))),
+                  div(a("Records", href = route_link("index/records"))),
+                  div(a("Standings", href = route_link("index/standings"))),
+                  div(a("Schedule", href = route_link("index/schedule"))),
+                  div(a("Academy", href = route_link("index/academy")))
                 )
               )
             )

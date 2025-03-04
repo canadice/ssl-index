@@ -215,7 +215,16 @@ h1, h2, h3, h4, h5 {
   height: 80px; 
 }
 
+$navbar-label-height: 24;
+
 .nav-toggle {
+  position: relative;
+  z-index: 100;
+
+  span {
+    height: $navbar-label-height;
+  }
+
   &:hover .nav-toggle_items {
     display: block;
   }
@@ -223,6 +232,37 @@ h1, h2, h3, h4, h5 {
 
 .nav-toggle_items {
   display: none;
+  background: white;
+  position: absolute;
+  top: $navbar-label-height;
+  left: 0;
+  -moz-box-shadow: 0 0 2px black;
+  -webkit-box-shadow: 0 0 2px black;
+  box-shadow: 0 0 2px black;
+
+  div {
+    color: black;
+
+    div {
+      border-bottom: 1px solid black;
+      padding: 8px;
+    }
+  
+    div:hover {
+      background: #f0f0f0;
+      cursor: pointer;
+      color: gray;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 }
 
 /* Fixes so that the sidebar menus are visible from the first item regardless of the split of the nav-bar */
