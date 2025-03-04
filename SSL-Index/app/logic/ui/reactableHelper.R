@@ -1,11 +1,13 @@
 box::use(
+  bslib[layout_column_wrap],
   dplyr,
-  shiny[tagList, div, img, span],
-  reactable[reactable, colDef, colFormat],
-  stringr[str_detect, str_split, str_to_upper, str_trim],
+  shiny[tagList, div, img, span, h4],
+  reactable[reactable, reactableOutput, renderReactable, colDef, colFormat],
+  stringr[str_detect, str_split, str_to_title, str_to_upper, str_trim],
+  tidyr[pivot_longer],
   tippy[tippy],
   stats[setNames],
-  purrr[pmap],
+  purrr[map, pmap],
 )
 
 box::use(
@@ -86,7 +88,10 @@ recordReactable <- function(currentData){
             }
             ),
           club = colDef(show = FALSE,searchable = TRUE),
-          RANK = colDef(width = 60)
+          RANK = colDef(width = 60),
+          matchday = 
+            colDef(header = "MATCHDAY",
+                   width = 100)
         ) |> 
         append(
           pmap(statisticsTooltips, ~ {
@@ -177,4 +182,93 @@ orgReactable <- function(data){
       playerStatus = colDef(width = 140)
     )
   )
+}
+
+#' @export
+attributeReactable <- function(data, session, output){
+  processedData <- 
+    data |> 
+    dplyr$select(acceleration:throwing) |> 
+    dplyr$select(
+      dplyr$where(~ !is.na(.x))
+    ) |> 
+    pivot_longer(
+      cols = dplyr$everything(),
+      values_to = "Value",
+      names_to = "Attribute"
+    ) |> 
+    dplyr$mutate(
+      Attribute = str_to_title(Attribute)
+    ) |> 
+    dplyr$left_join(
+      constant$attributes,
+      by = c("Attribute" = "attribute")
+    ) |> 
+    dplyr$mutate(
+      Attribute = factor(Attribute, levels = sort(Attribute |> unique(), decreasing = TRUE)),
+      group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
+      ValueFill = dplyr$case_when(
+        Value >= 18 ~ 1,
+        Value >= 13 ~ 2,
+        Value >= 10 ~ 3,
+        TRUE ~ 5
+      ) |> factor()
+    ) |> 
+    dplyr$filter(
+      if (data$pos_gk == 20){
+        (group %in% c("Goalkeeper", "Technical") & keeper == "TRUE") | (group %in% c("Physical", "Mental"))
+      } else {
+        group %in% c("Physical", "Mental", "Technical")
+      }
+    )
+  
+  map(
+    .x = processedData$group |> unique() |> sort(),
+    .f = function(chosenGroup){
+      output[[chosenGroup]] <- renderReactable({
+        temp <- 
+          processedData |> 
+          dplyr$filter(
+            group == chosenGroup
+          )
+        
+        temp |> 
+          dplyr$select(Attribute, Value) |> 
+          reactable(
+            defaultColDef = colDef(
+              style = function(value, index){
+                color <- dplyr$if_else(temp$ValueFill[index] == 1, constant$green, 
+                                       dplyr$if_else(temp$ValueFill[index] == 2, constant$yellow, 
+                                                     dplyr$if_else(temp$ValueFill[index] == 3, "#ffffff", "#B6B6B6")
+                                 )
+                )
+                list(background = color, color = "black")
+              }
+            ),
+            columns = list(
+              Value = colDef(name = "", width = 40)
+            ),
+            pagination = FALSE,
+            sortable = FALSE
+          )
+      })
+    }
+  )
+  
+  layout_column_wrap(
+    width = 1/length(processedData$group |> unique()),
+    class = "attributeTables",
+    map(
+      .x = processedData$group |> unique() |> sort(),
+      .f = function(chosenGroup){
+        tagList(
+          h4(chosenGroup),
+          reactableOutput(session$ns(chosenGroup)) 
+        )
+      }
+    ) |> 
+      unlist(recursive = FALSE)
+  )
+  ### TODO Make this move three columns and not be in one column
+  
 }
