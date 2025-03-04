@@ -5,6 +5,7 @@ box::use(
 )
 
 box::use(
+  app/logic/db/api[readAPI],
   app/logic/db/database[portalQuery],
 )
 
@@ -54,6 +55,14 @@ getTpeHistory <- function(pid){
         as.numeric() |> 
         lubridate$as_datetime(tz = "US/Pacific")
     ) |> 
+    future_promise()
+}
+
+#' @export
+getBankHistory <- function(pid){
+  readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
+          query = list(pid = pid)
+  ) |> 
     future_promise()
 }
 
