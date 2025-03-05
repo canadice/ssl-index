@@ -189,16 +189,19 @@ getChangedBuilds <- function(){
     as.numeric() %>% 
     {. - 604800}
   
+  
   portalQuery(
     paste(
-      "SELECT t.name AS teamName, pd.*, uh.attribute as Attribute, uh.old, uh.new
+      "SELECT t.name AS teamName, wb.*, uh.attribute as Attribute, uh.old, uh.new
         FROM playerdata pd
+        LEFT JOIN weeklybuilds wb ON pd.pid = wb.pid
         JOIN updatehistory uh ON pd.pid = uh.pid
         LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
         WHERE uh.Time < ", weekEnd, " AND uh.Time > ", weekStart," AND uh.uid <> 1;"
     )
-  ) %>% 
+  ) |> 
     future_promise()
+    
 }
 
 getPlayerStatus <- function(playerID){
