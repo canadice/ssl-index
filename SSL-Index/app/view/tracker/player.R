@@ -17,7 +17,6 @@ box::use(
   app/logic/db/api[readAPI],
   app/logic/db/get[getBankHistory, getUpdateHistory, getTpeHistory],
   app/logic/ui/reactableHelper[attributeReactable, recordReactable],
-  app/logic/ui/selector[leagueSelectInput],
   app/logic/ui/spinner[withSpinnerCustom],
   app/logic/ui/tags[flexCol, flexRow],
 )
@@ -25,21 +24,38 @@ box::use(
 #' @export
 ui <- function(id) {
   ns <- shiny$NS(id)
-  
+
   shiny$tagList(
     bslib$card(
       bslib$card_header(
         bslib$layout_column_wrap(
           width = NULL,
           style = bslib$css(grid_template_columns = "1fr 2fr 3fr"),
-          shiny$uiOutput(ns("selectPlayer")),
-          shiny$uiOutput(ns("filterPlayer")),
+          shiny$selectInput(
+            ns("selectedPlayer"), 
+            "Select Player", 
+            choices = NULL
+          ),
+          shiny$tagList(
+            shiny$radioButtons(
+              ns("retired"), 
+              label = "Include retired: ", 
+              choices = c("Yes" = 1, "No" = 0), 
+              inline = TRUE
+            ),
+            shiny$radioButtons(
+              ns("freeAgent"), 
+              label = "Include free agents: ", 
+              choices = c("Yes" = 1, "No" = 0), 
+              inline = TRUE
+            )
+          ),
           ""
         )
       ),
       bslib$card_body(
         bslib$layout_column_wrap(
-          width = 1/2,
+          width = 1 / 2,
           bslib$card(
             bslib$card_header(
               shiny$h3("Profile Information")
@@ -48,10 +64,13 @@ ui <- function(id) {
               bslib$layout_column_wrap(
                 width = NULL,
                 style = bslib$css(grid_template_columns = "3fr 1fr"),
-                shiny$uiOutput(ns("playerName")),
-                shiny$uiOutput(ns("clubLogo"), height = NULL)
+                shiny$uiOutput(ns("playerName")) |> 
+                  withSpinnerCustom(height = 20),
+                shiny$uiOutput(ns("clubLogo"), height = NULL) |> 
+                  withSpinnerCustom(height = 20)
               ),
-              shiny$uiOutput(ns("playerInfo"))
+              shiny$uiOutput(ns("playerInfo")) |> 
+                withSpinnerCustom(height = 40)
             )
           ),
           bslib$card(
@@ -59,7 +78,8 @@ ui <- function(id) {
               shiny$h3("Recent Match Statistics")
             ),
             bslib$card_body(
-              reactableOutput(ns("matchStatistics"))
+              reactableOutput(ns("matchStatistics")) |> 
+                withSpinnerCustom(height = 60)
             )
           )
         ),
@@ -71,7 +91,8 @@ ui <- function(id) {
               shiny$h3("Player Attributes")
             ),
             bslib$card_body(
-              shiny$uiOutput(ns("playerAttributes"))
+              shiny$uiOutput(ns("playerAttributes")) |> 
+                withSpinnerCustom(height = 60)
             )
           ),
           bslib$card(
@@ -79,7 +100,8 @@ ui <- function(id) {
               shiny$h3("TPE Progression")
             ),
             bslib$card_body(
-              plotly$plotlyOutput(ns("tpeProgression"))
+              plotly$plotlyOutput(ns("tpeProgression")) |> 
+                withSpinnerCustom(height = 60)
             )
           )
         ),
@@ -88,7 +110,8 @@ ui <- function(id) {
             shiny$h3("Player History")
           ),
           bslib$card_body(
-            shiny$uiOutput(ns("playerHistory"))
+            shiny$uiOutput(ns("playerHistory")) |> 
+              withSpinnerCustom(height = 60)
           )
         )
       )
@@ -99,29 +122,32 @@ ui <- function(id) {
 #' @export
 server <- function(id) {
   shiny$moduleServer(id, function(input, output, session) {
-    ### Data
-    playerData <- shiny$reactive({
-      shiny$req(input$selectedPlayer)
-      
-      pid <- input$selectedPlayer |> 
-        as.numeric()
-      
-      readAPI(url = "https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) |> 
-        future_promise()
-    })
-    
-    historyTPE <- shiny$reactive({
-        shiny$req(input$selectedPlayer)
-        pid <- input$selectedPlayer |> 
-          as.numeric()
-        
-        getTpeHistory(pid)
-      })
-    
+    #### Data ####
     allPlayers <- shiny$reactive({
       readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |> 
         dplyr$select(name, pid, username, team, status_p) |> 
         future_promise()
+    })
+    
+    playerData <- shiny$reactive({
+      pid <- input$selectedPlayer |>
+        as.numeric()
+      
+      readAPI(
+        url = "https://api.simulationsoccer.com/player/getPlayer",
+        query = list(pid = pid)
+      ) |>
+        future_promise()
+    }) |> 
+      shiny$bindEvent(input$selectedPlayer)
+  
+    historyTPE <- shiny$reactive({
+      shiny$req(input$selectedPlayer)
+      
+      pid <- input$selectedPlayer |>
+        as.numeric()
+      
+      getTpeHistory(pid)
     })
     
     query <- shiny$reactive({
@@ -136,64 +162,45 @@ server <- function(id) {
       }
     })
     
-    ### Output
-    output$selectPlayer <- shiny$renderUI({
-      shiny$req(input$retired, input$freeAgent)
-      
+    #### Output ####
+    
+    #### Observe ####
+    shiny$observe({
       allPlayers() |> 
         then(
           onFulfilled = function(names) {
             names <- 
               names |>
-              dplyr$filter(if(input$retired != 1) status_p > 0 else TRUE) |>
-              dplyr$filter(if(input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) |> 
+              dplyr$filter(if (input$retired != 1) status_p > 0 else TRUE) |>
+              dplyr$filter(if (input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) |> 
               dplyr$arrange(name)
             
             namedVector <- names$pid
             
             names(namedVector) <- names$name
             
-            shiny$selectInput(
-              session$ns("selectedPlayer"), 
-              "Select Player", 
-              choices = namedVector,
-              selected = query()
-            )
+            shiny$updateSelectInput(session = session, inputId = "selectedPlayer", choices = namedVector)
+            
+            change_page(paste0("tracker/player?pid=", names$pid[1]))
           }
         )
-    })
+    }) |> 
+      shiny$bindEvent(allPlayers())
     
-    output$filterPlayer <- shiny$renderUI({
-      shiny$tagList(
-        shiny$radioButtons(
-          session$ns("retired"), 
-          label = "Include retired: ", 
-          choices = c("Yes" = 1, "No" = 0), 
-          inline = TRUE
-        ),
-        shiny$radioButtons(
-          session$ns("freeAgent"), 
-          label = "Include free agents: ", 
-          choices = c("Yes" = 1, "No" = 0), 
-          inline = TRUE
-        )
-      )
-    })
-    
-    ### Observe
+    ### TODO WHAT IS UP WITH THIS NOT WORKING=!=!=!=?!?!?!?
     shiny$observe({
       shiny$req(input$selectedPlayer)
       
       playerData() |> 
         then(
           onFulfilled = function(data){
-            
             output[["playerName"]] <- shiny$renderUI({
               shiny$tagList(
                 shiny$h2(paste(data$name, paste0("(", data$class, ")"), sep = " ")),
                 shiny$h3(paste0("@", data$username))
               )
             })
+            
             
             output[["clubLogo"]] <- shiny$renderUI({
               shiny$img(
@@ -204,51 +211,15 @@ server <- function(id) {
               )
             })
             
-            output[["matchStatistics"]] <- renderReactable({
-              if (data$pos_gk == 20){
-                matches <- 
-                  readAPI(
-                    url = "https://api.simulationsoccer.com/index/keeperGameByGame", 
-                    query = list(name = data$name)
-                  ) 
-                
-                if (!(matches |> is_empty())){
-                  matches <- 
-                    matches |> 
-                    dplyr$select(1:8) 
-                }
-              } else {
-                matches <- 
-                  readAPI(
-                    url = "https://api.simulationsoccer.com/index/outfieldGameByGame", 
-                    query = list(name = data$name)
-                  )
-                
-                if (!(matches |> is_empty())){
-                  matches <- 
-                    matches |> 
-                    dplyr$select(1:10) 
-                }
-              }
-              
-              if (!(matches |> is_empty())){
-                matches |> 
-                  dplyr$slice_head(n = 5) |> 
-                  recordReactable()
-              } else {
-                NULL
-              }
-            })
-            
-            output[["playerAttributes"]] <- shiny$renderUI({
-              attributeReactable(data, session, output)
-            })
-            
             output[["playerInfo"]] <- shiny$renderUI({
               value <- 
                 data |> 
-                dplyr$select(contains("pos_")) |> 
-                pivot_longer(everything()) |> 
+                dplyr$select(
+                  dplyr$contains("pos_")
+                ) |> 
+                pivot_longer(
+                  dplyr$everything()
+                ) |> 
                 dplyr$mutate(
                   name = str_remove(name, pattern = "pos_") |> 
                     str_to_upper()
@@ -293,6 +264,46 @@ server <- function(id) {
               )
             })
             
+            output[["matchStatistics"]] <- renderReactable({
+              if (data$pos_gk == 20){
+                matches <- 
+                  readAPI(
+                    url = "https://api.simulationsoccer.com/index/keeperGameByGame", 
+                    query = list(name = data$name)
+                  ) 
+                
+                if (!(matches |> is_empty())){
+                  matches <- 
+                    matches |> 
+                    dplyr$select(1:8) 
+                }
+              } else {
+                matches <- 
+                  readAPI(
+                    url = "https://api.simulationsoccer.com/index/outfieldGameByGame", 
+                    query = list(name = data$name)
+                  )
+                
+                if (!(matches |> is_empty())){
+                  matches <- 
+                    matches |> 
+                    dplyr$select(1:10) 
+                }
+              }
+              
+              if (!(matches |> is_empty())){
+                matches |> 
+                  dplyr$slice_head(n = 5) |> 
+                  recordReactable()
+              } else {
+                NULL
+              }
+            })
+            
+            output[["playerAttributes"]] <- shiny$renderUI({
+              attributeReactable(data, session, output)
+            })
+            
             output[["tpeProgression"]] <- plotly$renderPlotly({
               historyTPE() |> 
                 then(
@@ -334,7 +345,7 @@ server <- function(id) {
                                          as_date(), 
                                        "week",
                                        week_start = 1)
-                          ) |> 
+                        ) |> 
                         dplyr$group_by(WeekStart) |> 
                         dplyr$summarize(total = sum(`TPE Change`, na.rm = TRUE)) |> 
                         complete(
@@ -346,19 +357,19 @@ server <- function(id) {
                                          "week", 
                                          week_start = 1),
                               by = "week"
-                              ),
+                            ),
                           fill = list(total = 0)
-                          ) |> 
+                        ) |> 
                         dplyr$ungroup() |> 
                         dplyr$mutate(cumulative = cumsum(total), 
-                                     week = 1:dplyr$n()) |> 
+                                     week = seq_len(dplyr$n())) |> 
                         suppressMessages()
                       
                       plotly$plot_ly(visData, hoverinfo = "text") |> 
-                        plotly$add_trace(x = ~week, y = ~cumulative, type = 'scatter', mode = 'markers+lines',
-                                  line = list(color = constant$sslGold),
-                                  marker = list(size = 5, color = constant$sslGold),
-                                  text = ~paste("Week:", week, "<br>TPE:", cumulative)
+                        plotly$add_trace(x = ~week, y = ~cumulative, type = "scatter", mode = "markers+lines",
+                                         line = list(color = constant$sslGold),
+                                         marker = list(size = 5, color = constant$sslGold),
+                                         text = ~paste("Week:", week, "<br>TPE:", cumulative)
                         ) |> 
                         plotly$layout(
                           title = list(
@@ -400,10 +411,6 @@ server <- function(id) {
             })
             
             output[["playerHistory"]] <- shiny$renderUI({
-              tpe <- 
-              bank <- getBankHistory(data$pid)
-              update <- getUpdateHistory(data$pid)
-              
               promise_all(
                 tpe = historyTPE(),
                 bank = getBankHistory(data$pid),
@@ -457,8 +464,8 @@ server <- function(id) {
     
     
     shiny$observe({
-      if(query() |> is.null()){
-        change_page(paste0("tracker/player?pid=", input$selectedPlayer))
+      if((query() |> is.null())){
+        # change_page(paste0("tracker/player?pid=", input$selectedPlayer))
       } else {
         if (input$selectedPlayer != query()){
           change_page(paste0("tracker/player?pid=", input$selectedPlayer))
