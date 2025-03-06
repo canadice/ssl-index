@@ -43,15 +43,15 @@ customCheckCredentials <- function(user, password, session = shiny::getDefaultRe
         digest$digest(
           res$salt, 
           algo = "md5", 
-          serialize = F
+          serialize = FALSE
         ), 
         digest$digest(
           password, 
           algo = "md5", 
-          serialize = F
+          serialize = FALSE
         ), 
         sep = "") |> 
-      digest$digest(algo = "md5", serialize = F)
+      digest$digest(algo = "md5", serialize = FALSE)
     
     if(saltedPASS != res$password) {
       list(result = FALSE)

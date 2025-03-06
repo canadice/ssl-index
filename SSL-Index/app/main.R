@@ -87,6 +87,7 @@ server <- function(id) {
     shiny$observe({
       current <- str_remove(session$clientData$url_hash,
                             pattern = "#!/")
+
       if (current == "index/records" & !loadedServer$records) {
         careerRecords$server("records")
         loadedServer$records <- TRUE
@@ -108,7 +109,7 @@ server <- function(id) {
       } else if (current == "tracker/draftclass" & !loadedServer$draftclass) {
         draftclass$server("draftclass")
         loadedServer$draftclass <- TRUE
-      } else if (current  |> str_detect("tracker/player") & !loadedServer$player) {
+      } else if (current |> str_detect("tracker/player") & !loadedServer$player) {
         player$server("player")
         loadedServer$player <- TRUE
       }

@@ -10,7 +10,7 @@ box::use(
 )
 
 #' @export
-getUpdateHistory <- function(pid){
+getUpdateHistory <- function(pid) {
   portalQuery(
     paste("SELECT 
             uh.time AS Time,
@@ -25,17 +25,17 @@ getUpdateHistory <- function(pid){
         WHERE 
             pid = ", pid, "
         ORDER BY Time DESC")
-  ) |> 
+  ) |>
     dplyr$mutate(
-      Time = Time |> 
-        as.numeric() |> 
+      Time = Time |>
+        as.numeric() |>
         lubridate$as_datetime(tz = "US/Pacific")
-    ) |> 
+    ) |>
     future_promise()
 }
 
 #' @export
-getTpeHistory <- function(pid){
+getTpeHistory <- function(pid) {
   portalQuery(
     paste("SELECT 
             tpeh.time AS Time,
@@ -49,20 +49,20 @@ getTpeHistory <- function(pid){
         WHERE 
             pid = ", pid, "
         ORDER BY time DESC")
-  ) |> 
+  ) |>
     dplyr$mutate(
-      Time = Time |> 
-        as.numeric() |> 
+      Time = Time |>
+        as.numeric() |>
         lubridate$as_datetime(tz = "US/Pacific")
-    ) |> 
+    ) |>
     future_promise()
 }
 
 #' @export
-getBankHistory <- function(pid){
-  readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
-          query = list(pid = pid)
-  ) |> 
+getBankHistory <- function(pid) {
+  readAPI(
+    "https://api.simulationsoccer.com/bank/getBankTransactions",
+    query = list(pid = pid)
+  ) |>
     future_promise()
 }
-

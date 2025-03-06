@@ -10,7 +10,6 @@ box::use(
   shiny.router[get_query_param, change_page],
   stringr[str_remove, str_split, str_to_upper],
   tidyr[complete, pivot_longer],
-  tippy[tippy],
 )
 
 box::use(
