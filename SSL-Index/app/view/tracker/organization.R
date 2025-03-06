@@ -2,7 +2,6 @@ box::use(
   dplyr,
   bslib,
   promises[future_promise, then],
-  reactable[reactable, reactableOutput, renderReactable],
   shiny,
 )
 
