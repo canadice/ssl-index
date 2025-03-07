@@ -63,7 +63,7 @@ jsonTraits <-
     "Likes To Round Keeper",
     "Likes To Try To Beat Offside Trap",
     "Uses Outside Of Foot",
-    "Marks Opponent Tightly", 
+    "Marks Opponent Tightly",
     "Winds Up Opponents",
     "Argues With Officials",
     "Plays With Back To Goal",

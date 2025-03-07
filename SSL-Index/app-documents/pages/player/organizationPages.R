@@ -16,27 +16,7 @@ organizationPagesServer <- function(id) {
     id,
     function(input, output, session) {
       
-      orgReactable <- function(data){
-        reactable(
-          data,
-          defaultColDef = colDef(header = function(value){str_to_upper(value)}),
-          pagination = FALSE,
-          columns = list(
-            bankBalance = colDef(width = 120, format = colFormat(digits = 0, separators = TRUE, currency = "USD")),
-            team = colDef(show = FALSE),
-            affiliate = colDef(show = FALSE),
-            name = colDef(width = 150, cell = function(value) tippy(value, tooltip = value, theme = "material")),
-            username = colDef(width = 120, cell = function(value) tippy(value, tooltip = value, theme = "material")),
-            discord = colDef(width = 120, cell = function(value) tippy(value, tooltip = value, theme = "material")),
-            render = colDef(width = 150, cell = function(value) tippy(value, tooltip = value, theme = "material")),
-            class = colDef(width = 75),
-            tpe = colDef(width = 50),
-            tpebank = colDef(width = 75),
-            userStatus = colDef(width = 125),
-            playerStatus = colDef(width = 140)
-          )
-        )
-      }
+      
       
       
       players <- reactive({
