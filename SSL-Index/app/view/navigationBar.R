@@ -159,12 +159,24 @@ server <- function(id, auth, resAuth) {
             div(
               class = "nav-toggle_items",
               flexCol(
-                # class = "nav-toggle",
                 tagList(
                   # if(any(c(4, 3, 14) %in% auth()$usergroup)){
-                    div(a("Build Exports", href = route_link("filework/export"))),
-                    div(a("Index Imports", href = route_link("filework/import"))),
-                    div(a("Edit Schedule", href = route_link("filework/schedule"))),
+                    div(
+                      tagList(
+                        tags$span("File Work"),
+                        div(
+                          class = "nav-toggle_sub-items",
+                          div(
+                            class = "nav-toggle_sub-items_list",
+                            tagList(
+                              div(a("Build Exports", href = route_link("filework/export"))),
+                              div(a("Index Imports", href = route_link("filework/import"))),
+                              div(a("Edit Schedule", href = route_link("filework/schedule"))),
+                            )
+                          )
+                        )
+                      )
+                    )
                   # }
                 )
               )

@@ -219,6 +219,7 @@ h1, h2, h3, h4, h5 {
 }
 
 $navbar-label-height: 48px;
+$navbar-items-width: 112px;
 
 .nav-toggle {
   display: flex;
@@ -251,18 +252,18 @@ $navbar-label-height: 48px;
   position: absolute;
   top: $navbar-label-height;
   left: 0;
-  width: max-content;
+  width: $navbar-items-width;
   -moz-box-shadow: 0 0 2px black;
   -webkit-box-shadow: 0 0 2px black;
   box-shadow: 0 0 2px black;
 
   div {
-    div {
+    div:not(.nav-toggle_sub-items):not(.nav-toggle_sub-items_list) {
       border-bottom: 1px solid black;
       padding: 8px;
     }
   
-    div:hover {
+    div:not(.nav-toggle_sub-items):not(.nav-toggle_sub-items_list):hover {
       background: #f0f0f0;
       cursor: pointer;
     }
@@ -270,6 +271,27 @@ $navbar-label-height: 48px;
     &:last-child {
       border-bottom: none;
     }
+  }
+
+  &:hover .nav-toggle_sub-items {
+    display: block;
+  }
+}
+
+.nav-toggle_sub-items {
+  display: none;
+  background: white;
+  position: absolute;
+  top: 0;
+  left: $navbar-items-width;
+  width: max-content;
+  -moz-box-shadow: 0 0 2px black;
+  -webkit-box-shadow: 0 0 2px black;
+  box-shadow: 0 0 2px black;
+
+  div {
+    display: flex;
+    flex-direction: column;
   }
 }
 
