@@ -1,5 +1,5 @@
 box::use(
-  shiny[div, span, tagList]
+  shiny[div, icon, span, tagList]
 )
 
 
@@ -21,7 +21,13 @@ navMenu <- function(cont, label = "", items = list()) {
     div(
       class = "nav-toggle",
       tagList(
-        span(label),
+        flexRow(
+          style = "align-items: center; gap: 4px;",
+          tagList(
+            span(label),
+            icon("caret-down")
+          )
+        ),
         if (length(items) > 0) {
           div(
             class = "nav-toggle_items",
@@ -44,7 +50,13 @@ navMenuItem <- function(cont, label = "", subItems = list()) {
   if (length(subItems) > 0) {
     div(
       tagList(
-        span(label),
+        flexRow(
+          style = "align-items: center; justify-content: space-between; gap: 4px;",
+          tagList(
+            span(label),
+            icon("caret-right")
+          )
+        ),
         div(
           class = "nav-toggle_sub-items",
           div(
