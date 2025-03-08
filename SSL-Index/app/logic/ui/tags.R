@@ -1,3 +1,7 @@
+box::use(
+  shiny[div, span, tagList]
+)
+
 
 #' @export
 flexCol <- function(cont, style = "") {
@@ -7,4 +11,54 @@ flexCol <- function(cont, style = "") {
 #' @export
 flexRow <- function(cont, style = "") {
   shiny::tag("div", varArgs = list(cont, class = "flex-row-wrapper", style = style))
+}
+
+#' @export
+navMenu <- function(cont, label = "", items = list()) {
+  if (!missing(cont) && label == "") {
+    shiny::tag("div", varArgs = list(cont, class = "nav-toggle"))
+  } else if (length(label) > 0) {
+    div(
+      class = "nav-toggle",
+      tagList(
+        span(label),
+        if (length(items) > 0) {
+          div(
+            class = "nav-toggle_items",
+            flexCol(
+              tagList(
+                tags_list <- lapply(items, function(item) {
+                  item
+                })
+              )
+            )
+          )
+        }
+      )
+    )
+  }
+}
+
+#' @export
+navMenuItem <- function(cont, label = "", subItems = list()) {
+  if (length(subItems) > 0) {
+    div(
+      tagList(
+        span(label),
+        div(
+          class = "nav-toggle_sub-items",
+          div(
+            class = "nav-toggle_sub-items_list",
+            tagList(
+              tags_list <- lapply(subItems, function(item) {
+                item
+              })
+            )
+          )
+        )
+      )
+    )
+  } else {
+    cont
+  }
 }

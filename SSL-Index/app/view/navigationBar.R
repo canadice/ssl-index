@@ -5,7 +5,7 @@ box::use(
 )
 
 box::use(
-  app/logic/ui/tags[flexCol, flexRow],
+  app/logic/ui/tags[flexCol, flexRow, navMenu, navMenuItem],
   app/logic/db/login[customCheckCredentials, getRefreshToken, setRefreshToken],
 )
 
@@ -71,45 +71,28 @@ ui <- function(id) {
             style = "margin-right: 12px;"
           ),
           uiOutput(ns("yourPlayer")),
-          div(
-            class = "nav-toggle",
-            tagList(
-              tags$span("Trackers"),
-              div(
-                class = "nav-toggle_items",
-                flexCol(
-                  tagList(
-                    div(a("Players", href = route_link("tracker/player"))),
-                    div(a("Organizations", href = route_link("tracker/organization"))),
-                    div(a("Draft Class", href = route_link("tracker/draftclass")))
-                  )
-                )
-              )
+          navMenu(
+            label = "Trackers",
+            items = list(
+              div(a("Players", href = route_link("tracker/player"))),
+              div(a("Organizations", href = route_link("tracker/organization"))),
+              div(a("Draft Class", href = route_link("tracker/draftclass")))
             )
           ),
-          div(
-            class = "nav-toggle",
-            tagList(
-              tags$span("Index"),
-              div(
-                class = "nav-toggle_items",
-                flexCol(
-                  tagList(
-                    div(a("Index", href = route_link("index/"))),
-                    div(a("Records", href = route_link("index/records"))),
-                    div(a("Standings", href = route_link("index/standings"))),
-                    div(a("Schedule", href = route_link("index/schedule"))),
-                    div(a("Academy", href = route_link("index/academy")))
-                  )
-                )
-              )
+          navMenu(
+            label = "Index",
+            items = list(
+              div(a("Index", href = route_link("index/"))),
+              div(a("Records", href = route_link("index/records"))),
+              div(a("Standings", href = route_link("index/standings"))),
+              div(a("Schedule", href = route_link("index/schedule"))),
+              div(a("Academy", href = route_link("index/academy")))
             )
           ),
           uiOutput(ns("jobsNavigation")),
-          div(
-            class = "nav-toggle",
+          navMenu(
             div(a("Intro", href = route_link("/")))
-          ),
+          )
         )
       )
     ),
@@ -151,45 +134,30 @@ server <- function(id, auth, resAuth) {
     
     ### Output
     output$jobsNavigation <- renderUI({
-      # if(any(c(3, 4, 8, 11, 12, 14, 15) %in% auth()$usergroup)){
-        div(
-          class = "nav-toggle",
-          tagList(
-            tags$span("Jobs"),
-            div(
-              class = "nav-toggle_items",
-              flexCol(
-                tagList(
-                  # if(any(c(4, 3, 14) %in% auth()$usergroup)){
-                    div(
-                      tagList(
-                        tags$span("File Work"),
-                        div(
-                          class = "nav-toggle_sub-items",
-                          div(
-                            class = "nav-toggle_sub-items_list",
-                            tagList(
-                              div(a("Build Exports", href = route_link("filework/export"))),
-                              div(a("Index Imports", href = route_link("filework/import"))),
-                              div(a("Edit Schedule", href = route_link("filework/schedule"))),
-                            )
-                          )
-                        )
-                      )
-                    )
-                  # }
-                )
+      if (any(c(3, 4, 8, 11, 12, 14, 15) %in% auth()$usergroup)) {
+        items <- list(
+          if (any(c(4, 3, 14) %in% auth()$usergroup)) {
+            navMenuItem(
+              label = "File Work",
+              subItems = list(
+                div(a("Build Exports", href = route_link("filework/export"))),
+                div(a("Index Imports", href = route_link("filework/import"))),
+                div(a("Edit Schedule", href = route_link("filework/schedule")))
               )
             )
-          )
+          }
         )
+        navMenu(
+          label = "Jobs",
+          items = items
+        )
+      }
     }) |> 
       bindEvent(auth())
     
     output$yourPlayer <- renderUI({
-      div(
-        class = "nav-toggle",
-        a("Player", href = route_link("myPlayer"))
+      navMenu(
+        div(a("Player", href = route_link("myPlayer")))
       )
     }) |> 
       bindEvent(auth())
