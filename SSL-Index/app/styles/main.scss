@@ -218,20 +218,26 @@ h1, h2, h3, h4, h5 {
   height: 80px; 
 }
 
-$navbar-label-height: 24;
+$navbar-label-height: 48px;
 
 .nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   z-index: 100;
   color: black;
+  padding: 0 12px;
+  height: $navbar-label-height;
 
   a {
-    color: inherit;
+    color: black;
     text-decoration: none;
   }
 
-  span {
-    height: $navbar-label-height;
+  &:hover {
+    background: #f0f0f0;
+    cursor: pointer;
   }
 
   &:hover .nav-toggle_items {
@@ -259,7 +265,6 @@ $navbar-label-height: 24;
     div:hover {
       background: #f0f0f0;
       cursor: pointer;
-      color: gray;
     }
 
     &:last-child {

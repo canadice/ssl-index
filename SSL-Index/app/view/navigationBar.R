@@ -5,7 +5,7 @@ box::use(
 )
 
 box::use(
-  app/logic/ui/tags[flexCol],
+  app/logic/ui/tags[flexCol, flexRow],
   app/logic/db/login[customCheckCredentials, getRefreshToken, setRefreshToken],
 )
 
@@ -61,59 +61,61 @@ ui <- function(id) {
     ),
     tags$nav(
       class = "navbar",
-      tags$ul(
-        class = "nav navbar-nav",
-        tags$a(
-          href='https://forum.simulationsoccer.com',
-          target="_blank",
-          tags$img(src = 'static/portalblack.png', height = "70")
-        ),
-        uiOutput(ns("yourPlayer")),
-        div(
-          class = "nav-toggle",
-          tagList(
-            tags$span("Trackers"),
-            div(
-              class = "nav-toggle_items",
-              flexCol(
-                tagList(
-                  div(a("Players", href = route_link("tracker/player"))),
-                  div(a("Organizations", href = route_link("tracker/organization"))),
-                  div(a("Draft Class", href = route_link("tracker/draftclass")))
+      flexRow(
+        style = "align-items: end;",
+        tagList(
+          tags$a(
+            href='https://forum.simulationsoccer.com',
+            target="_blank",
+            tags$img(src = 'static/portalblack.png', height = "70"),
+            style = "margin-right: 12px;"
+          ),
+          uiOutput(ns("yourPlayer")),
+          div(
+            class = "nav-toggle",
+            tagList(
+              tags$span("Trackers"),
+              div(
+                class = "nav-toggle_items",
+                flexCol(
+                  tagList(
+                    div(a("Players", href = route_link("tracker/player"))),
+                    div(a("Organizations", href = route_link("tracker/organization"))),
+                    div(a("Draft Class", href = route_link("tracker/draftclass")))
+                  )
                 )
               )
             )
-          )
-        ),
-        div(
-          class = "nav-toggle",
-          style = "color: black;",
-          tagList(
-            tags$span("Index Nav"),
-            div(
-              class = "nav-toggle_items",
-              flexCol(
-                tagList(
-                  div(a("Index", href = route_link("index/"))),
-                  div(a("Records", href = route_link("index/records"))),
-                  div(a("Standings", href = route_link("index/standings"))),
-                  div(a("Schedule", href = route_link("index/schedule"))),
-                  div(a("Academy", href = route_link("index/academy")))
+          ),
+          div(
+            class = "nav-toggle",
+            tagList(
+              tags$span("Index"),
+              div(
+                class = "nav-toggle_items",
+                flexCol(
+                  tagList(
+                    div(a("Index", href = route_link("index/"))),
+                    div(a("Records", href = route_link("index/records"))),
+                    div(a("Standings", href = route_link("index/standings"))),
+                    div(a("Schedule", href = route_link("index/schedule"))),
+                    div(a("Academy", href = route_link("index/academy")))
+                  )
                 )
               )
             )
-          )
-        ),
-        uiOutput(ns("jobsNavigation")),
-        div(
-          class = "nav-toggle",
-          div(a("Intro", href = route_link("/")))
-        ),   
+          ),
+          uiOutput(ns("jobsNavigation")),
+          div(
+            class = "nav-toggle",
+            div(a("Intro", href = route_link("/")))
+          ),
+        )
       )
     ),
     # User menu FAB
     # Wasn't able to fully customize the Rshiny FAB, so I created a new one
-    tags$div(
+    div(
       class = "homemade-user-fab",
       icon(
         "user",
