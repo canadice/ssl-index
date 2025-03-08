@@ -69,12 +69,21 @@ ui <- function(id) {
           tags$img(src = 'static/portalblack.png', height = "70")
         ),
         uiOutput(ns("yourPlayer")),
-        tags$li(
-          "Trackers",
-          a("Players", href = route_link("tracker/player")),
-          a("Organizations", href = route_link("tracker/organization")),
-          a("Draft Class", href = route_link("tracker/draftclass"))
-          ### TODO PUT THESE IN A DROPDOWN
+        div(
+          class = "nav-toggle",
+          tagList(
+            tags$span("Trackers"),
+            div(
+              class = "nav-toggle_items",
+              flexCol(
+                tagList(
+                  div(a("Players", href = route_link("tracker/player"))),
+                  div(a("Organizations", href = route_link("tracker/organization"))),
+                  div(a("Draft Class", href = route_link("tracker/draftclass")))
+                )
+              )
+            )
+          )
         ),
         div(
           class = "nav-toggle",
@@ -96,9 +105,10 @@ ui <- function(id) {
           )
         ),
         uiOutput(ns("jobsNavigation")),
-        tags$li(
-          a("Intro", href = route_link("/"))
-        )
+        div(
+          class = "nav-toggle",
+          div(a("Intro", href = route_link("/")))
+        ),   
       )
     ),
     # User menu FAB
@@ -139,26 +149,32 @@ server <- function(id, auth, resAuth) {
     
     ### Output
     output$jobsNavigation <- renderUI({
-      if(any(c(3, 4, 8, 11, 12, 14, 15) %in% auth()$usergroup)){
-        tags$li(
-          "Jobs",
-          ### TODO MAKE ALL THESE SUBLINKS INTO ANOTHER DROPDOWN IN A DROPDOWN
-          if(any(c(4, 3, 14) %in% auth()$usergroup)){
-            tags$li(
-              "File Work",
-              a("Build Exports", href = route_link("filework/export")),
-              a("Index Imports", href = route_link("filework/import")),
-              a("Edit Schedule", href = route_link("filework/schedule"))  
+      # if(any(c(3, 4, 8, 11, 12, 14, 15) %in% auth()$usergroup)){
+        div(
+          class = "nav-toggle",
+          tagList(
+            tags$span("Jobs"),
+            div(
+              class = "nav-toggle_items",
+              flexCol(
+                # class = "nav-toggle",
+                tagList(
+                  # if(any(c(4, 3, 14) %in% auth()$usergroup)){
+                    div(a("Build Exports", href = route_link("filework/export"))),
+                    div(a("Index Imports", href = route_link("filework/import"))),
+                    div(a("Edit Schedule", href = route_link("filework/schedule"))),
+                  # }
+                )
+              )
             )
-          }
-          ### TODO ADD SUBLINKS FROM THE OLD PORTAL MENU
+          )
         )
-      } 
     }) |> 
       bindEvent(auth())
     
     output$yourPlayer <- renderUI({
-      tags$li(
+      div(
+        class = "nav-toggle",
         a("Player", href = route_link("myPlayer"))
       )
     }) |> 

@@ -223,6 +223,12 @@ $navbar-label-height: 24;
 .nav-toggle {
   position: relative;
   z-index: 100;
+  color: black;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
   span {
     height: $navbar-label-height;
@@ -239,13 +245,12 @@ $navbar-label-height: 24;
   position: absolute;
   top: $navbar-label-height;
   left: 0;
+  width: max-content;
   -moz-box-shadow: 0 0 2px black;
   -webkit-box-shadow: 0 0 2px black;
   box-shadow: 0 0 2px black;
 
   div {
-    color: black;
-
     div {
       border-bottom: 1px solid black;
       padding: 8px;
@@ -255,11 +260,6 @@ $navbar-label-height: 24;
       background: #f0f0f0;
       cursor: pointer;
       color: gray;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
     }
 
     &:last-child {
