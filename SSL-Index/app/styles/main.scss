@@ -258,12 +258,12 @@ $navbar-items-width: 112px;
   box-shadow: 0 0 2px black;
 
   div {
-    div:not(.nav-toggle_sub-items):not(.nav-toggle_sub-items_list) {
+    div:has(> a), div:has(.nav-toggle_sub-items) {
       border-bottom: 1px solid black;
       padding: 8px;
     }
   
-    div:not(.nav-toggle_sub-items):not(.nav-toggle_sub-items_list):hover {
+    div:has(> a):hover, div:has(.nav-toggle_sub-items):hover {
       background: #f0f0f0;
       cursor: pointer;
     }
