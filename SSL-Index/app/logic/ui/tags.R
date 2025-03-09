@@ -34,7 +34,10 @@ navMenu <- function(cont, label = "", items = list()) {
             flexCol(
               tagList(
                 tags_list <- lapply(items, function(item) {
-                  item
+                  div(
+                    class = "nav-toggle_item",
+                    item
+                  )
                 })
               )
             )
@@ -48,24 +51,24 @@ navMenu <- function(cont, label = "", items = list()) {
 #' @export
 navMenuItem <- function(cont, label = "", subItems = list()) {
   if (length(subItems) > 0) {
-    div(
-      tagList(
-        flexRow(
-          style = "align-items: center; justify-content: space-between; gap: 4px;",
-          tagList(
-            span(label),
-            icon("caret-right")
-          )
-        ),
+    tagList(
+      flexRow(
+        style = "align-items: center; justify-content: space-between; gap: 4px;",
+        tagList(
+          span(label),
+          icon("caret-right")
+        )
+      ),
+      div(
+        class = "nav-toggle_sub-items",
         div(
-          class = "nav-toggle_sub-items",
-          div(
-            class = "nav-toggle_sub-items_list",
-            tagList(
-              tags_list <- lapply(subItems, function(item) {
+          tagList(
+            tags_list <- lapply(subItems, function(item) {
+              div(
+                class = "nav-toggle_sub-item",
                 item
-              })
-            )
+              )
+            })
           )
         )
       )

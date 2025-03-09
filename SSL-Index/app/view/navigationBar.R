@@ -68,25 +68,25 @@ ui <- function(id) {
             href='https://forum.simulationsoccer.com',
             target="_blank",
             tags$img(src = 'static/portalblack.png', height = "70"),
-            style = "margin-right: 12px;"
+            class = "logo"
           ),
           uiOutput(ns("yourPlayer")),
           navMenu(
             label = "Trackers",
             items = list(
-              div(a("Players", href = route_link("tracker/player"))),
-              div(a("Organizations", href = route_link("tracker/organization"))),
-              div(a("Draft Class", href = route_link("tracker/draftclass")))
+              a("Players", href = route_link("tracker/player")),
+              a("Organizations", href = route_link("tracker/organization")),
+              a("Draft Class", href = route_link("tracker/draftclass"))
             )
           ),
           navMenu(
             label = "Index",
             items = list(
-              div(a("Index", href = route_link("index/"))),
-              div(a("Records", href = route_link("index/records"))),
-              div(a("Standings", href = route_link("index/standings"))),
-              div(a("Schedule", href = route_link("index/schedule"))),
-              div(a("Academy", href = route_link("index/academy")))
+              a("Index", href = route_link("index/")),
+              a("Records", href = route_link("index/records")),
+              a("Standings", href = route_link("index/standings")),
+              a("Schedule", href = route_link("index/schedule")),
+              a("Academy", href = route_link("index/academy"))
             )
           ),
           uiOutput(ns("jobsNavigation")),
@@ -140,9 +140,9 @@ server <- function(id, auth, resAuth) {
             navMenuItem(
               label = "File Work",
               subItems = list(
-                div(a("Build Exports", href = route_link("filework/export"))),
-                div(a("Index Imports", href = route_link("filework/import"))),
-                div(a("Edit Schedule", href = route_link("filework/schedule")))
+                a("Build Exports", href = route_link("filework/export")),
+                a("Index Imports", href = route_link("filework/import")),
+                a("Edit Schedule", href = route_link("filework/schedule"))
               )
             )
           }
@@ -157,7 +157,7 @@ server <- function(id, auth, resAuth) {
     
     output$yourPlayer <- renderUI({
       navMenu(
-        div(a("Player", href = route_link("myPlayer")))
+        a("Player", href = route_link("myPlayer"))
       )
     }) |> 
       bindEvent(auth())

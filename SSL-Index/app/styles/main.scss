@@ -210,15 +210,13 @@ h1, h2, h3, h4, h5 {
 /* Navbar with logo */
 .navbar {
   max-height: 200px;
-  background: white;
+  border-bottom: 4px solid black;
 }
 .navbar .logo {
-  padding-top: 5px;
-  padding-right: 30px;
-  height: 80px; 
+  padding: 12px;
 }
 
-$navbar-label-height: 48px;
+$navbar-label-height: 32px;
 $navbar-items-width: 112px;
 
 .nav-toggle {
@@ -227,17 +225,21 @@ $navbar-items-width: 112px;
   justify-content: center;
   position: relative;
   z-index: 100;
-  color: black;
+  color: #EEEEEE;
   padding: 0 12px;
   height: $navbar-label-height;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  z-index: 102;
 
   a {
-    color: black;
+    color: inherit;
     text-decoration: none;
   }
 
   &:hover {
-    background: #f0f0f0;
+    background: #EEEEEE;
+    color: black;
     cursor: pointer;
   }
 
@@ -248,7 +250,7 @@ $navbar-items-width: 112px;
 
 .nav-toggle_items {
   display: none;
-  background: white;
+  background: #EEEEEE;
   position: absolute;
   top: $navbar-label-height;
   left: 0;
@@ -256,15 +258,17 @@ $navbar-items-width: 112px;
   -moz-box-shadow: 0 0 2px black;
   -webkit-box-shadow: 0 0 2px black;
   box-shadow: 0 0 2px black;
+  border-bottom-left-radius: 2px;
+  z-index: 101;
 
-  div {
-    div:has(> a), div:has(.nav-toggle_sub-items) {
-      border-bottom: 1px solid black;
-      padding: 8px;
-    }
+  .nav-toggle_item, .nav-toggle_sub-item {
+    border-bottom: 1px solid #AAAAAA;
+    border-bottom-left-radius: 2px;
+    padding: 8px;
   
-    div:has(> a):hover, div:has(.nav-toggle_sub-items):hover {
-      background: #f0f0f0;
+    &:hover {
+      background: #4b8dad;
+      color: #EEEEEE;
       cursor: pointer;
     }
 
@@ -280,14 +284,17 @@ $navbar-items-width: 112px;
 
 .nav-toggle_sub-items {
   display: none;
-  background: white;
+  background: #EEEEEE;
   position: absolute;
   top: 0;
+  color: black;
   left: $navbar-items-width;
   width: max-content;
   -moz-box-shadow: 0 0 2px black;
   -webkit-box-shadow: 0 0 2px black;
   box-shadow: 0 0 2px black;
+  border-bottom-right-radius: 2px;
+  z-index: 100;
 
   div {
     display: flex;
