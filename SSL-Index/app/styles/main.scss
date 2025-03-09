@@ -242,6 +242,10 @@ $navbar-items-width: 112px;
     color: black;
     cursor: pointer;
   }
+  
+  &:has(.nav-toggle_items):hover {
+    cursor: default;
+  }
 
   &:hover .nav-toggle_items {
     display: block;
@@ -270,6 +274,10 @@ $navbar-items-width: 112px;
       background: #4b8dad;
       color: #EEEEEE;
       cursor: pointer;
+    }
+  
+    &:has(.nav-toggle_sub-items):hover {
+      cursor: default;
     }
 
     &:last-child {
