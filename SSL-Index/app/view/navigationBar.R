@@ -64,7 +64,7 @@ ui <- function(id) {
       flexRow(
         style = "
           margin-left: 128px;
-          margin-right: 24px;
+          margin-right: 12px;
           height: inherit;
           align-items: end;
           justify-content: space-between;
@@ -139,9 +139,31 @@ server <- function(id, auth, resAuth) {
       bindEvent(auth())
     
     output$yourPlayer <- renderUI({
-      navMenu(
-        a("My Player", href = route_link("myPlayer"))
-      )
+      if(auth()$usergroup |> is.null()){
+        navMenu(
+          tagList(
+            icon("user"),
+            a("Login", href = "#", inputId = "login")
+          )
+        )
+      } else {
+        flexRow(
+          tagList(
+            navMenu(
+              tagList(
+                icon("futbol"),
+                a("My Player", href = route_link("myPlayer"))
+              )
+            ),
+            navMenu(
+              tagList(
+                icon("door-open"),
+                a("Logout", href = "#", inputId = "logout")
+              )
+            )
+          )
+        )
+      }
     }) |> 
       bindEvent(auth())
     
@@ -196,69 +218,5 @@ server <- function(id, auth, resAuth) {
       }
     }) |> 
       bindEvent(input$loggingIn)
-    
-    output$fabOutput <- renderUI({
-      tagList(
-        if(auth()$usergroup |> is.null()){
-          tagList(
-            actionButton(
-              inputId = session$ns("login"),
-              label = "Login",
-              icon = icon("sign-in"),
-              class = "centered-flex-content",
-              style = "justify-content: flex-start; gap: 8px;"
-            )
-          )
-        } else if(any(c(0,5) %in% auth()$usergroup)) {
-          p("You are a banned user.")
-        } else {
-          tagList(
-            # User menu items. Can be extended by adding more actionButtons.
-            # Just remember to connect any button's click event to an action server-side.
-            actionButton(
-              inputId = session$ns("player"),
-              label = "Your Player",
-              icon = icon("futbol"),
-              class = "centered-flex-content",
-              style = "justify-content: flex-start; gap: 8px;"
-            ),
-            actionButton(
-              inputId = session$ns("userbank"),
-              label = "Bank/Store",
-              icon = icon("building-columns"),
-              class = "centered-flex-content",
-              style = "justify-content: flex-start; gap: 8px;"
-            ),
-            actionButton(
-              inputId = session$ns("logout"),
-              label = "Logout",
-              icon = icon("door-open"),
-              class = "centered-flex-content",
-              style = "justify-content: flex-start; gap: 8px;"
-            )
-          )
-        }
-      )
-    })
-    
-    # Observers tied to the actionButtons in the FAB
-    observe({
-      change_page("yourPlayer")
-    }) |> 
-      bindEvent(input$player)
-    
-    observe({
-      change_page("playerStore")
-    }) |> 
-      bindEvent(input$userbank)
-    
-    observe({
-      resAuth$uid <- resAuth$username <- resAuth$usergroup <- NULL
-      
-      change_page("/")
-      # Removes cookies when logging out
-      session$sendCustomMessage("cookie-remove", list(name = "token"))
-    }) |> 
-      bindEvent(input$logout)
   })
 }

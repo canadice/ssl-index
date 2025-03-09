@@ -231,13 +231,16 @@ $navbar-items-width: 112px;
   z-index: 100;
   color: #EEEEEE;
   font-weight: 600;
-  padding: 0 12px;
+  padding: 0 8px;
   height: $navbar-label-height;
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
   z-index: 102;
 
   a {
+    display: inline-block;
+    width: 100%;
+    padding: 8px;
     color: inherit;
     text-decoration: none;
   }
@@ -274,7 +277,6 @@ $navbar-items-width: 112px;
   .nav-toggle_item, .nav-toggle_sub-item {
     border-bottom: 1px solid #AAAAAA;
     border-bottom-left-radius: 2px;
-    padding: 8px;
   
     &:hover {
       background: #4b8dad;
@@ -724,57 +726,6 @@ $navbar-items-width: 112px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.homemade-user-fab {
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin-top: 18px;
-  margin-right: 24px;
-  height: 45px;
-  width: 45px;
-  background: white;
-  border-radius: 99999999px;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -moz-box-shadow: 0 0 5px white;
-  -webkit-box-shadow: 0 0 5px white;
-  box-shadow: 0 0 5px white;
-}
-
-.homemade-user-fab:hover .fab-action-buttons {
-  opacity: 1;
-  visibility: visible;
-}
-
-.fab-action-buttons {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 200ms;
-  position: absolute;
-  top: 30px;
-  right: 0;
-  padding-top: 20px;
-}
-
-.fab-action-buttons div {
-  -moz-box-shadow: 0 0 30px black;
-  -webkit-box-shadow: 0 0 30px black;
-  box-shadow: 0 0 30px black;
-}
-
-.fab-action-buttons button {
-  width: 120px;
-  color: black;
-}
-
-.fab-action-buttons button:hover {
-  background: #4b8dad;
-  border-color: #070B51;
-  color: white;
 }
 
 .primary-button {
