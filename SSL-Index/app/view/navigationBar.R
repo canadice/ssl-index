@@ -60,67 +60,50 @@ ui <- function(id) {
       tags$title("SSL Portal")
     ),
     tags$nav(
-      class = "navbar",
+      class = "ssl-navbar",
       flexRow(
-        style = "align-items: end; margin-left: 128px; height: inherit;",
+        style = "
+          margin-left: 128px;
+          margin-right: 24px;
+          height: inherit;
+          align-items: end;
+          justify-content: space-between;
+        ",
         tagList(
-          tags$a(
-            href='https://forum.simulationsoccer.com',
-            target="_blank",
-            tags$img(src = 'static/portalwhite.png', height = "70"),
-            class = "logo"
-          ),
-          uiOutput(ns("yourPlayer")),
-          navMenu(
-            label = "Trackers",
-            items = list(
-              a("Players", href = route_link("tracker/player")),
-              a("Organizations", href = route_link("tracker/organization")),
-              a("Draft Class", href = route_link("tracker/draftclass"))
-            )
-          ),
-          navMenu(
-            label = "Index",
-            items = list(
-              a("Index", href = route_link("index/")),
-              a("Records", href = route_link("index/records")),
-              a("Standings", href = route_link("index/standings")),
-              a("Schedule", href = route_link("index/schedule")),
-              a("Academy", href = route_link("index/academy"))
-            )
-          ),
-          uiOutput(ns("jobsNavigation")),
-          navMenu(
-            div(a("Intro", href = route_link("/")))
-          )
-        )
-      )
-    ),
-    # User menu FAB
-    # Wasn't able to fully customize the Rshiny FAB, so I created a new one
-    div(
-      class = "homemade-user-fab",
-      icon(
-        "user",
-        class = "fa-solid",
-        style = "color: black; font-size: 28px; padding: 8px;",
-        # Support showing and hiding user options on mobile
-        ontouchstart = "
-            var buttons = document.querySelector('.fab-action-buttons');
-            var isShowing = getComputedStyle(buttons).opacity === '1';
-            buttons.style.opacity = isShowing ? 0 : 1;
-            buttons.style.visibility = isShowing ? 'hidden' : 'visible';
-          "
-      ),
-      role = "button",
-      div(
-        class = "fab-action-buttons",
-        tagList(
-          flexCol(
-            style = "gap: 4px;",
+          flexRow(
             tagList(
-              uiOutput(ns("fabOutput"))
+              tags$a(
+                href='https://forum.simulationsoccer.com',
+                target="_blank",
+                tags$img(src = 'static/portalwhite.png', height = "70"),
+                class = "logo"
+              ),
+              navMenu(
+                label = "Trackers",
+                items = list(
+                  a("Players", href = route_link("tracker/player")),
+                  a("Organizations", href = route_link("tracker/organization")),
+                  a("Draft Class", href = route_link("tracker/draftclass"))
+                )
+              ),
+              navMenu(
+                label = "Index",
+                items = list(
+                  a("Index", href = route_link("index/")),
+                  a("Records", href = route_link("index/records")),
+                  a("Standings", href = route_link("index/standings")),
+                  a("Schedule", href = route_link("index/schedule")),
+                  a("Academy", href = route_link("index/academy"))
+                )
+              ),
+              uiOutput(ns("jobsNavigation")),
+              navMenu(
+                div(a("Intro", href = route_link("/")))
+              )
             )
+          ),
+          flexRow(
+            uiOutput(ns("yourPlayer"))
           )
         )
       )
@@ -157,7 +140,7 @@ server <- function(id, auth, resAuth) {
     
     output$yourPlayer <- renderUI({
       navMenu(
-        a("Player", href = route_link("myPlayer"))
+        a("My Player", href = route_link("myPlayer"))
       )
     }) |> 
       bindEvent(auth())

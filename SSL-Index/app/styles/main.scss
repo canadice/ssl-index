@@ -208,11 +208,12 @@ h1, h2, h3, h4, h5 {
 }
 
 /* Navbar with logo */
-.navbar {
+.ssl-navbar {
   background-color: var(--sslBlueD);
   height: 72px;
+  margin-bottom: 20px;
 }
-.navbar .logo {
+.ssl-navbar .logo {
   position: absolute;
   top: 0;
   left: 0;
