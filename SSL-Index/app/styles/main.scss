@@ -209,10 +209,13 @@ h1, h2, h3, h4, h5 {
 
 /* Navbar with logo */
 .navbar {
-  max-height: 200px;
-  border-bottom: 4px solid black;
+  background-color: var(--sslBlueD);
+  height: 72px;
 }
 .navbar .logo {
+  position: absolute;
+  top: 0;
+  left: 0;
   padding: 12px;
 }
 

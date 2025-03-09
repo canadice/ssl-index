@@ -62,12 +62,12 @@ ui <- function(id) {
     tags$nav(
       class = "navbar",
       flexRow(
-        style = "align-items: end;",
+        style = "align-items: end; margin-left: 128px; height: inherit;",
         tagList(
           tags$a(
             href='https://forum.simulationsoccer.com',
             target="_blank",
-            tags$img(src = 'static/portalblack.png', height = "70"),
+            tags$img(src = 'static/portalwhite.png', height = "70"),
             class = "logo"
           ),
           uiOutput(ns("yourPlayer")),
