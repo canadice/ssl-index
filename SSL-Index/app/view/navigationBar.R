@@ -5,7 +5,7 @@ box::use(
 )
 
 box::use(
-  app/logic/ui/tags[flexCol],
+  app/logic/ui/tags[flexCol, flexRow, navMenu, navMenuItem],
   app/logic/db/login[customCheckCredentials, getRefreshToken, setRefreshToken],
 )
 
@@ -60,62 +60,50 @@ ui <- function(id) {
       tags$title("SSL Portal")
     ),
     tags$nav(
-      class = "navbar",
-      tags$ul(
-        class = "nav navbar-nav",
-        tags$a(
-          href='https://forum.simulationsoccer.com',
-          target="_blank",
-          tags$img(src = 'static/portalblack.png', height = "70")
-        ),
-        uiOutput(ns("yourPlayer")),
-        tags$li(
-          "Trackers",
-          a("Players", href = route_link("tracker/player")),
-          a("Organizations", href = route_link("tracker/organization")),
-          a("Draft Class", href = route_link("tracker/draftclass"))
-          ### TODO PUT THESE IN A DROPDOWN
-        ),
-        tags$li(
-          "Index",
-          a("Index", href = route_link("index/")),
-          a("Records", href = route_link("index/records")),
-          a("Standings", href = route_link("index/standings")),
-          a("Schedule", href = route_link("index/schedule")),
-          a("Academy", href = route_link("index/academy"))
-          ### TODO PUT THESE IN A DROPDOWN
-        ),
-        uiOutput(ns("jobsNavigation")),
-        tags$li(
-          a("Intro", href = route_link("/"))
-        )
-      )
-    ),
-    # User menu FAB
-    # Wasn't able to fully customize the Rshiny FAB, so I created a new one
-    tags$div(
-      class = "homemade-user-fab",
-      icon(
-        "user",
-        class = "fa-solid",
-        style = "color: black; font-size: 28px; padding: 8px;",
-        # Support showing and hiding user options on mobile
-        ontouchstart = "
-            var buttons = document.querySelector('.fab-action-buttons');
-            var isShowing = getComputedStyle(buttons).opacity === '1';
-            buttons.style.opacity = isShowing ? 0 : 1;
-            buttons.style.visibility = isShowing ? 'hidden' : 'visible';
-          "
-      ),
-      role = "button",
-      div(
-        class = "fab-action-buttons",
+      class = "ssl-navbar",
+      flexRow(
+        style = "
+          margin-left: 128px;
+          margin-right: 12px;
+          height: inherit;
+          align-items: end;
+          justify-content: space-between;
+        ",
         tagList(
-          flexCol(
-            style = "gap: 4px;",
+          flexRow(
             tagList(
-              uiOutput(ns("fabOutput"))
+              tags$a(
+                href='https://forum.simulationsoccer.com',
+                target="_blank",
+                tags$img(src = 'static/portalwhite.png', height = "70"),
+                class = "logo"
+              ),
+              navMenu(
+                label = "Trackers",
+                items = list(
+                  a("Players", href = route_link("tracker/player")),
+                  a("Organizations", href = route_link("tracker/organization")),
+                  a("Draft Class", href = route_link("tracker/draftclass"))
+                )
+              ),
+              navMenu(
+                label = "Index",
+                items = list(
+                  a("Index", href = route_link("index/")),
+                  a("Records", href = route_link("index/records")),
+                  a("Standings", href = route_link("index/standings")),
+                  a("Schedule", href = route_link("index/schedule")),
+                  a("Academy", href = route_link("index/academy"))
+                )
+              ),
+              uiOutput(ns("jobsNavigation")),
+              navMenu(
+                div(a("Intro", href = route_link("/")))
+              )
             )
+          ),
+          flexRow(
+            uiOutput(ns("yourPlayer"))
           )
         )
       )
@@ -129,28 +117,53 @@ server <- function(id, auth, resAuth) {
     
     ### Output
     output$jobsNavigation <- renderUI({
-      if(any(c(3, 4, 8, 11, 12, 14, 15) %in% auth()$usergroup)){
-        tags$li(
-          "Jobs",
-          ### TODO MAKE ALL THESE SUBLINKS INTO ANOTHER DROPDOWN IN A DROPDOWN
-          if(any(c(4, 3, 14) %in% auth()$usergroup)){
-            tags$li(
-              "File Work",
-              a("Build Exports", href = route_link("filework/export")),
-              a("Index Imports", href = route_link("filework/import")),
-              a("Edit Schedule", href = route_link("filework/schedule"))  
+      if (any(c(3, 4, 8, 11, 12, 14, 15) %in% auth()$usergroup)) {
+        items <- list(
+          if (any(c(4, 3, 14) %in% auth()$usergroup)) {
+            navMenuItem(
+              label = "File Work",
+              subItems = list(
+                a("Build Exports", href = route_link("filework/export")),
+                a("Index Imports", href = route_link("filework/import")),
+                a("Edit Schedule", href = route_link("filework/schedule"))
+              )
             )
           }
-          ### TODO ADD SUBLINKS FROM THE OLD PORTAL MENU
         )
-      } 
+        navMenu(
+          label = "Jobs",
+          items = items
+        )
+      }
     }) |> 
       bindEvent(auth())
     
     output$yourPlayer <- renderUI({
-      tags$li(
-        a("Player", href = route_link("myPlayer"))
-      )
+      if(auth()$usergroup |> is.null()){
+        navMenu(
+          tagList(
+            icon("user"),
+            a("Login", href = "#", inputId = "login")
+          )
+        )
+      } else {
+        flexRow(
+          tagList(
+            navMenu(
+              tagList(
+                icon("futbol"),
+                a("My Player", href = route_link("myPlayer"))
+              )
+            ),
+            navMenu(
+              tagList(
+                icon("door-open"),
+                a("Logout", href = "#", inputId = "logout")
+              )
+            )
+          )
+        )
+      }
     }) |> 
       bindEvent(auth())
     
@@ -205,69 +218,5 @@ server <- function(id, auth, resAuth) {
       }
     }) |> 
       bindEvent(input$loggingIn)
-    
-    output$fabOutput <- renderUI({
-      tagList(
-        if(auth()$usergroup |> is.null()){
-          tagList(
-            actionButton(
-              inputId = session$ns("login"),
-              label = "Login",
-              icon = icon("sign-in"),
-              class = "centered-flex-content",
-              style = "justify-content: flex-start; gap: 8px;"
-            )
-          )
-        } else if(any(c(0,5) %in% auth()$usergroup)) {
-          p("You are a banned user.")
-        } else {
-          tagList(
-            # User menu items. Can be extended by adding more actionButtons.
-            # Just remember to connect any button's click event to an action server-side.
-            actionButton(
-              inputId = session$ns("player"),
-              label = "Your Player",
-              icon = icon("futbol"),
-              class = "centered-flex-content",
-              style = "justify-content: flex-start; gap: 8px;"
-            ),
-            actionButton(
-              inputId = session$ns("userbank"),
-              label = "Bank/Store",
-              icon = icon("building-columns"),
-              class = "centered-flex-content",
-              style = "justify-content: flex-start; gap: 8px;"
-            ),
-            actionButton(
-              inputId = session$ns("logout"),
-              label = "Logout",
-              icon = icon("door-open"),
-              class = "centered-flex-content",
-              style = "justify-content: flex-start; gap: 8px;"
-            )
-          )
-        }
-      )
-    })
-    
-    # Observers tied to the actionButtons in the FAB
-    observe({
-      change_page("yourPlayer")
-    }) |> 
-      bindEvent(input$player)
-    
-    observe({
-      change_page("playerStore")
-    }) |> 
-      bindEvent(input$userbank)
-    
-    observe({
-      resAuth$uid <- resAuth$username <- resAuth$usergroup <- NULL
-      
-      change_page("/")
-      # Removes cookies when logging out
-      session$sendCustomMessage("cookie-remove", list(name = "token"))
-    }) |> 
-      bindEvent(input$logout)
   })
 }
