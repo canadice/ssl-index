@@ -5,7 +5,7 @@ customCheckCredentials <- function(session = shiny::getDefaultReactiveDomain()){
       mybbQuery(
         query = 
           paste(
-          "SELECT uid, username, password, salt, usergroup, additionalgroups
+          "SELECT uid, username, password, salt, usergroup, additionalgroups, suspendposting
           FROM mybb_users
           WHERE username = '", user, "'",
           sep = ""
@@ -54,7 +54,8 @@ customCheckCredentials <- function(session = shiny::getDefaultReactiveDomain()){
                 paste(res$usergroup, res$additionalgroups, sep = ",") %>% 
                 str_split(pattern = ",", simplify = TRUE) %>%
                 as.numeric() %>% 
-                as.list()
+                as.list(),
+              suspended = res$suspendposting == 1
             )
         ) %>% 
           return()
@@ -69,7 +70,7 @@ customCheckCredentials <- function(session = shiny::getDefaultReactiveDomain()){
 
 getRefreshToken <- function(token){
   portalQuery(
-    paste("SELECT rt.*, mb.username, mb.usergroup, mb.additionalgroups 
+    paste("SELECT rt.*, mb.username, mb.usergroup, mb.additionalgroups, mb.suspendposting
               FROM refreshtokens rt 
               JOIN mybbdb.mybb_users mb ON rt.uid = mb.uid 
               WHERE rt.token = '", token, "';", sep = "")

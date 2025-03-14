@@ -386,7 +386,8 @@ server <- function(input, output, session) {
             paste(refreshtoken$usergroup, refreshtoken$additionalgroups, sep = ",") %>% 
             str_split(pattern = ",", simplify = TRUE) %>%
             as.numeric() %>% 
-            as.list()
+            as.list(),
+          suspended = refreshtoken$suspendposting == 1
         ))
         shinymanager:::addAuthToQuery(session, token, "en")
         
@@ -502,6 +503,8 @@ server <- function(input, output, session) {
   
   ## Rendered menu in sidebar
   output$sidebarpanel <- renderUI({
+    
+    print(!authOutput()$suspended)
     if(menuGroup() %% 2 == 0){
       #### PORTAL SIDEBAR MENU ####
       tagList(
@@ -525,7 +528,7 @@ server <- function(input, output, session) {
           id = "tabs",
           menuItem("Welcome",tabName = "welcome",selected = TRUE),
           {
-            if(!any(c(0,5) %in% authOutput()$usergroup)){
+            if(!any(c(0,5, 7) %in% authOutput()$usergroup) & !authOutput()$suspended){
               tagList(
                 menuItemOutput("playerTabs"),
                 
