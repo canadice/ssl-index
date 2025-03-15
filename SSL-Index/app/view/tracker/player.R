@@ -133,6 +133,8 @@ server <- function(id) {
       pid <- input$selectedPlayer |>
         as.numeric()
       
+      print(paste("Loading selected player", pid))
+      
       readAPI(
         url = "https://api.simulationsoccer.com/player/getPlayer",
         query = list(pid = pid)
@@ -147,6 +149,8 @@ server <- function(id) {
       pid <- input$selectedPlayer |>
         as.numeric()
       
+      print(paste("Getting history for player", pid))
+      
       getTpeHistory(pid)
     })
     
@@ -154,6 +158,7 @@ server <- function(id) {
       shiny$req(allPlayers())
       pid <- get_query_param("pid")
       
+      print(paste("Getting query for player", pid))
       if (is.null(pid)){
         NULL
       } else {
@@ -185,12 +190,10 @@ server <- function(id) {
           }
         )
     }) |> 
-      shiny$bindEvent(allPlayers())
+      shiny$bindEvent(allPlayers(), once = TRUE)
     
     ### TODO WHAT IS UP WITH THIS NOT WORKING=!=!=!=?!?!?!?
     shiny$observe({
-      shiny$req(input$selectedPlayer)
-      
       playerData() |> 
         then(
           onFulfilled = function(data){
@@ -200,7 +203,6 @@ server <- function(id) {
                 shiny$h3(paste0("@", data$username))
               )
             })
-            
             
             output[["clubLogo"]] <- shiny$renderUI({
               shiny$img(
@@ -460,7 +462,7 @@ server <- function(id) {
           }
         )
     }) |> 
-      shiny$bindEvent(input$selectedPlayer)
+      shiny$bindEvent(playerData())
     
     
     shiny$observe({

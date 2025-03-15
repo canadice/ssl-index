@@ -7,6 +7,7 @@ box::use(
 box::use(
   app/logic/ui/tags[flexCol, flexRow, navMenu, navMenuItem],
   app/logic/db/login[customCheckCredentials, getRefreshToken, setRefreshToken],
+  app/logic/ui/spinner[withSpinnerCustom],
 )
 
 #' @export
@@ -96,14 +97,16 @@ ui <- function(id) {
                   a("Academy", href = route_link("index/academy"))
                 )
               ),
-              uiOutput(ns("jobsNavigation")),
+              uiOutput(ns("jobsNavigation")) |> 
+                withSpinnerCustom(height = 20),
               navMenu(
                 div(a("Intro", href = route_link("/")))
               )
             )
           ),
           flexRow(
-            uiOutput(ns("yourPlayer"))
+            uiOutput(ns("yourPlayer")) |> 
+              withSpinnerCustom(height = 20)
           )
         )
       )
@@ -143,7 +146,8 @@ server <- function(id, auth, resAuth) {
         navMenu(
           tagList(
             icon("user"),
-            a("Login", href = "#", inputId = "login")
+            a("Login", href = "#") |> 
+              div(inputId = "login")
           )
         )
       } else {
@@ -158,7 +162,8 @@ server <- function(id, auth, resAuth) {
             navMenu(
               tagList(
                 icon("door-open"),
-                a("Logout", href = "#", inputId = "logout")
+                a("Logout", href = "#") |> 
+                  div(inputId = "logout")
               )
             )
           )
@@ -190,6 +195,8 @@ server <- function(id, auth, resAuth) {
       bindEvent(input$cookies$token, ignoreNULL = TRUE, once = TRUE)
     
     observe({
+      print("login")
+      
       showModal(
         modalDialog(
           textInput(session$ns("user"), label = "Username:"),
