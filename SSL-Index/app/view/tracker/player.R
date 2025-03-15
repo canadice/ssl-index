@@ -66,10 +66,10 @@ ui <- function(id) {
                 style = bslib$css(grid_template_columns = "3fr 1fr"),
                 shiny$uiOutput(ns("playerName")) |> 
                   withSpinnerCustom(height = 20),
-                shiny$uiOutput(ns("clubLogo"), height = NULL) |> 
+                shiny$uiOutput(ns("clubLogo"), height = NULL) |>
                   withSpinnerCustom(height = 20)
               ),
-              shiny$uiOutput(ns("playerInfo")) |> 
+              shiny$uiOutput(ns("playerInfo")) |>
                 withSpinnerCustom(height = 40)
             )
           ),
@@ -78,7 +78,7 @@ ui <- function(id) {
               shiny$h3("Recent Match Statistics")
             ),
             bslib$card_body(
-              reactableOutput(ns("matchStatistics")) |> 
+              reactableOutput(ns("matchStatistics")) |>
                 withSpinnerCustom(height = 60)
             )
           )
@@ -91,7 +91,7 @@ ui <- function(id) {
               shiny$h3("Player Attributes")
             ),
             bslib$card_body(
-              shiny$uiOutput(ns("playerAttributes")) |> 
+              shiny$uiOutput(ns("playerAttributes")) |>
                 withSpinnerCustom(height = 60)
             )
           ),
@@ -100,7 +100,7 @@ ui <- function(id) {
               shiny$h3("TPE Progression")
             ),
             bslib$card_body(
-              plotly$plotlyOutput(ns("tpeProgression")) |> 
+              plotly$plotlyOutput(ns("tpeProgression")) |>
                 withSpinnerCustom(height = 60)
             )
           )
@@ -110,7 +110,7 @@ ui <- function(id) {
             shiny$h3("Player History")
           ),
           bslib$card_body(
-            shiny$uiOutput(ns("playerHistory")) |> 
+            shiny$uiOutput(ns("playerHistory")) |>
               withSpinnerCustom(height = 60)
           )
         )
@@ -130,10 +130,10 @@ server <- function(id) {
     })
     
     playerData <- shiny$reactive({
+      shiny$req(input$selectedPlayer)
+      
       pid <- input$selectedPlayer |>
         as.numeric()
-      
-      print(paste("Loading selected player", pid))
       
       readAPI(
         url = "https://api.simulationsoccer.com/player/getPlayer",
@@ -145,12 +145,10 @@ server <- function(id) {
   
     historyTPE <- shiny$reactive({
       shiny$req(input$selectedPlayer)
-      
+
       pid <- input$selectedPlayer |>
         as.numeric()
-      
-      print(paste("Getting history for player", pid))
-      
+
       getTpeHistory(pid)
     })
     
@@ -158,7 +156,6 @@ server <- function(id) {
       shiny$req(allPlayers())
       pid <- get_query_param("pid")
       
-      print(paste("Getting query for player", pid))
       if (is.null(pid)){
         NULL
       } else {
@@ -192,7 +189,7 @@ server <- function(id) {
     }) |> 
       shiny$bindEvent(allPlayers(), once = TRUE)
     
-    ### TODO WHAT IS UP WITH THIS NOT WORKING=!=!=!=?!?!?!?
+    ### TODO NETWORK DOESN'T SEEM TO BE STARTING
     shiny$observe({
       playerData() |> 
         then(
@@ -206,27 +203,27 @@ server <- function(id) {
             
             output[["clubLogo"]] <- shiny$renderUI({
               shiny$img(
-                src = sprintf("static/logo/%s.png", data$team), 
-                style = "height: 100px;", 
-                alt = data$team, 
+                src = sprintf("static/logo/%s.png", data$team),
+                style = "height: 100px;",
+                alt = data$team,
                 title = data$team
               )
             })
-            
+
             output[["playerInfo"]] <- shiny$renderUI({
-              value <- 
-                data |> 
+              value <-
+                data |>
                 dplyr$select(
                   dplyr$contains("pos_")
-                ) |> 
+                ) |>
                 pivot_longer(
                   dplyr$everything()
-                ) |> 
+                ) |>
                 dplyr$mutate(
-                  name = str_remove(name, pattern = "pos_") |> 
+                  name = str_remove(name, pattern = "pos_") |>
                     str_to_upper()
                 )
-              
+
               shiny$tagList(
                 bslib$layout_columns(
                   col_widths = c(6, 6),
@@ -236,28 +233,28 @@ server <- function(id) {
                     # shiny$h4(paste("Bank Balance: ", data$bank)),
                     shiny$h4(paste("Player Status: "), data$playerStatus, class = data$playerStatus),
                     shiny$h4(paste("User Status: "), data$userStatus, class = data$userStatus),
-                    shiny$h5(paste("Nationality:"), data$nationality), 
+                    shiny$h5(paste("Nationality:"), data$nationality),
                     shiny$h5(paste("Render: "), data$render)
                   ),
                   shiny$tagList(
                     shiny$h4("Traits"),
-                    data$traits |> 
-                      str_split(pattern = constant$traitSep) |> 
-                      unlist() |> 
-                      paste(collapse = "<br>") |> 
+                    data$traits |>
+                      str_split(pattern = constant$traitSep) |>
+                      unlist() |>
+                      paste(collapse = "<br>") |>
                       shiny$HTML(),
                     shiny$br(),
                     shiny$h4("Primary Position(s)"),
-                    value |> 
-                      dplyr$filter(value == 20) |> 
-                      dplyr$select(name) |> 
-                      unlist() |> 
-                      paste(collapse = ", ") |> 
+                    value |>
+                      dplyr$filter(value == 20) |>
+                      dplyr$select(name) |>
+                      unlist() |>
+                      paste(collapse = ", ") |>
                       shiny$HTML(),
                     shiny$h4("Secondary Position(s)"),
-                    value |> 
-                      dplyr$filter(value < 20, value >= 10) |> 
-                      dplyr$select(name) |> 
+                    value |>
+                      dplyr$filter(value < 20, value >= 10) |>
+                      dplyr$select(name) |>
                       unlist() |>
                       paste(collapse = ", ") |>
                       shiny$HTML()
@@ -265,49 +262,49 @@ server <- function(id) {
                 )
               )
             })
-            
+
             output[["matchStatistics"]] <- renderReactable({
               if (data$pos_gk == 20){
-                matches <- 
+                matches <-
                   readAPI(
-                    url = "https://api.simulationsoccer.com/index/keeperGameByGame", 
-                    query = list(name = data$name)
-                  ) 
-                
-                if (!(matches |> is_empty())){
-                  matches <- 
-                    matches |> 
-                    dplyr$select(1:8) 
-                }
-              } else {
-                matches <- 
-                  readAPI(
-                    url = "https://api.simulationsoccer.com/index/outfieldGameByGame", 
+                    url = "https://api.simulationsoccer.com/index/keeperGameByGame",
                     query = list(name = data$name)
                   )
-                
+
                 if (!(matches |> is_empty())){
-                  matches <- 
-                    matches |> 
-                    dplyr$select(1:10) 
+                  matches <-
+                    matches |>
+                    dplyr$select(1:8)
+                }
+              } else {
+                matches <-
+                  readAPI(
+                    url = "https://api.simulationsoccer.com/index/outfieldGameByGame",
+                    query = list(name = data$name)
+                  )
+
+                if (!(matches |> is_empty())){
+                  matches <-
+                    matches |>
+                    dplyr$select(1:10)
                 }
               }
-              
+
               if (!(matches |> is_empty())){
-                matches |> 
-                  dplyr$slice_head(n = 5) |> 
+                matches |>
+                  dplyr$slice_head(n = 5) |>
                   recordReactable()
               } else {
                 NULL
               }
             })
-            
+
             output[["playerAttributes"]] <- shiny$renderUI({
               attributeReactable(data, session, output)
             })
-            
+
             output[["tpeProgression"]] <- plotly$renderPlotly({
-              historyTPE() |> 
+              historyTPE() |>
                 then(
                   onFulfilled = function(tpe){
                     if(nrow(tpe) < 2){
@@ -328,7 +325,7 @@ server <- function(id) {
                           margin = list(l = 0, r = 0, b = 0, t = 0),
                           plot_bgcolor = "#333333",   # background color
                           paper_bgcolor = "#333333"
-                        ) |> 
+                        ) |>
                         plotly$config(
                           displayModeBar = TRUE,  # Enable display of mode bar (optional, true by default)
                           modeBarButtonsToRemove = list(
@@ -339,40 +336,40 @@ server <- function(id) {
                           displaylogo = FALSE  # Remove Plotly logo
                         )
                     } else {
-                      visData <- 
-                        tpe |> 
+                      visData <-
+                        tpe |>
                         dplyr$mutate(
-                          WeekStart = 
-                            floor_date(Time |> 
-                                         as_date(), 
+                          WeekStart =
+                            floor_date(Time |>
+                                         as_date(),
                                        "week",
                                        week_start = 1)
-                        ) |> 
-                        dplyr$group_by(WeekStart) |> 
-                        dplyr$summarize(total = sum(`TPE Change`, na.rm = TRUE)) |> 
+                        ) |>
+                        dplyr$group_by(WeekStart) |>
+                        dplyr$summarize(total = sum(`TPE Change`, na.rm = TRUE)) |>
                         complete(
-                          WeekStart = 
+                          WeekStart =
                             seq(
-                              min(WeekStart), 
-                              floor_date(today() |> 
+                              min(WeekStart),
+                              floor_date(today() |>
                                            as_date(tz = "US/Pacific"),
-                                         "week", 
+                                         "week",
                                          week_start = 1),
                               by = "week"
                             ),
                           fill = list(total = 0)
-                        ) |> 
-                        dplyr$ungroup() |> 
-                        dplyr$mutate(cumulative = cumsum(total), 
-                                     week = seq_len(dplyr$n())) |> 
+                        ) |>
+                        dplyr$ungroup() |>
+                        dplyr$mutate(cumulative = cumsum(total),
+                                     week = seq_len(dplyr$n())) |>
                         suppressMessages()
-                      
-                      plotly$plot_ly(visData, hoverinfo = "text") |> 
+
+                      plotly$plot_ly(visData, hoverinfo = "text") |>
                         plotly$add_trace(x = ~week, y = ~cumulative, type = "scatter", mode = "markers+lines",
                                          line = list(color = constant$sslGold),
                                          marker = list(size = 5, color = constant$sslGold),
                                          text = ~paste("Week:", week, "<br>TPE:", cumulative)
-                        ) |> 
+                        ) |>
                         plotly$layout(
                           title = list(
                             text = "TPE Progression",
@@ -397,7 +394,7 @@ server <- function(id) {
                           plot_bgcolor = "#333333",   # background color
                           paper_bgcolor = "#333333",   # plot area background color
                           showlegend = FALSE  # Hide legend (optional)
-                        ) |> 
+                        ) |>
                         plotly$config(
                           displayModeBar = TRUE,  # Enable display of mode bar (optional, true by default)
                           modeBarButtonsToRemove = list(
@@ -411,33 +408,33 @@ server <- function(id) {
                   }
                 )
             })
-            
+
             output[["playerHistory"]] <- shiny$renderUI({
               promise_all(
                 tpe = historyTPE(),
                 bank = getBankHistory(data$pid),
                 updates = getUpdateHistory(data$pid)
-              ) |> 
+              ) |>
                 then(
                   onFulfilled = function(list){
                     shiny$tabsetPanel(
                       shiny$tabPanel(
                         title = "TPE History",
-                        list$tpe |> 
-                          dplyr$mutate(Time = as_datetime(Time)) |> 
+                        list$tpe |>
+                          dplyr$mutate(Time = as_datetime(Time)) |>
                           reactable(
-                            columns = 
+                            columns =
                               list(
                                 Time = colDef(format = colFormat(datetime = TRUE))
                               )
                           )
-                      ), 
+                      ),
                       shiny$tabPanel(
                         title = "Update History",
-                        list$updates |> 
-                          dplyr$mutate(Time = as_datetime(Time)) |> 
+                        list$updates |>
+                          dplyr$mutate(Time = as_datetime(Time)) |>
                           reactable(
-                            columns = 
+                            columns =
                               list(
                                 Time = colDef(format = colFormat(datetime = TRUE))
                               )
@@ -445,10 +442,10 @@ server <- function(id) {
                       ),
                       shiny$tabPanel(
                         title = "Bank History",
-                        list$bank |> 
-                          dplyr$mutate(Time = as_datetime(Time)) |> 
+                        list$bank |>
+                          dplyr$mutate(Time = as_datetime(Time)) |>
                           reactable(
-                            columns = 
+                            columns =
                               list(
                                 Time = colDef(format = colFormat(datetime = TRUE)),
                                 Transaction = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
