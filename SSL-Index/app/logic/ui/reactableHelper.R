@@ -255,20 +255,17 @@ attributeReactable <- function(data, session, output){
     }
   )
   
-  layout_column_wrap(
-    width = 1/length(processedData$group |> unique()),
-    class = "attributeTables",
-    map(
-      .x = processedData$group |> unique() |> sort(),
-      .f = function(chosenGroup){
-        tagList(
+  map(
+    .x = processedData$group |> unique() |> sort(),
+    .f = function(chosenGroup){
+      tagList(
+        div(
           h4(chosenGroup),
-          reactableOutput(session$ns(chosenGroup)) 
+          reactableOutput(session$ns(chosenGroup))   
         )
-      }
-    ) |> 
-      unlist(recursive = FALSE)
-  )
-  ### TODO Make this move three columns and not be in one column
+      )
+    }
+  ) |> 
+    div(class = "attributeTables")
   
 }
