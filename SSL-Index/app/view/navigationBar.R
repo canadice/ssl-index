@@ -146,8 +146,7 @@ server <- function(id, auth, resAuth) {
         navMenu(
           tagList(
             icon("user"),
-            a("Login", href = "#") |> 
-              div(inputId = "login")
+            a("Login", href = "#", inputId = session$ns("login"))
           )
         )
       } else {
@@ -162,8 +161,7 @@ server <- function(id, auth, resAuth) {
             navMenu(
               tagList(
                 icon("door-open"),
-                a("Logout", href = "#") |> 
-                  div(inputId = "logout")
+                a("Logout", href = "#", inputId = session$ns("logout"))
               )
             )
           )
