@@ -260,6 +260,7 @@ attributeReactable <- function(data, session, output){
     .f = function(chosenGroup){
       tagList(
         div(
+          style = "width: 80%",
           h4(chosenGroup),
           reactableOutput(session$ns(chosenGroup))   
         )
