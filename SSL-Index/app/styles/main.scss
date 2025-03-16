@@ -251,9 +251,17 @@ $navbar-items-width: 112px;
     color: black;
     cursor: pointer;
   }
+
+  &:active {
+    filter: brightness(90%);
+  }
   
   &:has(.nav-toggle_items):hover {
     cursor: default;
+  }
+
+  &:has(.nav-toggle_items):active {
+    filter: none;
   }
 
   &:hover .nav-toggle_items {
@@ -284,9 +292,17 @@ $navbar-items-width: 112px;
       color: #EEEEEE;
       cursor: pointer;
     }
+
+    &:active {
+      filter: brightness(90%);
+    }
   
     &:has(.nav-toggle_sub-items):hover {
       cursor: default;
+    }
+
+    &:has(.nav-toggle_sub-items):active {
+      filter: none;
     }
 
     &:last-child {
