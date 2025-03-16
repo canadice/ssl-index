@@ -60,21 +60,21 @@ ui <- function(id) {
         href = "favicon.ico"),
       tags$title("SSL Portal")
     ),
+    actionButton(inputId = "navToggle", label = "", class = "nav-toggle", ontouchstart = "
+        var navContainer = document.querySelector('.nav-container');
+        var openMaxWidth = '50%';
+
+        if (navContainer) {
+          document.body.prepend(navContainer);
+          var isOpen = getComputedStyle(navContainer).maxWidth === openMaxWidth;
+          navContainer.style.maxWidth = isOpen ? '0px' : openMaxWidth;
+
+          this.style.left = isOpen ? '0px' : `calc(${openMaxWidth} - 40px)`;
+        }
+      "),
     tags$nav(
       class = "ssl-navbar",
       tagList(
-        actionButton(inputId = "navToggle", label = "", class = "nav-toggle", ontouchstart = "
-            var navContainer = document.querySelector('.nav-container');
-            var openMaxWidth = '50%';
-
-            if (navContainer) {
-              document.body.appendChild(navContainer);
-              var isOpen = getComputedStyle(navContainer).maxWidth === openMaxWidth;
-              navContainer.style.maxWidth = isOpen ? '0px' : openMaxWidth;
-
-              this.style.left = isOpen ? '0px' : openMaxWidth;
-            }
-          "),
         tags$a(
           href='https://forum.simulationsoccer.com',
           target="_blank",

@@ -215,18 +215,6 @@ h1, h2, h3, h4, h5 {
   margin-bottom: 20px;
   position: relative;
 
-  .nav-toggle {
-    display: none;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    margin-bottom: 8px;
-    margin-left: 8px;
-    height: 24px;
-    width: 24px;
-    background-color: yellow;
-  }
-
   .nav-container {
     display: flex;
     flex-direction: row;
@@ -244,6 +232,19 @@ h1, h2, h3, h4, h5 {
     left: 0;
     padding: 12px;
   }
+}
+
+.nav-toggle {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  margin-top: 8px;
+  margin-left: 8px;
+  height: 24px;
+  width: 24px;
+  background-color: yellow;
+  z-index: 100;
 }
 
 $navbar-label-height: 32px;
@@ -361,11 +362,16 @@ $navbar-items-width: 112px;
 }
 
 @media (max-width: 767px) {
+  #router-page-wrapper {
+    padding-top: 92px; // Make sure page content isn't hidden behind fixed nav
+  }
+
   .ssl-navbar {
-    .nav-toggle {
-      display: block;
-      transition: left 0.5s ease-in-out;
-    }
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 90;
 
     .nav-container {
       max-width: 0px;
@@ -376,6 +382,11 @@ $navbar-items-width: 112px;
       right: 0;
       left: auto;
     }
+  }
+
+  .nav-toggle {
+    display: block;
+    transition: left 0.5s ease-in-out;
   }
 
   .nav-container {
