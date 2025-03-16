@@ -590,6 +590,28 @@
       ],
       "Hash": "15225d16c9bc882694ed050bc03e2954"
     },
+    "dplyover": {
+      "Package": "dplyover",
+      "Version": "0.0.8.9002",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "TimTeaFan",
+      "RemoteRepo": "dplyover",
+      "RemoteRef": "main",
+      "RemoteSha": "f0cd984586bafdc0dc78fc4ead2d76ba50d9370e",
+      "Requirements": [
+        "R",
+        "dplyr",
+        "glue",
+        "purrr",
+        "rlang",
+        "tibble",
+        "tidyselect",
+        "vctrs"
+      ],
+      "Hash": "ea56a2357d0137d46381c083119bab10"
+    },
     "dplyr": {
       "Package": "dplyr",
       "Version": "1.1.4",
