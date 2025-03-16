@@ -1,21 +1,15 @@
 box::use(
   bslib,
   dplyr,
-  plotly,
-  promises[future_promise, then, promise_all],
-  reactable[colDef, colFormat, reactable, reactableOutput, renderReactable],
+  promises[future_promise, then],
   shiny,
-  shiny.router[get_query_param, change_page],
-  stringr[str_remove, str_split, str_to_upper],
+  shiny.router[change_page, get_query_param],
 )
 
 box::use(
-  app/logic/constant,
   app/logic/db/api[readAPI],
-  app/logic/ui/player[playerOutputUI, playerOutput],
-  app/logic/ui/reactableHelper[attributeReactable, recordReactable],
+  app/logic/ui/player[playerOutput, playerOutputUI],
   app/logic/ui/spinner[withSpinnerCustom],
-  app/logic/ui/tags[flexCol, flexRow],
 )
 
 #' @export
@@ -29,21 +23,21 @@ ui <- function(id) {
           width = NULL,
           style = bslib$css(grid_template_columns = "1fr 2fr 3fr"),
           shiny$selectInput(
-            ns("selectedPlayer"), 
-            "Select Player", 
+            ns("selectedPlayer"),
+            "Select Player",
             choices = NULL
           ),
           shiny$tagList(
             shiny$radioButtons(
-              ns("retired"), 
-              label = "Include retired: ", 
-              choices = c("Yes" = 1, "No" = 0), 
+              ns("retired"),
+              label = "Include retired: ",
+              choices = c("Yes" = 1, "No" = 0),
               inline = TRUE
             ),
             shiny$radioButtons(
-              ns("freeAgent"), 
-              label = "Include free agents: ", 
-              choices = c("Yes" = 1, "No" = 0), 
+              ns("freeAgent"),
+              label = "Include free agents: ",
+              choices = c("Yes" = 1, "No" = 0),
               inline = TRUE
             )
           ),
@@ -51,7 +45,7 @@ ui <- function(id) {
         )
       ),
       bslib$card_body(
-        shiny$uiOutput(ns("playerOutput")) |> 
+        shiny$uiOutput(ns("playerOutput")) |>
           withSpinnerCustom(height = 200)
       )
     )
@@ -63,86 +57,90 @@ server <- function(id) {
   shiny$moduleServer(id, function(input, output, session) {
     #### Data ####
     allPlayers <- shiny$reactive({
-      readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |> 
-        dplyr$select(name, pid, username, team, status_p) |> 
+      readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |>
+        dplyr$select(name, pid, username, team, status_p) |>
         future_promise()
     })
-    
+
     playerData <- shiny$reactive({
       shiny$req(input$selectedPlayer)
-      
+
       pid <- input$selectedPlayer |>
         as.numeric()
-      
+
       readAPI(
         url = "https://api.simulationsoccer.com/player/getPlayer",
         query = list(pid = pid)
       ) |>
         future_promise()
-    }) |> 
+    }) |>
       shiny$bindEvent(input$selectedPlayer)
-  
+
     query <- shiny$reactive({
       shiny$req(allPlayers())
       pid <- get_query_param("pid")
-      
-      if (is.null(pid)){
+
+      if (is.null(pid)) {
         NULL
       } else {
-        pid |> 
+        pid |>
           as.numeric()
       }
     })
-    
+
     #### Output ####
     output$playerOutput <- shiny$renderUI({
       playerOutputUI(session)
     })
-    
-    
+
+
     #### Observe ####
     shiny$observe({
-      allPlayers() |> 
+      allPlayers() |>
         then(
           onFulfilled = function(names) {
-            names <- 
+            names <-
               names |>
               dplyr$filter(if (input$retired != 1) status_p > 0 else TRUE) |>
-              dplyr$filter(if (input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) |> 
+              dplyr$filter(if (input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) |>
               dplyr$arrange(name)
-            
+
             namedVector <- names$pid
-            
+
             names(namedVector) <- names$name
-            
-            shiny$updateSelectInput(session = session, inputId = "selectedPlayer", choices = namedVector)
-            
+
+            shiny$updateSelectInput(
+              session = session,
+              inputId = "selectedPlayer",
+              choices = namedVector
+            )
+
             change_page(paste0("tracker/player?pid=", names$pid[1]))
           }
         )
-    }) |> 
+    }) |>
       shiny$bindEvent(allPlayers(), once = TRUE)
-    
+
     shiny$observe({
-      playerData() |> 
+      playerData() |>
         then(
-          onFulfilled = function(data){
+          onFulfilled = function(data) {
             playerOutput(data, input, output, session)
           }
         )
-    }) |> 
+    }) |>
       shiny$bindEvent(playerData())
-    
-    
+
+
     shiny$observe({
-      if((query() |> is.null())){
+      if ((query() |> is.null())) {
         # change_page(paste0("tracker/player?pid=", input$selectedPlayer))
       } else {
-        if (input$selectedPlayer != query()){
+        if (input$selectedPlayer != query()) {
           change_page(paste0("tracker/player?pid=", input$selectedPlayer))
-        }  
+        }
       }
-    }) |> 
+    }) |>
       shiny$bindEvent(input$selectedPlayer)
   })
 }
