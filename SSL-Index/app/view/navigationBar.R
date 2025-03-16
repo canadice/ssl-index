@@ -1,5 +1,5 @@
 box::use(
-  shiny[moduleServer, NS, tagList, tags, icon, div, uiOutput, renderUI, observe, bindEvent, a, actionButton, p, showModal, removeModal, modalDialog, modalButton, textInput, passwordInput],
+  shiny[moduleServer, NS, tagList, tags, icon, div, uiOutput, renderUI, observe, bindEvent, a, actionButton, actionLink, p, showModal, removeModal, modalDialog, modalButton, textInput, passwordInput],
   shiny.router[route_link, change_page],
   shinyFeedback[feedbackWarning]
 )
@@ -146,7 +146,7 @@ server <- function(id, auth, resAuth) {
         navMenu(
           tagList(
             icon("user"),
-            a("Login", href = "#", inputId = session$ns("login"))
+            actionLink("Login", inputId = session$ns("login"))
           )
         )
       } else {
@@ -161,7 +161,7 @@ server <- function(id, auth, resAuth) {
             navMenu(
               tagList(
                 icon("door-open"),
-                a("Logout", href = "#", inputId = session$ns("logout"))
+                actionLink("Logout", inputId = session$ns("logout"))
               )
             )
           )
