@@ -63,7 +63,18 @@ ui <- function(id) {
     tags$nav(
       class = "ssl-navbar",
       tagList(
-        actionButton(inputId = "nav-toggle", label = "", class = "nav-toggle"),
+        actionButton(inputId = "navToggle", label = "", class = "nav-toggle", ontouchstart = "
+            var navContainer = document.querySelector('.nav-container');
+            var openMaxWidth = '50%';
+
+            if (navContainer) {
+              document.body.appendChild(navContainer);
+              var isOpen = getComputedStyle(navContainer).maxWidth === openMaxWidth;
+              navContainer.style.maxWidth = isOpen ? '0px' : openMaxWidth;
+
+              this.style.left = isOpen ? '0px' : openMaxWidth;
+            }
+          "),
         tags$a(
           href='https://forum.simulationsoccer.com',
           target="_blank",
