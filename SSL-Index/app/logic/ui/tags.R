@@ -16,10 +16,10 @@ flexRow <- function(cont, style = "") {
 #' @export
 navMenu <- function(cont, label = "", items = list()) {
   if (!missing(cont) && label == "") {
-    shiny::tag("div", varArgs = list(cont, class = "nav-toggle"))
+    shiny::tag("div", varArgs = list(cont, class = "nav-menu"))
   } else if (length(label) > 0) {
     div(
-      class = "nav-toggle",
+      class = "nav-menu",
       tagList(
         flexRow(
           style = "align-items: center; gap: 4px;",
@@ -30,12 +30,12 @@ navMenu <- function(cont, label = "", items = list()) {
         ),
         if (length(items) > 0) {
           div(
-            class = "nav-toggle_items",
+            class = "nav-menu_items",
             flexCol(
               tagList(
                 tags_list <- lapply(items, function(item) {
                   div(
-                    class = "nav-toggle_item",
+                    class = "nav-menu_item",
                     item
                   )
                 })
@@ -60,12 +60,12 @@ navMenuItem <- function(cont, label = "", subItems = list()) {
         )
       ),
       div(
-        class = "nav-toggle_sub-items",
+        class = "nav-menu_sub-items",
         div(
           tagList(
             tags_list <- lapply(subItems, function(item) {
               div(
-                class = "nav-toggle_sub-item",
+                class = "nav-menu_sub-item",
                 item
               )
             })

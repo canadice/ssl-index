@@ -213,18 +213,40 @@ h1, h2, h3, h4, h5 {
   background-color: var(--sslBlueD);
   height: 72px;
   margin-bottom: 20px;
-}
-.ssl-navbar .logo {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 12px;
+
+  .nav-toggle {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 25px;
+    width: 25px;
+    background-color: yellow;
+  }
+
+  .nav-container {
+    display: flex;
+    flex-direction: row;
+    margin-left: 128px;
+    margin-right: 12px;
+    height: inherit;
+    max-width: 100%;
+    align-items: end;
+    justify-content: space-between;
+  }
+
+  .logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 12px;
+  }
 }
 
 $navbar-label-height: 32px;
 $navbar-items-width: 112px;
 
-.nav-toggle {
+.nav-menu {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -256,20 +278,20 @@ $navbar-items-width: 112px;
     filter: brightness(90%);
   }
   
-  &:has(.nav-toggle_items):hover {
+  &:has(.nav-menu_items):hover {
     cursor: default;
   }
 
-  &:has(.nav-toggle_items):active {
+  &:has(.nav-menu_items):active {
     filter: none;
   }
 
-  &:hover .nav-toggle_items {
+  &:hover .nav-menu_items {
     display: block;
   }
 }
 
-.nav-toggle_items {
+.nav-menu_items {
   display: none;
   background: #EEEEEE;
   position: absolute;
@@ -283,7 +305,7 @@ $navbar-items-width: 112px;
   border-bottom-left-radius: 2px;
   z-index: 101;
 
-  .nav-toggle_item, .nav-toggle_sub-item {
+  .nav-menu_item, .nav-menu_sub-item {
     border-bottom: 1px solid #AAAAAA;
     border-bottom-left-radius: 2px;
 
@@ -297,11 +319,11 @@ $navbar-items-width: 112px;
       filter: brightness(90%);
     }
   
-    &:has(.nav-toggle_sub-items):hover {
+    &:has(.nav-menu_sub-items):hover {
       cursor: default;
     }
 
-    &:has(.nav-toggle_sub-items):active {
+    &:has(.nav-menu_sub-items):active {
       filter: none;
     }
 
@@ -310,12 +332,12 @@ $navbar-items-width: 112px;
     }
   }
 
-  &:hover .nav-toggle_sub-items {
+  &:hover .nav-menu_sub-items {
     display: block;
   }
 }
 
-.nav-toggle_sub-items {
+.nav-menu_sub-items {
   display: none;
   background: #EEEEEE;
   position: absolute;
@@ -332,6 +354,42 @@ $navbar-items-width: 112px;
   div {
     display: flex;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 767px) {
+  .ssl-navbar {
+    .nav-toggle {
+      display: block;
+    }
+
+    .nav-container {
+      background: red;
+      flex-direction: column;
+      align-items: flex-start;
+      position: absolute;
+      height: 100%;
+      width: 60%;
+      max-width: 60%;
+      overflow: hidden;
+      margin: 0;
+      z-index: 99;
+
+      &> div {
+        flex-direction: column;
+      }
+    }
+
+    .logo {
+      right: 0;
+      left: auto;
+    }
+  }
+
+  .nav-menu {
+    &> div {
+      flex-direction: row;
+    }
   }
 }
 

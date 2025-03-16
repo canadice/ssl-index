@@ -62,51 +62,48 @@ ui <- function(id) {
     ),
     tags$nav(
       class = "ssl-navbar",
-      flexRow(
-        style = "
-          margin-left: 128px;
-          margin-right: 12px;
-          height: inherit;
-          align-items: end;
-          justify-content: space-between;
-        ",
-        tagList(
-          flexRow(
-            tagList(
-              tags$a(
-                href='https://forum.simulationsoccer.com',
-                target="_blank",
-                tags$img(src = 'static/portalwhite.png', height = "70"),
-                class = "logo"
-              ),
-              navMenu(
-                label = "Trackers",
-                items = list(
-                  a("Players", href = route_link("tracker/player")),
-                  a("Organizations", href = route_link("tracker/organization")),
-                  a("Draft Class", href = route_link("tracker/draftclass"))
+      tagList(
+        actionButton(inputId = "nav-toggle", label = "", class = "nav-toggle"),
+        tags$a(
+          href='https://forum.simulationsoccer.com',
+          target="_blank",
+          tags$img(src = 'static/portalwhite.png', height = "70"),
+          class = "logo"
+        ),
+        div(
+          class = "nav-container",
+          tagList(
+            flexRow(
+              tagList(
+                navMenu(
+                  label = "Trackers",
+                  items = list(
+                    a("Players", href = route_link("tracker/player")),
+                    a("Organizations", href = route_link("tracker/organization")),
+                    a("Draft Class", href = route_link("tracker/draftclass"))
+                  )
+                ),
+                navMenu(
+                  label = "Index",
+                  items = list(
+                    a("Index", href = route_link("index/")),
+                    a("Records", href = route_link("index/records")),
+                    a("Standings", href = route_link("index/standings")),
+                    a("Schedule", href = route_link("index/schedule")),
+                    a("Academy", href = route_link("index/academy"))
+                  )
+                ),
+                uiOutput(ns("jobsNavigation")) |> 
+                  withSpinnerCustom(height = 20),
+                navMenu(
+                  div(a("Intro", href = route_link("/")))
                 )
-              ),
-              navMenu(
-                label = "Index",
-                items = list(
-                  a("Index", href = route_link("index/")),
-                  a("Records", href = route_link("index/records")),
-                  a("Standings", href = route_link("index/standings")),
-                  a("Schedule", href = route_link("index/schedule")),
-                  a("Academy", href = route_link("index/academy"))
-                )
-              ),
-              uiOutput(ns("jobsNavigation")) |> 
-                withSpinnerCustom(height = 20),
-              navMenu(
-                div(a("Intro", href = route_link("/")))
               )
+            ),
+            flexRow(
+              uiOutput(ns("yourPlayer")) |> 
+                withSpinnerCustom(height = 20)
             )
-          ),
-          flexRow(
-            uiOutput(ns("yourPlayer")) |> 
-              withSpinnerCustom(height = 20)
           )
         )
       )
