@@ -146,8 +146,9 @@ function(league, season){
 #* Gets outfield game by game data
 #* @get /outfieldGameByGame
 #* @param name:str The selected player
+#* @param season:int The selected season
 #*
-function(name){
+function(name, season = NA){
   indexQuery(
     paste(
       "SELECT 
@@ -168,9 +169,20 @@ function(name){
         g.*
       FROM `gamedataoutfield` AS g 
       JOIN schedule AS s ON g.gid = s.gid
-      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
-      WHERE name = ", paste0("'", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'"), " 
-      ORDER BY g.gid DESC;"
+      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)",
+      if_else(is.na(season), "WHERE TRUE", paste0("WHERE season = ", season)),
+      if_else(
+        name == "ALL", 
+        "", 
+        paste0(
+          "& name = ", 
+          paste0("'", 
+                 name %>% 
+                   str_replace_all(pattern = "'", replacement = "\\\\'"),
+                 "'")
+          )
+        ),
+      "ORDER BY g.gid DESC;"
     )
   )
 }
@@ -257,8 +269,8 @@ function(league, season){
 #* Gets keeper game by game data
 #* @get /keeperGameByGame
 #* @param name:str The selected player
-#*
-function(name){
+#* @param season:int The selected season
+function(name, season = NA){
   indexQuery(
     paste(
       "SELECT
@@ -277,9 +289,20 @@ function(name){
         g.*
       FROM `gamedatakeeper` AS g
       JOIN schedule AS s ON g.gid = s.gid
-      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
-      WHERE name = ", paste0("'", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'"), "
-      ORDER BY g.gid DESC;"
+      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)",
+      if_else(is.na(season), "WHERE TRUE", paste0("WHERE season = ", season)),
+      if_else(
+        name == "ALL", 
+        "", 
+        paste0(
+          "& name = ", 
+          paste0("'", 
+                 name %>% 
+                   str_replace_all(pattern = "'", replacement = "\\\\'"),
+                 "'")
+          )
+        ),
+      "ORDER BY g.gid DESC;"
     )
   )
 }
