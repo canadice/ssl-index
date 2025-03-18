@@ -1,4 +1,5 @@
 box::use(
+  future[plan],
   shiny,
   shiny.router[route, router_server, router_ui],
   shinyFeedback[useShinyFeedback],
@@ -23,6 +24,7 @@ box::use(
 #' @export
 ui <- function(id) {
   ns <- shiny$NS(id)
+  
   shiny$bootstrapPage(
     useShinyFeedback(), # include shinyFeedback
     useShinyjs(), # include shinyjs
@@ -48,6 +50,9 @@ ui <- function(id) {
 #' @export
 server <- function(id) {
   shiny$moduleServer(id, function(input, output, session) {
+    
+    plan("multisession")
+    
     ## Reactives
     resAuth <- shiny$reactiveValues(
       uid = NULL,
