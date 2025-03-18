@@ -187,6 +187,65 @@ function(name, season = NA){
   )
 }
 
+#* Gets outfield game by game data
+#* @get /latestGames
+#* @param name:str The selected player
+#*
+function(name, outfield = TRUE){
+  if(outfield){
+    indexQuery(
+      paste0(
+        "SELECT 
+        CONCAT('S', s.season, ' MD', s.matchday) AS matchday,
+        ti.abbreviation AS opponent,
+        CONCAT(
+          CASE WHEN g.club = s.home THEN s.HomeScore ELSE s.AwayScore END,
+          '-',
+          CASE WHEN g.club = s.home THEN s.AwayScore ELSE s.HomeScore END
+        ) AS result,
+        g.`minutes played`,
+        g.`average rating`,
+        g.goals,
+        g.assists,
+        g.`pass%`,
+        g.`header%`,
+        g.`tackle%`
+      FROM `gamedataoutfield` AS g 
+      JOIN schedule AS s ON g.gid = s.gid
+      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
+      WHERE name = '", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'
+      ORDER BY g.gid DESC
+      LIMIT 10;"
+      )
+    )
+  } else {
+    indexQuery(
+      paste0(
+        "SELECT
+        CONCAT('S', s.season, ' MD', s.matchday) AS matchday,
+        ti.abbreviation AS opponent,
+        CONCAT(
+          CASE WHEN g.club = s.home THEN s.HomeScore ELSE s.AwayScore END,
+          '-',
+          CASE WHEN g.club = s.home THEN s.AwayScore ELSE s.HomeScore END
+        ) AS result,
+        g.`minutes played`,
+        g.`average rating`,
+        (g.`saves parried`+g.`saves parried`+g.`saves tipped`) AS `total saves`,
+        g.`save%`,
+        g.`xg prevented`
+      FROM `gamedatakeeper` AS g
+      JOIN schedule AS s ON g.gid = s.gid
+      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
+      WHERE name = '", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'
+      ORDER BY g.gid DESC
+      LIMIT 10;"
+      )
+    )
+  }
+  
+}
+
 #* Gets keeper index data for season and league
 #* @get /keeper
 #* @param season The selected season
