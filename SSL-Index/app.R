@@ -1,2 +1,7 @@
 # Rhino / shinyApp entrypoint. Do not edit.
-rhino::app()
+# profvis::profvis(
+#   print(
+#     rhino::app()   
+#   )
+# )
+rhino::app() 
