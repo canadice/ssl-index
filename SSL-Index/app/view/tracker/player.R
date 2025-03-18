@@ -99,6 +99,7 @@ server <- function(id) {
       allPlayers() |>
         then(
           onFulfilled = function(names) {
+            print("Starting populating dropdown")
             names <-
               names |>
               dplyr$filter(if (input$retired != 1) status_p > 0 else TRUE) |>
@@ -116,6 +117,7 @@ server <- function(id) {
             )
 
             change_page(paste0("tracker/player?pid=", names$pid[1]))
+            print("Finishing populating dropdown")
           }
         )
     }) |>
@@ -125,7 +127,9 @@ server <- function(id) {
       playerData() |>
         then(
           onFulfilled = function(data) {
+            print("Starting rendering output")
             playerOutput(data, input, output, session)
+            print("Finishing rendering output")
           }
         )
     }) |>

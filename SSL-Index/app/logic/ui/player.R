@@ -91,16 +91,24 @@ playerOutputUI <- function(session){
 
 #' @export
 playerOutput <- function(data, input, output, session){
+  print("Now we are in the output section")
+  
+  print(input$selectedPlayer)
+  
   historyTPE <- shiny$reactive({
     shiny$req(input$selectedPlayer)
     
     pid <- input$selectedPlayer |>
       as.numeric()
     
+    print("Getting TPE History")
+    
     getTpeHistory(pid)
   })
   
   output[["playerName"]] <- shiny$renderUI({
+    print(paste0("Rendering player name", Sys.time()))
+    
     shiny$tagList(
       shiny$h2(paste(data$name, paste0("(", data$class, ")"), sep = " ")),
       shiny$h3(paste0("@", data$username))
@@ -108,6 +116,7 @@ playerOutput <- function(data, input, output, session){
   })
   
   output[["clubLogo"]] <- shiny$renderUI({
+    print(paste0("Rendering club logo", Sys.time()))
     shiny$img(
       src = sprintf("static/logo/%s.png", data$team),
       style = "height: 100px;",
@@ -117,6 +126,7 @@ playerOutput <- function(data, input, output, session){
   })
   
   output[["playerInfo"]] <- shiny$renderUI({
+    print(paste0("Rendering player info", Sys.time()))
     value <-
       data |>
       dplyr$select(
@@ -196,6 +206,8 @@ playerOutput <- function(data, input, output, session){
       }
     }
     
+    print(paste0("Rendering player games", Sys.time()))
+    
     if (!(matches |> is_empty())){
       matches |>
         dplyr$slice_head(n = 5) |>
@@ -206,6 +218,7 @@ playerOutput <- function(data, input, output, session){
   })
   
   output[["playerAttributes"]] <- shiny$renderUI({
+    print(paste0("Rendering player attributes", Sys.time()))
     attributeReactable(data, session, output)
   })
   
@@ -213,6 +226,7 @@ playerOutput <- function(data, input, output, session){
     historyTPE() |>
       then(
         onFulfilled = function(tpe){
+          print(paste0("Rendering player progression", Sys.time()))
           if(nrow(tpe) < 2){
             plotly$plot_ly(mode = "markers", type = "scatter") |>
               plotly$add_annotations(
@@ -323,6 +337,7 @@ playerOutput <- function(data, input, output, session){
     ) |>
       then(
         onFulfilled = function(list){
+          print(paste0("Rendering player history", Sys.time()))
           shiny$tabsetPanel(
             shiny$tabPanel(
               title = "TPE History",
