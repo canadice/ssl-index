@@ -15,6 +15,7 @@ box::use(
   app/logic/ui/tags[flexRow],
   app/logic/ui/spinner[withSpinnerCustom],
   app/logic/db/api[readAPI],
+  app/logic/db/get[getRecentCreates, getTopEarners],
   app/logic/constant,
 )
 
@@ -271,7 +272,7 @@ server <- function(id, usergroup) {
       #### Weekly TPE Leaders ####
       output$weeklyLeaders <- renderReactable({
         data <- 
-          readAPI(url = "https://api.simulationsoccer.com/player/topEarners") |> 
+          getTopEarners() |> 
           future_promise()
         
         data |> 
@@ -288,12 +289,8 @@ server <- function(id, usergroup) {
       #### Recently created ####
       output$created <- renderReactable({
         data <- 
-          readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) |> 
-          arrange(created |> desc()) |> 
-          slice_head(n = 5) |> 
-          select(Pos = position, Name = name, Username = username) |> 
+          getRecentCreates() |>
           future_promise()
-        
         
         data |> 
           then(

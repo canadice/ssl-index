@@ -183,34 +183,21 @@ playerOutput <- function(data, input, output, session){
     if (data$pos_gk == 20){
       matches <-
         readAPI(
-          url = "https://api.simulationsoccer.com/index/keeperGameByGame",
-          query = list(name = data$name)
+          url = "https://api.simulationsoccer.com/index/latestGames",
+          query = list(name = data$name, outfield = FALSE)
         )
-      
-      if (!(matches |> is_empty())){
-        matches <-
-          matches |>
-          dplyr$select(1:8)
-      }
     } else {
       matches <-
         readAPI(
-          url = "https://api.simulationsoccer.com/index/outfieldGameByGame",
+          url = "https://api.simulationsoccer.com/index/latestGames",
           query = list(name = data$name)
         )
-      
-      if (!(matches |> is_empty())){
-        matches <-
-          matches |>
-          dplyr$select(1:10)
-      }
     }
     
     print(paste0("Rendering player games", Sys.time()))
     
     if (!(matches |> is_empty())){
       matches |>
-        dplyr$slice_head(n = 5) |>
         recordReactable()
     } else {
       NULL
