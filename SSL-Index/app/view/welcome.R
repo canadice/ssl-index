@@ -30,7 +30,7 @@ ui <- function(id) {
         flexRow(
           shiny$tagList(
             shiny$tags$style("align-items: center; justify-content: space-between;"),
-            shiny$uiOutput(ns("scheduleTitlePadder")),
+            shiny$div(style = "width: 150px;", class = "hide-in-mobile"),
             shiny$div("Latest Results", style = "width: 100%;"),
             shiny$div(
               shiny$uiOutput(ns("leagueSelector")),
@@ -165,14 +165,17 @@ server <- function(id, usergroup) {
       #### Latest results ####
       schedule <- shiny$reactive({
         shiny$req(input$selectedLeague)
-        readAPI(url = "https://api.simulationsoccer.com/index/schedule", 
-                    query = list(league = input$selectedLeague, season = constant$currentSeason$season)
-        )
-      })
-      
-      # Empty element with width matching selector to make spacing of title elements easier
-      output$scheduleTitlePadder <- shiny$renderUI({
-        shiny$div(style = "width: 150px;", class = "hide-in-mobile")
+        
+        league <- input$selectedLeague
+        
+        readAPI(
+          url = "https://api.simulationsoccer.com/index/schedule", 
+          query = list(
+            league = league, 
+            season = constant$currentSeason$season
+          )
+        ) |> 
+          future_promise()
       })
       
       output$leagueSelector <- shiny$renderUI({
@@ -195,74 +198,75 @@ server <- function(id, usergroup) {
       output$schedule <- shiny$renderUI({
         league <- input$selectedLeague
         
-        if(schedule() |> is_empty()){
-          "No schedule is available yet"
-        } else {
-          schedule <- schedule()
-          
-          shiny$tagList(
-            shiny$div(
-              class = "results",
-              id = "results-scroll",
-              lapply(1:nrow(schedule),
-                     function(i){
-                       card(
-                         card_header(
-                           shiny$div(
-                             shiny$div(style = "display: inline-block; width: 40px;", shiny$img(src = sprintf("%s.png", schedule[i, "Home"]), style = "height: 40px;", alt = schedule[i, "Home"], title = schedule[i, "Home"])), 
-                             shiny$strong(" - "), 
-                             shiny$div(style = "display: inline-block; width: 40px;", shiny$img(src = sprintf("%s.png", schedule[i, "Away"]), style = "height: 40px;", alt = schedule[i, "Away"], title = schedule[i, "Away"])),
-                             align = "center"
-                           )
-                         ),
-                         card_body(
-                           shiny$h4(paste(schedule[i, "HomeScore"], schedule[i, "AwayScore"], sep = "-") |> 
-                                str_replace_all(pattern = "NA", replacement = " ")
-                           )
-                         ),
-                         card_footer(
-                           paste(
-                             paste(
-                               if_else(schedule[i, "MatchType"] == 0, 
-                                       "Cup",
-                                       if_else(schedule[i, "MatchType"] == 1, 
-                                               "Major League",
-                                               if_else(schedule[i, "MatchType"] == 2, "Minor League", 
-                                                       if_else(schedule[i, "MatchType"] == 5, "WSFC","Friendlies")))),
-                               schedule[i, "MatchDay"], sep = ", "
-                             ),
-                             paste(
-                               schedule[i, "IRLDate"]
-                             ),
-                             sep = "<br>"
-                           ) |> 
-                             shiny$HTML() |> 
-                             shiny$div(align = "center")
-                         )
-                       )
-                     })
-            ),
-            shiny$tags$script(shiny$HTML("
-            $(document).ready(function() {
-              var div = document.getElementById('results-scroll');
-              var width = 0;
-              for (var i = 0; i < div.children.length; i++) {
-                var score = $(div.children[i]).find('h4').text().trim();
-                if (!score.match(/^\\d+-\\d+$/)) {
-                  width = div.children[i].clientWidth * (i-6);
-                  break;
-                } else {
-                  width = div.children[i].clientWidth * i
-                }
+        schedule() |> 
+          then(
+            onFulfilled = function(data){
+              if(data |> is_empty()){
+                "No schedule is available yet"
+              } else {
+                shiny$tagList(
+                  shiny$div(
+                    class = "results",
+                    id = "results-scroll",
+                    lapply(1:nrow(data),
+                           function(i){
+                             card(
+                               card_header(
+                                 shiny$div(
+                                   shiny$div(style = "display: inline-block; width: 40px;", shiny$img(src = sprintf("%s.png", data[i, "Home"]), style = "height: 40px;", alt = data[i, "Home"], title = data[i, "Home"])), 
+                                   shiny$strong(" - "), 
+                                   shiny$div(style = "display: inline-block; width: 40px;", shiny$img(src = sprintf("%s.png", data[i, "Away"]), style = "height: 40px;", alt = data[i, "Away"], title = data[i, "Away"])),
+                                   align = "center"
+                                 )
+                               ),
+                               card_body(
+                                 shiny$h4(paste(data[i, "HomeScore"], data[i, "AwayScore"], sep = "-") |> 
+                                            str_replace_all(pattern = "NA", replacement = " ")
+                                 )
+                               ),
+                               card_footer(
+                                 paste(
+                                   paste(
+                                     if_else(data[i, "MatchType"] == 0, 
+                                             "Cup",
+                                             if_else(data[i, "MatchType"] == 1, 
+                                                     "Major League",
+                                                     if_else(data[i, "MatchType"] == 2, "Minor League", 
+                                                             if_else(data[i, "MatchType"] == 5, "WSFC","Friendlies")))),
+                                     data[i, "MatchDay"], sep = ", "
+                                   ),
+                                   paste(
+                                     data[i, "IRLDate"]
+                                   ),
+                                   sep = "<br>"
+                                 ) |> 
+                                   shiny$HTML() |> 
+                                   shiny$div(align = "center")
+                               )
+                             )
+                           })
+                  ),
+                shiny$tags$script(
+                  shiny$HTML("
+                    $(document).ready(function() {
+                      var div = document.getElementById('results-scroll');
+                      var width = 0;
+                      for (var i = 0; i < div.children.length; i++) {
+                        var score = $(div.children[i]).find('h4').text().trim();
+                        if (!score.match(/^\\d+-\\d+$/)) {
+                          width = div.children[i].clientWidth * (i-6);
+                          break;
+                        } else {
+                          width = div.children[i].clientWidth * i
+                        }
+                      }
+                      div.scrollLeft = width;
+                    });
+                  "))
+                )
               }
-              div.scrollLeft = width;
-            });
-          "))
+            }
           )
-        }
-        
-        
-        
       })
       #### Weekly TPE Leaders ####
       output$weeklyLeaders <- renderReactable({
