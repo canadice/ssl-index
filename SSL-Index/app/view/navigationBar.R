@@ -53,6 +53,28 @@ ui <- function(id) {
                       getCookies();
                     })
                   "),
+    tags$script("
+      // Copy the content of the main nav to the mobile nav after a short delay
+      // to ensure the main nav is fully rendered before we try to copy it over.
+      // Doing it this way rather than typing out another nav for mobile.
+      window.addEventListener('load', function() {
+        console.log('Window loaded, setting timeout to copy nav items...');
+        setTimeout(function() {
+          console.log('Timeout complete, copying nav items...');
+          const mobileNav = document.querySelector('.nav-container_narrow');
+          const desktopNav = document.querySelector('.nav-container');
+
+          if (desktopNav) {
+            console.log('Copying nav items from desktop to mobile...');
+            const children = Array.from(desktopNav.childNodes);
+            console.log(children);
+            children.forEach(function(child) {
+              mobileNav.appendChild(child.cloneNode(true));
+            });
+          }
+        });
+      });
+    "),
     tags$head(
       tags$link(
         rel = "icon", 
@@ -60,18 +82,20 @@ ui <- function(id) {
         href = "favicon.ico"),
       tags$title("SSL Portal")
     ),
-    actionButton(inputId = "navToggle", label = "", class = "nav-toggle", ontouchstart = "
-        var navContainer = document.querySelector('.nav-container');
-        var openMaxWidth = '50%';
+    tags$nav(
+      class = "nav-container_narrow",
+      actionButton(inputId = "navToggle", label = "", class = "nav-toggle", ontouchstart = "
+        var mobileNav = document.querySelector('.nav-container_narrow');
+        var openMaxWidth = '80%';
 
-        if (navContainer) {
-          document.body.prepend(navContainer);
-          var isOpen = getComputedStyle(navContainer).maxWidth === openMaxWidth;
-          navContainer.style.maxWidth = isOpen ? '0px' : openMaxWidth;
+        if (mobileNav) {
+          var isOpen = getComputedStyle(mobileNav).maxWidth === openMaxWidth;
+          mobileNav.style.maxWidth = isOpen ? '0px' : openMaxWidth;
 
           this.style.left = isOpen ? '0px' : `calc(${openMaxWidth} - 40px)`;
         }
       "),
+    ),
     tags$nav(
       class = "ssl-navbar",
       tagList(
