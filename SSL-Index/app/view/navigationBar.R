@@ -128,16 +128,14 @@ ui <- function(id) {
                     a("Academy", href = route_link("index/academy"))
                   )
                 ),
-                uiOutput(ns("jobsNavigation")) |> 
-                  withSpinnerCustom(height = 20),
                 navMenu(
                   div(a("Intro", href = route_link("/")))
-                )
+                ),
+                uiOutput(ns("jobsNavigation"))
               )
             ),
             flexRow(
-              uiOutput(ns("yourPlayer")) |> 
-                withSpinnerCustom(height = 20)
+              uiOutput(ns("yourPlayer"))
             )
           )
         )
