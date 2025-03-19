@@ -100,3 +100,21 @@ getTopEarners <- function() {
     LIMIT 10;"
   )
 }
+
+#' @export
+getPlayerNames <- function(retired = TRUE, freeAgent = TRUE){
+  portalQuery(
+    paste0(
+      "SELECT name, pid
+      FROM playerdata ",
+      dplyr$if_else(!freeAgent, 
+              "WHERE team NOT IN ('FA', 'Retired')", 
+              dplyr$if_else(!retired,
+                      "WHERE status_p > 0",
+                      "WHERE status_p >= 0"
+                      )
+              ),
+      " ORDER BY name;"
+    )
+  )
+}

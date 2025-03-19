@@ -8,6 +8,7 @@ box::use(
 
 box::use(
   app/logic/db/api[readAPI],
+  app/logic/db/get[getPlayerNames],
   app/logic/ui/player[playerOutput, playerOutputUI],
   app/logic/ui/spinner[withSpinnerCustom],
 )
@@ -31,13 +32,13 @@ ui <- function(id) {
             shiny$radioButtons(
               ns("retired"),
               label = "Include retired: ",
-              choices = c("Yes" = 1, "No" = 0),
+              choices = c("Yes" = TRUE, "No" = FALSE),
               inline = TRUE
             ),
             shiny$radioButtons(
               ns("freeAgent"),
               label = "Include free agents: ",
-              choices = c("Yes" = 1, "No" = 0),
+              choices = c("Yes" = TRUE, "No" = FALSE),
               inline = TRUE
             )
           ),
@@ -57,8 +58,10 @@ server <- function(id) {
   shiny$moduleServer(id, function(input, output, session) {
     #### Data ####
     allPlayers <- shiny$reactive({
-      readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |>
-        dplyr$select(name, pid, username, team, status_p) |>
+      retired <- input$retired |> as.logical()
+      fa <- input$freeAgent |> as.logical()
+      
+      getPlayerNames(retired = retired, freeAgent = fa) |>
         future_promise()
     })
 
@@ -100,12 +103,6 @@ server <- function(id) {
         then(
           onFulfilled = function(names) {
             print("Starting populating dropdown")
-            names <-
-              names |>
-              dplyr$filter(if (input$retired != 1) status_p > 0 else TRUE) |>
-              dplyr$filter(if (input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) |>
-              dplyr$arrange(name)
-
             namedVector <- names$pid
 
             names(namedVector) <- names$name
