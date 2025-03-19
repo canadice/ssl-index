@@ -56,28 +56,28 @@ contractProcessServer <- function(id, uid) {
       data <- reactive({
         req(input$selectedPlayer)
         getBudgetPlayer(pid = input$selectedPlayer)
-      }) |> 
+      }) %>% 
         bindEvent(
           input$selectedPlayer,
           updated()
         )
       
       organizations <- reactive({
-        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") |> 
-          select(id = ID, name = organization, abbr = abbreviation) |> 
-          filter(!is.na(name)) |> 
-          unique() |> 
+        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
+          select(id = ID, name = organization, abbr = abbreviation) %>% 
+          filter(!is.na(name)) %>% 
+          unique() %>% 
           future_promise()
       })
         
       
       #### OUTPUTS ####
       output$selectPlayer <- renderUI({
-        allNames() |> 
+        allNames() %>% 
           then(
             onFulfilled = function(names) {
               names <- 
-                names |>
+                names %>%
                 filter(status_p > 0)
               
               namedVector <- names$pid
@@ -105,7 +105,7 @@ contractProcessServer <- function(id, uid) {
       })
       
       output$contract <- renderUI({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
             tagList(
@@ -130,25 +130,25 @@ contractProcessServer <- function(id, uid) {
       })
       
       output$salary <- renderUI({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               tagList(
                 column(3, 
                        autonumericInput(session$ns("salary0"), label = paste0('Salary S', currentSeason$season), value = data$salary0, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
-                       selectizeInput(session$ns("clause0"), label = paste0('Clauses in S', currentSeason$season), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause0 |> str_split(pattern = ",") |> unlist())
+                       selectizeInput(session$ns("clause0"), label = paste0('Clauses in S', currentSeason$season), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause0 %>% str_split(pattern = ",") %>% unlist())
                 ),
                 column(3, 
                        autonumericInput(session$ns("salary1"), label = paste0('Salary S', currentSeason$season+1), value = data$salary1, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
-                       selectizeInput(session$ns("clause1"), label = paste0('Clauses in S', currentSeason$season+1), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause1 |> str_split(pattern = ",") |> unlist())
+                       selectizeInput(session$ns("clause1"), label = paste0('Clauses in S', currentSeason$season+1), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause1 %>% str_split(pattern = ",") %>% unlist())
                 ),
                 column(3, 
                        autonumericInput(session$ns("salary2"), label = paste0('Salary S', currentSeason$season+2), value = data$salary2, minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
-                       selectizeInput(session$ns("clause2"), label = paste0('Clauses in S', currentSeason$season+2), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause2 |> str_split(pattern = ",") |> unlist())
+                       selectizeInput(session$ns("clause2"), label = paste0('Clauses in S', currentSeason$season+2), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause2 %>% str_split(pattern = ",") %>% unlist())
                 ),
                 column(3, 
                        autonumericInput(session$ns("salary3"), label = paste0('Salary S', currentSeason$season+3), value = data$salary3, , minimumValue = 1000000, maximumValue = 7000000, step = 100000, currencySymbol = "$", currencySymbolPlacement = "p", digitGroupSeparator = ",", decimalPlaces = 0, wheelStep = 100000, wheelOn = "hover"),
-                       selectizeInput(session$ns("clause3"), label = paste0('Clauses in S', currentSeason$season+3), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause3 |> str_split(pattern = ",") |> unlist())
+                       selectizeInput(session$ns("clause3"), label = paste0('Clauses in S', currentSeason$season+3), choices = c("", "VET", "MAJ", "NMC"), multiple = TRUE, selected = data$clause3 %>% str_split(pattern = ",") %>% unlist())
                 )
               )
             })
@@ -182,8 +182,8 @@ contractProcessServer <- function(id, uid) {
         
         updated(updated() + 1)
         
-        showToast(type = "success", "The contract has been updated!")
-      }) |> 
+        showToast(.options = myToastOptions,type = "success", "The contract has been updated!")
+      }) %>% 
         bindEvent(
           input$update
         )

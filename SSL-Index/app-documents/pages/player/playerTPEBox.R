@@ -102,7 +102,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
               if(completedActivityCheck(data$pid)){
                 actionButton(
                   session$ns("activityCheck"),
-                  tippy("Activity Check", "You have already completed this week's Activity Check.", theme = "material"),
+                  tippy("Activity Check", "You have already completed this week's Activity Check.", theme = "ssl", arrow = TRUE),
                   disabled = ""
                 )  
               } else {
@@ -150,7 +150,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
               
               updateTPE(pid = data$pid, tpe = tpeSummary)
               
-              showToast(type = "success", "You have successfully claimed your Activity Check for the week!")
+              showToast(.options = myToastOptions,type = "success", "You have successfully claimed your Activity Check for the week!")
               
               if(tpeBanked() |> class() == "numeric"){
                 tpeBanked(tpeBanked() + tpeEarned)  
@@ -212,7 +212,7 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
               
               updateTPE(pid = data$pid, tpe = tpeSummary)
               
-              showToast(type = "success", "You have successfully claimed your Training Camp for the season.")
+              showToast(.options = myToastOptions,type = "success", "You have successfully claimed your Training Camp for the season.")
               
               if(tpeBanked() |> class() == "numeric"){
                 tpeBanked(tpeBanked() + tpeSummary$tpe)  

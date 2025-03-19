@@ -60,7 +60,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
           } else {
             actionButton(
               inputId = session$ns("goToRegression"),
-              tippy("Regress", "You do not need to regress your player", theme = "material"),
+              tippy("Regress", "You do not need to regress your player", theme = "ssl", arrow = TRUE),
               disabled = TRUE
             )
           }
@@ -76,7 +76,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 } else {
                   actionButton(
                     inputId = session$ns("goToRegression"),
-                    tippy("Regress", "You do not need to regress your player", theme = "material"),
+                    tippy("Regress", "You do not need to regress your player", theme = "ssl", arrow = TRUE),
                     disabled = TRUE
                   )
                 }
@@ -96,7 +96,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
           } else {
             actionButton(
               inputId = session$ns("goToUpdate"),
-              tippy("Update", "You cannot update your player. You must first regress them.", theme = "material"),
+              tippy("Update", "You cannot update your player. You must first regress them.", theme = "ssl", arrow = TRUE),
               disabled = TRUE
             )
           }
@@ -113,7 +113,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
                 } else {
                   actionButton(
                     inputId = session$ns("goToUpdate"),
-                    tippy("Update", "You cannot update your player. You must first regress them.", theme = "material"),
+                    tippy("Update", "You cannot update your player. You must first regress them.", theme = "ssl", arrow = TRUE),
                     disabled = TRUE
                   )
                 }
@@ -212,7 +212,7 @@ playerOverviewBoxServer <- function(id, data, tpeTotal = tpeTotal, tpeBanked = t
               
               completeRetirement(pid = data$pid)
               
-              showToast(type = "success", "You have now retired your player.")
+              showToast(.options = myToastOptions,type = "success", "You have now retired your player.")
               
               updateTabItems(mainSession, "tabs", "welcome")
             }

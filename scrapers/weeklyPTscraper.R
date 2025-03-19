@@ -6,7 +6,7 @@ require(fuzzyjoin)
 
 ### The link to the Weekly PT thread and adding multiple pages (forum has max 10 posts per page)
 url <- 
-  "https://forum.simulationsoccer.com/showthread.php?tid=5485" %>% 
+  "https://forum.simulationsoccer.com/showthread.php?tid=6118" %>% 
   paste(., "&page=", 1:20, sep = "")
 
 

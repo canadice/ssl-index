@@ -7,20 +7,20 @@ playerUpdateBoxUI <- function(id) {
         column(width = 12,
                uiOutput(ns("selectPlayer"))
         )
-      ) |> 
-        div(align = "center", id = ns("playerSelector"))  |>
+      ) %>% 
+        div(align = "center", id = ns("playerSelector"))  %>%
         hidden(),
       ## Selects player roles from a dropdown
-      fluidRow(uiOutput(ns("roleSelector")) |> column(width = 12)),
+      fluidRow(uiOutput(ns("roleSelector")) %>% column(width = 12)),
       fluidRow(
         column(
           width = 4,
-          h4("Physical " |> strong(), align = "center"),
+          h4("Physical " %>% strong(), align = "center"),
           tagList(
             c(
               "acceleration", "agility", "balance", "jumping reach",
               "natural fitness", "pace", "stamina", "strength"
-            ) |>
+            ) %>%
               map(
                 .x = .,
                 .f =
@@ -30,12 +30,12 @@ playerUpdateBoxUI <- function(id) {
         ),
         column(
           width = 4,
-          h4("Mental " |> strong(), align = "center"),
+          h4("Mental " %>% strong(), align = "center"),
           c(
             "aggression", "anticipation", "bravery", "composure", "concentration",
             "decisions", "determination", "flair", "leadership", "off the ball",
             "positioning", "teamwork", "vision", "work rate"
-          ) |>
+          ) %>%
             map(
               .x = .,
               .f =
@@ -44,7 +44,7 @@ playerUpdateBoxUI <- function(id) {
         ),
         column(
           width = 4,
-          h4("Technical " |> strong(), align = "center"),
+          h4("Technical " %>% strong(), align = "center"),
           uiOutput(ns("technical"))
         )
       ),
@@ -81,10 +81,10 @@ playerUpdateBoxUI <- function(id) {
               )
             )
           )
-        ) |>
+        ) %>%
           column(width = 12)
-      ) |>
-        div(id = ns("outfieldExtras")) |>
+      ) %>%
+        div(id = ns("outfieldExtras")) %>%
         hidden(),
       fluidRow(
         column(
@@ -101,8 +101,8 @@ playerUpdateBoxUI <- function(id) {
           ),
           uiOutput(ns("verifyButton"))
         )
-      ) |>
-        div(id = ns("buttonsUpdating")) |>
+      ) %>%
+        div(id = ns("buttonsUpdating")) %>%
         hidden(),
       fluidRow(
         column(
@@ -123,11 +123,11 @@ playerUpdateBoxUI <- function(id) {
             class = "primary-button"
           )
         )
-      ) |>
-        div(id = ns("buttonsRegression")) |>
+      ) %>%
+        div(id = ns("buttonsRegression")) %>%
         hidden()
-    ) |>
-      div(id = ns("attributeUpdate")) |>
+    ) %>%
+      div(id = ns("attributeUpdate")) %>%
       hidden()
   )
 }
@@ -139,7 +139,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       #### OUTFIELD OUTPUTS ####
       # Player selector output
       output$selectPlayer <- renderUI({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
                 if(data$pos_gk == 20){
@@ -163,23 +163,23 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       # Dynamic UI for position selector
       output$positionSelector <- renderUI({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
-              posPrim <- positions[names(positions) %in% (data |> 
-                                                            select(pos_st:pos_gk) |> 
-                                                            pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                            filter(xp == 20) |> 
-                                                            mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                            select(pos) |> unlist())
+              posPrim <- positions[names(positions) %in% (data %>% 
+                                                            select(pos_st:pos_gk) %>% 
+                                                            pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                            filter(xp == 20) %>% 
+                                                            mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                            select(pos) %>% unlist())
               ]
               
-              posSec <- positions[names(positions) %in% (data |> 
-                                                           select(pos_st:pos_gk) |> 
-                                                           pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                           filter(xp <= 15, xp >= 10) |> 
-                                                           mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                           select(pos) |> unlist())
+              posSec <- positions[names(positions) %in% (data %>% 
+                                                           select(pos_st:pos_gk) %>% 
+                                                           pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                           filter(xp <= 15, xp >= 10) %>% 
+                                                           mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                           select(pos) %>% unlist())
               ]
               
               posRem <- positions[!(positions %in% c(posPrim, posSec))]
@@ -212,19 +212,19 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       # Dynamic UI for trait selectors
       output$traitSelector <- renderUI({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
-              currentTraits <- data$traits |> str_split(pattern = traitSep, simplify = TRUE) |> unlist()
+              currentTraits <- data$traits %>% str_split(pattern = traitSep, simplify = TRUE) %>% unlist()
               nrTraits <- length(currentTraits)
               
               tagList(
                 checkboxGroupInput(
                   session$ns("traits"), 
                   paste("Select", nrTraits,"traits:"), 
-                  choices = traits |> unlist(use.names = FALSE), 
+                  choices = traits %>% unlist(use.names = FALSE), 
                   selected = currentTraits
-                ) |> 
+                ) %>% 
                   div(class = "multicol"),
                 tags$script(paste("
                     Shiny.addCustomMessageHandler('disableCheckbox', function(checkboxId) {
@@ -245,7 +245,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                         }
                       }
                     });
-                  ", sep = "") |> HTML())
+                  ", sep = "") %>% HTML())
               )
             }
           )
@@ -258,7 +258,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
         set tactic. There exists many different roles with different importances given to specific
         attributes. Selecting a role and duty in the list below will highlight the <span
         class='keyAttribute'>very important</span> and
-        <span class='importantAttribute'>important</span>          attributes.") |> HTML(),
+        <span class='importantAttribute'>important</span>          attributes.") %>% HTML(),
           br(),
           selectInput(
             session$ns("selectedRole"), 
@@ -384,8 +384,8 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
         #   disable_list <- "none"
         # }
         
-        session$sendCustomMessage("disableCheckbox", disable_list |> unique())
-      }) |> 
+        session$sendCustomMessage("disableCheckbox", disable_list %>% unique())
+      }) %>% 
         bindEvent(
           input$traits,
           ignoreInit = FALSE,
@@ -394,7 +394,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       # Dynamic UI for footedness selector
       output$footednessSelector <- renderUI({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               left <- data$`left foot` 
@@ -412,13 +412,13 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       })
       #### COST OUTPUT ####
       # All the cost outputs
-      editableAttributes |> 
+      editableAttributes %>% 
         lapply(
           X = .,
           FUN = function(x){
             output[[paste0("cost", x)]] <- 
               renderUI({
-                if(session$input[[x]] |> is.na() | session$input[[x]] < 5 | session$input[[x]] > 20){
+                if(session$input[[x]] %>% is.na() | session$input[[x]] < 5 | session$input[[x]] > 20){
                   paste(
                     "You need to input a value between 5 and 20."
                   )
@@ -440,7 +440,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       #### ATTRIBUTE HIGHLIGHTS BASED ON ROLE ####
       observe({
-        editableAttributes |> 
+        editableAttributes %>% 
           lapply(
             X = .,
             FUN = function(x){
@@ -451,7 +451,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   feedback(
                     session = session,
                     show = TRUE,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     color = importantColor,
                     icon = shiny::icon("exclamation-sign", lib = "glyphicon")
                   ) 
@@ -459,51 +459,51 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   feedback(
                     session = session,
                     show = TRUE,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     color = keyColor,
                     icon = shiny::icon("exclamation-sign", lib = "glyphicon")
                   )
                 } else {
                   hideFeedback(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " ")
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ")
                   )
                 }
               }
             }
           )
-      }) |> bindEvent(input$selectedRole)
+      }) %>% bindEvent(input$selectedRole)
       
       # Dynamic technical attributes 
       output$technical <- renderUI({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
-              if(input$playerType |> is.null()){
+              if(input$playerType %>% is.null()){
                 if(data$pos_gk != 20){
                   c(
                     "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
                     "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
                     "Passing", "Penalty Taking", "Tackling", "Technique"
-                  ) |> 
-                    str_to_lower() |> 
+                  ) %>% 
+                    str_to_lower() %>% 
                     map(
                       .x = .,
                       .f = 
                         ~ attributeInput(ns = session$ns, name = .x, value = data[,.x])
                     )
                 } else {
-                  attributes |> 
+                  attributes %>% 
                     filter(
                       group %in% c("Goalkeeper", "Technical"),
                       keeper == "TRUE"
-                    ) |> 
+                    ) %>% 
                     select(
                       attribute
-                    ) |> 
-                    unlist() |> 
-                    unname() |> 
-                    str_to_lower() |> 
+                    ) %>% 
+                    unlist() %>% 
+                    unname() %>% 
+                    str_to_lower() %>% 
                     map(
                       .x = .,
                       .f = 
@@ -516,25 +516,25 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
                     "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
                     "Passing", "Penalty Taking", "Tackling", "Technique"
-                  ) |> 
-                    str_to_lower() |> 
+                  ) %>% 
+                    str_to_lower() %>% 
                     map(
                       .x = .,
                       .f = 
                         ~ attributeInput(ns = session$ns, name = .x, value = if_else(updating() == "rerolling", 5, data[,.]))
                     )
                 } else {
-                  attributes |> 
+                  attributes %>% 
                     filter(
                       group %in% c("Goalkeeper", "Technical"),
                       keeper == "TRUE"
-                    ) |> 
+                    ) %>% 
                     select(
                       attribute
-                    ) |> 
-                    unlist() |> 
-                    unname() |> 
-                    str_to_lower() |> 
+                    ) %>% 
+                    unlist() %>% 
+                    unname() %>% 
+                    str_to_lower() %>% 
                     map(
                       .x = .,
                       .f = 
@@ -561,7 +561,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       # fixes maximum value when regressing
       # only resets value when resetting
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               shinyjs::hide("attributeOverview")
@@ -572,16 +572,16 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               updating("updating")
               
               delay(500, {
-                data |> 
-                  select(acceleration:throwing) |> 
-                  select(!c(`natural fitness`, stamina)) |> 
-                  colnames() |> 
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!c(`natural fitness`, stamina)) %>% 
+                  colnames() %>% 
                   map(
                     .x = .,
                     .f = function(x){
                       updateNumericInput(
                         session = session,
-                        inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                        inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                         value = data[, x],
                         min = data[, x],
                         max = 20
@@ -592,85 +592,85 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToUpdate,
           ignoreInit = TRUE
         )
       
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               bank <- tpeBanked()
               
               if(bank < 0){
-                showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
-              } else if(editableAttributes |> sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) |> unlist() |> any()){
-                showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
+                showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+              } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
+                showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
               } else if(updating() == "updating"){
                 ##### UPDATING #####
                 update <- 
-                  updateSummary(current = data, inputs = input) |> 
+                  updateSummary(current = data, inputs = input) %>% 
                   left_join(
-                    tpeCost |> 
+                    tpeCost %>% 
                       select(value, cumCost),
                     by = c("old" = "value")
-                  ) |> 
+                  ) %>% 
                   left_join(
-                    tpeCost |> 
+                    tpeCost %>% 
                       select(value, cumCost),
                     by = c("new" = "value"),
                     suffix = c("_old", "_new")
-                  ) |> 
+                  ) %>% 
                   mutate(
                     change = cumCost_old - cumCost_new
                   ) 
                 
                 if(nrow(update) > 0){
                   if(any((update$old - update$new) > 0)){
-                    showToast("error", paste("You cannot reduce attributes in a regular update.",
+                    showToast(.options = myToastOptions,"error", paste("You cannot reduce attributes in a regular update.",
                                              paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")))
                   } else {
                     modalVerify(update, session = session)
                   }
                 } else {
-                  showToast(type = "warning", "You have not changed your build yet, there is nothing to update.")
+                  showToast(.options = myToastOptions,type = "warning", "You have not changed your build yet, there is nothing to update.")
                 }
               } else {
                 ##### REDISTRIBUTING and REROLLING #####
                 update <- 
-                  updateSummary(current = data, inputs = input) |> 
+                  updateSummary(current = data, inputs = input) %>% 
                   left_join(
-                    tpeCost |> 
+                    tpeCost %>% 
                       select(value, cumCost),
                     by = c("old" = "value")
-                  ) |> 
+                  ) %>% 
                   left_join(
-                    tpeCost |> 
+                    tpeCost %>% 
                       select(value, cumCost),
                     by = c("new" = "value"),
                     suffix = c("_old", "_new")
-                  ) |> 
+                  ) %>% 
                   mutate(
                     change = cumCost_old - cumCost_new
                   ) 
                 
                 changes <- 
-                  update |> 
+                  update %>% 
                   mutate(
                     direction = sign(change)
-                  ) |> 
-                  group_by(direction) |> 
+                  ) %>% 
+                  group_by(direction) %>% 
                   summarize(
-                    tpeChange = sum(change) |> abs()
-                  ) |> 
+                    tpeChange = sum(change) %>% abs()
+                  ) %>% 
                   ungroup()
                 
                 # If no reduction occurs add a row that says 0 tpeChange for the if clause to work
                 if(!any(changes$direction == 1)){
                   changes <-
-                    changes |> 
+                    changes %>% 
                     add_row(
                       direction = 1,
                       tpeChange = 0
@@ -679,24 +679,24 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 
                 if(input$playerType == "Outfield"){
                   # Gets current primary and secondary positions and their number
-                  posPrim <- positions[names(positions) %in% (data |> 
-                                                                select(pos_st:pos_gk) |> 
-                                                                pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                                filter(xp == 20) |> 
-                                                                mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                                select(pos) |> unlist())
+                  posPrim <- positions[names(positions) %in% (data %>% 
+                                                                select(pos_st:pos_gk) %>% 
+                                                                pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                filter(xp == 20) %>% 
+                                                                mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                select(pos) %>% unlist())
                   ]
                   
-                  posSec <- positions[names(positions) %in% (data |> 
-                                                               select(pos_st:pos_gk) |> 
-                                                               pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                               filter(xp <= 15, xp >= 10) |> 
-                                                               mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                               select(pos) |> unlist())
+                  posSec <- positions[names(positions) %in% (data %>% 
+                                                               select(pos_st:pos_gk) %>% 
+                                                               pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                               filter(xp <= 15, xp >= 10) %>% 
+                                                               mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                               select(pos) %>% unlist())
                   ]
                   
                   # Gets current traits and their number
-                  currentTraits <- data$traits |> str_split(pattern = traitSep, simplify = TRUE) |> unlist()
+                  currentTraits <- data$traits %>% str_split(pattern = traitSep, simplify = TRUE) %>% unlist()
                   nrTraits <- length(currentTraits)
                   
                   # If the current player is a GK they should get the base restrictions for a redistribution
@@ -707,50 +707,50 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   }
                   
                   if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
-                    showToast("error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
-                  } else if(input$traits |> length() != nrTraits) {
-                    showToast("error", "You have selected the wrong number of traits.")
-                  } else if(updating() == "redistributing" & (changes |> filter(direction == 1) |> select(tpeChange) > 100)){
-                    showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                    showToast(.options = myToastOptions,"error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
+                  } else if(input$traits %>% length() != nrTraits) {
+                    showToast(.options = myToastOptions,"error", "You have selected the wrong number of traits.")
+                  } else if(updating() == "redistributing" & (changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+                    showToast(.options = myToastOptions,"error", "You have removed more than the allowed 100 TPE in the redistribution.")  
                   } else {
                     update <- 
-                      update |> 
+                      update %>% 
                       mutate(
                         old = as.character(old),
                         new = as.character(new)
-                      ) |> 
+                      ) %>% 
                       add_row(
                         attribute = "traits",
-                        old = data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"),
-                        new = paste0(input$traits, collapse = traitSep) |> str_replace_all(pattern = "'", replacement = "\\\\'")
+                        old = data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"),
+                        new = paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'")
                       )
                     
                     # Add pos_ variables for each position
                     positions <- c("GK", "LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
                     for (pos in positions) {
-                      update <- update |>
+                      update <- update %>%
                         add_row(
                           attribute = paste0("pos_", tolower(pos)),
-                          old = data[,paste0("pos_", tolower(pos))] |> as.character(),
-                          new = if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0)) |> as.character()
+                          old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                          new = if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0)) %>% as.character()
                         )
                     }
                     
                     update <- 
-                      update |> 
+                      update %>% 
                       add_row(
                         attribute = c("left foot"),
-                        old = c(data$left) |> as.character(),
-                        new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) |> as.character()
-                      ) |> 
+                        old = c(data$left) %>% as.character(),
+                        new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                      ) %>% 
                       add_row(
                         attribute = c("right foot"),
-                        old = c(data$right) |> as.character(),
-                        new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) |> as.character()
+                        old = c(data$right) %>% as.character(),
+                        new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
                       )
                     
                     update <- 
-                      update |> 
+                      update %>% 
                       filter(
                         old != new
                       )
@@ -758,47 +758,47 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     if(nrow(update) > 0){
                       modalVerify(update, session)  
                     } else {
-                      showToast("warning", "You haven't changed anything in your build.")
+                      showToast(.options = myToastOptions,"warning", "You haven't changed anything in your build.")
                     }
                     
                   }
                 } else {
-                  if(updating() == "redistributing" & (changes |> filter(direction == 1) |> select(tpeChange) > 100)){
-                    showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                  if(updating() == "redistributing" & (changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+                    showToast(.options = myToastOptions,"error", "You have removed more than the allowed 100 TPE in the redistribution.")  
                   } else {
                     update <- 
-                      update |> 
+                      update %>% 
                       mutate(
                         old = as.character(old),
                         new = as.character(new)
-                      ) |> 
+                      ) %>% 
                       add_row(
                         attribute = "traits",
-                        old = paste("'", data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
-                        new = paste("'", data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
+                        old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                        new = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                       )
                     
                     # Add pos_ variables for each position
                     positions <- c("LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
                     for (pos in positions) {
-                      update <- update |>
+                      update <- update %>%
                         add_row(
                           attribute = paste0("pos_", tolower(pos)),
-                          old = data[,paste0("pos_", tolower(pos))] |> as.character(),
-                          new = 0 |> as.character()
+                          old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                          new = 0 %>% as.character()
                         )
                     }
                     
                     update <- 
-                      update |> 
+                      update %>% 
                       add_row(
                         attribute = "pos_gk",
-                        old = data$pos_gk |> as.character(),
-                        new = 20 |> as.character()
+                        old = data$pos_gk %>% as.character(),
+                        new = 20 %>% as.character()
                       )
                     
                     update <- 
-                      update |> 
+                      update %>% 
                       filter(
                         old != new
                       )
@@ -806,14 +806,14 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                     if(nrow(update) > 0){
                       modalVerify(update, session)  
                     } else {
-                      showToast("warning", "You haven't changed anything in your build.")
+                      showToast(.options = myToastOptions,"warning", "You haven't changed anything in your build.")
                     }
                   }
                 }
               }
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$verifyUpdate,
           ignoreInit = TRUE
@@ -821,7 +821,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       #### REDISTRIBUTING ####
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               shinyjs::hide("attributeOverview")
@@ -843,16 +843,16 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               )
               
               delay(500,{
-                data |> 
-                  select(acceleration:throwing) |> 
-                  select(!c(`natural fitness`, stamina)) |> 
-                  colnames() |> 
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!c(`natural fitness`, stamina)) %>% 
+                  colnames() %>% 
                   map(
                     .x = .,
                     .f = function(x){
                       updateNumericInput(
                         session = session,
-                        inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                        inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                         value = data[, x],
                         min = 5,
                         max = 20
@@ -861,30 +861,30 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   )
               })
               
-              data |> 
-                select(acceleration:throwing) |> 
-                select(!c(`natural fitness`, stamina)) |> 
+              data %>% 
+                select(acceleration:throwing) %>% 
+                select(!c(`natural fitness`, stamina)) %>% 
                 select(
                   where(is.na)
-                ) |>
-                colnames() |>
+                ) %>%
+                colnames() %>%
                 map(
                   .x = .,
                   .f = function(x){
                     updateNumericInput(
                       session = session,
-                      inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                       value = 5,
                       min = 5,
                       max = 5
                     )
                     
-                    shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
+                    shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
                   }
                 )
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToRedist,
           ignoreInit = TRUE
@@ -892,7 +892,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       #### REROLLING ####
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               shinyjs::hide("attributeOverview")
@@ -914,16 +914,16 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               )
               
               delay(500,{
-                data |> 
-                  select(acceleration:throwing) |> 
-                  select(!c(`natural fitness`, stamina)) |> 
-                  colnames() |> 
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!c(`natural fitness`, stamina)) %>% 
+                  colnames() %>% 
                   map(
                     .x = .,
                     .f = function(x){
                       updateNumericInput(
                         session = session,
-                        inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                        inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                         value = 5,
                         min = 5,
                         max = 20
@@ -932,30 +932,30 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                   )
               })
               
-              data |> 
-                select(acceleration:throwing) |> 
-                select(!c(`natural fitness`, stamina)) |> 
+              data %>% 
+                select(acceleration:throwing) %>% 
+                select(!c(`natural fitness`, stamina)) %>% 
                 select(
                   where(is.na)
-                ) |>
-                colnames() |>
+                ) %>%
+                colnames() %>%
                 map(
                   .x = .,
                   .f = function(x){
                     updateNumericInput(
                       session = session,
-                      inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                       value = 5,
                       min = 5,
                       max = 5
                     )
                     
-                    shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
+                    shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
                   }
                 )
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToReroll,
           ignoreInit = TRUE
@@ -963,7 +963,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       #### REGRESSION ####
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               shinyjs::hide("attributeOverview")
@@ -974,16 +974,16 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               updating("updating")
               
               delay(500,{
-                data |> 
-                  select(acceleration:throwing) |> 
-                  select(!c(`natural fitness`, stamina)) |> 
-                  colnames() |> 
+                data %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!c(`natural fitness`, stamina)) %>% 
+                  colnames() %>% 
                   map(
                     .x = .,
                     .f = function(x){
                       updateNumericInput(
                         session = session,
-                        inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                        inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                         value = data[, x],
                         max = data[, x],
                         min = 5
@@ -993,42 +993,42 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               })
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToRegression,
           ignoreInit = TRUE
         )
       
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               bank <- tpeBanked()
               
               if(bank < 0){
-                showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
-              } else if(editableAttributes |> sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) |> unlist() |> any()){
-                showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
+                showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+              } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
+                showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
               } else if(bank > 24){
                 # Error shown if user has regressed too much
-                showToast("error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
+                showToast(.options = myToastOptions,"error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
               } else {
                 update <- updateSummary(current = data, inputs = input)
                 
                 if(nrow(update) > 0){
                   if(any((update$old - update$new) < 0)){
-                    showToast("error", paste("You cannot increase attributes in a regression update.",
+                    showToast(.options = myToastOptions,"error", paste("You cannot increase attributes in a regression update.",
                                              paste("Return ", paste0(update$attribute[(update$old - update$new) < 0], collapse = ", "), " to their original values.")))
                   } else {
                     modalVerify(update, session = session)
                   }
                 } else {
-                  showToast(type = "warning", "You have not changed your build yet, there is nothing to update.")
+                  showToast(.options = myToastOptions,type = "warning", "You have not changed your build yet, there is nothing to update.")
                 }
               }
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$verifyRegression,
           ignoreInit = TRUE
@@ -1036,7 +1036,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       #### CONFIRMING UPDATE ####
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               # print("Confirming update")
@@ -1052,76 +1052,76 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 
                 if(input$playerType == "Outfield"){
                   update <- 
-                    update |> 
+                    update %>% 
                     mutate(
                       old = as.character(old),
                       new = as.character(new)
-                    ) |> 
+                    ) %>% 
                     add_row(
                       attribute = "traits",
-                      old = paste("'", data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = traitSep) |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
+                      old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
                   positions <- c("GK", "LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
                   for (pos in positions) {
-                    update <- update |>
+                    update <- update %>%
                       add_row(
                         attribute = paste0("pos_", tolower(pos)),
-                        old = data[,paste0("pos_", tolower(pos))] |> as.character(),
-                        new = if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0)) |> as.character()
+                        old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                        new = if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0)) %>% as.character()
                       )
                   }
                   
                   update <- 
-                    update |> 
+                    update %>% 
                     add_row(
                       attribute = c("left foot"),
-                      old = c(data$left) |> as.character(),
-                      new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) |> as.character()
-                    ) |> 
+                      old = c(data$left) %>% as.character(),
+                      new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                    ) %>% 
                     add_row(
                       attribute = c("right foot"),
-                      old = c(data$right) |> as.character(),
-                      new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) |> as.character()
+                      old = c(data$right) %>% as.character(),
+                      new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
                     )
                   
                   update <- 
-                    update |> 
+                    update %>% 
                     filter(
                       old != new
                     )
                 } else {
                   update <- 
-                    update |> 
+                    update %>% 
                     mutate(
                       old = as.character(old),
                       new = as.character(new)
-                    ) |> 
+                    ) %>% 
                     add_row(
                       attribute = "traits",
-                      old = paste("'", data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
-                      new = paste("'", data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
+                      old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
                   positions <- c("LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
                   for (pos in positions) {
-                    update <- update |>
+                    update <- update %>%
                       add_row(
                         attribute = paste0("pos_", tolower(pos)),
-                        old = data[paste0("pos_", tolower(pos))],
-                        new = 0
+                        old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                        new = 0 %>% as.character()
                       )
                   }
                   
                   update <- 
-                    update |> 
+                    update %>% 
                     add_row(
                       attribute = "pos_gk",
-                      old = data$pos_gk,
-                      new = 20
+                      old = data$pos_gk %>% as.character(),
+                      new = 20 %>% as.character()
                     )
                 }
               }
@@ -1131,77 +1131,77 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                 
                 if(input$playerType == "Outfield"){
                   update <- 
-                    update |> 
+                    update %>% 
                     mutate(
                       old = as.character(old),
                       new = as.character(new)
-                    ) |> 
+                    ) %>% 
                     add_row(
                       attribute = "traits",
-                      old = paste("'", data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = traitSep) |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
+                      old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
                   positions <- c("GK", "LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
                   for (pos in positions) {
-                    update <- update |>
+                    update <- update %>%
                       add_row(
                         attribute = paste0("pos_", tolower(pos)),
-                        old = data[,paste0("pos_", tolower(pos))] |> as.character(),
-                        new = if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0)) |> as.character()
+                        old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                        new = if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0)) %>% as.character()
                       )
                   }
                   
                   update <- 
-                    update |> 
+                    update %>% 
                     add_row(
                       attribute = c("left foot"),
-                      old = c(data$left) |> as.character(),
-                      new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) |> as.character()
-                    ) |> 
+                      old = c(data$left) %>% as.character(),
+                      new = if_else(input$footedness == "Left", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
+                    ) %>% 
                     add_row(
                       attribute = c("right foot"),
-                      old = c(data$right) |> as.character(),
-                      new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) |> as.character()
+                      old = c(data$right) %>% as.character(),
+                      new = if_else(input$footedness == "Right", max(c(data$left, data$right))[1], min(c(data$left, data$right))[1]) %>% as.character()
                     )
                   
                 } else {
                   update <- 
-                    update |> 
+                    update %>% 
                     mutate(
                       old = as.character(old),
                       new = as.character(new)
-                    ) |>
+                    ) %>%
                     add_row(
                       attribute = "traits",
-                      old = paste("'", data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
-                      new = paste("'", data$traits |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
+                      old = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                      new = paste("'", data$traits %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
                     )
                   
                   # Add pos_ variables for each position
                   positions <- c("LD", "CD", "RD", "LWB", "CDM", "RWB", "LM", "CM", "RM", "LAM", "CAM", "RAM", "ST")
                   for (pos in positions) {
-                    update <- update |>
+                    update <- update %>%
                       add_row(
                         attribute = paste0("pos_", tolower(pos)),
-                        old = data[,paste0("pos_", tolower(pos))] |> as.character(),
-                        new = 0 |> as.character()
+                        old = data[,paste0("pos_", tolower(pos))] %>% as.character(),
+                        new = 0 %>% as.character()
                       )
                   }
                   
                   update <- 
-                    update |> 
+                    update %>% 
                     add_row(
                       attribute = "pos_gk",
-                      old = data$pos_gk |> as.character(),
-                      new = 20 |> as.character()
+                      old = data$pos_gk %>% as.character(),
+                      new = 20 %>% as.character()
                     )
                 }
               }
               
               update <- 
-                update |> 
+                update %>% 
                 filter(
                   old != new
                 )
@@ -1214,7 +1214,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               updating("")
               
-              showToast("success", "You have successfully updated your player!")
+              showToast(.options = myToastOptions,"success", "You have successfully updated your player!")
               
               shinyjs::show("attributeOverview")
               shinyjs::hide("attributeUpdate")
@@ -1227,7 +1227,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               # print("Go back to overview from confirmation")
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$confirmUpdate,
           ignoreInit = TRUE
@@ -1242,27 +1242,27 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
         } else {
           shinyjs::hide("outfieldExtras")
         }
-      }) |> 
+      }) %>% 
         bindEvent(
           input$playerType,
           ignoreInit = TRUE
         )
       
       # Updates the banked tpe when changing attributes
-      observe({data() |> 
+      observe({data() %>% 
           then(
             onFulfilled = function(data){
               if(updating() != ""){
                 tpeBanked(
-                  editableAttributes |> 
+                  editableAttributes %>% 
                     lapply(
                       X = .,
                       FUN = function(x){
                         tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
                       }
-                    ) |> 
-                    unlist() |> 
-                    sum() |> 
+                    ) %>% 
+                    unlist() %>% 
+                    sum() %>% 
                     {
                       data$tpe - .
                     }
@@ -1270,11 +1270,11 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               }
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           # Changes in any input slider
           {
-            editableAttributes |> 
+            editableAttributes %>% 
               lapply(
                 X = .,
                 FUN = function(x){
@@ -1287,46 +1287,46 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       # Resets the player build 
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
-              data |> 
-                select(acceleration:throwing) |> 
-                colnames() |> 
+              data %>% 
+                select(acceleration:throwing) %>% 
+                colnames() %>% 
                 map(
                   .x = .,
                   .f = function(x){
                     updateNumericInput(
                       session = session,
-                      inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                       value = data[, x]
                     )
                   }
                 )
               
-              data |>
-                select(acceleration:throwing) |>
+              data %>%
+                select(acceleration:throwing) %>%
                 select(
                   where(is.na)
-                ) |>
-                colnames() |>
+                ) %>%
+                colnames() %>%
                 map(
                   .x = .,
                   .f = function(x){
                     updateNumericInput(
                       session = session,
-                      inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                      inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                       value = 5,
                       min = 5,
                       max = 5
                     )
                     
-                    shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
+                    shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
                   }
                 )
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           combineTriggers(input$resetUpdate, input$resetRegression),
           ignoreInit = TRUE
@@ -1334,7 +1334,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       
       # Adds a go back button for both updating and regression
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               shinyjs::show("attributeOverview")
@@ -1346,24 +1346,24 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               updateRadioButtons(session = session, "playerType", selected = if_else(data$pos_gk == 20, "Goalkeeper", "Outfield"))
               shinyjs::hide("playerSelector")
               
-              tpeBanked(data |> 
-                          select(acceleration:throwing) |> 
-                          select(!`natural fitness` & !stamina) |> 
+              tpeBanked(data %>% 
+                          select(acceleration:throwing) %>% 
+                          select(!`natural fitness` & !stamina) %>% 
                           pivot_longer(
                             cols = everything(),
                             names_to = "attribute",
                             values_to = "value"
-                          ) |>
+                          ) %>%
                           left_join(
-                            tpeCost |> 
+                            tpeCost %>% 
                               select(
                                 value,
                                 cumCost
                               ),
                             by = "value"
-                          ) |> 
-                          select(cumCost) |> 
-                          sum(na.rm = TRUE) |> 
+                          ) %>% 
+                          select(cumCost) %>% 
+                          sum(na.rm = TRUE) %>% 
                           {
                             data$tpe - .
                           })
@@ -1371,7 +1371,7 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               updating("")
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           combineTriggers(input$backUpdate, input$backRegression),
           ignoreInit = TRUE
@@ -1380,33 +1380,33 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
       # Fixes moving away from locked 20 in stamina and natural fitness
       observe({
         if(updating() != ""){
-          c("natural fitness", "stamina") |> 
+          c("natural fitness", "stamina") %>% 
             map(
               .x = .,
               .f = function(x){
-                if(input[[x]] |> is.null()){
+                if(input[[x]] %>% is.null()){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = 20
                   ) 
                 } else {
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = if_else(input[[x]] != 20, 20, input[[x]])
                   )  
                 }
               }
             )
         }
-      }) |> 
+      }) %>% 
         bindEvent(
           # Changes in only Natural Fitness and Stamina to lock it at 20
           {
-            c("Natural Fitness", "Stamina") |> 
-              stringr::str_to_title() |> 
-              str_remove_all(pattern = " ") |> 
+            c("Natural Fitness", "Stamina") %>% 
+              stringr::str_to_title() %>% 
+              str_remove_all(pattern = " ") %>% 
               lapply(
                 X = .,
                 FUN = function(x){

@@ -14,13 +14,13 @@ playerPage2UI <- function(id) {
               width = 12, align = "center", style = "display: flex; justify-content: center;",
               valueBox(
                 subtitle = "Total Earned TPE",
-                value = textOutput(ns("tpeTotal"), inline = TRUE) |> 
+                value = textOutput(ns("tpeTotal"), inline = TRUE) %>% 
                   withSpinnerSmall(),
                 width = 3
               ),
               valueBox(
                 subtitle = "Available TPE",
-                value = textOutput(ns("tpeRemaining"), inline = TRUE) |> 
+                value = textOutput(ns("tpeRemaining"), inline = TRUE) %>% 
                   withSpinnerSmall(), 
                 width = 3
               )
@@ -32,7 +32,7 @@ playerPage2UI <- function(id) {
               uiOutput(ns("buttonAC")),
               uiOutput(ns("buttonTrainingCamp"))
             )
-          ) |> 
+          ) %>% 
             div(id = ns("tpeButtons"))
         ),
         box(
@@ -63,11 +63,11 @@ playerPage2UI <- function(id) {
           fluidRow(
             column(
               width = 12,
-              plotOutput(ns("playerOverview")) |> 
+              plotOutput(ns("playerOverview")) %>% 
                 withSpinnerMedium()
             )
           )
-        ) |> 
+        ) %>% 
           div(id = ns("attributeOverview")),
         # playerUpdateBoxUI(id = ns("playerUpdate")),
         box(
@@ -76,18 +76,18 @@ playerPage2UI <- function(id) {
             column(width = 12,
                    uiOutput(ns("selectPlayer"))
             )
-          ) |> 
-            div(align = "center", id = ns("playerSelector"))  |>
+          ) %>% 
+            div(align = "center", id = ns("playerSelector"))  %>%
             hidden(),
           fluidRow(
             column(
               width = 4,
-              h4("Physical " |> strong(), align = "center"),
+              h4("Physical " %>% strong(), align = "center"),
               tagList(
                 c(
                   "acceleration", "agility", "balance", "jumping reach",
                   "natural fitness", "pace", "stamina", "strength"
-                ) |>
+                ) %>%
                   map(
                     .x = .,
                     .f =
@@ -97,12 +97,12 @@ playerPage2UI <- function(id) {
             ),
             column(
               width = 4,
-              h4("Mental " |> strong(), align = "center"),
+              h4("Mental " %>% strong(), align = "center"),
               c(
                 "aggression", "anticipation", "bravery", "composure", "concentration",
                 "decisions", "determination", "flair", "leadership", "off the ball",
                 "positioning", "teamwork", "vision", "work rate"
-              ) |>
+              ) %>%
                 map(
                   .x = .,
                   .f =
@@ -111,7 +111,7 @@ playerPage2UI <- function(id) {
             ),
             column(
               width = 4,
-              h4("Technical " |> strong(), align = "center"),
+              h4("Technical " %>% strong(), align = "center"),
               uiOutput(ns("technical"))
             )
           ),
@@ -141,10 +141,10 @@ playerPage2UI <- function(id) {
                   )
                 )
               )
-            ) |>
+            ) %>%
               column(width = 12)
-          ) |>
-            div(id = ns("outfieldExtras")) |>
+          ) %>%
+            div(id = ns("outfieldExtras")) %>%
             hidden(),
           fluidRow(
             column(
@@ -161,8 +161,8 @@ playerPage2UI <- function(id) {
               ),
               uiOutput(ns("verifyButton"))
             )
-          ) |>
-            div(id = ns("buttonsUpdating")) |>
+          ) %>%
+            div(id = ns("buttonsUpdating")) %>%
             hidden(),
           fluidRow(
             column(
@@ -182,17 +182,17 @@ playerPage2UI <- function(id) {
                 "Regress"
               )
             )
-          ) |>
-            div(id = ns("buttonsRegression")) |>
+          ) %>%
+            div(id = ns("buttonsRegression")) %>%
             hidden()
-        ) |>
-          div(id = ns("attributeUpdate")) |>
+        ) %>%
+          div(id = ns("attributeUpdate")) %>%
           hidden(),
         box(
           title = "Updating History", collapsed = TRUE, collapsible = TRUE, width = NULL,
           fluidRow(
             column(width = 12,
-                   reactableOutput(ns("historyUpdates")) |> 
+                   reactableOutput(ns("historyUpdates")) %>% 
                      withSpinnerMedium()
             )
           )
@@ -232,14 +232,14 @@ playerPage2Server <- function(id, uid, parent) {
       playerData <- 
         reactive({
           getPlayerDataAsync(uid = uid)
-        }) |> 
+        }) %>% 
         bindEvent(
           updated()
         )
       
       tpeTotal <- 
         reactive({
-          playerData() |> 
+          playerData() %>% 
             then(
               onFulfilled = function(value) {
                 value$tpe
@@ -252,27 +252,27 @@ playerPage2Server <- function(id, uid, parent) {
       
       tpeBanked <- 
         reactiveVal({
-          playerData() |> 
+          playerData() %>% 
             then(
               onFulfilled = function(value) {
-                value |> 
-                  select(acceleration:throwing) |> 
-                  select(!`natural fitness` & !stamina) |> 
+                value %>% 
+                  select(acceleration:throwing) %>% 
+                  select(!`natural fitness` & !stamina) %>% 
                   pivot_longer(
                     cols = everything(),
                     names_to = "attribute",
                     values_to = "value"
-                  ) |>
+                  ) %>%
                   left_join(
-                    tpeCost |> 
+                    tpeCost %>% 
                       select(
                         value,
                         cumCost
                       ),
                     by = "value"
-                  ) |> 
-                  select(cumCost) |> 
-                  sum(na.rm = TRUE) |> 
+                  ) %>% 
+                  select(cumCost) %>% 
+                  sum(na.rm = TRUE) %>% 
                   {
                     value$tpe - .
                   }
@@ -285,7 +285,7 @@ playerPage2Server <- function(id, uid, parent) {
       
       historyTPE <- 
         reactive({
-          playerData() |> 
+          playerData() %>% 
             then(
               onFulfilled = function(value){
                 getTpeHistory(value$pid)
@@ -295,7 +295,7 @@ playerPage2Server <- function(id, uid, parent) {
       
       historyUpdates <- 
         reactive({
-          playerData() |> 
+          playerData() %>% 
             then(
               onFulfilled = function(value){
                 getUpdateHistory(value$pid)
@@ -308,7 +308,7 @@ playerPage2Server <- function(id, uid, parent) {
       # Player selector output
       output$selectPlayer <- renderUI({
         
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
               if(data$pos_gk == 20){
@@ -333,34 +333,34 @@ playerPage2Server <- function(id, uid, parent) {
       
       # Dynamic technical attributes 
       output$technical <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){ 
-              if(input$playerType |> is.null()){
+              if(input$playerType %>% is.null()){
                 if(data$pos_gk != 20){
                   c(
                     "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
                     "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
                     "Passing", "Penalty Taking", "Tackling", "Technique"
-                  ) |> 
-                    str_to_lower() |> 
+                  ) %>% 
+                    str_to_lower() %>% 
                     map(
                       .x = .,
                       .f = 
                         ~ attributeInput(ns = session$ns, name = .x, value = data[,.x])
                     )
                 } else {
-                  attributes |> 
+                  attributes %>% 
                     filter(
                       group %in% c("Goalkeeper", "Technical"),
                       keeper == "TRUE"
-                    ) |> 
+                    ) %>% 
                     select(
                       attribute
-                    ) |> 
-                    unlist() |> 
-                    unname() |> 
-                    str_to_lower() |> 
+                    ) %>% 
+                    unlist() %>% 
+                    unname() %>% 
+                    str_to_lower() %>% 
                     map(
                       .x = .,
                       .f = 
@@ -373,25 +373,25 @@ playerPage2Server <- function(id, uid, parent) {
                     "Corners", "Crossing", "Dribbling", "Finishing", "First Touch",
                     "Free Kick", "Heading", "Long Shots", "Long Throws", "Marking",
                     "Passing", "Penalty Taking", "Tackling", "Technique"
-                  ) |> 
-                    str_to_lower() |> 
+                  ) %>% 
+                    str_to_lower() %>% 
                     map(
                       .x = .,
                       .f = 
                         ~ attributeInput(ns = session$ns, name = .x, value = data[,.x])
                     )
                 } else {
-                  attributes |> 
+                  attributes %>% 
                     filter(
                       group %in% c("Goalkeeper", "Technical"),
                       keeper == "TRUE"
-                    ) |> 
+                    ) %>% 
                     select(
                       attribute
-                    ) |> 
-                    unlist() |> 
-                    unname() |> 
-                    str_to_lower() |> 
+                    ) %>% 
+                    unlist() %>% 
+                    unname() %>% 
+                    str_to_lower() %>% 
                     map(
                       .x = .,
                       .f = 
@@ -407,24 +407,24 @@ playerPage2Server <- function(id, uid, parent) {
       
       # Dynamic UI for position selector
       output$positionSelector <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
               
-              posPrim <- positions[names(positions) %in% (data |> 
-                                                            select(pos_st:pos_gk) |> 
-                                                            pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                            filter(xp == 20) |> 
-                                                            mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                            select(pos) |> unlist())
+              posPrim <- positions[names(positions) %in% (data %>% 
+                                                            select(pos_st:pos_gk) %>% 
+                                                            pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                            filter(xp == 20) %>% 
+                                                            mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                            select(pos) %>% unlist())
               ]
               
-              posSec <- positions[names(positions) %in% (data |> 
-                                                           select(pos_st:pos_gk) |> 
-                                                           pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                           filter(xp <= 15, xp >= 10) |> 
-                                                           mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                           select(pos) |> unlist())
+              posSec <- positions[names(positions) %in% (data %>% 
+                                                           select(pos_st:pos_gk) %>% 
+                                                           pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                           filter(xp <= 15, xp >= 10) %>% 
+                                                           mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                           select(pos) %>% unlist())
               ]
               
               posRem <- positions[!(positions %in% c(posPrim, posSec))]
@@ -457,19 +457,19 @@ playerPage2Server <- function(id, uid, parent) {
       
       # Dynamic UI for trait selectors
       output$traitSelector <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
-              currentTraits <- data$traits |> str_split(pattern = " \\\\ ", simplify = TRUE) |> unlist()
+              currentTraits <- data$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
               nrTraits <- length(currentTraits)
               
               tagList(
                 checkboxGroupInput(
                   session$ns("traits"), 
                   paste("Select", nrTraits,"traits:"), 
-                  choices = traits |> unlist(use.names = FALSE), 
+                  choices = traits %>% unlist(use.names = FALSE), 
                   selected = currentTraits
-                ) |> 
+                ) %>% 
                   div(class = "multicol")
               )
             }
@@ -485,34 +485,34 @@ playerPage2Server <- function(id, uid, parent) {
       })
       
       output$playerOverview <- renderPlot({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(value){
               p <- 
-                value |> 
-                select(acceleration:throwing) |> 
-                select(where(~ !is.na(.x))) |> 
+                value %>% 
+                select(acceleration:throwing) %>% 
+                select(where(~ !is.na(.x))) %>% 
                 pivot_longer(
                   cols = everything(),
                   values_to = "Value",
                   names_to = "Attribute"
-                ) |> 
+                ) %>% 
                 mutate(
                   Attribute = str_to_title(Attribute)
-                ) |> 
+                ) %>% 
                 left_join(
                   attributes,
                   by = c("Attribute" = "attribute") 
-                ) |> 
+                ) %>% 
                 mutate(
-                  Attribute = factor(Attribute, levels = sort(Attribute |> unique(), decreasing = TRUE)),
+                  Attribute = factor(Attribute, levels = sort(Attribute %>% unique(), decreasing = TRUE)),
                   group = factor(group, levels = c("Physical", "Mental", "Technical", "Goalkeeper")),
                   ValueFill = case_when(
                     Value >= 15 ~ 1,
                     Value >= 10 ~ 2,
                     TRUE ~ 3
-                  ) |> factor()
-                ) |> 
+                  ) %>% factor()
+                ) %>% 
                 ggplot() + aes(x = Attribute, y = Value, fill = ValueFill) + 
                 geom_bar(stat = "identity", color = "black") +
                 facet_wrap(. ~ group, scales = "free", nrow = 1) + 
@@ -542,13 +542,13 @@ playerPage2Server <- function(id, uid, parent) {
       }, bg="transparent")
       
       ## All the cost outputs
-      editableAttributes |> 
+      editableAttributes %>% 
         lapply(
           X = .,
           FUN = function(x){
             output[[paste0("cost", x)]] <- 
               renderUI({
-                if(session$input[[x]] |> is.na() | session$input[[x]] < 5 | session$input[[x]] > 20){
+                if(session$input[[x]] %>% is.na() | session$input[[x]] < 5 | session$input[[x]] > 20){
                   paste(
                     "You need to input a value between 5 and 20."
                   )
@@ -569,13 +569,13 @@ playerPage2Server <- function(id, uid, parent) {
         )
       
       output$historyTPE <- renderReactable({
-        historyTPE() |>
+        historyTPE() %>%
           then(
             onFulfilled = function(value){
-              value |> 
+              value %>% 
                 mutate(
                   time = as_datetime(time)
-                ) |> 
+                ) %>% 
                 reactable(
                   columns = 
                     list(
@@ -589,13 +589,13 @@ playerPage2Server <- function(id, uid, parent) {
       })
       
       output$historyUpdates <- renderReactable({
-        historyUpdates() |> 
+        historyUpdates() %>% 
           then(
             onFulfilled = function(value){
-              value |> 
+              value %>% 
                 mutate(
                   time = as_datetime(time)
-                ) |> 
+                ) %>% 
                 reactable(
                   columns = 
                     list(
@@ -608,7 +608,7 @@ playerPage2Server <- function(id, uid, parent) {
       })
       
       output$buttonRegression <- renderUI({
-        tpeBanked() |> 
+        tpeBanked() %>% 
           then(
             onFulfilled = function(value){
               if(value < 0) {
@@ -628,7 +628,7 @@ playerPage2Server <- function(id, uid, parent) {
       })
       
       output$buttonUpdate <- renderUI({
-        tpeBanked() |> 
+        tpeBanked() %>% 
           then(
             onFulfilled = function(value){
               if(value > 0) {
@@ -648,13 +648,13 @@ playerPage2Server <- function(id, uid, parent) {
       })
       
       output$buttonReroll <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
               
               # Rerolls can be made by users in their first two seasons in the SSL League proper
               check <- 
-                ((data$class |> str_extract(pattern = "[0-9]+") |> as.numeric()) > (currentSeason$season - 2)) & 
+                ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 2)) & 
                 (data$rerollused == 0)
               
               if(check) {
@@ -674,13 +674,13 @@ playerPage2Server <- function(id, uid, parent) {
       })
       
       output$buttonRedistribution <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
               
               # Redistributions can be made by users in their first season in the SSL League proper
               check <- 
-                ((data$class |> str_extract(pattern = "[0-9]+") |> as.numeric()) > (currentSeason$season - 1)) & 
+                ((data$class %>% str_extract(pattern = "[0-9]+") %>% as.numeric()) > (currentSeason$season - 1)) & 
                 (data$redistused == 0)
               
               if(check) {
@@ -707,7 +707,7 @@ playerPage2Server <- function(id, uid, parent) {
       })
       
       output$buttonAC <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(value){
               if(completedActivityCheck(value$pid)){
@@ -728,7 +728,7 @@ playerPage2Server <- function(id, uid, parent) {
       })
       
       output$buttonTrainingCamp <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(value){
               if(completedTrainingCamp(value$pid)){
@@ -749,34 +749,34 @@ playerPage2Server <- function(id, uid, parent) {
       # Observer for the player info
       
       observe({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(value) {
               playerInfoBoxServer(id = "playerInfo", pid = value$pid)
             },
             onRejected = function(reason) {
-              showToast("error", "An error occurred when loading your player. Please notify the BoD.")
+              showToast(.options = myToastOptions,"error", "An error occurred when loading your player. Please notify the BoD.")
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(playerData(), ignoreNULL = FALSE)
       
       # Updates the banked tpe when changing attributes
       observe({
         if(updating() | redistributing() | rerolling()){
           tpeBanked(
-            playerData() |> 
+            playerData() %>% 
               then(
                 onFulfilled = function(value) {
-                  editableAttributes |> 
+                  editableAttributes %>% 
                     lapply(
                       X = .,
                       FUN = function(x){
                         tpeCost[tpeCost$value == session$input[[x]], "cumCost"]
                       }
-                    ) |> 
-                    unlist() |> 
-                    sum() |> 
+                    ) %>% 
+                    unlist() %>% 
+                    sum() %>% 
                     {
                       value$tpe - .
                     }
@@ -787,12 +787,12 @@ playerPage2Server <- function(id, uid, parent) {
               )
           )
         }
-      }) |> 
+      }) %>% 
         bindEvent(
           # Changes in any input slider
           rerolling(),
           {
-            editableAttributes |> 
+            editableAttributes %>% 
               lapply(
                 X = .,
                 FUN = function(x){
@@ -806,33 +806,33 @@ playerPage2Server <- function(id, uid, parent) {
       # Fixes moving away from locked 20 in stamina and natural fitness
       observe({
         if(updating() | redistributing() | rerolling()){
-          c("natural fitness", "stamina") |> 
+          c("natural fitness", "stamina") %>% 
             map(
               .x = .,
               .f = function(x){
-                if(input[[x]] |> is.null()){
+                if(input[[x]] %>% is.null()){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = 20
                   ) 
                 } else {
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = if_else(input[[x]] != 20, 20, input[[x]])
                   )  
                 }
               }
             )
         }
-      }) |> 
+      }) %>% 
         bindEvent(
           # Changes in only Natural Fitness and Stamina to lock it at 20
           {
-            c("Natural Fitness", "Stamina") |> 
-              stringr::str_to_title() |> 
-              str_remove_all(pattern = " ") |> 
+            c("Natural Fitness", "Stamina") %>% 
+              stringr::str_to_title() %>% 
+              str_remove_all(pattern = " ") %>% 
               lapply(
                 X = .,
                 FUN = function(x){
@@ -860,16 +860,16 @@ playerPage2Server <- function(id, uid, parent) {
           data2 = playerData()
         ) %...>% 
           with({
-            data1 |> 
-              select(acceleration:throwing) |> 
-              select(!c(`natural fitness`, stamina)) |> 
-              colnames() |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
+              colnames() %>% 
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = data2[, x],
                     min = data2[, x],
                     max = 20
@@ -877,29 +877,29 @@ playerPage2Server <- function(id, uid, parent) {
                 }
               )
             
-            data1 |> 
-              select(acceleration:throwing) |> 
-              select(!c(`natural fitness`, stamina)) |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
               select(
                 where(is.na)
-              ) |>
-              colnames() |>
+              ) %>%
+              colnames() %>%
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = 5,
                     min = 5,
                     max = 5
                   )
                   
-                  shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
                 }
               )
           })
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToUpdate,
           ignoreInit = TRUE
@@ -918,16 +918,16 @@ playerPage2Server <- function(id, uid, parent) {
           data2 = playerData()
         ) %...>% 
           with({
-            data1 |> 
-              select(acceleration:throwing) |> 
-              select(!c(`natural fitness`, stamina)) |> 
-              colnames() |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
+              colnames() %>% 
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = data2[, x],
                     max = data2[, x],
                     min = 5
@@ -935,29 +935,29 @@ playerPage2Server <- function(id, uid, parent) {
                 }
               )
             
-            data1 |> 
-              select(acceleration:throwing) |> 
-              select(!c(`natural fitness`, stamina)) |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
               select(
                 where(is.na)
-              ) |>
-              colnames() |>
+              ) %>%
+              colnames() %>%
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = 5,
                     min = 5,
                     max = 5
                   )
                   
-                  shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
                 }
               )
           })
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToRegression,
           ignoreInit = TRUE
@@ -987,16 +987,16 @@ playerPage2Server <- function(id, uid, parent) {
           data2 = playerData()
         ) %...>% 
           with({
-            data1 |> 
-              select(acceleration:throwing) |> 
-              select(!c(`natural fitness`, stamina)) |> 
-              colnames() |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
+              colnames() %>% 
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = data2[, x],
                     min = 5,
                     max = 20
@@ -1004,29 +1004,29 @@ playerPage2Server <- function(id, uid, parent) {
                 }
               )
             
-            data1 |> 
-              select(acceleration:throwing) |> 
-              select(!c(`natural fitness`, stamina)) |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
               select(
                 where(is.na)
-              ) |>
-              colnames() |>
+              ) %>%
+              colnames() %>%
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = 5,
                     min = 5,
                     max = 5
                   )
                   
-                  shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
                 }
               )
           })
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToRedist,
           ignoreInit = TRUE
@@ -1056,16 +1056,16 @@ playerPage2Server <- function(id, uid, parent) {
           data2 = playerData()
         ) %...>% 
           with({
-            data1 |> 
-              select(acceleration:throwing) |> 
-              select(!c(`natural fitness`, stamina)) |> 
-              colnames() |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
+              colnames() %>% 
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = 5,
                     min = 5,
                     max = 20
@@ -1073,29 +1073,29 @@ playerPage2Server <- function(id, uid, parent) {
                 }
               )
             
-            data1 |> 
-              select(acceleration:throwing) |> 
-              select(!c(`natural fitness`, stamina)) |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              select(!c(`natural fitness`, stamina)) %>% 
               select(
                 where(is.na)
-              ) |>
-              colnames() |>
+              ) %>%
+              colnames() %>%
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = 5,
                     min = 5,
                     max = 5
                   )
                   
-                  shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
                 }
               )
           })
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToReroll,
           ignoreInit = TRUE
@@ -1108,42 +1108,42 @@ playerPage2Server <- function(id, uid, parent) {
           data2 = playerData()
         ) %...>% 
           with({
-            data1 |> 
-              select(acceleration:throwing) |> 
-              colnames() |> 
+            data1 %>% 
+              select(acceleration:throwing) %>% 
+              colnames() %>% 
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = data2[, x]
                   )
                 }
               )
             
-            data1 |>
-              select(acceleration:throwing) |>
+            data1 %>%
+              select(acceleration:throwing) %>%
               select(
                 where(is.na)
-              ) |>
-              colnames() |>
+              ) %>%
+              colnames() %>%
               map(
                 .x = .,
                 .f = function(x){
                   updateNumericInput(
                     session = session,
-                    inputId = x |> stringr::str_to_title() |> str_remove_all(pattern = " "),
+                    inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = 5,
                     min = 5,
                     max = 5
                   )
                   
-                  shinyjs::hide(x |> stringr::str_to_title() |> str_remove_all(pattern = " ") |> paste(. ,"AttributeBox", sep = ""))
+                  shinyjs::hide(x %>% stringr::str_to_title() %>% str_remove_all(pattern = " ") %>% paste(. ,"AttributeBox", sep = ""))
                 }
               )
           })
-      }) |> 
+      }) %>% 
         bindEvent(
           combineTriggers(input$resetUpdate, input$resetRegression),
           ignoreInit = TRUE
@@ -1157,71 +1157,71 @@ playerPage2Server <- function(id, uid, parent) {
           with({
             if(bank < 0){
               modalOverdraft()
-            } else if(any(editableAttributes |> sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
-              showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
+            } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
+              showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
             } else {
-              update <- updateSummary(current = current, inputs = input) |> 
+              update <- updateSummary(current = current, inputs = input) %>% 
                 left_join(
-                  tpeCost |> 
+                  tpeCost %>% 
                     select(value, cumCost),
                   by = c("old" = "value")
-                ) |> 
+                ) %>% 
                 left_join(
-                  tpeCost |> 
+                  tpeCost %>% 
                     select(value, cumCost),
                   by = c("new" = "value"),
                   suffix = c("_old", "_new")
-                ) |> 
+                ) %>% 
                 mutate(
                   change = cumCost_old - cumCost_new
                 ) 
               
               changes <- 
-                update |> 
+                update %>% 
                 mutate(
                   direction = sign(change)
-                ) |> 
-                group_by(direction) |> 
+                ) %>% 
+                group_by(direction) %>% 
                 summarize(
-                  tpeChange = sum(change) |> abs()
-                ) |> 
+                  tpeChange = sum(change) %>% abs()
+                ) %>% 
                 ungroup()
               
               if(nrow(update) > 0){
                 if(!(redistributing() | rerolling()) & any((update$old - update$new) > 0) ){
-                  showToast("error", paste("You cannot reduce attributes in a regular update.",
+                  showToast(.options = myToastOptions,"error", paste("You cannot reduce attributes in a regular update.",
                                            paste("Return ", paste0(update$attribute[(update$old - update$new) > 0], collapse = ", "), " to their original values.")))
                   # Checks for the total sum of reduced attributes
                 } else if(redistributing()){
                   if(input$playerType == "Outfield"){
-                    posPrim <- positions[names(positions) %in% (current |> 
-                                                                  select(pos_st:pos_gk) |> 
-                                                                  pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                                  filter(xp == 20) |> 
-                                                                  mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                                  select(pos) |> unlist())
+                    posPrim <- positions[names(positions) %in% (current %>% 
+                                                                  select(pos_st:pos_gk) %>% 
+                                                                  pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                  filter(xp == 20) %>% 
+                                                                  mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                  select(pos) %>% unlist())
                     ]
                     
-                    posSec <- positions[names(positions) %in% (current |> 
-                                                                 select(pos_st:pos_gk) |> 
-                                                                 pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                                 filter(xp <= 15, xp >= 10) |> 
-                                                                 mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                                 select(pos) |> unlist())
+                    posSec <- positions[names(positions) %in% (current %>% 
+                                                                 select(pos_st:pos_gk) %>% 
+                                                                 pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                 filter(xp <= 15, xp >= 10) %>% 
+                                                                 mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                 select(pos) %>% unlist())
                     ]
                     
-                    currentTraits <- current$traits |> str_split(pattern = " \\\\ ", simplify = TRUE) |> unlist()
+                    currentTraits <- current$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
                     nrTraits <- length(currentTraits)
                     
                     if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
-                      showToast("error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
-                    } else if(input$traits |> length() != nrTraits) {
-                      showToast("error", "You have selected the wrong number of traits.")
-                    } else if((changes |> filter(direction == 1) |> select(tpeChange) > 100)){
-                      showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                      showToast(.options = myToastOptions,"error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
+                    } else if(input$traits %>% length() != nrTraits) {
+                      showToast(.options = myToastOptions,"error", "You have selected the wrong number of traits.")
+                    } else if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+                      showToast(.options = myToastOptions,"error", "You have removed more than the allowed 100 TPE in the redistribution.")  
                     } else {
                       update <- 
-                        update |> 
+                        update %>% 
                         add_row(
                           attribute = "traits",
                           old = current$traits,
@@ -1231,40 +1231,40 @@ playerPage2Server <- function(id, uid, parent) {
                       modalVerify(update, session = session)
                     }
                   } else {
-                    if((changes |> filter(direction == 1) |> select(tpeChange) > 100)){
-                      showToast("error", "You have removed more than the allowed 100 TPE in the redistribution.")  
+                    if((changes %>% filter(direction == 1) %>% select(tpeChange) > 100)){
+                      showToast(.options = myToastOptions,"error", "You have removed more than the allowed 100 TPE in the redistribution.")  
                     } else {
                       modalVerify(update, session = session)
                     }
                   }
                 } else if(rerolling()){
                   if(input$playerType == "Outfield"){
-                    posPrim <- positions[names(positions) %in% (current |> 
-                                                                  select(pos_st:pos_gk) |> 
-                                                                  pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                                  filter(xp == 20) |> 
-                                                                  mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                                  select(pos) |> unlist())
+                    posPrim <- positions[names(positions) %in% (current %>% 
+                                                                  select(pos_st:pos_gk) %>% 
+                                                                  pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                  filter(xp == 20) %>% 
+                                                                  mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                  select(pos) %>% unlist())
                     ]
                     
-                    posSec <- positions[names(positions) %in% (current |> 
-                                                                 select(pos_st:pos_gk) |> 
-                                                                 pivot_longer(everything(), names_to = "pos", values_to = "xp") |>
-                                                                 filter(xp <= 15, xp >= 10) |> 
-                                                                 mutate(pos = str_remove_all(pos, pattern = "pos_") |> str_to_upper()) |> 
-                                                                 select(pos) |> unlist())
+                    posSec <- positions[names(positions) %in% (current %>% 
+                                                                 select(pos_st:pos_gk) %>% 
+                                                                 pivot_longer(everything(), names_to = "pos", values_to = "xp") %>%
+                                                                 filter(xp <= 15, xp >= 10) %>% 
+                                                                 mutate(pos = str_remove_all(pos, pattern = "pos_") %>% str_to_upper()) %>% 
+                                                                 select(pos) %>% unlist())
                     ]
                     
-                    currentTraits <- current$traits |> str_split(pattern = " \\\\ ", simplify = TRUE) |> unlist()
+                    currentTraits <- current$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
                     nrTraits <- length(currentTraits)
                     
                     if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
-                      showToast("error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
-                    } else if(input$traits |> length() != nrTraits) {
-                      showToast("error", "You have selected the wrong number of traits.")
+                      showToast(.options = myToastOptions,"error", "Your primary and/or secondary positions does not match with what you are allowed to select.")
+                    } else if(input$traits %>% length() != nrTraits) {
+                      showToast(.options = myToastOptions,"error", "You have selected the wrong number of traits.")
                     } else {
                       update <- 
-                        update |> 
+                        update %>% 
                         add_row(
                           attribute = "traits",
                           old = current$traits,
@@ -1284,7 +1284,7 @@ playerPage2Server <- function(id, uid, parent) {
               }
             }
           })
-      }) |> 
+      }) %>% 
         bindEvent(
           input$verifyUpdate,
           ignoreInit = TRUE
@@ -1296,7 +1296,7 @@ playerPage2Server <- function(id, uid, parent) {
         } else {
           shinyjs::hide("outfieldExtras")
         }
-      }) |> 
+      }) %>% 
         bindEvent(
           input$playerType,
           ignoreInit = TRUE
@@ -1309,28 +1309,28 @@ playerPage2Server <- function(id, uid, parent) {
         ) %...>%
           with({
             if(bank < 0){
-              showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
-            } else if(any(editableAttributes |> sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
-              showToast("error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
+              showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
+            } else if(any(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE))){
+              showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
             } else if(bank > 24){
               # Error shown if user has regressed too much
-              showToast("error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
+              showToast(.options = myToastOptions,"error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
             } else {
               update <- updateSummary(current = current, inputs = input)
               
               if(nrow(update) > 0){
                 if(any((update$old - update$new) < 0)){
-                  showToast("error", paste("You cannot increase attributes in a regression update.",
+                  showToast(.options = myToastOptions,"error", paste("You cannot increase attributes in a regression update.",
                                            paste("Return ", paste0(update$attribute[(update$old - update$new) < 0], collapse = ", "), " to their original values.")))
                 } else {
                   modalVerify(update, session = session)
                 }
               } else {
-                showToast(type = "warning", "You have not changed your build yet, there is nothing to update.")
+                showToast(.options = myToastOptions,type = "warning", "You have not changed your build yet, there is nothing to update.")
               }
             }
           })
-      }) |> 
+      }) %>% 
         bindEvent(
           input$verifyRegression,
           ignoreInit = TRUE
@@ -1374,7 +1374,7 @@ playerPage2Server <- function(id, uid, parent) {
             
             # print("Go back to overview from confirmation")
           })
-      }) |> 
+      }) %>% 
         bindEvent(
           input$confirmUpdate,
           ignoreInit = TRUE,
@@ -1391,27 +1391,27 @@ playerPage2Server <- function(id, uid, parent) {
         shinyjs::hide("buttonsRegression")
         shinyjs::show("tpeButtons")
         
-        tpeBanked(playerData() |> 
+        tpeBanked(playerData() %>% 
                     then(
                       onFulfilled = function(value) {
-                        value |> 
-                          select(acceleration:throwing) |> 
-                          select(!`natural fitness` & !stamina) |> 
+                        value %>% 
+                          select(acceleration:throwing) %>% 
+                          select(!`natural fitness` & !stamina) %>% 
                           pivot_longer(
                             cols = everything(),
                             names_to = "attribute",
                             values_to = "value"
-                          ) |>
+                          ) %>%
                           left_join(
-                            tpeCost |> 
+                            tpeCost %>% 
                               select(
                                 value,
                                 cumCost
                               ),
                             by = "value"
-                          ) |> 
-                          select(cumCost) |> 
-                          sum(na.rm = TRUE) |> 
+                          ) %>% 
+                          select(cumCost) %>% 
+                          sum(na.rm = TRUE) %>% 
                           {
                             value$tpe - .
                           }
@@ -1424,14 +1424,14 @@ playerPage2Server <- function(id, uid, parent) {
         updating(FALSE)
         redistributing(FALSE)
         rerolling(FALSE)
-      }) |> 
+      }) %>% 
         bindEvent(
           combineTriggers(input$backUpdate, input$backRegression),
           ignoreInit = TRUE
         )
       
       observe({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(value){
               tpeSummary <- 
@@ -1446,10 +1446,10 @@ playerPage2Server <- function(id, uid, parent) {
               
               updateTPE(pid = value$pid, tpe = tpeSummary)
               
-              showToast(type = "success", "You have successfully claimed your Activity Check for the week!")
+              showToast(.options = myToastOptions,type = "success", "You have successfully claimed your Activity Check for the week!")
               
               tpeBanked(
-                tpeBanked() |> 
+                tpeBanked() %>% 
                   then(
                     onFulfilled = function(res){
                       res + 6
@@ -1462,7 +1462,7 @@ playerPage2Server <- function(id, uid, parent) {
             },
             onRejected = NULL
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$activityCheck,
           ignoreInit = TRUE,
@@ -1470,12 +1470,12 @@ playerPage2Server <- function(id, uid, parent) {
         )
       
       observe({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(value){
               class <- 
-                value$class |> 
-                str_extract_all(pattern = "[0-9]+") |> 
+                value$class %>% 
+                str_extract_all(pattern = "[0-9]+") %>% 
                 as.numeric()
               
               age <- currentSeason$season - class
@@ -1497,10 +1497,10 @@ playerPage2Server <- function(id, uid, parent) {
               
               updateTPE(pid = value$pid, tpe = tpeSummary)
               
-              showToast(type = "success", "You have successfully claimed your Training Camp for the season.")
+              showToast(.options = myToastOptions,type = "success", "You have successfully claimed your Training Camp for the season.")
               
               tpeBanked(
-                tpeBanked() |> 
+                tpeBanked() %>% 
                   then(
                     onFulfilled = function(res){
                       res + tpeSummary$tpe
@@ -1513,7 +1513,7 @@ playerPage2Server <- function(id, uid, parent) {
             },
             onRejected = NULL
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$trainingCamp,
           ignoreInit = TRUE,
@@ -1523,7 +1523,7 @@ playerPage2Server <- function(id, uid, parent) {
       # Retires player
       observe({
         modalRetire(session)
-      }) |> 
+      }) %>% 
         bindEvent(
           input$goToRetire,
           ignoreInit = TRUE,
@@ -1532,7 +1532,7 @@ playerPage2Server <- function(id, uid, parent) {
       
       observe({
         modalRetire2(session)
-      }) |> 
+      }) %>% 
         bindEvent(
           input$confirmRetirement1,
           ignoreInit = TRUE,
@@ -1542,17 +1542,17 @@ playerPage2Server <- function(id, uid, parent) {
       observe({
         removeModal()
         
-        playerData() |>
+        playerData() %>%
           then(
             onFulfilled = function(value){
               completeRetirement(pid = value$pid)
               
-              showToast(type = "success", "You have now retired your player.")
+              showToast(.options = myToastOptions,type = "success", "You have now retired your player.")
               
               updateTabItems(parent, "tabs", "welcome")
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$confirmRetirement2,
           ignoreInit = TRUE,

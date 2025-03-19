@@ -38,7 +38,7 @@ playerApproveServer <- function(id, userinfo) {
           
           approvePlayer(playerForApproval()[selected,"uid"], session = session)
           
-          showToast("success", "Player has successfully been approved.")
+          showToast(.options = myToastOptions,"success", "Player has successfully been approved.")
           
           playerForApproval(getPlayersForApproval())
           

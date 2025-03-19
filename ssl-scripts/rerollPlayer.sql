@@ -1,13 +1,13 @@
 SET @uid = 1; -- Variable for user ID
-SET @pid = 5520; -- Variable for player ID
+SET @pid = 5563; -- Variable for player ID
 
 -- New values
-SET @new_first = 'Joga'; 
-SET @new_last = 'Bonito'; 
-SET @new_name = 'Joga Bonito'; 
-SET @new_skin = '16'; 
-SET @new_height = 71; 
-SET @new_weight = 170; 
+SET @new_first = 'Kim'; 
+SET @new_last = 'Minjeong'; 
+SET @new_name = 'Kim Minjeong'; 
+SET @new_skin = '1'; 
+SET @new_height = 76; 
+SET @new_weight = 220; 
 
 -- Get the current time in the USA/Pacific timezone as a UNIX timestamp
 SET @current_time = UNIX_TIMESTAMP(NOW());
@@ -62,6 +62,5 @@ SET
     name = @new_name,
     skintone = @new_skin,
     height = @new_height,
-    weight = @new_weight,
-    rerollused = 1
+    weight = @new_weight
 WHERE pid = @pid;

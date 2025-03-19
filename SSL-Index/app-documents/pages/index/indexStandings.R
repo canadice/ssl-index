@@ -11,7 +11,7 @@ leagueStandingsUI <- function(id) {
             label = "Select a season",
             choices = 
               c(
-                1:currentSeason$season |> 
+                1:currentSeason$season %>% 
                 sort(decreasing = TRUE),
                 "ALL"
               )
@@ -45,14 +45,14 @@ leagueStandingsServer <- function(id) {
         
         readAPI(url = "https://api.simulationsoccer.com/index/standings", 
                 query = list(league = input$selectedLeague, season = input$selectedSeason)
-        ) |> 
+        ) %>% 
           future_promise()
       })
       
       
       #### UI OUTPUT ####
       output$leagueSelector <- renderUI({
-        season <- input$selectedSeason |> as.numeric()
+        season <- input$selectedSeason %>% as.numeric()
         
         if(season < 5){
           selectInput(
@@ -64,7 +64,7 @@ leagueStandingsServer <- function(id) {
                 "Cup" = "0"
               )
           )
-        } else if (season == 12){
+        } else if (season %in% c(12, 18)){
           selectInput(
             inputId = session$ns("selectedLeague"),
             label = "League",
@@ -72,7 +72,8 @@ leagueStandingsServer <- function(id) {
               c(
                 "Major" = "1",
                 "Minor" = "2",
-                "Cup" = "0"
+                "Cup" = "0",
+                "WSFC" = "5"
               )
           )
         } else if (season < 12){
@@ -106,20 +107,21 @@ leagueStandingsServer <- function(id) {
         
         if(season == "ALL"){
           relegation <- FALSE
-        } else if(season |> as.numeric() < 5 | season |> as.numeric() > 11){
+        } else if(season %>% as.numeric() < 5 | season %>% as.numeric() > 11){
           relegation <- FALSE
         } else {
           relegation <- TRUE
         } 
         
         
-        standings() |> 
+        standings() %>% 
           then(
             onFulfilled = function(data){
-              if(data |> is_empty()){
+              if(data %>% is_empty()){
                 NULL 
               } else {
-                data |> 
+                data %>% 
+                  select(!GoalDifference) %>% 
                   reactable(
                     pagination = FALSE,
                     defaultColDef = colDef(
@@ -155,13 +157,13 @@ leagueStandingsServer <- function(id) {
                             ))
                           )
                       }),
-                      MatchesPlayed = colDef(header = tippy("GP", "Games played", placement = "top", theme = "material")),
-                      Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "material")),
-                      Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "material")),
-                      Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "material")),
-                      GoalsFor = colDef(header = tippy("GF", "Goals scored", placement = "top", theme = "material")),
-                      GoalsAgainst = colDef(header = tippy("GA", "Goals conceded", placement = "top", theme = "material")),
-                      Points = colDef(header = tippy("P", "Points", placement = "top", theme = "material"))
+                      MatchesPlayed = colDef(header = tippy("GP", "Games played", placement = "top", theme = "ssl", arrow = TRUE)),
+                      Wins = colDef(header = tippy("W", "Wins", placement = "top", theme = "ssl", arrow = TRUE)),
+                      Draws = colDef(header = tippy("D", "Draws", placement = "top", theme = "ssl", arrow = TRUE)),
+                      Losses = colDef(header = tippy("L", "Losses", placement = "top", theme = "ssl", arrow = TRUE)),
+                      GoalsFor = colDef(header = tippy("GF", "Goals scored", placement = "top", theme = "ssl", arrow = TRUE)),
+                      GoalsAgainst = colDef(header = tippy("GA", "Goals conceded", placement = "top", theme = "ssl", arrow = TRUE)),
+                      Points = colDef(header = tippy("P", "Points", placement = "top", theme = "ssl", arrow = TRUE))
                     )
                   )
               }

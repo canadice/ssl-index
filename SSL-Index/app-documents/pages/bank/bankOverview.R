@@ -4,7 +4,7 @@ bankOverviewUI <- function(id) {
     fluidRow(
       column(
         width = 12,
-        playerInfoBoxUI(id = ns("playerInfo")) |> 
+        playerInfoBoxUI(id = ns("playerInfo")) %>% 
           withSpinnerSmall()
       )
     ),
@@ -12,30 +12,30 @@ bankOverviewUI <- function(id) {
       column(
         width = 12,
         h5("Bank Transactions"),
-        reactableOutput(ns("historyBank")) |> withSpinnerMedium()
+        reactableOutput(ns("historyBank")) %>% withSpinnerMedium()
       )
     ),
     br(),
     br(),
     fluidRow(
       column(width = 12,
-             uiOutput(ns("purchaseTraining")) |> 
+             uiOutput(ns("purchaseTraining")) %>% 
                withSpinnerMedium()
              )
       ),
     fluidRow(
       column(width = 12,
-             uiOutput(ns("purchaseTraits")) |> 
+             uiOutput(ns("purchaseTraits")) %>% 
                withSpinnerMedium())
       ),
     fluidRow(
       column(width = 12,
-             uiOutput(ns("purchasePositions")) |> 
+             uiOutput(ns("purchasePositions")) %>% 
                withSpinnerMedium())
     ),
     fluidRow(
       column(width = 12,
-             uiOutput(ns("purchaseFootedness")) |> 
+             uiOutput(ns("purchaseFootedness")) %>% 
                withSpinnerMedium())
     ),
     fluidRow(
@@ -44,7 +44,7 @@ bankOverviewUI <- function(id) {
                class = "frozen-bottom",
                align = "center",
                  fluidRow(
-                   uiOutput(ns("totalSum")) |> 
+                   uiOutput(ns("totalSum")) %>% 
                      withSpinnerSmall()
                  ),
                  fluidRow(
@@ -67,7 +67,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       
       player <- reactive({
         getPlayerName(userID = uid)
-      }) |> 
+      }) %>% 
         bindEvent(
           purchased(),
           updated(),
@@ -80,7 +80,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       footSum <- reactiveVal({0})
       
       observe({
-        player() |> 
+        player() %>% 
           then(
             onFulfilled = function(data){
               playerInfoBoxServer(id = "playerInfo", pid = data$pid, mainSession = parent)
@@ -90,13 +90,13 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       
       historyBank <- 
         reactive({
-          player() |> 
+          player() %>% 
             then(
               onFulfilled = function(value){
                 future_promise({
                   readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
                           query = list(pid = value$pid)
-                  ) |>
+                  ) %>%
                     select(!pid)
                 })
                 # getBankTransactions(value$pid)
@@ -105,13 +105,13 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         })
       
       output$historyBank <- renderReactable({
-        historyBank() |> 
+        historyBank() %>% 
           then(
             onFulfilled = function(value){
-              value |> 
+              value %>% 
                 mutate(
                   Time = as_datetime(Time)
-                ) |> 
+                ) %>% 
                 reactable(
                   columns = 
                     list(
@@ -131,7 +131,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                      traitSum(),
                      positionSum(),
                      footSum()
-                     ) |> as.numeric()) |> dollar()))
+                     ) %>% as.numeric()) %>% dollar()))
       })
       
       #### INDIVIDUAL TRAINING ####
@@ -146,7 +146,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
             tags$li("Superstar League ($5.5 million) - 12 TPE"),
             tags$li("World Class League ($7.5 million) - 18 TPE")
             ),
-          "There is no limit to the amount of individual trainings you can purchase during a season.") |> 
+          "There is no limit to the amount of individual trainings you can purchase during a season.") %>% 
             HTML()
           ),
           selectInput(session$ns("individualTraining"),
@@ -160,16 +160,16 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                           "World Class League (18 TPE)" = 7500000 
                           )
                       )
-        )|> 
+        )%>% 
           box(title = "Individual Training", collapsible = TRUE, width = NULL, collapsed = TRUE)
       })
       
       #### TRAITS ####
       output$purchaseTraits <- renderUI({
-        player() |> 
+        player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerTraits(playerID = data$pid) |> 
+              getPlayerTraits(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentTraits){
                     nrTraits <- length(currentTraits)
@@ -182,14 +182,14 @@ bankOverviewServer <- function(id, uid, parent, updated) {
               trait in the list, it is not compatible with one or more of your current traits. The full list of incompatible traits 
               can be found in the", tags$a("Player Handbook.", href = "https://docs.google.com/document/d/1cp4OdU43nX8A7kbQVmOl89xZRD3l13voHcqLNrxFL4Q/edit#", target = "_blank"),
                           "If you want to remove an already selected player trait, you can purchase this item ($0.5 million)."
-                        ) |> HTML()
+                        ) %>% HTML()
                       ),
                       checkboxGroupInput(
                         session$ns("traits"), 
                         paste("Change your traits"), 
-                        choices = traits |> unlist(use.names = FALSE), 
+                        choices = traits %>% unlist(use.names = FALSE), 
                         selected = currentTraits
-                      ) |> 
+                      ) %>% 
                         div(class = "multicol"),
                       tags$script(paste("
                           Shiny.addCustomMessageHandler('disableCheckbox', function(checkboxId) {
@@ -210,9 +210,9 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                               }
                             }
                           });
-                        ", sep = "") |> HTML()
+                        ", sep = "") %>% HTML()
                       )
-                    ) |> 
+                    ) %>% 
                       box(title = "Player Traits", collapsible = TRUE, width = NULL, collapsed = TRUE)
                   }
                 )
@@ -336,8 +336,8 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         #   disable_list <- "none"
         # }
         
-        session$sendCustomMessage("disableCheckbox", disable_list |> unique())
-      }) |> 
+        session$sendCustomMessage("disableCheckbox", disable_list %>% unique())
+      }) %>% 
         bindEvent(
           input$traits,
           ignoreInit = FALSE,
@@ -346,10 +346,10 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       
       # Calculates sum of purchase
       shiny::observe({
-        player() |> 
+        player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerTraits(playerID = data$pid) |> 
+              getPlayerTraits(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentTraits){
                     nrTraits <- length(currentTraits)
@@ -362,7 +362,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                 )
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$traits,
           ignoreInit = TRUE,
@@ -371,21 +371,21 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       
       #### POSITION XP ####
       output$purchasePositions <- renderUI({
-        player() |> 
+        player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerPositions(playerID = data$pid) |> 
+              getPlayerPositions(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentPositions){
-                    if(currentPositions |> filter(name == "GK") |> .$value != 20){
-                      posPrim <- positions[names(positions) %in% (currentPositions |> 
-                                                                    filter(value == 20) |> 
-                                                                    select(name) |> unlist())
+                    if(currentPositions %>% filter(name == "GK") %>% .$value != 20){
+                      posPrim <- positions[names(positions) %in% (currentPositions %>% 
+                                                                    filter(value == 20) %>% 
+                                                                    select(name) %>% unlist())
                       ]
                       
-                      posSec <- positions[names(positions) %in% (currentPositions |> 
-                                                                   filter(value < 20 & value > 5) |> 
-                                                                   select(name) |> unlist())
+                      posSec <- positions[names(positions) %in% (currentPositions %>% 
+                                                                   filter(value < 20 & value > 5) %>% 
+                                                                   select(name) %>% unlist())
                       ]
                       
                       posRem <- positions[!(positions %in% c(posPrim, posSec))]
@@ -398,7 +398,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                                   tags$li("Position Upgrade ($7.5 million): An upgrade consists of moving a position from the secondary to primary box."),
                                   tags$li("Position Addition ($12.5 million): An addition consists of moving a 'new' position to the secondary position box. If you move a position to the primary box this is a Addition + Upgrade.")
                                 )
-                        ) |> HTML()),
+                        ) %>% HTML()),
                         bucket_list(
                           header = NULL,
                           group_name = session$ns("pos"),
@@ -419,7 +419,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                             input_id = session$ns("unusedPositions")
                           )
                         )
-                      ) |> 
+                      ) %>% 
                         box(title = "Player Positions", collapsible = TRUE, width = NULL, collapsed = TRUE)
                     }
                   }
@@ -429,22 +429,22 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       })
       
       observe({
-        player() |> 
+        player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerPositions(playerID = data$pid) |> 
+              getPlayerPositions(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentPositions){
                     summary <- 
                       tibble(
                         name = c(input$primary, input$secondary, input$unusedPositions),
                         value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions)))
-                      ) |> 
+                      ) %>% 
                       left_join(
                         currentPositions,
                         by = "name",
                         suffix = c(".new", ".old")
-                      ) |> 
+                      ) %>% 
                       mutate(
                         change = case_when(
                           value.old == 0 & value.new == 20 ~ "Addition + Upgrade",
@@ -455,9 +455,9 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                           value.old >= 5 & value.old <  20 & value.new == 0  ~ "Remove",
                           TRUE ~ "No Change"
                         )
-                      ) |> 
-                      group_by(change) |> 
-                      summarize(n = n()) |> 
+                      ) %>% 
+                      group_by(change) %>% 
+                      summarize(n = n()) %>% 
                       mutate(
                         cost = case_when(
                           change == "Addition + Upgrade" ~ n*20000000,
@@ -468,62 +468,61 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                           change == "Remove" ~ -n*12500000,
                           TRUE ~ 0
                         )
-                      ) |> 
+                      ) %>% 
                       ungroup()
                     
+                    
+                    
                     ## Calculates number of swaps
-                    add <- 
-                      summary |> 
-                      filter(
-                        change %in% c("Addition", "Remove")
+                    swaps <- 
+                      summary %>%
+                      summarize(
+                        Addition = if_else(str_detect(change, "Addition"), n, 0),
+                        Remove = if_else(str_detect(change, "Remove"), n, 0),
+                        Upgrade = if_else(str_detect(change, "Upgrade"), n, 0),
+                        Downgrade = if_else(str_detect(change, "Downgrade"), n, 0)
+                      ) %>% 
+                      summarise(
+                        Addition = sum(Addition),
+                        Remove = sum(Remove),
+                        Upgrade = sum(Upgrade),
+                        Downgrade = sum(Downgrade)
+                      ) %>% 
+                      summarize(
+                        swaps = floor((Addition + Remove)/2) + floor((Upgrade + Downgrade)/2)
                       )
                     
-                    upgrade <- 
-                      summary |> 
-                      filter(
-                        change %in% c("Upgrade", "Downgrade")
+                    summary <-
+                      summary %>% 
+                      mutate(
+                        cost = if_else(change == "No Change", cost + if_else(swaps$swaps > 0, swaps$swaps, 0) * 5000000, cost)
                       )
                     
-                    full <- 
-                      summary |> 
-                      filter(
-                        change %in% c("Addition + Upgrade", "Downgrade + Remove")
-                      )
                     
-                    x <- list(add, upgrade, full)
-                    
-                    for(i in 1:length(x)){
-                      data <- x[[i]]
-                      
-                      if(nrow(data) == 2){
-                        swap <- (sum(data$n) + diff(data$n)) / 2
-                        
-                        summary <-
-                          summary |> 
-                          mutate(
-                            cost = if_else(change == "No Change", cost + swap * 5000000, cost)
-                          )
-                      } 
-                    }
+                    print(summary)
                     
                     ## Only calculate cost if all 13 positions are accounted for
-                    if(summary$n |> sum() == 13){
+                    if(summary$n %>% sum() == 13){
                       positionSum({sum(summary$cost)})
                     }
                     
                     
                     
-                    if(summary$cost |> sum() < 0){
-                      showToast("error", "You cannot remove positions from your build, please adjust your positional purchase.")
+                    if(summary$cost %>% sum() < 0){
+                      showToast(.options = myToastOptions,"error", "You cannot only remove positions from your build, please adjust your positional purchase.")
                       
-                      updateActionButton(inputId = session$ns("verifyPurchase"))
+                      updateActionButton(inputId = "verifyPurchase", label = "You cannot only remove positions!")
+                      disable(id = "verifyPurchase")
+                    } else {
+                      updateActionButton(inputId = "verifyPurchase", label = "Verify purchase")
+                      enable(id = "verifyPurchase")
                     }
                     
                   }
                 )
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$pos,
           ignoreInit = TRUE
@@ -531,10 +530,10 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       
       #### FOOTEDNESS ####
       output$purchaseFootedness <- renderUI({
-        player() |> 
+        player() %>% 
           then(
             onFulfilled = function(data){
-              getPlayerFootedness(playerID = data$pid) |> 
+              getPlayerFootedness(playerID = data$pid) %>% 
                 then(
                   onFulfilled = function(currentFootedness){
                     tagList(
@@ -548,7 +547,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                         width = 6,
                         selectInput(session$ns("right"), label = "Right Foot", choices = seq(currentFootedness$`right foot`, 20, by = 5), selected = currentFootedness$`right foot`) 
                       )
-                    ) |> 
+                    ) %>% 
                       box(title = "Player Footedness", collapsible = TRUE, width = NULL, collapsed = TRUE)
                   }
                 )
@@ -557,18 +556,18 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       })
       
       shiny::observe({
-        player() |>
+        player() %>%
           then(
             onFulfilled = function(data){
-              getPlayerFootedness(playerID = data$pid) |>
+              getPlayerFootedness(playerID = data$pid) %>%
                 then(
                   onFulfilled = function(currentFootedness){
-                    if(input$left |> is.na() | input$right |> is.na()){
+                    if(input$left %>% is.na() | input$right %>% is.na()){
                       # DO NOTHING
                     } else {
                       
-                      left <- input$left |> as.numeric()
-                      right <- input$right |> as.numeric()
+                      left <- input$left %>% as.numeric()
+                      right <- input$right %>% as.numeric()
                       
                       # if(input$left > 20){
                       #   updateNumericInput(inputId = "left", value = 20)
@@ -592,7 +591,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                 )
             }
           )
-      }) |>
+      }) %>%
         bindEvent(
           input$left, input$right,
           ignoreInit = TRUE
@@ -600,25 +599,29 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       
       #### VERIFY PURCHASE ####
       observe({
+        shinyjs::disable(session$ns("verifyPurchase"))
+        
         totalCost <- sum(
           c(input$individualTraining, 
             traitSum(),
             positionSum(),
             footSum()
-          ) |> as.numeric())
+          ) %>% as.numeric())
         
-        if(totalCost == 0){
-          showToast("warning", "You have not purchased anything yet.")
+        if(totalCost < 0){
+          showToast(.options = myToastOptions,"error", "You cannot make a negative purchase!")
+        } else if(totalCost == 0){
+          showToast(.options = myToastOptions,"warning", "You have not purchased anything yet.")
         } else {
-          player() |> 
+          player() %>% 
             then(
               onFulfilled = function(data){
-                readAPI(url = "https://api.simulationsoccer.com/bank/getBankBalance", query = list(name = data$name)) |> 
-                  future_promise() |> 
+                readAPI(url = "https://api.simulationsoccer.com/bank/getBankBalance", query = list(name = data$name)) %>% 
+                  future_promise() %>% 
                   then(
                     onFulfilled = function(balance){
                       if(totalCost > balance$balance){
-                        showToast("error", "Your purchase has exceeded your bank balance. Please revise your purchase.")
+                        showToast(.options = myToastOptions,"error", "Your purchase has exceeded your bank balance. Please revise your purchase.")
                       } else {
                         promise_all(
                           traits = getPlayerTraits(data$pid),
@@ -631,43 +634,43 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                                 attribute = c("traits"),
                                 old = paste0(traits, collapse = " \\\\ "),
                                 new = paste0(input$traits, collapse = " \\\\ ")
-                              ) |> 
+                              ) %>% 
                               add_row(
                                 attribute = "left foot",
-                                old = foot$`left foot` |> as.character(),
-                                new = input$left |> as.character()
-                              ) |> 
+                                old = foot$`left foot` %>% as.character(),
+                                new = input$left %>% as.character()
+                              ) %>% 
                               add_row(
                                 attribute = "right foot",
-                                old = foot$`right foot` |> as.character(),
-                                new = input$right |> as.character()
+                                old = foot$`right foot` %>% as.character(),
+                                new = input$right %>% as.character()
                               ) 
                             
-                            if(c(input$primary, input$secondary, input$unusedPositions) |> length() != 0){
+                            if(c(input$primary, input$secondary, input$unusedPositions) %>% length() != 0){
                               update <- 
-                                update |> 
+                                update %>% 
                                 add_row(
                                   tibble(
                                     attribute = c(input$primary, input$secondary, input$unusedPositions),
-                                    value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions))) |> as.character()
-                                  ) |> 
+                                    value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions))) %>% as.character()
+                                  ) %>% 
                                     left_join(
                                       positions,
                                       by = c("attribute" = "name"),
                                       suffix = c(".new", ".old")
-                                    ) |> 
+                                    ) %>% 
                                     rename(
                                       old = value.old,
                                       new = value.new
-                                    ) |> 
+                                    ) %>% 
                                     mutate(
-                                      old = old |> as.character()
+                                      old = old %>% as.character()
                                     )
                                 )
                             }
                             
                             update <- 
-                              update |> 
+                              update %>% 
                               add_row(
                                 tibble(
                                   attribute = "tpe",
@@ -679,13 +682,13 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                                     input$individualTraining == 5500000 ~ 12,
                                     input$individualTraining == 7500000 ~ 18,
                                     TRUE ~ 0
-                                  ) |> 
+                                  ) %>% 
                                     as.character()
                                 )
                               )
                             
                             update <- 
-                              update |> 
+                              update %>% 
                               filter(
                                 new != old
                               )
@@ -699,7 +702,9 @@ bankOverviewServer <- function(id, uid, parent, updated) {
               } # close after player pid
             )          
         } # close else after purchase
-      }) |> 
+        
+        shinyjs::enable(session$ns("verifyPurchase"))
+      }) %>% 
         bindEvent(
           input$verifyPurchase,
           ignoreInit = FALSE
@@ -708,104 +713,115 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       #### CONFIRM PURCHASE ####
       
       observe({
+        shinyjs::disable(session$ns("confirmPurchase"))
+        
         totalCost <- sum(
           c(input$individualTraining, 
             traitSum(),
             positionSum(),
             footSum()
-          ) |> as.numeric())
+          ) %>% as.numeric())
         
-        player() |>
+        player() %>%
           then(
             onFulfilled = function(data){
               promise_all(
                 traits = getPlayerTraits(data$pid),
                 foot = getPlayerFootedness(data$pid),
-                positions = getPlayerPositions(data$pid)
+                positions = getPlayerPositions(data$pid),
+                purchases = readAPI("https://api.simulationsoccer.com/bank/getBankTransactions",
+                                    query = list(pid = data$pid)) %>% select(!pid) %>% 
+                  slice_head(n = 1) %>% 
+                  future_promise()
               ) %...>%
                 with({
                   removeModal()
                   
-                  update <- 
-                    tibble(
-                      attribute = c("traits"),
-                      old = paste("'", paste0(traits, collapse = " \\\\ ") |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
-                      new = paste("'", paste0(input$traits, collapse = " \\\\ ") |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
-                    ) |> 
-                    add_row(
-                      attribute = "left foot",
-                      old = foot$`left foot` |> as.character(),
-                      new = input$left |> as.character()
-                    ) |> 
-                    add_row(
-                      attribute = "right foot",
-                      old = foot$`right foot` |> as.character(),
-                      new = input$right |> as.character()
-                    )
-                  
-                  
-                  if(c(input$primary, input$secondary, input$unusedPositions) |> length() != 0){
+                  if(((now() %>% as.numeric()) - purchases$Time) < 60){
+                    showToast(.options = myToastOptions,"error", "You have already made a purchase within the last minute. To prevent accidental double purchases, you need to wait until you make another purchase.")
+                  } else {
                     update <- 
-                      update |> 
+                      tibble(
+                        attribute = c("traits"),
+                        old = paste("'", paste0(traits, collapse = " \\\\ ") %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
+                        new = paste("'", paste0(input$traits, collapse = " \\\\ ") %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
+                      ) %>% 
                       add_row(
-                        tibble(
-                          attribute = paste("pos_", c(input$primary, input$secondary, input$unusedPositions) |> str_to_lower(), sep = ""),
-                          value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions))) |> as.character()
-                        ) |> 
-                          left_join(
-                            positions |> 
-                              mutate(
-                                name = paste("pos_", c(name) |> str_to_lower(), sep = "")
-                              ),
-                            by = c("attribute" = "name"),
-                            suffix = c(".new", ".old")
-                          ) |> 
-                          rename(
-                            old = value.old,
-                            new = value.new
-                          ) |> 
-                          mutate(
-                            old = old |> as.character()
-                          )
-                      ) 
-                  }
-                  
-                  tpe <- tibble(
-                    source = "Individual Training",
-                    tpe = case_when(
-                      input$individualTraining == 1500000 ~ 1,
-                      input$individualTraining == 3000000 ~ 4,
-                      input$individualTraining == 4500000 ~ 8,
-                      input$individualTraining == 5500000 ~ 12,
-                      input$individualTraining == 7500000 ~ 18,
-                      TRUE ~ 0
+                        attribute = "left foot",
+                        old = foot$`left foot` %>% as.character(),
+                        new = input$left %>% as.character()
+                      ) %>% 
+                      add_row(
+                        attribute = "right foot",
+                        old = foot$`right foot` %>% as.character(),
+                        new = input$right %>% as.character()
+                      )
+                    
+                    
+                    if(c(input$primary, input$secondary, input$unusedPositions) %>% length() != 0){
+                      update <- 
+                        update %>% 
+                        add_row(
+                          tibble(
+                            attribute = paste("pos_", c(input$primary, input$secondary, input$unusedPositions) %>% str_to_lower(), sep = ""),
+                            value = c(rep(20, times = length(input$primary)), rep(15, times = length(input$secondary)), rep(0, times = length(input$unusedPositions))) %>% as.character()
+                          ) %>% 
+                            left_join(
+                              positions %>% 
+                                mutate(
+                                  name = paste("pos_", c(name) %>% str_to_lower(), sep = "")
+                                ),
+                              by = c("attribute" = "name"),
+                              suffix = c(".new", ".old")
+                            ) %>% 
+                            rename(
+                              old = value.old,
+                              new = value.new
+                            ) %>% 
+                            mutate(
+                              old = old %>% as.character()
+                            )
+                        ) 
+                    }
+                    
+                    tpe <- tibble(
+                      source = "Individual Training",
+                      tpe = case_when(
+                        input$individualTraining == 1500000 ~ 1,
+                        input$individualTraining == 3000000 ~ 4,
+                        input$individualTraining == 4500000 ~ 8,
+                        input$individualTraining == 5500000 ~ 12,
+                        input$individualTraining == 7500000 ~ 18,
+                        TRUE ~ 0
+                      )
                     )
-                  )
-                  
-                  update <- 
-                    update |> 
-                    filter(
-                      new != old
-                    )
-                  
-                  if(nrow(update) > 0){
-                    updateLog(uid, data$pid, updates = update)
-                    updateBuild(pid = data$pid, updates = update, bank = NULL)
+                    
+                    update <- 
+                      update %>% 
+                      filter(
+                        new != old
+                      )
+                    
+                    if(nrow(update) > 0){
+                      updateLog(uid, data$pid, updates = update)
+                      updateBuild(pid = data$pid, updates = update, bank = NULL)
+                    }
+                    
+                    if(tpe$tpe > 0){
+                      tpeLog(uid, data$pid, tpe)
+                      updateTPE(data$pid, tpe)
+                    }
+                    
+                    addBankTransaction(uid = uid, pid = data$pid, source = "Store Purchase", transaction = -totalCost)
+                    showToast(.options = myToastOptions,"success", "You have successfully completed your purchase!")
+                    purchased(purchased() + 1)
+                    updated(updated() + 1)
                   }
-                  
-                  if(tpe$tpe > 0){
-                    tpeLog(uid, data$pid, tpe)
-                    updateTPE(data$pid, tpe)
-                  }
-                  
-                  addBankTransaction(uid = uid, pid = data$pid, source = "Store Purchase", transaction = -totalCost)
-                  showToast("success", "You have successfully completed your purchase!")
-                  purchased(purchased() + 1)
-                  updated(updated() + 1)
                 })
             }
           )
-      }) |> 
+        shinyjs::enable(session$ns("confirmPurchase"))
+      }) %>% 
         bindEvent(
           input$confirmPurchase
         )

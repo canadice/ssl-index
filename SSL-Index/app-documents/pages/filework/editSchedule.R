@@ -16,7 +16,7 @@ editScheduleUI <- function(id) {
       column(1, h4("P")),
       column(2)
     ),
-    uiOutput(ns("schedule")) |> 
+    uiOutput(ns("schedule")) %>% 
       withSpinnerMedium()
   )
 }
@@ -28,20 +28,24 @@ editScheduleServer <- function(id, userinfo) {
       updated <- reactiveVal({0})
       
       data <- reactive({
-        getUnfinishedSchedule() |> 
+        getUnfinishedSchedule() %>% 
           then(
             onFulfilled = function(data){
-              data[1:8,]
+              data[1:min(8, nrow(data)),]
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           updated()
         )
       
       teams <- reactive({
-        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") |> 
-          filter(ID >= 0) |> 
+        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
+          filter(ID >= 0) %>% 
+          add_row(tibble(name = c("Canada", "Benelux", "Eurasia", "Norden", "West Africa",
+                                  "South America", "Oceania", "Pyrenees", "Alpen", 
+                                  "East Europe", "British Isles", "Central America", 
+                                  "East Africa", "Asia", "Central Europe", "USA"))) %>% 
           future_promise()
       })
       
@@ -61,13 +65,13 @@ editScheduleServer <- function(id, userinfo) {
                 
                 fluidRow(
                   column(2, h5(paste(paste0("S", game$Season), if_else(game$Matchtype == 0, "CUP", paste0(game$Matchtype)), paste0("MD", game$Matchday)))),
-                  column(2, selectInput(paste0("home_", id) |> session$ns(), label = NULL, choices = c("", teams$name), selected = game$Home)) |> div(class = "smallSelect"),
-                  column(2, selectInput(paste0("away_", id) |> session$ns(), label = NULL, choices = c("", teams$name), selected = game$Away)) |> div(class = "smallSelect"),
-                  column(1, selectInput(paste0("hscore_", id) |> session$ns(), label = NULL, choices = c("None" = "NULL", 0:20), selected = game$HomeScore)) |> div(class = "smallSelect"),
-                  column(1, selectInput(paste0("ascore_", id) |> session$ns(), label = NULL, choices = c("None" = "NULL", 0:20), selected = game$AwayScore)) |> div(class = "smallSelect"),
-                  column(1, checkboxInput(paste0("et_", id) |> session$ns(), label = NULL, value = FALSE)),
-                  column(1, checkboxInput(paste0("p_", id) |> session$ns(), label = NULL, value = FALSE)),
-                  column(2, actionButton(paste0("update_", id) |> session$ns(), "Update"))
+                  column(2, selectInput(paste0("home_", id) %>% session$ns(), label = NULL, choices = c("", teams$name), selected = game$Home)) %>% div(class = "smallSelect"),
+                  column(2, selectInput(paste0("away_", id) %>% session$ns(), label = NULL, choices = c("", teams$name), selected = game$Away)) %>% div(class = "smallSelect"),
+                  column(1, selectInput(paste0("hscore_", id) %>% session$ns(), label = NULL, choices = c("None" = "NULL", 0:20), selected = game$HomeScore)) %>% div(class = "smallSelect"),
+                  column(1, selectInput(paste0("ascore_", id) %>% session$ns(), label = NULL, choices = c("None" = "NULL", 0:20), selected = game$AwayScore)) %>% div(class = "smallSelect"),
+                  column(1, checkboxInput(paste0("et_", id) %>% session$ns(), label = NULL, value = FALSE)),
+                  column(1, checkboxInput(paste0("p_", id) %>% session$ns(), label = NULL, value = FALSE)),
+                  column(2, actionButton(paste0("update_", id) %>% session$ns(), "Update"))
                 )
               })
             } else {
@@ -79,7 +83,7 @@ editScheduleServer <- function(id, userinfo) {
       })
       
       observe({
-        data() |> 
+        data() %>% 
           then(
             onFulfilled = function(data){
               lapply(data$gid, function(i) {
@@ -98,8 +102,8 @@ editScheduleServer <- function(id, userinfo) {
                   
                   updated(updated() + 1)
                   
-                  showToast(type = "success", "The schedule has been updated!")
-                }) |> 
+                  showToast(.options = myToastOptions,type = "success", "The schedule has been updated!")
+                }) %>% 
                   bindEvent(
                     input[[paste0("update_", i)]]
                   )
@@ -107,7 +111,7 @@ editScheduleServer <- function(id, userinfo) {
               })
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           updated(),
           once = TRUE

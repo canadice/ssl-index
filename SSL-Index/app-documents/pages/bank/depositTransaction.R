@@ -8,7 +8,7 @@ bankDepositUI <- function(id) {
             If you are not sure how to do this, follow the instructions in this ", 
                    a("link", href = "https://stackoverflow.com/questions/18693139/how-to-convert-csv-files-encoding-to-utf-8"),
                    ".", sep = ""
-             ) |> HTML()
+             ) %>% HTML()
              ),
       column(width = 3,
              downloadButton(ns("downloadTemplate"), label = "Download template file")
@@ -16,19 +16,19 @@ bankDepositUI <- function(id) {
       br(),
       br(),
       uiOutput(ns("informationUI"))
-    ) |> 
+    ) %>% 
       fluidRow(),
     column(
       width = 12,
       p("Rows marked in red have player names that cannot be found. Check the spelling of the player and reupload the file."),
-      reactableOutput(outputId = ns("checkImport")) |> 
+      reactableOutput(outputId = ns("checkImport")) %>% 
         withSpinnerMedium()
-    ) |> 
+    ) %>% 
       fluidRow(),
     column(
       width = 12,
       uiOutput(ns("confirmationUI"))
-    ) |> 
+    ) %>% 
       div(class = "frozen-bottom"),
     div(style = "min-height:100px;")
   )
@@ -40,26 +40,26 @@ bankDepositServer <- function(id, userinfo) {
     function(input, output, session) {
       
       bankDeposit <- reactive({
-        if(input$bankDeposit |> is.null()){
+        if(input$bankDeposit %>% is.null()){
           NULL
         } else {
           file <- input$bankDeposit
           
           file <- read.csv(file$datapath, header = TRUE, encoding = "UTF-8") 
           
-          if(all(c("player", "amount") %in% (colnames(file) |> str_to_lower()))){
-            colnames(file) <- colnames(file) |> str_to_lower()
+          if(all(c("player", "amount") %in% (colnames(file) %>% str_to_lower()))){
+            colnames(file) <- colnames(file) %>% str_to_lower()
             
             pids <- 
               promise_map(
                 .x = file$player, 
                 .f = getPlayerID
-              ) |> 
+              ) %>% 
               then(
                 onFulfilled = function(pids){
                   pids <- 
                     lapply(pids, FUN = function(x){
-                      if(x |> nrow() == 0){
+                      if(x %>% nrow() == 0){
                         -99
                       } else {
                         x
@@ -67,14 +67,14 @@ bankDepositServer <- function(id, userinfo) {
                     })
                   
                   tibble(
-                    pid = pids |> do.call(what = rbind, args = .) |> unlist(),
+                    pid = pids %>% do.call(what = rbind, args = .) %>% unlist(),
                     player = file$player,
                     amount = file$amount
                   )
                 }
               )
           } else {
-            showToast("error", "The file does not contain the headers 'player' and/or 'amount'.")
+            showToast(.options = myToastOptions,"error", "The file does not contain the headers 'player' and/or 'amount'.")
             
             NULL
           }
@@ -102,21 +102,21 @@ bankDepositServer <- function(id, userinfo) {
       })
       
       output$checkImport <- renderReactable({
-        if(bankDeposit() |> is.null()){
+        if(bankDeposit() %>% is.null()){
           NULL
         } else {
           req(input$depositSource)
           
-          bankDeposit() |> 
+          bankDeposit() %>% 
             then(
               onFulfilled = function(data){
-                data |> 
+                data %>% 
                   mutate(
                     source = input$depositSource
-                  ) |> 
+                  ) %>% 
                   rename_with(
                     str_to_upper
-                  ) |> 
+                  ) %>% 
                   reactable(
                     pagination = FALSE,
                     columns = 
@@ -140,14 +140,14 @@ bankDepositServer <- function(id, userinfo) {
           paste(input$depositSource, " Unprocessed ", Sys.Date(), ".csv", sep="")
         },
         content = function(file) {
-          bankDeposit() |> 
+          bankDeposit() %>% 
             then(
               onFulfilled = function(data){
-                data |> 
+                data %>% 
                   filter(
                     pid == -99
-                  ) |> 
-                  select(!pid) |> 
+                  ) %>% 
+                  select(!pid) %>% 
                   write.csv(file, row.names = FALSE)
               }
             )
@@ -163,31 +163,31 @@ bankDepositServer <- function(id, userinfo) {
         })
       
       observe({
-        bankDeposit() |> 
+        bankDeposit() %>% 
           then(
             onFulfilled = function(data){
               processed <- 
-                data |> 
+                data %>% 
                 filter(
                   pid != -99
                 )
               
-              if(processed$pid |> duplicated() |> any()){
-                showToast("error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same player listed twice.")  
+              if(processed$pid %>% duplicated() %>% any()){
+                showToast(.options = myToastOptions,"error", "You have duplicated player ids in the submitted csv. Please check that you don't have the same player listed twice.")  
               } else if(any(data$pid == -99)){
-                showToast("warning", "At least one player in the submitted csv cannot be found on the forum. They are found in the downloaded csv file for checking and re-import.")
+                showToast(.options = myToastOptions,"warning", "At least one player in the submitted csv cannot be found on the forum. They are found in the downloaded csv file for checking and re-import.")
                 
                 click("downloadData")
                 
                 data <- 
-                  processed |> 
+                  processed %>% 
                     mutate(
                       source = input$depositSource
                     ) 
                 
                 addBankTransaction(uid = userinfo$uid, pid = data$pid, source = data$source, transaction = data$amount, status = 0)
                 
-                showToast(type = "success", "You have successfully deposited a subset of the transactions.")
+                showToast(.options = myToastOptions,type = "success", "You have successfully deposited a subset of the transactions.")
                 
                 output$informationUI <- renderUI({
                   tagList(
@@ -197,14 +197,14 @@ bankDepositServer <- function(id, userinfo) {
                 })
               } else {
                 data <- 
-                  data |> 
+                  data %>% 
                     mutate(
                       source = input$depositSource
                     ) 
                 
                 addBankTransaction(uid = userinfo$uid, pid = data$pid, source = data$source, transaction = data$amount, status = 0)
                 
-                showToast(type = "success", "You have successfully deposited the transaction.")
+                showToast(.options = myToastOptions,type = "success", "You have successfully deposited the transaction.")
                 
                 output$informationUI <- renderUI({
                   tagList(
@@ -215,7 +215,7 @@ bankDepositServer <- function(id, userinfo) {
               }
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$confirmDeposit,
           ignoreInit = TRUE

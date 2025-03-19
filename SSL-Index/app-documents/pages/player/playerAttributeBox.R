@@ -258,22 +258,22 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
         ) %...>%
           with({
             if(bank < 0){
-              showToast("error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.", session = parent)
+              showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.", session = parent)
             } else if(bank > 24){
               # Error shown if manager has regressed too much
-              showToast("error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.", session = parent) 
+              showToast(.options = myToastOptions,"error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.", session = parent) 
             } else {
               
               update <- updateSummary(current = current, inputs = input)
               
               if(nrow(update) > 0){
                 if(any((update$old - update$new) < 0)){
-                  showToast(type = "error", "You cannot have an attribute value larger than your current build.", session = parent)
+                  showToast(.options = myToastOptions,type = "error", "You cannot have an attribute value larger than your current build.", session = parent)
                 } else {
                   modalVerify(update, session = session)
                 }
               } else {
-                showToast(type = "warning", "You have not changed your build yet, there is nothing to update.", session = parent)
+                showToast(.options = myToastOptions,type = "warning", "You have not changed your build yet, there is nothing to update.", session = parent)
               }
             }
           })
@@ -297,7 +297,7 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
             
             updateBuild(pid = current$pid, updates = update, bank = bank)
             
-            showToast(type = "success", "The player has been regressed successfully!", session = parent)
+            showToast(.options = myToastOptions,type = "success", "The player has been regressed successfully!", session = parent)
             
             ## Sends back a value for a reactive element so that observers in parent can trigger
             rv$bank <- bank

@@ -62,43 +62,43 @@ playerEditServer <- function(id, uid) {
       #### REACTIVE DATA ####
       playerData <- reactive({
         req(input$selectedPlayer)
-        pid <- input$selectedPlayer |> as.numeric()
+        pid <- input$selectedPlayer %>% as.numeric()
         
-        readAPI(url = "https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) |> 
+        readAPI(url = "https://api.simulationsoccer.com/player/getPlayer", query = list(pid = pid)) %>% 
           future_promise()
         
-      }) |> 
+      }) %>% 
         bindEvent(
           input$selectedPlayer,
           updated()
         )
       
       allNames <- reactive({
-        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") |> 
+        readAPI(url = "https://api.simulationsoccer.com/player/getAllPlayers") %>% 
           select(
             name, pid, username, team, status_p
-          ) |> 
+          ) %>% 
           future_promise()
       })
       
       organizations <- reactive({
-        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") |> 
-          select(id = ID, name = organization, abbr = abbreviation) |> 
-          filter(!is.na(name)) |> 
-          unique() |> 
+        readAPI("https://api.simulationsoccer.com/organization/getOrganizations") %>% 
+          select(id = ID, name = organization, abbr = abbreviation) %>% 
+          filter(!is.na(name)) %>% 
+          unique() %>% 
           future_promise()
       })
       
       #### OUTPUTS ####
       output$selectPlayer <- renderUI({
         req(input$retired, input$freeAgent)
-        allNames() |> 
+        allNames() %>% 
           then(
             onFulfilled = function(names) {
               names <- 
-                names |>
-                filter(if(input$retired != 1) status_p > 0 else TRUE) |>
-                filter(if(input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) |> 
+                names %>%
+                filter(if(input$retired != 1) status_p > 0 else TRUE) %>%
+                filter(if(input$freeAgent != 1) !(team %in% c("FA", "Retired")) else TRUE) %>% 
                 arrange(name)
               
               namedVector <- names$pid
@@ -140,7 +140,7 @@ playerEditServer <- function(id, uid) {
       })
       
       output$player <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
               tagList(
@@ -167,23 +167,23 @@ playerEditServer <- function(id, uid) {
       })
       
       output$positions <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
               currentPositions <- 
-                data |> 
-                select(pos_st:pos_gk) |> 
-                pivot_longer(everything()) |> 
-                mutate(name = name |> str_remove_all("pos_") |> str_to_upper())
+                data %>% 
+                select(pos_st:pos_gk) %>% 
+                pivot_longer(everything()) %>% 
+                mutate(name = name %>% str_remove_all("pos_") %>% str_to_upper())
               
-              posPrim <- positionsGK[names(positionsGK) %in% (currentPositions |> 
-                                                            filter(value == 20) |> 
-                                                            select(name) |> unlist())
+              posPrim <- positionsGK[names(positionsGK) %in% (currentPositions %>% 
+                                                            filter(value == 20) %>% 
+                                                            select(name) %>% unlist())
               ]
               
-              posSec <- positionsGK[names(positionsGK) %in% (currentPositions |> 
-                                                           filter(value < 20 & value > 5) |> 
-                                                           select(name) |> unlist())
+              posSec <- positionsGK[names(positionsGK) %in% (currentPositions %>% 
+                                                           filter(value < 20 & value > 5) %>% 
+                                                           select(name) %>% unlist())
               ]
               
               posRem <- positionsGK[!(positionsGK %in% c(posPrim, posSec))]
@@ -214,18 +214,18 @@ playerEditServer <- function(id, uid) {
       
       
       output$traits <- renderUI({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
-              currentTraits <- data$traits |> str_split(pattern = traitSep) |> unlist()
+              currentTraits <- data$traits %>% str_split(pattern = traitSep) %>% unlist()
               
               tagList(
                 checkboxGroupInput(
                   session$ns("traits"), 
                   paste("Change traits"), 
-                  choices = traits |> unlist(use.names = FALSE), 
+                  choices = traits %>% unlist(use.names = FALSE), 
                   selected = currentTraits
-                ) |> 
+                ) %>% 
                   div(class = "multicol"),
                 tags$script(paste("
                           Shiny.addCustomMessageHandler('disableCheckbox', function(checkboxId) {
@@ -246,7 +246,7 @@ playerEditServer <- function(id, uid) {
                               }
                             }
                           });
-                        ", sep = "") |> HTML()
+                        ", sep = "") %>% HTML()
                 )
               )
             }
@@ -371,8 +371,8 @@ playerEditServer <- function(id, uid) {
         #   disable_list <- "none"
         # }
         
-        session$sendCustomMessage("disableCheckbox", disable_list |> unique())
-      }) |> 
+        session$sendCustomMessage("disableCheckbox", disable_list %>% unique())
+      }) %>% 
         bindEvent(
           input$traits,
           ignoreInit = FALSE,
@@ -380,7 +380,7 @@ playerEditServer <- function(id, uid) {
         )
       
       observe({
-        playerData() |> 
+        playerData() %>% 
           then(
             onFulfilled = function(data){
               summary <- 
@@ -390,15 +390,15 @@ playerEditServer <- function(id, uid) {
                   position = paste0("'", input$position, "'"),
                   `left foot` = input$left,
                   `right foot` = input$right,
-                  traits = paste0("'", paste0(input$traits, collapse = traitSep) |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'"),
-                  render = paste0("'", input$render, "'")
+                  traits = paste0("'", paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'"),
+                  render = paste0("'", input$render %>% str_replace_all("'", "\\\\'"), "'")
                 ) 
               
               for(pos in names(positionsGK)){
                 column <- paste0("pos_", str_to_lower(pos))
                 
                 summary <- 
-                  summary |> 
+                  summary %>% 
                   cbind(
                     tibble(
                       !!column := if_else(any(input$primary == pos), 20, if_else(any(input$secondary == pos), 15, 0))
@@ -407,26 +407,26 @@ playerEditServer <- function(id, uid) {
               }
               
               old <- 
-                data |> 
-                select(team = organization, affiliate, position, `left foot`, `right foot`, traits, pos_st:pos_gk, render) |> 
+                data %>% 
+                select(team = organization, affiliate, position, `left foot`, `right foot`, traits, pos_st:pos_gk, render) %>% 
                 mutate(
                   across(
                     where(is.character), 
-                    ~paste0("'", .x |> str_replace_all(pattern = "'", replacement = "\\\\'"), "'"))
-                  ) |> 
+                    ~paste0("'", .x %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'"))
+                  ) %>% 
                 pivot_longer(
                   everything(),
                   values_transform = as.character
                 )
               
               update <- 
-                summary |> 
-                pivot_longer(everything(), values_transform = as.character) |> 
+                summary %>% 
+                pivot_longer(everything(), values_transform = as.character) %>% 
                 left_join(
                   old,
                   by = "name"
-                ) |> 
-                rename(attribute = name, new = value.x, old = value.y) |> 
+                ) %>% 
+                rename(attribute = name, new = value.x, old = value.y) %>% 
                 filter(old != new)
               
               updateLog(uid = uid, pid = data$pid, updates = update)
@@ -436,10 +436,10 @@ playerEditServer <- function(id, uid) {
               
               updated(updated() + 1)
               
-              showToast(type = "success", "The player has been updated!")
+              showToast(.options = myToastOptions,type = "success", "The player has been updated!")
             }
           )
-      }) |> 
+      }) %>% 
         bindEvent(
           input$update
         )

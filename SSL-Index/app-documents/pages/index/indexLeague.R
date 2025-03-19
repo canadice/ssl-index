@@ -11,7 +11,7 @@ leagueIndexUI <- function(id) {
             label = "Select a season",
             choices = 
               c(
-                1:currentSeason$season |> 
+                1:currentSeason$season %>% 
                 sort(decreasing = TRUE),
                 "ALL"
               )
@@ -30,13 +30,13 @@ leagueIndexUI <- function(id) {
         h1("Outfield"),
         tabsetPanel(
           tabPanel("Statistics",
-                   reactableOutput(ns("outfieldBasic")) |> 
+                   reactableOutput(ns("outfieldBasic")) %>% 
                      withSpinnerMedium()),
           tabPanel("Adv. Statistics",
-                   reactableOutput(ns("outfieldAdvanced")) |> 
+                   reactableOutput(ns("outfieldAdvanced")) %>% 
                      withSpinnerMedium()),
           tabPanel("Leaders",
-                   uiOutput(ns("outfieldLeaders")) |> 
+                   uiOutput(ns("outfieldLeaders")) %>% 
                      withSpinnerMedium())
           )
         ),
@@ -45,13 +45,13 @@ leagueIndexUI <- function(id) {
         h1("Keeper"),
         tabsetPanel(
           tabPanel("Statistics",
-                   reactableOutput(ns("keeperBasic")) |> 
+                   reactableOutput(ns("keeperBasic")) %>% 
                      withSpinnerMedium()),
           tabPanel("Adv. Statistics",
-                   reactableOutput(ns("keeperAdvanced")) |> 
+                   reactableOutput(ns("keeperAdvanced")) %>% 
                      withSpinnerMedium()),
           tabPanel("Leaders",
-                   uiOutput(ns("keeperLeaders")) |> 
+                   uiOutput(ns("keeperLeaders")) %>% 
                      withSpinnerMedium())
         )
       )
@@ -70,7 +70,7 @@ leagueIndexServer <- function(id) {
         
         readAPI(url = "https://api.simulationsoccer.com/index/outfield", 
                 query = list(league = input$selectedLeague, season = input$selectedSeason)
-        ) |> 
+        ) %>% 
           future_promise()
       })
       
@@ -78,14 +78,14 @@ leagueIndexServer <- function(id) {
         req(input$selectedLeague)
         readAPI(url = "https://api.simulationsoccer.com/index/keeper", 
                 query = list(league = input$selectedLeague, season = input$selectedSeason)
-        ) |> 
+        ) %>% 
           future_promise()
       })
       
       #### UI OUTPUT ####
       output$leagueSelector <- renderUI({
         if(input$selectedSeason != "ALL"){
-          season <- input$selectedSeason |> as.numeric()
+          season <- input$selectedSeason %>% as.numeric()
           
           if(season < 5){
             selectInput(
@@ -98,7 +98,7 @@ leagueIndexServer <- function(id) {
                   "Cup"
                 )
             )
-          } else if (season == 12){
+          } else if (season %in% c(12, 18)){
             selectInput(
               inputId = session$ns("selectedLeague"),
               label = "League",
@@ -108,7 +108,7 @@ leagueIndexServer <- function(id) {
                   "Major" = "1",
                   "Minor" = "2",
                   "Cup",
-                  "WSFC"
+                  "WSFC" = "5"
                 )
             )
           } else if (season < 12){
@@ -162,7 +162,7 @@ leagueIndexServer <- function(id) {
           fluidRow(
             lapply(table, function(stat) {
               column(width = 4,
-                     reactableOutput(session$ns(paste0(stat, "_leader"))) |> 
+                     reactableOutput(session$ns(paste0(stat, "_leader"))) %>% 
                        div(class = "leaderTable")
               )
             })
@@ -172,16 +172,20 @@ leagueIndexServer <- function(id) {
       
       lapply(outstatistics, function(stat){
         output[[paste0(stat, "_leader")]] <- renderReactable({
-          outfieldData() |> 
+          outfieldData() %>% 
             then(
               onFulfilled = function(data){
-                data |> 
-                  select(
-                    name, club, !!sym(stat)
-                  ) |> 
-                  arrange(!!sym(stat) |> desc()) |> 
-                  slice_head(n = 10) |> 
-                  leaderReactable()
+                if(data %>% is_empty()){
+                  # SHOW NOTHING
+                } else {
+                  data %>% 
+                    select(
+                      name, club, !!sym(stat)
+                    ) %>% 
+                    arrange(!!sym(stat) %>% desc()) %>% 
+                    slice_head(n = 10) %>% 
+                    leaderReactable()
+                }
               }
             )
         })
@@ -198,7 +202,7 @@ leagueIndexServer <- function(id) {
           fluidRow(
             lapply(table, function(stat) {
               column(width = 4,
-                     reactableOutput(session$ns(paste0(stat, "_leader"))) |> 
+                     reactableOutput(session$ns(paste0(stat, "_leader"))) %>% 
                        div(class = "leaderTable")
               )
             })
@@ -208,16 +212,20 @@ leagueIndexServer <- function(id) {
       
       lapply(keepstatistics, function(stat){
         output[[paste0(stat, "_leader")]] <- renderReactable({
-          keeperData() |> 
+          keeperData() %>% 
             then(
               onFulfilled = function(data){
-                data |> 
-                  select(
-                    name, club, !!sym(stat)
-                  ) |> 
-                  arrange(!!sym(stat) |> desc()) |> 
-                  slice_head(n = 10) |> 
-                  leaderReactable()
+                if(data %>% is_empty()){
+                  # SHOW NOTHING
+                } else {
+                  data %>% 
+                    select(
+                      name, club, !!sym(stat)
+                    ) %>% 
+                    arrange(!!sym(stat) %>% desc()) %>% 
+                    slice_head(n = 10) %>% 
+                    leaderReactable()
+                }
               }
             )
         })
@@ -225,73 +233,89 @@ leagueIndexServer <- function(id) {
       
       #### REACTABLE OUTPUT ####
       output$outfieldBasic <- renderReactable({
-        outfieldData() |> 
+        outfieldData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data |> 
-                select(
-                  name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
-                ) 
-              
-              currentData |> 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:assists, `shots on target`:offsides, blocks, `shots blocked`, `average rating`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
           
       })  
       
       output$outfieldAdvanced <- renderReactable({
-        outfieldData() |> 
+        outfieldData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data |> 
-                select(
-                  name:club, 
-                  xg,
-                  xa:`fk shots`,
-                  `open play key passes`:`goals outside box`,
-                  `press%`:`pen adj xG`
-                ) 
-              
-              currentData |> 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:club, 
+                    xg,
+                    xa:`fk shots`,
+                    `open play key passes`:`goals outside box`,
+                    `press%`:`pen adj xG`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         
       }) 
       
       output$keeperBasic <- renderReactable({
-        keeperData() |> 
+        keeperData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data |> 
-                select(
-                  name:`save%`
-                ) 
-              
-              currentData |> 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:`save%`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         
       })  
       
       output$keeperAdvanced <- renderReactable({
-        keeperData() |> 
+        keeperData() %>% 
           then(
             onFulfilled = function(data){
-              currentData <- 
-                data |> 
-                select(
-                  name:club, 
-                  `penalties faced`:`xg prevented`
-                ) 
-              
-              currentData |> 
-                indexReactable()
+              if(data %>% is_empty()){
+                # SHOW NOTHING
+              } else {
+                currentData <- 
+                  data %>% 
+                  select(
+                    name:club, 
+                    `penalties faced`:`xg prevented`
+                  ) 
+                
+                currentData %>% 
+                  indexReactable()
+              }
             }
           )
         

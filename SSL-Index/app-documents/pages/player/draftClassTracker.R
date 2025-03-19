@@ -62,8 +62,8 @@ draftClassServer <- function(id) {
                     USERSTATUS = colDef(width = 150),
                     PLAYERSTATUS = colDef(width = 150),
                     TPE = colDef(width = 50),
-                    NAME = colDef(cell = function(value) tippy(value, tooltip = value, theme = "material")),
-                    USERNAME = colDef(cell = function(value) tippy(value, tooltip = value, theme = "material")),
+                    NAME = colDef(cell = function(value) tippy(value, tooltip = value, theme = "ssl", arrow = TRUE)),
+                    USERNAME = colDef(cell = function(value) tippy(value, tooltip = value, theme = "ssl", arrow = TRUE)),
                     BANKBALANCE = colDef(width = 120, format = colFormat(digits = 0, separators = TRUE, currency = "USD")),
                     TEAM = colDef(name = "", width = 200, align = "left", cell = function(value){
                       image <- img(src = sprintf("%s.png", value), style = "height: 30px;", alt = value, title = value)  
