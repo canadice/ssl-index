@@ -393,7 +393,7 @@ $navbar-items-width: 112px;
   }
 
   .nav-container_narrow {
-    background: red;
+    background: var(--topBackground);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -428,7 +428,7 @@ $navbar-items-width: 112px;
     }
 
     a, span {
-      padding: 8px;
+      padding: 12px 8px;
     }
   }
 
@@ -451,8 +451,8 @@ $navbar-items-width: 112px;
 
     a, span {
       padding-left: 16px;
-      padding-top: 8px;
-      padding-bottom: 8px;
+      padding-top: 12px;
+      padding-bottom: 12px;
     }
   }
 
@@ -475,8 +475,8 @@ $navbar-items-width: 112px;
 
     a, span {
       padding-left: 24px;
-      padding-top: 8px;
-      padding-bottom: 8px;
+      padding-top: 12px;
+      padding-bottom: 12px;
     }
   }
 }
