@@ -307,9 +307,9 @@ $navbar-items-width: 112px;
   left: 0;
   width: $navbar-items-width;
   font-weight: normal;
-  -moz-box-shadow: 0 0 2px black;
-  -webkit-box-shadow: 0 0 2px black;
-  box-shadow: 0 0 2px black;
+  -moz-box-shadow: 0 0 2px var(--borderColor);
+  -webkit-box-shadow: 0 0 2px var(--borderColor);
+  box-shadow: 0 0 2px var(--borderColor);
   border-bottom-left-radius: 2px;
   z-index: 101;
 
@@ -353,9 +353,9 @@ $navbar-items-width: 112px;
   color: black;
   left: $navbar-items-width;
   width: max-content;
-  -moz-box-shadow: 0 0 2px black;
-  -webkit-box-shadow: 0 0 2px black;
-  box-shadow: 0 0 2px black;
+  -moz-box-shadow: 0 0 2px var(--borderColor);
+  -webkit-box-shadow: 0 0 2px var(--borderColor);
+  box-shadow: 0 0 2px var(--borderColor);
   border-bottom-right-radius: 2px;
   z-index: 100;
 
@@ -420,10 +420,15 @@ $navbar-items-width: 112px;
     align-items: flex-start;
     width: 100%;
     height: auto;
-    padding: 8px;
+    padding: 0;
 
-    a {
-      padding: 0;
+    & > div:has(> span), & > div:has(> a) {
+      border-bottom: 1px solid var(--borderColor);
+      width: 100%;
+    }
+
+    a, span {
+      padding: 8px;
     }
   }
 
@@ -436,9 +441,18 @@ $navbar-items-width: 112px;
     left: 0;
     height: 0px;
     width: 100%;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
 
     .nav-menu_item {
-      border: none;
+      border-bottom: 1px solid var(--borderColor) !important;
+    }
+
+    a, span {
+      padding-left: 16px;
+      padding-top: 8px;
+      padding-bottom: 8px;
     }
   }
 
@@ -451,9 +465,18 @@ $navbar-items-width: 112px;
     left: 0;
     height: 0px;
     width: 100%;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
 
     .nav-menu_sub-item {
-      border: none;
+      border-bottom: 1px solid var(--borderColor);
+    }
+
+    a, span {
+      padding-left: 24px;
+      padding-top: 8px;
+      padding-bottom: 8px;
     }
   }
 }
