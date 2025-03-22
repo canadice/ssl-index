@@ -4,13 +4,13 @@ box::use(
 
 
 #' @export
-flexCol <- function(cont, style = "") {
-  shiny::tag("div", varArgs = list(cont, class = "flex-col-wrapper", style = style))
+flexCol <- function(cont, style = "", onclick = "") {
+  shiny::tag("div", varArgs = list(cont, class = "flex-col-wrapper", style = style, onclick = onclick))
 }
 
 #' @export
-flexRow <- function(cont, style = "") {
-  shiny::tag("div", varArgs = list(cont, class = "flex-row-wrapper", style = style))
+flexRow <- function(cont, style = "", onclick = "") {
+  shiny::tag("div", varArgs = list(cont, class = "flex-row-wrapper", style = style, onclick = onclick))
 }
 
 #' @export
@@ -23,21 +23,23 @@ navMenu <- function(cont, label = "", items = list()) {
       role = "button",
       onclick = "
         const allMenuItems = document.querySelectorAll('.nav-menu_items');
+        const allSubMenuItems = document.querySelectorAll('.nav-menu_sub-items');
         const childMenuItems = this.querySelector('.nav-menu_items');
+        const childSubMenuItems = this.querySelector('.nav-menu_sub-items');
+
         if (childMenuItems) {
           const isClosed = getComputedStyle(childMenuItems).height === '0px';
 
           // Close all other open menus
           if (isClosed) {
-            allMenuItems.forEach(item => {
-              if (item !== childMenuItems) {
+            [...allMenuItems, ...allSubMenuItems].forEach(item => {
+              if (item !== childMenuItems && item !== childSubMenuItems) {
                 item.style.height = '0px';
               }
             });
           }
 
-          // Show child menu items if closed, otherwise hide them
-          childMenuItems.style.height = isClosed ? 'max-content' : '0px';
+          childMenuItems.style.height = 'max-content';
         }
       ",
       tagList(
@@ -57,6 +59,25 @@ navMenu <- function(cont, label = "", items = list()) {
                 tags_list <- lapply(items, function(item) {
                   div(
                     class = "nav-menu_item",
+                    onclick = "
+                      const allSubMenuItems = document.querySelectorAll('.nav-menu_sub-items');
+                      const childSubMenuItems = this.querySelector('.nav-menu_sub-items');
+
+                      if (childSubMenuItems) {
+                        const isClosed = getComputedStyle(childSubMenuItems).height === '0px';
+
+                        // Close all other open menus
+                        if (isClosed) {
+                          allSubMenuItems.forEach(item => {
+                            if (item !== childSubMenuItems) {
+                              item.style.height = '0px';
+                            }
+                          });
+                        }
+
+                        childSubMenuItems.style.height = 'max-content';
+                      }
+                    ",
                     item
                   )
                 })
