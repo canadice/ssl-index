@@ -22,10 +22,22 @@ navMenu <- function(cont, label = "", items = list()) {
       class = "nav-menu",
       role = "button",
       onclick = "
-        const menuItems = this.querySelector('.nav-menu_items');
-        if (menuItems) {
-          const isClosed = getComputedStyle(menuItems).height === '0px';
-          menuItems.style.height = isClosed ? 'max-content' : '0px';
+        const allMenuItems = document.querySelectorAll('.nav-menu_items');
+        const childMenuItems = this.querySelector('.nav-menu_items');
+        if (childMenuItems) {
+          const isClosed = getComputedStyle(childMenuItems).height === '0px';
+
+          // Close all other open menus
+          if (isClosed) {
+            allMenuItems.forEach(item => {
+              if (item !== childMenuItems) {
+                item.style.height = '0px';
+              }
+            });
+          }
+
+          // Show child menu items if closed, otherwise hide them
+          childMenuItems.style.height = isClosed ? 'max-content' : '0px';
         }
       ",
       tagList(
