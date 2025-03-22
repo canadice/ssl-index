@@ -13,6 +13,16 @@ box::use(
 #' @export
 ui <- function(id) {
   ns <- NS(id)
+  items <- list(
+    navMenuItem(
+      label = "File Work",
+      subItems = list(
+        a("Build Exports", href = route_link("filework/export")),
+        a("Index Imports", href = route_link("filework/import")),
+        a("Edit Schedule", href = route_link("filework/schedule"))
+      )
+    )
+  )
   tagList(
     ## Function that loads js-cookies for auto-login
     tags$script(
@@ -131,8 +141,11 @@ ui <- function(id) {
                 navMenu(
                   div(a("Intro", href = route_link("/")))
                 ),
-                uiOutput(ns("jobsNavigation"))
-              )
+                navMenu(
+                  label = "Jobs",
+                  items = items
+                )
+              ),
             ),
             flexRow(uiOutput(ns("yourPlayer")))
           )

@@ -340,6 +340,10 @@ $navbar-items-width: 112px;
     }
   }
 
+  .nav-menu_item:has(.nav-menu_sub-items) {
+    padding: 8px;
+  }
+
   &:hover .nav-menu_sub-items {
     display: block;
   }
@@ -447,6 +451,7 @@ $navbar-items-width: 112px;
 
     .nav-menu_item {
       border-bottom: 1px solid var(--borderColor) !important;
+      padding: 0 !important;
     }
 
     a, span {

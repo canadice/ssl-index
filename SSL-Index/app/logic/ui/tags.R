@@ -74,7 +74,7 @@ navMenuItem <- function(cont, label = "", subItems = list()) {
   if (length(subItems) > 0) {
     tagList(
       flexRow(
-        style = "align-items: center; justify-content: space-between; gap: 4px; padding: 8px;",
+        style = "align-items: center; justify-content: space-between; gap: 4px;",
         tagList(
           span(label, role = "button"),
           icon("caret-right")
