@@ -20,6 +20,15 @@ navMenu <- function(cont, label = "", items = list()) {
   } else if (length(label) > 0) {
     div(
       class = "nav-menu",
+      role = "button",
+      onclick = "
+        const menuItems = this.querySelector('.nav-menu_items');
+        const maxContent = 'max-content';
+        if (menuItems) {
+          const isOpen = getComputedStyle(menuItems).height === maxContent;
+          menuItems.style.height = isOpen ? '0px' : maxContent;
+        }
+      ",
       tagList(
         flexRow(
           style = "align-items: center; gap: 4px;",
@@ -31,6 +40,7 @@ navMenu <- function(cont, label = "", items = list()) {
         if (length(items) > 0) {
           div(
             class = "nav-menu_items",
+            role = "button",
             flexCol(
               tagList(
                 tags_list <- lapply(items, function(item) {
@@ -55,12 +65,13 @@ navMenuItem <- function(cont, label = "", subItems = list()) {
       flexRow(
         style = "align-items: center; justify-content: space-between; gap: 4px; padding: 8px;",
         tagList(
-          span(label),
+          span(label, role = "button"),
           icon("caret-right")
         )
       ),
       div(
         class = "nav-menu_sub-items",
+        role = "button",
         div(
           tagList(
             tags_list <- lapply(subItems, function(item) {

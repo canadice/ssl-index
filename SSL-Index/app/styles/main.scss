@@ -420,6 +420,20 @@ $navbar-items-width: 112px;
       padding: 0;
     }
   }
+
+  .nav-menu_items {
+    display: block;
+    overflow: hidden;
+    position: relative;
+    height: 0px;
+  }
+
+  .nav-menu_sub-items {
+    display: block;
+    overflow: hidden;
+    position: relative;
+    height: 0px;
+  }
 }
 
 /* Fixes so that the sidebar menus are visible from the first item regardless of the split of the nav-bar */

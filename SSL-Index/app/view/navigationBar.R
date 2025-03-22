@@ -134,9 +134,7 @@ ui <- function(id) {
                 uiOutput(ns("jobsNavigation"))
               )
             ),
-            flexRow(
-              uiOutput(ns("yourPlayer"))
-            )
+            flexRow(uiOutput(ns("yourPlayer")))
           )
         )
       )
@@ -223,8 +221,6 @@ server <- function(id, auth, resAuth) {
       bindEvent(input$cookies$token, ignoreNULL = TRUE, once = TRUE)
     
     observe({
-      print("login")
-      
       showModal(
         modalDialog(
           textInput(session$ns("user"), label = "Username:"),
