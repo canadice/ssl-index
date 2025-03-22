@@ -416,23 +416,45 @@ $navbar-items-width: 112px;
   }
 
   .nav-menu {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    height: auto;
+    padding: 8px;
+
     a {
       padding: 0;
     }
   }
 
   .nav-menu_items {
+    background: none;
     display: block;
     overflow: hidden;
     position: relative;
+    top: 0;
+    left: 0;
     height: 0px;
+    width: 100%;
+
+    .nav-menu_item {
+      border: none;
+    }
   }
 
   .nav-menu_sub-items {
+    background: none;
     display: block;
     overflow: hidden;
     position: relative;
+    top: 0;
+    left: 0;
     height: 0px;
+    width: 100%;
+
+    .nav-menu_sub-item {
+      border: none;
+    }
   }
 }
 

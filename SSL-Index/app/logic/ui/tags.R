@@ -23,10 +23,9 @@ navMenu <- function(cont, label = "", items = list()) {
       role = "button",
       onclick = "
         const menuItems = this.querySelector('.nav-menu_items');
-        const maxContent = 'max-content';
         if (menuItems) {
-          const isOpen = getComputedStyle(menuItems).height === maxContent;
-          menuItems.style.height = isOpen ? '0px' : maxContent;
+          const isClosed = getComputedStyle(menuItems).height === '0px';
+          menuItems.style.height = isClosed ? 'max-content' : '0px';
         }
       ",
       tagList(
