@@ -34,7 +34,7 @@ clubLogos <- function(value, index, currentData){
             function(X){
               div(
                 style = "display: inline-block; width: 25px;", 
-                img(src = sprintf("static/logo/%s.png", X), style = "height: 25px;", alt = X, title = X) 
+                img(src = sprintf("static/logo/%s (Custom).png", X), style = "height: 25px;", alt = X, title = X) 
               )
             }
           )
@@ -43,7 +43,7 @@ clubLogos <- function(value, index, currentData){
     } else {
       # file.exists(sprintf("%s.png", Club)) |> print()
       
-      image <- img(src = sprintf("static/logo/%s.png", Club), style = "height: 25px;", alt = Club, title = Club)  
+      image <- img(src = sprintf("static/logo/%s (Custom).png", Club), style = "height: 25px;", alt = Club, title = Club)  
       
       list <- 
         tagList(

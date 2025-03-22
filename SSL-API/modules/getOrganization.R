@@ -9,7 +9,7 @@ function(){
   portalQuery("SELECT o.ID, o.name AS organization, o.abbr AS abbreviation, t.name, t.primaryColor, t.secondaryColor, t.city 
               FROM teams AS t 
               LEFT JOIN organizations AS o ON t.orgID = o.ID 
-              ORDER BY o.ID")
+              ORDER BY o.ID;")
 }
 
 #* Get all manager data

@@ -1,5 +1,7 @@
 box::use(
-  shiny[moduleServer, NS, tagList, tags, icon, div, uiOutput, renderUI, observe, bindEvent, a, actionButton, p, showModal, removeModal, modalDialog, modalButton, textInput, passwordInput],
+  future,
+  methods[is],
+  shiny[moduleServer, NS, tagList, tags, icon, div, uiOutput, renderUI, observe, bindEvent, a, actionButton, p, showModal, removeModal, modalDialog, modalButton, textInput, passwordInput, verbatimTextOutput, renderText, reactive],
   shiny.router[route_link, change_page],
   shinyFeedback[feedbackWarning]
 )
@@ -105,8 +107,11 @@ ui <- function(id) {
             )
           ),
           flexRow(
-            uiOutput(ns("yourPlayer")) |> 
-              withSpinnerCustom(height = 20)
+            tagList(
+              verbatimTextOutput(ns("workers")),
+              uiOutput(ns("yourPlayer")) |> 
+                withSpinnerCustom(height = 20)  
+            )
           )
         )
       )
@@ -117,6 +122,21 @@ ui <- function(id) {
 #' @export
 server <- function(id, auth, resAuth) {
   moduleServer(id, function(input, output, session) {
+    
+    # workers <- reactive({
+    #   print(future$nbrOfFreeWorkers())
+    #   
+    #   future$resetWorkers(future$plan())
+    #   
+    #   future$nbrOfFreeWorkers()
+    #   # is(future$plan(), "multisession")
+    # }) |> 
+    #   bindEvent(session$clientData$url_hash)
+    # 
+    # output$workers <- renderText({
+    #   workers()
+    # })
+    
     
     ### Output
     output$jobsNavigation <- renderUI({

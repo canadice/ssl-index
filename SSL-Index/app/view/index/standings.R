@@ -57,9 +57,11 @@ server <- function(id) {
       #### DATA GENERATION ####
       standings <- shiny$reactive({
         shiny$req(input$selectedLeague)
+        season <- input$selectedSeason
+        league <- input$selectedLeague
         
         readAPI(url = "https://api.simulationsoccer.com/index/standings", 
-                query = list(league = input$selectedLeague, season = input$selectedSeason)
+                query = list(league = league, season = season)
         ) |> 
           future_promise()
       })

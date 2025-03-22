@@ -1,5 +1,5 @@
 box::use(
-  future[plan],
+  future[multisession, plan],
   shiny,
   shiny.router[route, router_server, router_ui],
   shinyFeedback[useShinyFeedback],
@@ -51,7 +51,9 @@ ui <- function(id) {
 server <- function(id) {
   shiny$moduleServer(id, function(input, output, session) {
     
-    plan("multisession")
+    router_server("/")
+    
+    plan(multisession)
     
     ## Reactives
     resAuth <- shiny$reactiveValues(
@@ -67,11 +69,9 @@ server <- function(id) {
 
     navigationBar$server("nav", auth = authOutput, resAuth = resAuth)
 
-    router_server("/")
-
     ## Loads the different module servers
     welcome$server("message", usergroup = authOutput()$usergroup)
-
+    # player$server("player")
 
     ## In order to load pages as they are clicked ONCE this is needed
     loadedServer <-

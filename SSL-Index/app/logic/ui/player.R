@@ -4,7 +4,7 @@ box::use(
   lubridate[as_date, as_datetime, floor_date, today],
   plotly,
   promises[then, promise_all],
-  reactable[colDef, colFormat, reactable, reactableOutput, renderReactable],
+  reactable[colDef, colFormat, reactable, renderReactable],
   rlang[is_empty],
   shiny,
   stringr[str_remove, str_split, str_to_upper],
@@ -22,100 +22,19 @@ box::use(
 
 
 #' @export
-playerOutputUI <- function(session){
-  ns <- session$ns
-  
-  shiny$tagList(
-    bslib$layout_column_wrap(
-      width = 1 / 2,
-      bslib$card(
-        bslib$card_header(
-          shiny$h3("Profile Information")
-        ),
-        bslib$card_body(
-          bslib$layout_column_wrap(
-            width = NULL,
-            style = bslib$css(grid_template_columns = "3fr 1fr"),
-            shiny$uiOutput(ns("playerName")) |> 
-              withSpinnerCustom(height = 20),
-            shiny$uiOutput(ns("clubLogo"), height = NULL) |>
-              withSpinnerCustom(height = 20)
-          ),
-          shiny$uiOutput(ns("playerInfo")) |>
-            withSpinnerCustom(height = 40)
-        )
-      ),
-      bslib$card(
-        bslib$card_header(
-          shiny$h3("Recent Match Statistics")
-        ),
-        bslib$card_body(
-          reactableOutput(ns("matchStatistics")) |>
-            withSpinnerCustom(height = 60)
-        )
-      )
-    ),
-    bslib$layout_column_wrap(
-      width = NULL,
-      style = bslib$css(grid_template_columns = "2fr 1fr"),
-      bslib$card(
-        bslib$card_header(
-          shiny$h3("Player Attributes")
-        ),
-        bslib$card_body(
-          shiny$uiOutput(ns("playerAttributes")) |>
-            withSpinnerCustom(height = 60)
-        )
-      ),
-      bslib$card(
-        bslib$card_header(
-          shiny$h3("TPE Progression")
-        ),
-        bslib$card_body(
-          plotly$plotlyOutput(ns("tpeProgression")) |>
-            withSpinnerCustom(height = 60)
-        )
-      )
-    ),
-    bslib$card(
-      bslib$card_header(
-        shiny$h3("Player History")
-      ),
-      bslib$card_body(
-        shiny$uiOutput(ns("playerHistory")) |>
-          withSpinnerCustom(height = 60)
-      )
-    )
-  )
-}
-
-#' @export
 playerOutput <- function(data, input, output, session){
   print("Now we are in the output section")
   
-  print(input$selectedPlayer)
-  
-  historyTPE <- shiny$reactive({
-    shiny$req(input$selectedPlayer)
-    
-    pid <- input$selectedPlayer |>
-      as.numeric()
-    
-    print("Getting TPE History")
-    
-    getTpeHistory(pid)
-  })
-  
-  output[["playerName"]] <- shiny$renderUI({
+  output$playerName <- shiny$renderUI({
     print(paste0("Rendering player name", Sys.time()))
     
     shiny$tagList(
       shiny$h2(paste(data$name, paste0("(", data$class, ")"), sep = " ")),
       shiny$h3(paste0("@", data$username))
     )
-  })
+  }) 
   
-  output[["clubLogo"]] <- shiny$renderUI({
+  output$clubLogo <- shiny$renderUI({
     print(paste0("Rendering club logo", Sys.time()))
     shiny$img(
       src = sprintf("static/logo/%s.png", data$team),
@@ -125,7 +44,7 @@ playerOutput <- function(data, input, output, session){
     )
   })
   
-  output[["playerInfo"]] <- shiny$renderUI({
+  output$playerInfo <- shiny$renderUI({
     print(paste0("Rendering player info", Sys.time()))
     value <-
       data |>
@@ -179,7 +98,7 @@ playerOutput <- function(data, input, output, session){
     )
   })
   
-  output[["matchStatistics"]] <- renderReactable({
+  output$matchStatistics <- renderReactable({
     if (data$pos_gk == 20){
       matches <-
         readAPI(
@@ -204,12 +123,12 @@ playerOutput <- function(data, input, output, session){
     }
   })
   
-  output[["playerAttributes"]] <- shiny$renderUI({
+  output$playerAttributes <- shiny$renderUI({
     print(paste0("Rendering player attributes", Sys.time()))
     attributeReactable(data, session, output)
   })
   
-  output[["tpeProgression"]] <- plotly$renderPlotly({
+  output$tpeProgression <- plotly$renderPlotly({
     historyTPE() |>
       then(
         onFulfilled = function(tpe){
@@ -316,7 +235,7 @@ playerOutput <- function(data, input, output, session){
       )
   })
   
-  output[["playerHistory"]] <- shiny$renderUI({
+  output$playerHistory <- shiny$renderUI({
     promise_all(
       tpe = historyTPE(),
       bank = getBankHistory(data$pid),
@@ -328,40 +247,62 @@ playerOutput <- function(data, input, output, session){
           shiny$tabsetPanel(
             shiny$tabPanel(
               title = "TPE History",
-              list$tpe |>
-                dplyr$mutate(Time = as_datetime(Time)) |>
-                reactable(
-                  columns =
-                    list(
-                      Time = colDef(format = colFormat(datetime = TRUE))
-                    )
-                )
+              if(list$tpe |> is_empty()){
+                NULL
+              } else {
+                list$tpe |>
+                  dplyr$mutate(Time = as_datetime(Time)) |>
+                  reactable(
+                    columns =
+                      list(
+                        Time = colDef(format = colFormat(datetime = TRUE))
+                      )
+                  )
+              }
             ),
             shiny$tabPanel(
               title = "Update History",
-              list$updates |>
-                dplyr$mutate(Time = as_datetime(Time)) |>
-                reactable(
-                  columns =
-                    list(
-                      Time = colDef(format = colFormat(datetime = TRUE))
-                    )
-                )
+              if(list$updates |> is_empty()){
+                NULL
+              } else {
+                list$updates |>
+                  dplyr$mutate(Time = as_datetime(Time)) |>
+                  reactable(
+                    columns =
+                      list(
+                        Time = colDef(format = colFormat(datetime = TRUE))
+                      )
+                  )
+              }
             ),
             shiny$tabPanel(
               title = "Bank History",
-              list$bank |>
-                dplyr$mutate(Time = as_datetime(Time)) |>
-                reactable(
-                  columns =
-                    list(
-                      Time = colDef(format = colFormat(datetime = TRUE)),
-                      Transaction = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
-                    )
-                )
+              if(list$bank |> is_empty()){
+                NULL
+              } else {
+                list$bank |>
+                  dplyr$mutate(Time = as_datetime(Time)) |>
+                  reactable(
+                    columns =
+                      list(
+                        Time = colDef(format = colFormat(datetime = TRUE)),
+                        Transaction = colDef(format = colFormat(digits = 0, separators = TRUE, currency = "USD"))
+                      )
+                  )
+              }
             )
           )
         }
       )
   })
+  
+  historyTPE <- shiny$reactive({
+    pid <- input$selectedPlayer |>
+      as.numeric()
+    
+    print("Getting TPE History")
+    
+    getTpeHistory(pid)
+  }) |> 
+    shiny$bindEvent(input$selectedPlayer)
 }

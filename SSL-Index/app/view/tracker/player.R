@@ -1,15 +1,19 @@
 box::use(
   bslib,
   dplyr,
+  future[nbrOfFreeWorkers],
+  plotly,
   promises[future_promise, then],
+  reactable[reactableOutput],
   shiny,
   shiny.router[change_page, get_query_param],
+  stringr[str_detect, str_remove],
 )
 
 box::use(
   app/logic/db/api[readAPI],
-  app/logic/db/get[getPlayerNames],
-  app/logic/ui/player[playerOutput, playerOutputUI],
+  app/logic/db/get[getPlayerNames, getPlayer],
+  app/logic/ui/player[playerOutput],
   app/logic/ui/spinner[withSpinnerCustom],
 )
 
@@ -46,8 +50,68 @@ ui <- function(id) {
         )
       ),
       bslib$card_body(
-        shiny$uiOutput(ns("playerOutput")) |>
-          withSpinnerCustom(height = 200)
+        shiny$tagList(
+          bslib$layout_column_wrap(
+            width = 1 / 2,
+            bslib$card(
+              bslib$card_header(
+                shiny$h3("Profile Information")
+              ),
+              bslib$card_body(
+                bslib$layout_column_wrap(
+                  width = NULL,
+                  style = bslib$css(grid_template_columns = "3fr 1fr"),
+                  shiny$uiOutput(ns("playerName")) |> 
+                    withSpinnerCustom(height = 20),
+                  shiny$uiOutput(ns("clubLogo"), height = NULL) |>
+                    withSpinnerCustom(height = 20)
+                ),
+                shiny$uiOutput(ns("playerInfo")) |>
+                  withSpinnerCustom(height = 40)
+              )
+            ),
+            bslib$card(
+              bslib$card_header(
+                shiny$h3("Recent Match Statistics")
+              ),
+              bslib$card_body(
+                reactableOutput(ns("matchStatistics")) |>
+                  withSpinnerCustom(height = 60)
+              )
+            )
+          ),
+          bslib$layout_column_wrap(
+            width = NULL,
+            style = bslib$css(grid_template_columns = "2fr 1fr"),
+            bslib$card(
+              bslib$card_header(
+                shiny$h3("Player Attributes")
+              ),
+              bslib$card_body(
+                shiny$uiOutput(ns("playerAttributes")) |>
+                  withSpinnerCustom(height = 60)
+              )
+            ),
+            bslib$card(
+              bslib$card_header(
+                shiny$h3("TPE Progression")
+              ),
+              bslib$card_body(
+                plotly$plotlyOutput(ns("tpeProgression")) |>
+                  withSpinnerCustom(height = 60)
+              )
+            )
+          ),
+          bslib$card(
+            bslib$card_header(
+              shiny$h3("Player History")
+            ),
+            bslib$card_body(
+              shiny$uiOutput(ns("playerHistory")) |>
+                withSpinnerCustom(height = 60)
+            )
+          )
+        )
       )
     )
   )
@@ -61,8 +125,11 @@ server <- function(id) {
       retired <- input$retired |> as.logical()
       fa <- input$freeAgent |> as.logical()
       
-      getPlayerNames(retired = retired, freeAgent = fa) |>
-        future_promise()
+      future_promise({
+        print(Sys.getpid())
+        
+        getPlayerNames(retired = retired, freeAgent = fa)
+      })
     })
 
     playerData <- shiny$reactive({
@@ -71,11 +138,12 @@ server <- function(id) {
       pid <- input$selectedPlayer |>
         as.numeric()
 
-      readAPI(
-        url = "https://api.simulationsoccer.com/player/getPlayer",
-        query = list(pid = pid)
-      ) |>
-        future_promise()
+      
+      future_promise({
+        print(Sys.getpid())
+        
+        getPlayer(pid)
+      })
     }) |>
       shiny$bindEvent(input$selectedPlayer)
 
@@ -92,17 +160,12 @@ server <- function(id) {
     })
 
     #### Output ####
-    output$playerOutput <- shiny$renderUI({
-      playerOutputUI(session)
-    })
-
 
     #### Observe ####
     shiny$observe({
       allPlayers() |>
         then(
           onFulfilled = function(names) {
-            print("Starting populating dropdown")
             namedVector <- names$pid
 
             names(namedVector) <- names$name
@@ -114,11 +177,10 @@ server <- function(id) {
             )
 
             change_page(paste0("tracker/player?pid=", names$pid[1]))
-            print("Finishing populating dropdown")
           }
         )
     }) |>
-      shiny$bindEvent(allPlayers(), once = TRUE)
+      shiny$bindEvent(allPlayers())
 
     shiny$observe({
       playerData() |>
@@ -134,7 +196,10 @@ server <- function(id) {
 
 
     shiny$observe({
-      if ((query() |> is.null())) {
+      current <- str_remove(session$clientData$url_hash,
+                            pattern = "#!/")
+      
+      if ((query() |> is.null()) | !(current |> str_detect("tracker/player"))) {
         # change_page(paste0("tracker/player?pid=", input$selectedPlayer))
       } else {
         if (input$selectedPlayer != query()) {

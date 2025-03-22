@@ -76,18 +76,22 @@ server <- function(id) {
       #### DATA GENERATION ####
       outfieldData <- shiny$reactive({
         shiny$req(input$selectedLeague)
+        season <- input$selectedSeason
+        league <- input$selectedLeague
         
         readAPI(url = "https://api.simulationsoccer.com/index/outfield", 
-                query = list(league = input$selectedLeague, season = input$selectedSeason)
+                query = list(league = league, season = season)
         ) |> 
           future_promise()
       })
       
       keeperData <- shiny$reactive({
         shiny$req(input$selectedLeague)
+        season <- input$selectedSeason
+        league <- input$selectedLeague
         
         readAPI(url = "https://api.simulationsoccer.com/index/keeper", 
-                query = list(league = input$selectedLeague, season = input$selectedSeason)
+                query = list(league = league, season = season)
         ) |> 
           future_promise()
       })

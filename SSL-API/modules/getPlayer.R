@@ -32,8 +32,6 @@ cors <- function(req, res) {
 #* @param active:boolean Filters out retired players
 #* 
 function(active = FALSE) {
-  print(active)
-  
   active <- if_else(active == "true", 1, 0)
   
   portalQuery(

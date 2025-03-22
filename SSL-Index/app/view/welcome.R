@@ -1,6 +1,6 @@
 
 box::use(
-  bslib[card, card_header, card_body, card_footer, layout_columns],
+  bslib,
   dplyr[select, if_else, mutate, arrange, slice_head, desc],
   promises[future_promise, then],
   plotly[plotlyOutput, renderPlotly, plot_ly, layout, config],
@@ -12,10 +12,11 @@ box::use(
 )
 
 box::use(
+  app/logic/ui/cards[resultCard],
   app/logic/ui/tags[flexRow],
   app/logic/ui/spinner[withSpinnerCustom],
   app/logic/db/api[readAPI],
-  app/logic/db/get[getRecentCreates, getTopEarners],
+  app/logic/db/get[getRecentCreates, getSchedule, getStandings, getTopEarners],
   app/logic/constant,
 )
 
@@ -26,78 +27,75 @@ ui <- function(id) {
     
     shiny$uiOutput(ns("information")),
     
-    card(
-      card_header(
+    bslib$card(
+      bslib$card_header(
         flexRow(
           shiny$tagList(
             shiny$tags$style("align-items: center; justify-content: space-between;"),
             shiny$div(style = "width: 150px;", class = "hide-in-mobile"),
-            shiny$div("Latest Results", style = "width: 100%;"),
+            shiny$div(shiny$h5("Latest Results"), style = "width: 100%;"),
             shiny$div(
               shiny$uiOutput(ns("leagueSelector")),
               style = "font-size: 14px; font-weight: 400;"
             )
           )
       ),
-      card_body(
+      bslib$card_body(
         shiny$uiOutput(ns("schedule")) |> 
             withSpinnerCustom(height = 20)
         )
       ),
       min_height = "200px"
     ),
-    layout_columns(
-      col_widths = c(6, 6),
-      card(
-        card_header(
+    bslib$layout_column_wrap(
+      width = 1/2,
+      bslib$card(
+        bslib$card_header(
           shiny$h5("Major League Standings")
         ),
-        card_body(
+        bslib$card_body(
           reactableOutput(ns("standings_1")) |> 
             withSpinnerCustom(height = 20)
         )
       ),
-      card(
-        card_header(
+      bslib$card(
+        bslib$card_header(
           shiny$h5("Minor League Standings")
         ),
-        card_body(
+        bslib$card_body(
           reactableOutput(ns("standings_2")) |> 
             withSpinnerCustom(height = 20)
         )
-      )
-    ),
-    layout_columns(
-      col_widths = c(6,6,12),
-      card(
-        card_header(
+      ),
+      bslib$card(
+        bslib$card_header(
           shiny$h4("Weekly top earners")
         ),
-        card_body(
+        bslib$card_body(
           reactableOutput(ns("weeklyLeaders")) |> 
             withSpinnerCustom(height = 40)
         )
       ),
-      card(
-        card_header(
+      bslib$card(
+        bslib$card_header(
           shiny$h4("Recent creates")
         ),
-        card_body(
+        bslib$card_body(
           reactableOutput(ns("created")) |> 
             withSpinnerCustom(height = 40)
         )
-      ),
-      card(
-        card_header(
-          shiny$h4("Activity Checks")
-        ),
-        card_body(
-          plotlyOutput(ns("activityChecks")) |> 
-            withSpinnerCustom(height = 40) |> 
-            shiny$div(class = "plotlyBorder"))
-        )
       )
+    ),
+    bslib$card(
+      bslib$card_header(
+        shiny$h4("Activity Checks")
+      ),
+      bslib$card_body(
+        plotlyOutput(ns("activityChecks")) |> 
+          withSpinnerCustom(height = 40) |> 
+          shiny$div(class = "plotlyBorder"))
     )
+  )
 }
 
 #' @export
@@ -109,11 +107,11 @@ server <- function(id, usergroup) {
       #### INFORMATION ####
       output$information <- shiny$renderUI({
         if(any(5 %in% usergroup)){
-          card(
-            card_header(
+          bslib$card(
+            bslib$card_header(
               "Information"
             ),
-            card_body(
+            bslib$card_body(
               shiny$h2("Your account needs to be activated in order to access the rest of the portal functions. Please check the e-mail used when registering on the SSL forums.") |> 
                 shiny$div(class = "Retired")
             )
@@ -126,7 +124,7 @@ server <- function(id, usergroup) {
       lapply(1:2,
              FUN = function(division){
                output[[paste0("standings_", division)]] <- renderReactable({
-                 standings <- readAPI(url = "https://api.simulationsoccer.com/index/standings", query = list(league = division, season = constant$currentSeason$season))
+                 standings <- getStandings(league = division, season = constant$currentSeason$season)
                  
                  if(!(standings |> is_empty())){
                    standings |> 
@@ -142,7 +140,7 @@ server <- function(id, usergroup) {
                            Team = colDef(
                              minWidth = 100,
                              cell = function(value){
-                               image <- shiny$img(src = sprintf("%s.png", value), style = "height: 25px;", alt = value, title = value)  
+                               image <- shiny$img(src = sprintf("static/logo/%s (Custom).png", value), style = "height: 25px;", alt = value, title = value)  
                                
                                list <-
                                  shiny$tagList(
@@ -169,14 +167,11 @@ server <- function(id, usergroup) {
         
         league <- input$selectedLeague
         
-        readAPI(
-          url = "https://api.simulationsoccer.com/index/schedule", 
-          query = list(
-            league = league, 
-            season = constant$currentSeason$season
-          )
-        ) |> 
-          future_promise()
+        future_promise({
+          print(Sys.getpid())
+            
+          getSchedule(league = league, season = constant$currentSeason$season)
+        })
       })
       
       output$leagueSelector <- shiny$renderUI({
@@ -211,59 +206,26 @@ server <- function(id, usergroup) {
                     id = "results-scroll",
                     lapply(1:nrow(data),
                            function(i){
-                             card(
-                               card_header(
-                                 shiny$div(
-                                   shiny$div(style = "display: inline-block; width: 40px;", shiny$img(src = sprintf("%s.png", data[i, "Home"]), style = "height: 40px;", alt = data[i, "Home"], title = data[i, "Home"])), 
-                                   shiny$strong(" - "), 
-                                   shiny$div(style = "display: inline-block; width: 40px;", shiny$img(src = sprintf("%s.png", data[i, "Away"]), style = "height: 40px;", alt = data[i, "Away"], title = data[i, "Away"])),
-                                   align = "center"
-                                 )
-                               ),
-                               card_body(
-                                 shiny$h4(paste(data[i, "HomeScore"], data[i, "AwayScore"], sep = "-") |> 
-                                            str_replace_all(pattern = "NA", replacement = " ")
-                                 )
-                               ),
-                               card_footer(
-                                 paste(
-                                   paste(
-                                     if_else(data[i, "MatchType"] == 0, 
-                                             "Cup",
-                                             if_else(data[i, "MatchType"] == 1, 
-                                                     "Major League",
-                                                     if_else(data[i, "MatchType"] == 2, "Minor League", 
-                                                             if_else(data[i, "MatchType"] == 5, "WSFC","Friendlies")))),
-                                     data[i, "MatchDay"], sep = ", "
-                                   ),
-                                   paste(
-                                     data[i, "IRLDate"]
-                                   ),
-                                   sep = "<br>"
-                                 ) |> 
-                                   shiny$HTML() |> 
-                                   shiny$div(align = "center")
-                               )
-                             )
+                             resultCard(data, i)
                            })
                   ),
-                shiny$tags$script(
-                  shiny$HTML("
-                    $(document).ready(function() {
-                      var div = document.getElementById('results-scroll');
-                      var width = 0;
-                      for (var i = 0; i < div.children.length; i++) {
-                        var score = $(div.children[i]).find('h4').text().trim();
-                        if (!score.match(/^\\d+-\\d+$/)) {
-                          width = div.children[i].clientWidth * (i-6);
-                          break;
-                        } else {
-                          width = div.children[i].clientWidth * i
+                  shiny$tags$script(
+                    shiny$HTML("
+                      $(document).ready(function() {
+                        var div = document.getElementById('results-scroll');
+                        var width = 0;
+                        for (var i = 0; i < div.children.length; i++) {
+                          var score = $(div.children[i]).find('h4').text().trim();
+                          if (!score.match(/^\\d+-\\d+$/)) {
+                            width = div.children[i].clientWidth * (i-6);
+                            break;
+                          } else {
+                            width = div.children[i].clientWidth * i
+                          }
                         }
-                      }
-                      div.scrollLeft = width;
-                    });
-                  "))
+                        div.scrollLeft = width;
+                      });
+                    "))
                 )
               }
             }
@@ -272,8 +234,11 @@ server <- function(id, usergroup) {
       #### Weekly TPE Leaders ####
       output$weeklyLeaders <- renderReactable({
         data <- 
-          getTopEarners() |> 
-          future_promise()
+          future_promise({
+            print(Sys.getpid())
+            
+            getTopEarners()
+          })
         
         data |> 
           then(
@@ -289,8 +254,11 @@ server <- function(id, usergroup) {
       #### Recently created ####
       output$created <- renderReactable({
         data <- 
-          getRecentCreates() |>
-          future_promise()
+          future_promise({
+            print(Sys.getpid())
+            
+            getRecentCreates()
+          })
         
         data |> 
           then(
