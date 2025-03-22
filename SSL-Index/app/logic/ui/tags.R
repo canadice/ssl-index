@@ -77,7 +77,14 @@ navMenuItem <- function(cont, label = "", subItems = list()) {
         style = "align-items: center; justify-content: space-between; gap: 4px;",
         tagList(
           span(label, role = "button"),
-          icon("caret-right")
+          div(
+            class = "nav-menu_item-caret-right",
+            icon("caret-right")
+          ),
+          div(
+            class = "nav-menu_item-caret-down",
+            icon("caret-down")
+          )
         )
       ),
       div(
