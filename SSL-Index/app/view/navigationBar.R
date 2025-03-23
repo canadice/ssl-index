@@ -194,9 +194,10 @@ server <- function(id, auth, resAuth) {
         flexRow(
           tagList(
             navMenu(
-              tagList(
-                icon("futbol"),
-                a("My Player", href = route_link("myPlayer"))
+              label = "Player",
+              items = list(
+                a("My Player", href = route_link("myPlayer")),
+                a("Bank/Store", href = route_link("bank"))
               )
             ),
             navMenu(
