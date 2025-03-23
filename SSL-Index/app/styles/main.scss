@@ -460,7 +460,11 @@ $navbar-items-width: 112px;
 
     .nav-menu_item:has(.nav-menu_sub-items) > div {
       justify-content: flex-start !important;
-    } // TODO: item doesn't have bottom border when sub items show
+    }
+    // When sub-items are showing
+    .nav-menu_item:has(.nav-menu_sub-items[style*="max-content"]) > div {
+      border-bottom: 1px solid var(--borderColor);
+    }
 
     .nav-menu_item-caret-down {
       display: block;
