@@ -162,27 +162,7 @@ ui <- function(id) {
                 )
               ),
             ),
-            flexRow(
-              tagList(
-                navMenu(
-                  label = "Player",
-                  items = list(
-                    a("My Player", href = route_link("myPlayer")),
-                    a("Bank/Store", href = route_link("bank"))
-                  ),
-                  showItems = TRUE
-                ),
-                navMenu(
-                  flexRow(
-                    style = "align-items: center;",
-                    tagList(
-                      icon("door-open"),
-                      actionLink("Logout", inputId = "blaha")
-                    )
-                  )
-                )
-              )
-            )
+            uiOutput(ns("yourPlayer")),
           )
         )
       )

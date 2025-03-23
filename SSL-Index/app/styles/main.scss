@@ -442,7 +442,7 @@ $navbar-items-width: 112px;
     height: auto;
     padding: 0;
 
-    & > div:has(> span), & > div:has(> a) {
+    & > div:has(> span), & > div:has(> a), & > a {
       border-bottom: 1px solid #000;
       width: 100%;
     }
@@ -451,7 +451,7 @@ $navbar-items-width: 112px;
       padding: 12px 8px;
     }
 
-    .fa-door-open { 
+    .fa-door-open, .fa-user { 
       display: none;
     }
   }
