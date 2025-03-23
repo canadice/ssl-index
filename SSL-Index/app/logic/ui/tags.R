@@ -14,10 +14,12 @@ flexRow <- function(cont, style = "", onclick = "") {
 }
 
 #' @export
-navMenu <- function(cont, label = "", items = list()) {
+navMenu <- function(cont, label = "", items = list(), showItems = FALSE) {
   if (!missing(cont) && label == "") {
     shiny::tag("div", varArgs = list(cont, class = "nav-menu"))
   } else if (length(label) > 0) {
+    itemsClassNames <- c("nav-menu_items", if (showItems) " show-items" else "")
+
     div(
       class = "nav-menu",
       role = "button",
@@ -52,7 +54,7 @@ navMenu <- function(cont, label = "", items = list()) {
         ),
         if (length(items) > 0) {
           div(
-            class = "nav-menu_items",
+            class = itemsClassNames,
             role = "button",
             flexCol(
               tagList(

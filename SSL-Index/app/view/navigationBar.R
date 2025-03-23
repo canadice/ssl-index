@@ -94,10 +94,10 @@ ui <- function(id) {
     ),
     tags$nav(
       class = "nav-container_narrow",
-      actionButton(inputId = "navToggle", label = "", class = "nav-toggle", ontouchstart = "
+      actionButton(inputId = "navToggle", label = "", class = "nav-toggle", onclick = "
         var mobileNav = document.querySelector('.nav-container_narrow');
         var openMaxWidth = '80%';
-
+        console.log(mobileNav);
         if (mobileNav) {
           var isOpen = getComputedStyle(mobileNav).maxWidth === openMaxWidth;
           mobileNav.style.maxWidth = isOpen ? '0px' : openMaxWidth;
@@ -147,7 +147,27 @@ ui <- function(id) {
                 )
               ),
             ),
-            flexRow(uiOutput(ns("yourPlayer")))
+            flexRow(
+              tagList(
+                navMenu(
+                  label = "Player",
+                  items = list(
+                    a("My Player", href = route_link("myPlayer")),
+                    a("Bank/Store", href = route_link("bank"))
+                  ),
+                  showItems = TRUE
+                ),
+                navMenu(
+                  flexRow(
+                    style = "align-items: center;",
+                    tagList(
+                      icon("door-open"),
+                      actionLink("Logout", inputId = "blaha")
+                    )
+                  )
+                )
+              )
+            )
           )
         )
       )
@@ -198,7 +218,8 @@ server <- function(id, auth, resAuth) {
               items = list(
                 a("My Player", href = route_link("myPlayer")),
                 a("Bank/Store", href = route_link("bank"))
-              )
+              ),
+              showItems = TRUE
             ),
             navMenu(
               tagList(
