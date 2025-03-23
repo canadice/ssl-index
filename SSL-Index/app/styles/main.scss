@@ -307,9 +307,9 @@ $navbar-items-width: 112px;
   left: 0;
   width: $navbar-items-width;
   font-weight: normal;
-  -moz-box-shadow: 0 0 2px var(--borderColor);
-  -webkit-box-shadow: 0 0 2px var(--borderColor);
-  box-shadow: 0 0 2px var(--borderColor);
+  -moz-box-shadow: 0 0 2px #000;
+  -webkit-box-shadow: 0 0 2px #000;
+  box-shadow: 0 0 2px #000;
   border-bottom-left-radius: 2px;
   z-index: 101;
 
@@ -361,9 +361,9 @@ $navbar-items-width: 112px;
   color: black;
   left: $navbar-items-width;
   width: max-content;
-  -moz-box-shadow: 0 0 2px var(--borderColor);
-  -webkit-box-shadow: 0 0 2px var(--borderColor);
-  box-shadow: 0 0 2px var(--borderColor);
+  -moz-box-shadow: 0 0 2px #000;
+  -webkit-box-shadow: 0 0 2px #000;
+  box-shadow: 0 0 2px #000;
   border-bottom-right-radius: 2px;
   z-index: 100;
 
@@ -401,7 +401,7 @@ $navbar-items-width: 112px;
   }
 
   .nav-container_narrow {
-    background: var(--topBackground);
+    background: var(--bottomBackground);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -431,7 +431,7 @@ $navbar-items-width: 112px;
     padding: 0;
 
     & > div:has(> span), & > div:has(> a) {
-      border-bottom: 1px solid var(--borderColor);
+      border-bottom: 1px solid #000;
       width: 100%;
     }
 
@@ -454,7 +454,8 @@ $navbar-items-width: 112px;
     box-shadow: none;
 
     .nav-menu_item {
-      border-bottom: 1px solid var(--borderColor) !important;
+      background: var(--middleBackground);
+      border-bottom: 1px solid #000 !important;
       padding: 0 !important;
     }
 
@@ -463,7 +464,7 @@ $navbar-items-width: 112px;
     }
     // When sub-items are showing
     .nav-menu_item:has(.nav-menu_sub-items[style*="max-content"]) > div {
-      border-bottom: 1px solid var(--borderColor);
+      border-bottom: 1px solid #000;
     }
 
     .nav-menu_item-caret-down {
@@ -494,7 +495,8 @@ $navbar-items-width: 112px;
     box-shadow: none;
 
     .nav-menu_sub-item {
-      border-bottom: 1px solid var(--borderColor);
+      background: var(--topBackground);
+      border-bottom: 1px solid #000;
       color: #eee;
     }
 
