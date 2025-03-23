@@ -408,7 +408,6 @@ $navbar-items-width: 112px;
     position: fixed;
     left: 0;
     top: 0;
-    bottom: 0;
     right: 0;
     max-width: 0px;
     overflow: hidden;
@@ -416,6 +415,10 @@ $navbar-items-width: 112px;
     z-index: 99;
     transition: max-width 0.5s ease-in-out;
     padding-top: 48px;
+    -moz-box-shadow: 0 0 30px #000;
+    -webkit-box-shadow: 0 0 30px #000;
+    box-shadow: 0 0 30px #000;
+    border-bottom-right-radius: 12px;
 
     &> div {
       flex-direction: column;
