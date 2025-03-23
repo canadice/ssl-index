@@ -396,9 +396,17 @@ $navbar-items-width: 112px;
   }
 
   .nav-toggle {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--sslBlueD);
     transition: left 0.5s ease-in-out;
     z-index: 9999;
+    color: white;
+
+    .nav-toggle-icon_open {
+      display: none;
+    }
   }
 
   .nav-container_narrow {
@@ -443,7 +451,7 @@ $navbar-items-width: 112px;
       padding: 12px 8px;
     }
 
-    .fas { 
+    .fa-door-open { 
       display: none;
     }
   }

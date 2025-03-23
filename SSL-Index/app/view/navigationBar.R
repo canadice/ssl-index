@@ -94,16 +94,31 @@ ui <- function(id) {
     ),
     tags$nav(
       class = "nav-container_narrow",
-      actionButton(inputId = "navToggle", label = "", class = "nav-toggle", onclick = "
-        var mobileNav = document.querySelector('.nav-container_narrow');
-        var openMaxWidth = '80%';
-        console.log(mobileNav);
-        if (mobileNav) {
-          var isOpen = getComputedStyle(mobileNav).maxWidth === openMaxWidth;
-          mobileNav.style.maxWidth = isOpen ? '0px' : openMaxWidth;
+      actionButton(
+        inputId = "navToggle",
+        label = tagList(
+          div(
+            icon("bars"),
+            class = "nav-toggle-icon_closed"
+          ),
+          div(
+            icon("xmark"),
+            class = "nav-toggle-icon_open"
+          )
+        ),
+        class = "nav-toggle",
+        onclick = "
+          var mobileNav = document.querySelector('.nav-container_narrow');
+          var openMaxWidth = '80%';
 
-          this.style.left = isOpen ? '0px' : `calc(${openMaxWidth} - 40px)`;
-        }
+          if (mobileNav) {
+            var isOpen = getComputedStyle(mobileNav).maxWidth === openMaxWidth;
+            mobileNav.style.maxWidth = isOpen ? '0px' : openMaxWidth;
+            this.style.left = isOpen ? '0px' : `calc(${openMaxWidth} - 40px)`;
+
+            this.querySelector('.nav-toggle-icon_closed').style.display = isOpen ? 'block' : 'none';
+            this.querySelector('.nav-toggle-icon_open').style.display = isOpen ? 'none' : 'block';
+          }
       "),
     ),
     tags$nav(
