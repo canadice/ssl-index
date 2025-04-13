@@ -23,7 +23,7 @@ on:
 #        required: false
         #type: boolean
    schedule:
-        - cron: "5 20 * * 1,4"
+        - cron: "5 20 * * *"
 
    workflow_dispatch:
 
@@ -59,6 +59,10 @@ jobs:
       TACTICSSFV: ${{ secrets.TACTICSSFV }}
       TACTICSTOK: ${{ secrets.TACTICSTOK }}
       TACTICSUSP: ${{ secrets.TACTICSUSP }}
+      TACTICSSHA: ${{ secrets.TACTICSSHA }}
+      TACTICSCDT: ${{ secrets.TACTICSCDT }}
+      TACTICSKTH: ${{ secrets.TACTICSKTH }}
+      TACTICSMAG: ${{ secrets.TACTICSMAG }}
       PRODUCTIONCH: ${{ secrets.PRODUCTIONCH }}
       PRODUCTIONSH: ${{ secrets.PRODUCTIONSH }}
 
@@ -112,6 +116,10 @@ jobs:
           echo TACTICSSFV ="TACTICSSFV" >> ~/.Renviron
           echo TACTICSTOK ="TACTICSTOK" >> ~/.Renviron
           echo TACTICSUSP ="TACTICSUSP" >> ~/.Renviron
+          echo TACTICSSHA ="TACTICSSHA" >> ~/.Renviron
+          echo TACTICSCDT ="TACTICSCDT" >> ~/.Renviron
+          echo TACTICSKTH ="TACTICSKTH" >> ~/.Renviron
+          echo TACTICSMAG ="TACTICSMAG" >> ~/.Renviron
           echo PRODUCTIONSH ="PRODUCTIONSH" >> ~/.Renviron
           echo PRODUCTIONCH ="PRODUCTIONCH" >> ~/.Renviron
         shell: bash
