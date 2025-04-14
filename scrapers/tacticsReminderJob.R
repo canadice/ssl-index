@@ -105,11 +105,7 @@ if(nrow(current) > 0){
   simmerDeadline <- 
     paste(
       "<t:", 
-        c(
-          (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(24)) %>% as.numeric(),
-          (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(48)) %>% as.numeric(),
-          (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(51)) %>% as.numeric()
-        ),
+      current$`Eastern (UTC-5 / UTC-4)...7` |> lubridate::force_tz(tzone = "America/New_York") |> as.numeric(),
         ":R>!\n",
       sep = ""
     )
@@ -117,11 +113,7 @@ if(nrow(current) > 0){
   commentaryDeadline <- 
     paste(
       "<t:", 
-      c(
-        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(30)) %>% as.numeric(),
-        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(54)) %>% as.numeric(),
-        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(57)) %>% as.numeric()
-      ),
+      current$`Eastern (UTC-5 / UTC-4)...11` |> lubridate::force_tz(tzone = "America/New_York") |> as.numeric(),
       ":R>!\n",
       sep = ""
     )

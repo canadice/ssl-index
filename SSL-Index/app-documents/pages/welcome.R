@@ -269,10 +269,10 @@ welcomeServer <- function(id, usergroup) {
             ),
             yaxis = list(
               title = "#ACs",
-              range = c(0, 220),
+              range = c(0, 250),
               tickfont = list(color = "white"),  # Set y-axis tick labels color to white
               titlefont = list(color = "white"),  # Set y-axis title color to white
-              dtick = 20,  # Show tickmarks at intervals of 200
+              dtick = 20,  # Show tickmarks at intervals of 20
               gridcolor = "rgba(255, 255, 255, 0.5)",  # Set gridline color to white with opacity
               gridwidth = 1  # Set gridline width
             ),

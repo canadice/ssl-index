@@ -55,7 +55,7 @@ assignManagerServer <- function(id, userinfo) {
           })
       })
       
-      lapply(0:7, function(i) {
+      lapply(0:9, function(i) {
         
         observe({
           orgManager <- input[[paste0("manager_", i)]]
