@@ -11,9 +11,6 @@ playerOverviewBoxUI <- function(id) {
             flexRow(
               tagList(
                 uiOutput(
-                  outputId = ns("buttonUpdate")
-                ),
-                uiOutput(
                   outputId = ns("buttonRegression")
                 ),
                 # uiOutput(
@@ -25,6 +22,9 @@ playerOverviewBoxUI <- function(id) {
                 uiOutput(
                   outputId = ns("buttonGoToRetire")
                 ),
+                uiOutput(
+                  outputId = ns("buttonUpdate")
+                )
               ),
               style = "justify-content: flex-end; gap: 8px;"
             )
