@@ -26,7 +26,7 @@ playerOverviewBoxUI <- function(id) {
                   outputId = ns("buttonUpdate")
                 )
               ),
-              style = "justify-content: flex-end; gap: 8px;"
+              style = "justify-content: flex-end; gap: 8px; flex-wrap: wrap;"
             )
           )
         )
