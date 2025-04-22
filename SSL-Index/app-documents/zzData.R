@@ -192,6 +192,7 @@ sslNations <-
     "Oman" = "OMN",
     "Pakistan" = "PAK",
     "Palau" = "PLW",
+    "Palestine" = "PLS",
     "Panama" = "PAN",
     "Papua New Guinea" = "PNG",
     "Paraguay" = "PRY",
