@@ -212,8 +212,8 @@ function(name, outfield = TRUE){
         g.`tackle%`
       FROM `gamedataoutfield` AS g 
       JOIN schedule AS s ON g.gid = s.gid
-      JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
-      WHERE name = '", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'
+      JOIN portaldb.teams AS ti ON ti.name = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
+      WHERE g.name = '", name %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'
       ORDER BY g.gid DESC
       LIMIT 10;"
       )
