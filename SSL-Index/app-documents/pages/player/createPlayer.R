@@ -864,6 +864,17 @@ createPlayerServer <- function(id, userinfo, parent) {
             showToast(.options = myToastOptions,"error", "You can select two (2) secondary positions.")
           }
           
+        } else if (input$weight < 100 | input$weight > 350 | input$height < 55 | input$height > 90){
+          if(input$weight < 100 | input$weight > 350){
+            showToast(.options = myToastOptions,"error", "The player's weight is outside of the allowed limits.")
+            feedbackDanger("weight", TRUE, "The player's weight needs to be between 100 and 350 pounds.")
+          }
+          
+          if(input$height < 55 | input$height > 90){
+            showToast(.options = myToastOptions,"error", "The player's height is outside of the allowed limits.")
+            feedbackDanger("height", TRUE, "The player's height needs to be between 55 and 90 inches.")
+          }
+          
         } else if(checkDuplicatedName(input$firstName, input$lastName)){
           showToast(.options = myToastOptions,"error", "Another player in the league's history have used this name. Please change it to something else.")
         } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
