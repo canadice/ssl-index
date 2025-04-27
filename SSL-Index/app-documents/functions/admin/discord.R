@@ -38,13 +38,16 @@ sendGradedTPE <- function(source, tpe){
     paste(collapse = "\\n")
   
   if(nchar(gradedString) > 1024){
-    gradedString1 <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
-      .[1:floor(length(.)/2)] %>% 
-      paste(collapse = "\\n")
+    result <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": "))
     
-    gradedString2 <- apply(tpe %>% select(username, tpe), 1, function(row) paste(row, collapse = ": ")) %>% 
-      .[(floor(length(.)/2) + 1):length(.)] %>% 
-      paste(collapse = "\\n")
+    splits <- nchar(gradedString)%/%1024 + 1
+    
+    group <- rep(1:splits, length.out = length(result))
+    
+    splitResult <- split(result, group)
+    
+    strings <- lapply(splitResult, function(x) x |> paste(collapse = "\\n")) |> 
+      unlist()
     
     jscode <- paste0("
     function sendMessage() {
@@ -54,12 +57,13 @@ sendGradedTPE <- function(source, tpe){
       var myEmbed = {
         author: {name: 'A new PT has been graded!'},
         title: '", source, "',
-        fields: [ 
-          {name: '', 
-           value: '", sprintf("```%s```", gradedString1), "'},
-          {name: '', 
-           value: '", sprintf("```%s```", gradedString2), "'}
-        ],
+        fields: [", 
+          paste0(
+            "{name: '', 
+              value: '", sprintf("```%s```", strings), "'}",
+            collapse = ","
+          ),
+        "],
         footer: {
           text: 'If you have received 0 or reduced TPE, please check a summary post in the PT thread. \\n\\nThe TPE has already been added to your player page, this is just a report.'
         } 
