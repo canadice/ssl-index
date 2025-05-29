@@ -1,7 +1,7 @@
 ## Loads config information for database information
 config <- config::get(config = "mysql")
 
-query <- function(query, schema){
+sqlQuery <- function(query, schema){
   
   tryCatch({
     con <- 
@@ -43,14 +43,14 @@ query <- function(query, schema){
 ## Function for queries to mybb
 mybbQuery <- function(query){
   
-  query(query, schema = config$mysql$mybb)
+  sqlQuery(query, schema = config$mysql$mybb)
   
 }
 
 ## Function for queries to portal
 portalQuery <- function(query){
   
-  query(query, schema = config$mysql$portal)
+  sqlQuery(query, schema = config$mysql$portal)
   
 }
 
@@ -58,13 +58,13 @@ portalQuery <- function(query){
 ## Function for queries to index
 indexQuery <- function(query){
   
-  query(query, schema = config$mysql$index)
+  sqlQuery(query, schema = config$mysql$index)
   
 }
 
 budgetQuery <- function(query){
   
-  query(query, schema = config$mysql$budget)
+  sqlQuery(query, schema = config$mysql$budget)
   
 }
 
