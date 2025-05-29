@@ -250,6 +250,185 @@ if(length(tid) > 0){
 
 conn_obj <- 
   create_discord_connection(
+    webhook = Sys.getenv('DISCIPLINARY'), 
+    username = 'The Watcher', 
+    set_default = TRUE)
+
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=110"
+
+new <- newThreads(forum)
+
+title <- 
+  new %>% 
+  html_elements("a[title]") %>% 
+  html_text2() 
+
+# if(length(new)>0){
+#   title <- title %>% .[seq(2, length(.), by =2)]
+# }
+
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
+
+if(length(new) > 0){
+  link <- 
+    new %>% 
+    html_elements("a[title]") %>% 
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
+  
+  send_webhook_message(
+    paste(
+      "## :no_entry_sign: | New Punishment/Suspension!", "\n\n", 
+      paste(
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n"
+    )
+  )
+  
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link, forum = forum
+      )
+    )
+  
+  print("Sent new punishment.")
+  
+} else {
+  print("No new punishments!")
+}
+
+##---------------------------------------------------------------
+##                      New Discord Channel                     -
+##---------------------------------------------------------------
+
+conn_obj <- 
+  create_discord_connection(
+    webhook = Sys.getenv('MEDIA_FEED'), 
+    username = 'Media Watcher', 
+    set_default = TRUE)
+
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=46"
+
+new <- newThreads(forum)
+
+title <- 
+  new %>% 
+  html_elements("a[title]") %>% 
+  html_text2() 
+
+# if(length(new)>0){
+#   title <- title %>% .[seq(2, length(.), by =2)]
+# }
+
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
+
+if(length(new) > 0){
+  link <- 
+    new %>% 
+    html_elements("a[title]") %>% 
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
+  
+  send_webhook_message(
+    paste(
+      "## :writing_hand: | New Media!", "\n\n", 
+      paste(
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n"
+    )
+  )
+  
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link, forum = forum
+      )
+    )
+  
+  print("Sent new media.")
+  
+} else {
+  print("No new media!")
+}
+
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=48"
+
+new <- newThreads(forum)
+
+title <- 
+  new %>% 
+  html_elements("a[title]") %>% 
+  html_text2() 
+
+# if(length(new)>0){
+#   title <- title %>% .[seq(2, length(.), by =2)]
+# }
+
+index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+
+new <- new[index]   
+title <- title[index]
+
+if(length(new) > 0){
+  link <- 
+    new %>% 
+    html_elements("a[title]") %>% 
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
+  
+  send_webhook_message(
+    paste(
+      "## :frame_photo: | New Graphics!", "\n\n", 
+      paste(
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n"
+    )
+  )
+  
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link, forum = forum
+      )
+    )
+  
+  print("Sent new media.")
+  
+} else {
+  print("No new media!")
+}
+
+##---------------------------------------------------------------
+##                      New Discord Channel                     -
+##---------------------------------------------------------------
+
+conn_obj <- 
+  create_discord_connection(
     webhook = Sys.getenv("TPE_OPPS"), 
     username = 'PT Watcher', 
     set_default = TRUE)
