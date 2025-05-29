@@ -584,7 +584,11 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                         inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                         value = data[, x],
                         min = data[, x],
-                        max = 20
+                        max = if_else(
+                          x %in% c("acceleration", "agility", "balance", "jumping reach", "pace", "strength"),
+                          20 - max(data$timesregressed - 2, 0),
+                          20
+                        )
                       )
                     }
                   )
@@ -606,8 +610,26 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               if(bank < 0){
                 showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
-              } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
-                showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the allowed range of attribute values.")
+              } else if(
+                editableAttributes %>% 
+                sapply(X = ., 
+                       FUN = function(att){
+                         if(att %in% 
+                            (c("acceleration", "agility", "balance", 
+                               "jumping reach", "pace", "strength") |> 
+                             str_to_title() |> 
+                             str_remove_all(pattern = " ")
+                             )){
+                           input[[att]] > (20 - max(data$timesregressed - 2, 0)) | input[[att]] < 5
+                         } else {
+                           input[[att]] > 20 | input[[att]] < 5
+                         }
+                         }, 
+                       simplify = TRUE) %>% 
+                unlist() %>% 
+                any()
+              ){
+                showToast(.options = myToastOptions,"error", "One or more of your attributes exceeds the allowed range of attribute values.")
               } else if(updating() == "updating"){
                 ##### UPDATING #####
                 update <- 
@@ -855,7 +877,11 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                         inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                         value = data[, x],
                         min = 5,
-                        max = 20
+                        max = if_else(
+                          x %in% c("acceleration", "agility", "balance", "jumping reach", "pace", "strength"),
+                          20 - max(data$timesregressed - 2, 0),
+                          20
+                        )
                       )
                     }
                   )
@@ -926,7 +952,11 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                         inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                         value = 5,
                         min = 5,
-                        max = 20
+                        max = if_else(
+                          x %in% c("acceleration", "agility", "balance", "jumping reach", "pace", "strength"),
+                          20 - max(data$timesregressed - 2, 0),
+                          20
+                        )
                       )
                     }
                   )
@@ -985,7 +1015,11 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
                         session = session,
                         inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                         value = data[, x],
-                        max = data[, x],
+                        max = if_else(
+                          x %in% c("acceleration", "agility", "balance", "jumping reach", "pace", "strength"),
+                          min(data[,x], 20 - max(data$timesregressed - 2, 0)),
+                          data[, x]
+                        ),
                         min = 5
                       )
                     }
@@ -1007,8 +1041,24 @@ playerUpdateBoxServer <- function(id, pid, uid, data, tpeTotal = tpeTotal, tpeBa
               
               if(bank < 0){
                 showToast(.options = myToastOptions,"error", "You have spent too much TPE on your attributes! Reduce some of your attributes and try again.")
-              } else if(editableAttributes %>% sapply(X = ., FUN = function(att){input[[att]] > 20 | input[[att]] < 5}, simplify = TRUE) %>% unlist() %>% any()){
-                showToast(.options = myToastOptions,"error", "One or more of your attributes are lower than 5 or higher than 20, which exceeds the range of attributes we allow.")
+              } else if(editableAttributes %>% 
+                        sapply(X = ., 
+                               FUN = function(att){
+                                 if(att %in% 
+                                    (c("acceleration", "agility", "balance", 
+                                       "jumping reach", "pace", "strength") |> 
+                                     str_to_title() |> 
+                                     str_remove_all(pattern = " ")
+                                    )){
+                                   input[[att]] > (20 - max(data$timesregressed - 2, 0)) | input[[att]] < 5
+                                 } else {
+                                   input[[att]] > 20 | input[[att]] < 5
+                                 }
+                               }, 
+                               simplify = TRUE) %>% 
+                        unlist() %>% 
+                        any()){
+                showToast(.options = myToastOptions,"error", "One or more of your attributes exceeds the range of attributes we allow.")
               } else if(bank > 24){
                 # Error shown if user has regressed too much
                 showToast(.options = myToastOptions,"error", "You have regressed too much. You may only remove up to 24 TPE more than the required regressed TPE.") 
