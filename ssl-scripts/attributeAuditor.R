@@ -164,7 +164,8 @@ auditFunction <- function(path) {
     filter(team != club)
   
   list(
-    "Attributes" = auditAttributes,
+    "Attributes" = auditAttributes |> 
+      mutate(across(where(is.list), ~unlist(.x))),
     "Players" = auditPlayers,
     "Teams" = auditTeams
   ) %>% 
