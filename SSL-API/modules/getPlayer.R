@@ -243,7 +243,7 @@ function(name = NULL, pid = NULL, username = NULL, uid = NULL) {
                 WHEN pd.tpe BETWEEN 1551 AND 1700 THEN 5500000
                 WHEN pd.tpe > 1700 THEN 6000000
                 ELSE NULL
-            END AS `minimum salary`
+            END AS `minimum salary`, pd.timesregressed
           FROM playerdata pd
           LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
           LEFT JOIN useractivity ua ON pd.uid = ua.uid
