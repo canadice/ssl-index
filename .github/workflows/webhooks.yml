@@ -50,6 +50,8 @@ jobs:
       PLAYER_APPROVER: ${{ secrets.PLAYER_APPROVER }}
       SIM_FILES: ${{ secrets.SIM_FILES }}
       TRANSACTIONS: ${{ secrets.TRANSACTIONS }}
+      MEDIA_FEED: ${{ secrets.MEDIA_FEED }}
+      DISCIPLINARY: ${{ secrets.DISCIPLINARY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -93,6 +95,8 @@ jobs:
           echo PLAYER_APPROVER ="$PLAYER_APPROVER" >> ~/.Renviron
           echo SIM_FILES ="$SIM_FILES" >> ~/.Renviron
           echo TRANSACTIONS ="$TRANSACTIONS" >> ~/.Renviron
+          echo MEDIA_FEED ="$MEDIA_FEED" >> ~/.Renviron
+          echo DISCIPLINARY ="$DISCIPLINARY" >> ~/.Renviron
         shell: bash
 
       - name: Generate data
