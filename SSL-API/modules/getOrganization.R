@@ -40,19 +40,33 @@ function(){
 #* 
 function(uid){
   portalQuery(
-    paste(
-      "SELECT us.desc AS `user status`, ps.desc AS `player status`, pd.name, pd.class, pd.tpe, pd.tpebank, `left foot`, `right foot`, pd.position, (CASE WHEN teams.affiliate = 2 THEN 'Minor' ELSE 'Major' END) AS affiliate, pid
-        FROM playerdata pd
-        JOIN useractivity ua ON pd.uid = ua.uid
-        JOIN userstatuses us ON ua.status_u = us.status
-        JOIN playerstatuses ps ON pd.status_p = ps.status
-        JOIN teams ON pd.team = teams.orgID AND pd.affiliate = teams.affiliate
-        WHERE pd.team IN (
-          SELECT orgID
-          FROM managers
-          WHERE orgManager = ", uid, " OR assManager1 = ", uid, "OR assManager2 = ", uid, "
-        );"
-    )
+    query = 
+      "SELECT 
+       us.desc AS `user status`, 
+       ps.desc AS `player status`, 
+       pd.name, 
+       pd.class, 
+       pd.tpe, 
+       pd.tpebank, 
+       `left foot`, 
+       `right foot`, 
+       pd.position, 
+       (CASE WHEN teams.affiliate = 2 THEN 'Minor' ELSE 'Major' END) AS affiliate, 
+       pid
+     FROM playerdata pd
+     JOIN useractivity ua ON pd.uid = ua.uid
+     JOIN userstatuses us ON ua.status_u = us.status
+     JOIN playerstatuses ps ON pd.status_p = ps.status
+     JOIN teams ON pd.team = teams.orgID 
+                AND pd.affiliate = teams.affiliate
+     WHERE pd.team IN (
+       SELECT orgID
+       FROM managers
+       WHERE orgManager = ?uid 
+          OR assManager1 = ?uid 
+          OR assManager2 = ?uid
+     );",
+    uid = uid
   ) %>% 
     arrange(affiliate, tpe %>% desc())
 }

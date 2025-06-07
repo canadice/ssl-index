@@ -1,7 +1,7 @@
 ## Loads config information for database information
 config <- config::get(config = "mysql")
 
-query <- function(query, schema){
+query <- function(query, ..., schema){
   
   tryCatch({
     con <- 
@@ -18,16 +18,19 @@ query <- function(query, schema){
     dbSendQuery(con, "SET CHARACTER SET utf8mb4;")
     dbSendQuery(con, "SET character_set_connection=utf8mb4;")
     
-    req <- glue::glue_sql(query, .con = con)
+    # req <- glue::glue_sql(query, .con = con)
     
-    # print(req)
+    safeQuery <- sqlInterpolate(con, query, ...)
     
-    req <- dbSendQuery(con, req)
-    res <- dbFetch(req, n = -1)
+    # print(safeQuery)
     
-    dbClearResult(req)
+    req <- dbGetQuery(con, safeQuery)
+    # req <- dbSendQuery(con, req)
+    # res <- dbFetch(req, n = -1)
     
-    return(res)
+    # dbClearResult(req)
+    
+    return(req)
   }, error = function(e) {
     # Log or handle the error
     message("Error executing query: ", e$message)
@@ -41,30 +44,30 @@ query <- function(query, schema){
 }
 
 ## Function for queries to mybb
-mybbQuery <- function(query){
+mybbQuery <- function(query, ...){
   
-  query(query, schema = config$mysql$mybb)
+  query(query, ..., schema = config$mysql$mybb)
   
 }
 
 ## Function for queries to portal
-portalQuery <- function(query){
+portalQuery <- function(query, ...){
   
-  query(query, schema = config$mysql$portal)
+  query(query, ..., schema = config$mysql$portal)
   
 }
 
 
 ## Function for queries to index
-indexQuery <- function(query){
+indexQuery <- function(query, ...){
   
-  query(query, schema = config$mysql$index)
+  query(query, ..., schema = config$mysql$index)
   
 }
 
-budgetQuery <- function(query){
+budgetQuery <- function(query, ...){
   
-  query(query, schema = config$mysql$budget)
+  query(query, ..., schema = config$mysql$budget)
   
 }
 

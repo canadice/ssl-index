@@ -7,22 +7,21 @@
 function(name = "", pid = ""){
   if(pid != ""){
     portalQuery(
-      paste(
-        "SELECT sum(transaction) AS balance 
-      FROM banktransactions bt
-      WHERE bt.pid = ", pid, " AND bt.status = 1;"
-      )
+      query  = "SELECT sum(transaction) AS balance 
+        FROM banktransactions bt
+        WHERE bt.pid = ?pid AND bt.status = 1",
+      pid = pid
     ) %>% 
       mutate(balanceStr = paste0("$", comma(balance))) %>% 
       suppressWarnings()
   } else {
     portalQuery(
-      paste(
-        "SELECT sum(transaction) AS balance 
-      FROM banktransactions bt
-      JOIN playerdata pd ON bt.pid = pd.pid
-      WHERE pd.name = ", paste0("'", name %>% str_replace(pattern = "'", replacement = "\\\\'"), "'"), " AND bt.status = 1;"
-      )
+      query = 
+          "SELECT sum(transaction) AS balance 
+          FROM banktransactions bt
+          JOIN playerdata pd ON bt.pid = pd.pid
+          WHERE pd.name = ?name AND bt.status = 1",
+      name = name %>% str_replace(pattern = "'", replacement = "\\\\'")
     ) %>% 
       mutate(balanceStr = paste0("$", comma(balance))) %>% 
       suppressWarnings()
@@ -37,7 +36,8 @@ function(name = "", pid = ""){
 #* 
 function(name){
   portalQuery(
-    paste("SELECT 
+    query = 
+      "SELECT 
           bt.time AS Time,
           mbb.username AS `User`,
           bt.source AS Source,
@@ -48,8 +48,9 @@ function(name){
           mybbdb.mybb_users mbb ON bt.uid = mbb.uid
       LEFT JOIN playerdata pd ON bt.pid = pd.pid
       WHERE 
-          pd.name = ", paste0("'", name %>% str_replace(pattern = "'", replacement = "\\\\'"), "'"), "AND bt.status = 1
-      ORDER BY Time DESC;")
+          pd.name = ?name AND bt.status = 1
+      ORDER BY Time DESC;",
+    name = name %>% str_replace(pattern = "'", replacement = "\\\\'")
   ) %>% 
     mutate(
       Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific") %>% as_date(),
@@ -64,8 +65,11 @@ function(name){
 #* @param status The status of the transaction where 0 is pending approval and 1 is approved
 #* 
 function(pid = -1, status = 1){
-  portalQuery(
-    paste("SELECT 
+  
+  if(pid < 0){
+    portalQuery(
+      query = 
+        "SELECT 
           bt.time AS Time,
           pd.name AS Player,
           pd.pid AS pid,
@@ -76,8 +80,34 @@ function(pid = -1, status = 1){
           banktransactions bt
       LEFT JOIN
           mybbdb.mybb_users mbb ON bt.uid = mbb.uid
-      LEFT JOIN playerdata pd ON bt.pid = pd.pid",
-          if_else(pid < 0, paste("WHERE bt.status = ", status), paste("WHERE bt.pid = ", pid, " AND bt.status =  ", status)),
-          "ORDER BY Time DESC;")
-  ) 
+      LEFT JOIN 
+          playerdata pd ON bt.pid = pd.pid
+      WHERE 
+          bt.status = ?status
+      ORDER BY Time DESC;",
+      status = status
+    )
+  } else {
+    portalQuery(
+      query = 
+        "SELECT 
+          bt.time AS Time,
+          pd.name AS Player,
+          pd.pid AS pid,
+          mbb.username AS Username,
+          bt.source AS Source,
+          bt.transaction AS Transaction
+      FROM 
+          banktransactions bt
+      LEFT JOIN
+          mybbdb.mybb_users mbb ON bt.uid = mbb.uid
+      LEFT JOIN 
+          playerdata pd ON bt.pid = pd.pid
+      WHERE 
+          bt.pid = ?pid AND bt.status = ?status
+      ORDER BY Time DESC;",
+      pid = pid,
+      status = status
+    )
+  }
 }
