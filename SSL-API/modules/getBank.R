@@ -38,19 +38,13 @@ function(name){
   portalQuery(
     query = 
       "SELECT 
-          bt.time AS Time,
-          mbb.username AS `User`,
-          bt.source AS Source,
-          bt.transaction AS Transaction
+          Time, Username AS User, Source, Transaction
       FROM 
-          banktransactions bt
-      LEFT JOIN
-          mybbdb.mybb_users mbb ON bt.uid = mbb.uid
-      LEFT JOIN playerdata pd ON bt.pid = pd.pid
+          bankHistoryView
       WHERE 
-          pd.name = ?name AND bt.status = 1
+          Player = ?name AND Status = 1
       ORDER BY Time DESC;",
-    name = name %>% str_replace(pattern = "'", replacement = "\\\\'")
+    name = name
   ) %>% 
     mutate(
       Time = Time %>% as.numeric() %>% as_datetime(tz = "US/Pacific") %>% as_date(),
@@ -69,42 +63,22 @@ function(pid = -1, status = 1){
   if(pid < 0){
     portalQuery(
       query = 
-        "SELECT 
-          bt.time AS Time,
-          pd.name AS Player,
-          pd.pid AS pid,
-          mbb.username AS Username,
-          bt.source AS Source,
-          bt.transaction AS Transaction
-      FROM 
-          banktransactions bt
-      LEFT JOIN
-          mybbdb.mybb_users mbb ON bt.uid = mbb.uid
-      LEFT JOIN 
-          playerdata pd ON bt.pid = pd.pid
-      WHERE 
-          bt.status = ?status
+        "SELECT * 
+        FROM 
+          bankHistoryView
+        WHERE
+          Status = ?status
       ORDER BY Time DESC;",
       status = status
     )
   } else {
     portalQuery(
       query = 
-        "SELECT 
-          bt.time AS Time,
-          pd.name AS Player,
-          pd.pid AS pid,
-          mbb.username AS Username,
-          bt.source AS Source,
-          bt.transaction AS Transaction
-      FROM 
-          banktransactions bt
-      LEFT JOIN
-          mybbdb.mybb_users mbb ON bt.uid = mbb.uid
-      LEFT JOIN 
-          playerdata pd ON bt.pid = pd.pid
-      WHERE 
-          bt.pid = ?pid AND bt.status = ?status
+        "SELECT * 
+        FROM 
+          bankHistoryView
+        WHERE
+          pid = ?pid AND Status = ?status
       ORDER BY Time DESC;",
       pid = pid,
       status = status

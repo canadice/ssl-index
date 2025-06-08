@@ -34,147 +34,11 @@ cors <- function(req, res) {
 function(active = FALSE) {
   portalQuery(
     query = 
-      "SELECT 
-       pd.uid, 
-       pd.pid, 
-       pd.status_p, 
-       pd.first, 
-       pd.last, 
-       pd.name, 
-       pd.class, 
-       pd.created, 
-       pd.tpe, 
-       pd.tpeused, 
-       pd.tpebank, 
-       t.name AS team, 
-       pd.affiliate, 
-       pd.birthplace, 
-       -- Check if nationality is 3 letters and map it to the full name from portaldb.nationality, else show pd.nationality
-       CASE 
-         WHEN LENGTH(pd.nationality) = 3 THEN n.name
-         ELSE pd.nationality 
-       END AS nationality,
-       pd.height, 
-       pd.weight, 
-       pd.hair_color, 
-       pd.hair_length, 
-       pd.skintone, 
-       pd.render, 
-       pd.`left foot`, 
-       pd.`right foot`, 
-       pd.position, 
-       pd.pos_st, 
-       pd.pos_lam, 
-       pd.pos_cam, 
-       pd.pos_ram, 
-       pd.pos_lm, 
-       pd.pos_cm, 
-       pd.pos_rm, 
-       pd.pos_lwb, 
-       pd.pos_cdm, 
-       pd.pos_rwb, 
-       pd.pos_ld, 
-       pd.pos_cd, 
-       pd.pos_rd, 
-       pd.pos_gk, 
-       pd.acceleration, 
-       pd.agility, 
-       pd.balance, 
-       pd.`jumping reach`, 
-       pd.`natural fitness`, 
-       pd.pace, 
-       pd.stamina, 
-       pd.strength, 
-       pd.corners, 
-       pd.crossing, 
-       pd.dribbling, 
-       pd.finishing, 
-       pd.`first touch`, 
-       pd.`free kick`, 
-       pd.heading, 
-       pd.`long shots`, 
-       pd.`long throws`, 
-       pd.marking, 
-       pd.passing, 
-       pd.`penalty taking`, 
-       pd.tackling, 
-       pd.technique, 
-       pd.aggression, 
-       pd.anticipation, 
-       pd.bravery, 
-       pd.composure, 
-       pd.concentration, 
-       pd.decisions, 
-       pd.determination, 
-       pd.flair, 
-       pd.leadership, 
-       pd.`off the ball`, 
-       pd.positioning, 
-       pd.teamwork, 
-       pd.vision, 
-       pd.`work rate`, 
-       pd.`aerial reach`, 
-       pd.`command of area`, 
-       pd.communication, 
-       pd.eccentricity, 
-       pd.handling, 
-       pd.kicking, 
-       pd.`one on ones`, 
-       pd.reflexes, 
-       pd.`tendency to rush`, 
-       pd.`tendency to punch`, 
-       pd.throwing, 
-       pd.traits, 
-       pd.rerollused, 
-       pd.redistused, 
-       mb.username, 
-       mbuf.fid4 AS discord, 
-       us.desc AS `userStatus`, 
-       ps.desc AS `playerStatus`, 
-       CASE 
-         WHEN pd.tpe <= 350 THEN 1000000
-         WHEN pd.tpe BETWEEN 351 AND 500 THEN 1500000
-         WHEN pd.tpe BETWEEN 501 AND 650 THEN 2000000
-         WHEN pd.tpe BETWEEN 651 AND 800 THEN 2500000
-         WHEN pd.tpe BETWEEN 801 AND 950 THEN 3000000
-         WHEN pd.tpe BETWEEN 951 AND 1100 THEN 3500000
-         WHEN pd.tpe BETWEEN 1101 AND 1250 THEN 4000000
-         WHEN pd.tpe BETWEEN 1251 AND 1400 THEN 4500000
-         WHEN pd.tpe BETWEEN 1401 AND 1550 THEN 5000000
-         WHEN pd.tpe BETWEEN 1551 AND 1700 THEN 5500000
-         WHEN pd.tpe > 1700 THEN 6000000
-         ELSE NULL
-       END AS `minimum salary`,
-       SUM(CASE WHEN bt.status = 1 THEN bt.transaction ELSE 0 END) AS bankBalance,
-       n.region,
-       o.name AS organization
-     FROM playerdata pd
-     LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
-     LEFT JOIN useractivity ua ON pd.uid = ua.uid
-     LEFT JOIN userstatuses us ON ua.status_u = us.status
-     LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
-     LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
-     LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
-     LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation OR pd.nationality = n.name
-     LEFT JOIN banktransactions bt ON pd.pid = bt.pid
-     LEFT JOIN organizations o ON pd.team = o.id
-     WHERE pd.status_p >= ?active
-     GROUP BY pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
-              pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name, pd.affiliate, pd.birthplace, 
-              n.name, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
-              pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
-              pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
-              pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk, pd.acceleration, pd.agility,
-              pd.balance, pd.`jumping reach`, pd.`natural fitness`, pd.pace, pd.stamina, pd.strength, 
-              pd.corners, pd.crossing, pd.dribbling, pd.finishing, pd.`first touch`, pd.`free kick`, 
-              pd.heading, pd.`long shots`, pd.`long throws`, pd.marking, pd.passing, pd.`penalty taking`, 
-              pd.tackling, pd.technique, pd.aggression, pd.anticipation, pd.bravery, pd.composure, 
-              pd.concentration, pd.decisions, pd.determination, pd.flair, pd.leadership, pd.`off the ball`, 
-              pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
-              pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
-              pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
-              mb.username, mbuf.fid4, us.desc, ps.desc, n.region
-     ORDER BY pd.created;",
+      "SELECT *
+      FROM
+        allPlayersView
+      WHERE
+        status_p >= ?active;",
     active = if_else(active == "true", 1, 0)
   ) %>% 
     mutate(
@@ -189,69 +53,8 @@ function(active = FALSE) {
 function() {
   portalQuery(
     paste(
-      "SELECT pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
-      pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name AS team, pd.affiliate, pd.birthplace, 
-      -- Check if nationality is 3 letters and map it to the full name from portaldb.nationality, else show pd.nationality
-        CASE 
-            WHEN LENGTH(pd.nationality) = 3 THEN n.name
-            ELSE pd.nationality 
-        END AS nationality,
-      pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
-      pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
-      pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
-      pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk, pd.acceleration, pd.agility,
-      pd.balance, pd.`jumping reach`, pd.`natural fitness`, pd.pace, pd.stamina, pd.strength, 
-      pd.corners, pd.crossing, pd.dribbling, pd.finishing, pd.`first touch`, pd.`free kick`, 
-      pd.heading, pd.`long shots`, pd.`long throws`, pd.marking, pd.passing, pd.`penalty taking`, 
-      pd.tackling, pd.technique, pd.aggression, pd.anticipation, pd.bravery, pd.composure, 
-      pd.concentration, pd.decisions, pd.determination, pd.flair, pd.leadership, pd.`off the ball`, 
-      pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
-      pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
-      pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
-      mb.username, mbuf.fid4 AS discord, us.desc AS `userStatus`, ps.desc AS `playerStatus`, 
-            CASE 
-              WHEN pd.tpe <= 350 THEN 1000000
-              WHEN pd.tpe BETWEEN 351 AND 500 THEN 1500000
-              WHEN pd.tpe BETWEEN 501 AND 650 THEN 2000000
-              WHEN pd.tpe BETWEEN 651 AND 800 THEN 2500000
-              WHEN pd.tpe BETWEEN 801 AND 950 THEN 3000000
-              WHEN pd.tpe BETWEEN 951 AND 1100 THEN 3500000
-              WHEN pd.tpe BETWEEN 1101 AND 1250 THEN 4000000
-              WHEN pd.tpe BETWEEN 1251 AND 1400 THEN 4500000
-              WHEN pd.tpe BETWEEN 1401 AND 1550 THEN 5000000
-              WHEN pd.tpe BETWEEN 1551 AND 1700 THEN 5500000
-              WHEN pd.tpe > 1700 THEN 6000000
-              ELSE NULL
-          END AS `minimum salary`,
-          SUM(CASE WHEN bt.status = 1 THEN bt.transaction ELSE 0 END) AS bankBalance,
-          n.region,
-          o.name AS organization
-        FROM weeklybuilds pd
-        LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
-        LEFT JOIN useractivity ua ON pd.uid = ua.uid
-        LEFT JOIN userstatuses us ON ua.status_u = us.status
-        LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
-        LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
-        LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
-        LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation OR pd.nationality = n.name
-        LEFT JOIN banktransactions bt ON pd.pid = bt.pid
-        LEFT JOIN organizations o ON pd.team = o.id
-        GROUP BY pd.uid, pd.pid, pd.status_p, pd.first, pd.last, pd.name, pd.class, 
-         pd.created, pd.tpe, pd.tpeused, pd.tpebank, t.name, pd.affiliate, pd.birthplace, 
-         n.name, pd.height, pd.weight, pd.hair_color, pd.hair_length, pd.skintone, 
-         pd.render, pd.`left foot`, pd.`right foot`, pd.position, pd.pos_st, pd.pos_lam, 
-         pd.pos_cam, pd.pos_ram, pd.pos_lm, pd.pos_cm, pd.pos_rm, pd.pos_lwb, pd.pos_cdm,
-         pd.pos_rwb, pd.pos_ld, pd.pos_cd, pd.pos_rd, pd.pos_gk, pd.acceleration, pd.agility,
-         pd.balance, pd.`jumping reach`, pd.`natural fitness`, pd.pace, pd.stamina, pd.strength, 
-         pd.corners, pd.crossing, pd.dribbling, pd.finishing, pd.`first touch`, pd.`free kick`, 
-         pd.heading, pd.`long shots`, pd.`long throws`, pd.marking, pd.passing, pd.`penalty taking`, 
-         pd.tackling, pd.technique, pd.aggression, pd.anticipation, pd.bravery, pd.composure, 
-         pd.concentration, pd.decisions, pd.determination, pd.flair, pd.leadership, pd.`off the ball`, 
-         pd.positioning, pd.teamwork, pd.vision, pd.`work rate`, pd.`aerial reach`, pd.`command of area`, 
-         pd.communication, pd.eccentricity, pd.handling, pd.kicking, pd.`one on ones`, pd.reflexes, 
-         pd.`tendency to rush`, pd.`tendency to punch`, pd.throwing, pd.traits, pd.rerollused, pd.redistused,
-         mb.username, mbuf.fid4, us.desc, ps.desc, n.region
-        ORDER BY pd.created;"
+      "SELECT *
+      FROM allPlayersWeeklyView;"
     )
   ) %>% 
     mutate(
@@ -277,145 +80,123 @@ function(name = NULL, pid = NULL, username = NULL, uid = NULL) {
   # Build the static portion of the query.
   baseQuery <- "
     SELECT 
-      pd.uid,
-      pd.pid,
-      pd.status_p,
-      pd.first,
-      pd.last,
-      pd.name,
-      pd.class,
-      pd.created,
-      pd.tpe,
-      pd.tpeused,
-      pd.tpebank,
-      pd.team AS organization,
-      t.name AS team,
-      pd.affiliate,
-      pd.birthplace,
-      -- Map a 3-letter nationality to its full name
-      CASE 
-          WHEN LENGTH(pd.nationality) = 3 THEN n.name
-          ELSE pd.nationality 
-      END AS nationality,
-      pd.height,
-      pd.weight,
-      pd.hair_color,
-      pd.hair_length,
-      pd.skintone,
-      pd.render,
-      pd.`left foot`,
-      pd.`right foot`,
-      pd.position,
-      pd.pos_st,
-      pd.pos_lam,
-      pd.pos_cam,
-      pd.pos_ram,
-      pd.pos_lm,
-      pd.pos_cm,
-      pd.pos_rm,
-      pd.pos_lwb,
-      pd.pos_cdm,
-      pd.pos_rwb,
-      pd.pos_ld,
-      pd.pos_cd,
-      pd.pos_rd,
-      pd.pos_gk,
-      pd.acceleration,
-      pd.agility,
-      pd.balance,
-      pd.`jumping reach`,
-      pd.`natural fitness`,
-      pd.pace,
-      pd.stamina,
-      pd.strength,
-      pd.corners,
-      pd.crossing,
-      pd.dribbling,
-      pd.finishing,
-      pd.`first touch`,
-      pd.`free kick`,
-      pd.heading,
-      pd.`long shots`,
-      pd.`long throws`,
-      pd.marking,
-      pd.passing,
-      pd.`penalty taking`,
-      pd.tackling,
-      pd.technique,
-      pd.aggression,
-      pd.anticipation,
-      pd.bravery,
-      pd.composure,
-      pd.concentration,
-      pd.decisions,
-      pd.determination,
-      pd.flair,
-      pd.leadership,
-      pd.`off the ball`,
-      pd.positioning,
-      pd.teamwork,
-      pd.vision,
-      pd.`work rate`,
-      pd.`aerial reach`,
-      pd.`command of area`,
-      pd.communication,
-      pd.eccentricity,
-      pd.handling,
-      pd.kicking,
-      pd.`one on ones`,
-      pd.reflexes,
-      pd.`tendency to rush`,
-      pd.`tendency to punch`,
-      pd.throwing,
-      pd.traits,
-      pd.rerollused,
-      pd.redistused,
-      mb.username,
-      us.desc AS `userStatus`,
-      ps.desc AS `playerStatus`,
-      CASE 
-        WHEN pd.tpe <= 350 THEN 1000000
-        WHEN pd.tpe BETWEEN 351 AND 500 THEN 1500000
-        WHEN pd.tpe BETWEEN 501 AND 650 THEN 2000000
-        WHEN pd.tpe BETWEEN 651 AND 800 THEN 2500000
-        WHEN pd.tpe BETWEEN 801 AND 950 THEN 3000000
-        WHEN pd.tpe BETWEEN 951 AND 1100 THEN 3500000
-        WHEN pd.tpe BETWEEN 1101 AND 1250 THEN 4000000
-        WHEN pd.tpe BETWEEN 1251 AND 1400 THEN 4500000
-        WHEN pd.tpe BETWEEN 1401 AND 1550 THEN 5000000
-        WHEN pd.tpe BETWEEN 1551 AND 1700 THEN 5500000
-        WHEN pd.tpe > 1700 THEN 6000000
-        ELSE NULL
-      END AS `minimum salary`,
-      pd.timesregressed
-    FROM playerdata pd
-    LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
-    LEFT JOIN useractivity ua ON pd.uid = ua.uid
-    LEFT JOIN userstatuses us ON ua.status_u = us.status
-    LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
-    LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
-    LEFT JOIN portaldb.nationality n ON pd.nationality = n.abbreviation"
+      uid,
+      pid,
+      status_p,
+      first,
+      last,
+      name,
+      class,
+      created,
+      tpe,
+      tpeused,
+      tpebank,
+      organization,      
+      team,              
+      affiliate,
+      birthplace,
+      nationality,       
+      height,
+      weight,
+      hair_color,
+      hair_length,
+      skintone,
+      render,
+      `left foot`,
+      `right foot`,
+      position,
+      pos_st,
+      pos_lam,
+      pos_cam,
+      pos_ram,
+      pos_lm,
+      pos_cm,
+      pos_rm,
+      pos_lwb,
+      pos_cdm,
+      pos_rwb,
+      pos_ld,
+      pos_cd,
+      pos_rd,
+      pos_gk,
+      acceleration,
+      agility,
+      balance,
+      `jumping reach`,
+      `natural fitness`,
+      pace,
+      stamina,
+      strength,
+      corners,
+      crossing,
+      dribbling,
+      finishing,
+      `first touch`,
+      `free kick`,
+      heading,
+      `long shots`,
+      `long throws`,
+      marking,
+      passing,
+      `penalty taking`,
+      tackling,
+      technique,
+      aggression,
+      anticipation,
+      bravery,
+      composure,
+      concentration,
+      decisions,
+      determination,
+      flair,
+      leadership,
+      `off the ball`,
+      positioning,
+      teamwork,
+      vision,
+      `work rate`,
+      `aerial reach`,
+      `command of area`,
+      communication,
+      eccentricity,
+      handling,
+      kicking,
+      `one on ones`,
+      reflexes,
+      `tendency to rush`,
+      `tendency to punch`,
+      throwing,
+      traits,
+      rerollused,
+      redistused,
+      username,         
+      userStatus,       
+      playerStatus,     
+      `minimum salary`, 
+      timesregressed
+    FROM allPlayersView
+"
   
   # Determine the WHERE clause and parameters based on which identifiers are provided.
   if (!is.null(username)) {
     # If username is provided, search based on mb.username.
-    whereClause <- " WHERE mb.username = ?username ORDER BY pid DESC LIMIT 1;"
+    whereClause <- " WHERE username = ?username ORDER BY pid DESC LIMIT 1;"
     params <- list(username = username)
     
   } else if (!is.null(uid)) {
     # If uid is provided, search based on pd.uid.
-    whereClause <- " WHERE pd.uid = ?uid ORDER BY pid DESC LIMIT 1;"
+    whereClause <- " WHERE uid = ?uid ORDER BY pid DESC LIMIT 1;"
     params <- list(uid = uid)
     
   } else {
     # Otherwise use either name or pid.
     if (is.null(name)) {
       # Use pid if name is not provided.
-      whereClause <- " WHERE pd.pid = ?pid;"
+      whereClause <- " WHERE pid = ?pid;"
       params <- list(pid = pid)
     } else {
       # Use name.
-      whereClause <- " WHERE pd.name = ?name;"
+      whereClause <- " WHERE name = ?name;"
       params <- list(name = name)
     }
   }
@@ -452,27 +233,14 @@ function(class = NULL) {
   portalQuery(
     query = "
       SELECT 
-        pd.name, 
-        pd.tpe, 
-        t.name AS team, 
-        mb.username, 
-        us.desc AS `userStatus`, 
-        ps.desc AS `playerStatus`, 
-        pd.position, 
-        SUM(bt.transaction) AS bankBalance 
-      FROM playerdata pd
-      LEFT JOIN mybbdb.mybb_users mb ON pd.uid = mb.uid
-      LEFT JOIN useractivity ua ON pd.uid = ua.uid
-      LEFT JOIN userstatuses us ON ua.status_u = us.status
-      LEFT JOIN playerstatuses ps ON pd.status_p = ps.status
-      LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
-      LEFT JOIN banktransactions bt ON pd.pid = bt.pid
-      WHERE pd.class = ?class
-        AND pd.status_p > 0
-        AND bt.status = 1
-      GROUP BY 
-        pd.name, pd.tpe, t.name, mb.username, us.desc, ps.desc, pd.position
-      ORDER BY pd.tpe DESC;",
+        name, tpe, team, username, userStatus, playerStatus,
+        position, bankBalance
+      FROM
+        allPlayersView
+      WHERE
+        class = ?class
+        AND status_p > 0
+      ORDER BY tpe DESC;",
     class = myclass
   ) %>% 
     suppressWarnings()
@@ -512,41 +280,41 @@ function(username) {
     as.numeric()
   
   # Main query: Get thread/post information based on the player's username.
-  tasks <- mybbQuery(
-    query = "
-        WITH current_season AS (
-          SELECT MAX(season) AS current_season
-          FROM indexdb.seasoninfo
-        ), 
-        player_class AS (
-          SELECT CONCAT('S', MAX(CAST(SUBSTRING(pd.class, 2) AS UNSIGNED))) AS class
-          FROM portaldb.playerdata pd
-          JOIN mybbdb.mybb_users mbb ON pd.uid = mbb.uid
-          WHERE mbb.username = ?username
-        )
-        SELECT 
-          p.username AS user, 
-          COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count, 
-          t.tid, 
-          CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link, 
-          t.subject, 
-          t.username AS op
-        FROM mybbdb.mybb_threads t
-        JOIN mybbdb.mybb_posts p ON p.tid = t.tid
-        JOIN player_class pc ON 1=1
-        JOIN current_season cs ON 1=1
-        WHERE (
-              (pc.class <> CONCAT('S', cs.current_season + 1) AND t.fid IN (22, 49, 25, 24, 122))
-           OR (pc.class = CONCAT('S', cs.current_season + 1) AND 
-               t.fid IN (22, 49, 25, 24, 122, 179, 180, 181, 182, 183)
-               AND NOT (t.subject LIKE CONCAT('%S', cs.current_season, ' Minor%') 
+  tasks <- portalQuery(
+    query = 
+    "WITH current_season AS (
+        SELECT MAX(season) AS current_season 
+        FROM indexdb.seasoninfo
+      ),
+      player_class AS (
+        SELECT CONCAT('S', MAX(CAST(SUBSTRING(ap.class, 2) AS UNSIGNED))) AS class
+        FROM allPlayersView ap
+        WHERE ap.username = ?username
+      )
+      SELECT 
+        p.username AS user,
+        COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count,
+        t.tid,
+        CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link,
+        t.subject,
+        t.username AS op
+      FROM threadsView t
+      JOIN postsView p ON p.tid = t.tid
+      JOIN player_class pc ON 1 = 1
+      JOIN current_season cs ON 1 = 1
+      WHERE (
+              (pc.class <> CONCAT('S', cs.current_season + 1) 
+               AND t.fid IN (22, 49, 25, 24, 122))
+           OR (pc.class = CONCAT('S', cs.current_season + 1)
+               AND t.fid IN (22, 49, 25, 24, 122, 179, 180, 181, 182, 183)
+               AND NOT (t.subject LIKE CONCAT('%S', cs.current_season, ' Minor%')
                         OR t.subject LIKE CONCAT('%S', cs.current_season, ' Major%'))
               )
-        )
-          AND t.sticky = 0 
-          AND t.closed = 0
-        GROUP BY p.username, t.tid, t.subject, t.username;",
-        username = username
+            )
+        AND t.sticky = 0
+        AND t.closed = 0
+      GROUP BY p.username, t.tid, t.subject, t.username;",
+    username = username
   ) %>% 
   group_by(subject, link) %>% 
   summarize(
@@ -559,18 +327,11 @@ function(username) {
       subject = "Activity Check",
       link = "https://index.simulationsoccer.com",
       posted = (portalQuery(
-        query = "
-            SELECT * 
-            FROM tpehistory 
-            WHERE pid = (
-                SELECT pd.pid
-                FROM playerdata AS pd
-                JOIN mybbdb.mybb_users AS mbb ON pd.uid = mbb.uid
-                WHERE mbb.username = ?username
-                  AND pd.status_p = 1
-            ) 
-            AND source LIKE '%Activity Check' 
-            AND time > ?weekStart",
+        query = 
+        "SELECT * 
+        FROM acView
+        WHERE username = ?username
+          AND time > ?weekStart;",
         username = username,
         weekStart = weekStart
       ) %>% nrow()) > 0
@@ -595,78 +356,30 @@ function(username) {
     as.numeric()
   
   # Step 1: Query for players in the same organization using parameterized query
-  playersInSameTeam <- mybbQuery(
-    query = "
-      WITH current_season AS (
-          SELECT MAX(season) AS current_season
-          FROM indexdb.seasoninfo
-      ), 
-      player_info AS (
-          SELECT 
-              pd.team, 
-              CONCAT('S', MAX(CAST(SUBSTRING(pd.class, 2) AS UNSIGNED))) AS class
-          FROM portaldb.playerdata pd
-          JOIN mybbdb.mybb_users mbb ON pd.uid = mbb.uid
-          WHERE mbb.username = ?username AND pd.status_p > 0
-          GROUP BY pd.team
-      ), 
-      same_team_players AS (
-          SELECT 
-              pd.pid, 
-              pd.name, 
-              pd.team, 
-              mbb.username 
-          FROM portaldb.playerdata pd
-          JOIN mybbdb.mybb_users mbb ON pd.uid = mbb.uid
-          WHERE pd.team = (SELECT team FROM player_info)
-      )
-      SELECT 
-          sop.username AS user,
-          sop.name AS player_name,
-          sop.team AS team_id
-      FROM same_team_players sop
-      ORDER BY sop.username;",
-  username = username
+  playersInSameTeam <- portalQuery(
+    query = 
+    "SELECT 
+      username AS user, name AS player_name
+    FROM allPlayersView
+    WHERE
+      organization = (
+        SELECT organization 
+        FROM allPlayersView 
+        WHERE username = ?username
+        ORDER BY created DESC
+        LIMIT 1
+      );",
+    username = username
   )
 
   # Step 2: Iterate through each user and query their tasks using parameterized queries
   allTasks <- purrr::map_df(playersInSameTeam$user, function(currentUsername) {
-    tasks <- mybbQuery(
-      query = "
-        WITH current_season AS (
-            SELECT MAX(season) AS current_season
-            FROM indexdb.seasoninfo
-        ), 
-        player_class AS (
-            SELECT CONCAT('S', MAX(CAST(SUBSTRING(pd.class, 2) AS UNSIGNED))) AS class
-            FROM portaldb.playerdata pd
-            JOIN mybbdb.mybb_users mbb ON pd.uid = mbb.uid
-            WHERE mbb.username = ?currentUsername
-        )
-        SELECT 
-            p.username AS user, 
-            COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count, 
-            t.tid, 
-            CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link, 
-            t.subject, 
-            t.username AS op
-        FROM mybbdb.mybb_threads t
-        JOIN mybbdb.mybb_posts p ON p.tid = t.tid
-        JOIN player_class pc ON 1=1
-        JOIN current_season cs ON 1=1
-        WHERE (
-              (pc.class <> CONCAT('S', cs.current_season + 1) AND t.fid IN (22, 49, 25, 24, 122))
-              OR 
-              (pc.class = CONCAT('S', cs.current_season + 1) AND 
-               t.fid IN (22, 49, 25, 24, 122, 179, 180, 181, 182, 183) AND
-               NOT (t.subject LIKE CONCAT('%S', cs.current_season, ' Minor%') OR 
-                    t.subject LIKE CONCAT('%S', cs.current_season, ' Major%'))
-              )
-        )
-        AND t.sticky = 0 
-        AND t.closed = 0
-        GROUP BY p.username, t.tid, t.subject, t.username;",
-        currentUsername = currentUsername
+    tasks <- portalQuery(
+      query = 
+        "SELECT *
+        FROM checklistView
+        WHERE username = ?username;",
+      username = currentUsername
     )
   
   # Summarize the tasks for the current user.
@@ -683,19 +396,12 @@ function(username) {
   
   # Activity Check using a parameterized query (portalQuery):
   activityCheck <- portalQuery(
-    query = "
-      SELECT * 
-      FROM tpehistory 
-      WHERE pid = (
-          SELECT pd.pid
-          FROM playerdata AS pd
-          JOIN mybbdb.mybb_users AS mbb ON pd.uid = mbb.uid
-          WHERE mbb.username = ?currentUsername
-            AND pd.status_p = 1
-      ) 
-      AND source LIKE '%Activity Check' 
-      AND time > ?weekStart;",
-    currentUsername = currentUsername,
+    query = 
+      "SELECT * 
+        FROM acView
+        WHERE username = ?username
+          AND time > ?weekStart;",
+    username = currentUsername,
     weekStart = weekStart
   )
   
@@ -725,23 +431,10 @@ return(allTasks)
 function() {
   portalQuery(
     paste(
-      "SELECT 
-            pd.name AS Name,
-            mbb.username AS Username,
-            SUM(ph.tpe) AS `TPE Earned`
-        FROM 
-            tpehistory ph
-        JOIN 
-            playerdata pd ON ph.pid = pd.pid
-        LEFT JOIN
-            mybbdb.mybb_users mbb ON pd.uid = mbb.uid
-        WHERE 
-            YEARWEEK(FROM_UNIXTIME(ph.time), 1) = YEARWEEK(CONVERT_TZ(CURDATE(), 'UTC', 'America/Los_Angeles'), 1) AND ph.source <> 'Initial TPE' AND ph.tpe > 0
-        GROUP BY 
-            ph.pid
-        ORDER BY 
-            `TPE Earned` DESC
-        LIMIT 10;"
+      "SELECT *
+      FROM weeklyTPEView
+      ORDER BY `TPE Earned` DESC
+      LIMIT 10;"
     )
   )
 }
