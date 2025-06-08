@@ -562,21 +562,35 @@ uploadGameServer <- function(id) {
           ) 
         
 
-        indexQuery(
-          paste(
-            "INSERT INTO gamedataoutfield VALUES ",
-            do.call(function(...) paste(..., sep = ", "), args = outfield) %>% paste0("(", ., ")", collapse = ", "),
-            ";"
-          )
-        )
-
-        indexQuery(
-          paste(
-            "INSERT INTO gamedatakeeper VALUES ",
-            do.call(function(...) paste(..., sep = ", "), args = keeper) %>% paste0("(", ., ")", collapse = ", "),
-            ";"
-          )
-        )
+        # Insert rows into gamedataoutfield table
+        if (nrow(outfield) > 0) {
+          # Determine the number of columns and build a placeholder string, e.g. "?, ?, ?"
+          ncols <- ncol(outfield)
+          placeholders <- paste(rep("?", ncols), collapse = ", ")
+          query_outfield <- paste0("INSERT INTO gamedataoutfield VALUES (", placeholders, ");")
+          
+          # Loop through each row in the outfield data frame
+          for (i in seq_len(nrow(outfield))) {
+            # Convert the i-th row to a named list.
+            params <- as.list(outfield[i, , drop = FALSE])
+            
+            # Execute the parameterized query using splicing with !!!.
+            indexQuery(query = query_outfield, type = "set", !!!params)
+          }
+        }
+        
+        # Insert rows into gamedatakeeper table
+        if (nrow(keeper) > 0) {
+          ncols <- ncol(keeper)
+          placeholders <- paste(rep("?", ncols), collapse = ", ")
+          query_keeper <- paste0("INSERT INTO gamedatakeeper VALUES (", placeholders, ");")
+          
+          # Loop through each row in the keeper data frame
+          for (i in seq_len(nrow(keeper))) {
+            params <- as.list(keeper[i, , drop = FALSE])
+            indexQuery(query = query_keeper, type = "set", !!!params)
+          }
+        }
 
         sendIndexUpdate(input$season)
         

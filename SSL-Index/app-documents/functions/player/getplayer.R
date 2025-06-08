@@ -174,34 +174,8 @@ getRecentCreates <- function(){
 }
 
 getChangedBuilds <- function(){
-  ## Gets date of the start of the week in Pacific
-  weekEnd <- 
-    lubridate::now() %>% 
-    with_tz("US/Pacific") %>% 
-    floor_date("week", week_start = "Monday") %>% 
-    as.numeric() %>% 
-    {. - 1}
-  
-  weekStart <- 
-    lubridate::now() %>% 
-    with_tz("US/Pacific") %>% 
-    floor_date("week", week_start = "Monday") %>% 
-    as.numeric() %>% 
-    {. - 604800}
-  
-  
-  portalQuery(
-    paste(
-      "SELECT t.name AS teamName, wb.*, uh.attribute as Attribute, uh.old, uh.new
-        FROM playerdata pd
-        LEFT JOIN weeklybuilds wb ON pd.pid = wb.pid
-        JOIN updatehistory uh ON pd.pid = uh.pid
-        LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate
-        WHERE uh.Time < ", weekEnd, " AND uh.Time > ", weekStart," AND uh.uid <> 1;"
-    )
-  ) |> 
+  readAPI("https://api.simulationsoccer.com/player/getUpdatedBuilds") |> 
     future_promise()
-    
 }
 
 getPlayerStatus <- function(playerID){

@@ -138,162 +138,187 @@ submitBuild <- function(input, tpebank, userinfo){
   sendNewCreate(playerInfo, username = userinfo$username)
 }
 
-insertBuildForApproval <- function(playerInfo){
-  portalQuery(
-  # print(
-    paste(
-      "INSERT INTO playerdata (", paste("`", colnames(playerInfo), "`", sep = "", collapse = ", "), ")
-               VALUES",
-      paste(
-        "(",
-        paste(
-          playerInfo[1, ],
-          collapse = ","
-        ),
-        ")",
-        collapse = ","
-      ),
-      ";"
-    )
-  )  
-}
-
-checkIfAlreadyApproving <- function(uid){
-  current <- 
-    portalQuery(
-      paste(
-        "SELECT * FROM playerdata WHERE uid = ", uid, "AND status_p = -1;"
-      )
-    )
+insertBuildForApproval <- function(playerInfo) {
+  # Extract column names from playerInfo (assumes it's a data frame)
+  cols <- colnames(playerInfo)
   
-  current %>% nrow() > 0
+  # Build a query using named placeholders.
+  # The column names are inserted directly (after being wrapped in backticks)
+  # because SQL identifiers cannot be parameterized.
+  # The VALUES clause uses named placeholders that correspond to each column.
+  placeholders <- paste0("?", cols)
+  query <- paste0("INSERT INTO playerdata (", 
+                  paste(sprintf("`%s`", cols), collapse = ", "), 
+                  ") VALUES (", 
+                  paste(placeholders, collapse = ", "), 
+                  ");")
+  
+  # Convert the first row of playerInfo into a list of parameters.
+  # The named list should have names that match the placeholders (without the ? prefix).
+  params <- as.list(playerInfo[1, , drop = FALSE])
+  
+  # Call portalQuery using the triple-bang operator to splice the parameters list into the function call
+  portalQuery(query = query, type = "set", !!!params)
 }
 
-checkDuplicatedName <- function(first, last){
+checkIfAlreadyApproving <- function(uid) {
   portalQuery(
-    paste(
-      "SELECT * FROM playerdata WHERE first = '", first, "' AND last = '", last, "';", sep = ""
-    )
-  ) %>% 
+    query = "SELECT * FROM playerdata WHERE uid = ?uid AND status_p = -1;",
+    uid   = uid,
+    type  = "get"
+  ) |> 
+    nrow() > 0
+}
+
+checkDuplicatedName <- function(first, last) {
+  portalQuery(
+    query = "SELECT * FROM playerdata WHERE first = ?first AND last = ?last;",
+    first = first,
+    last  = last,
+    type  = "get"
+  ) |>
     nrow() > 0
 }
 
 getPlayersForApproval <- function(){
   portalQuery(
-    # print(
-    paste(
-      "SELECT mybb.username, pd.uid, pd.pid, pd.first, pd.last, pd.tpe, pd.tpeused, pd.tpebank 
-      FROM playerdata pd
-      LEFT JOIN 
-          mybbdb.mybb_users mybb ON pd.uid = mybb.uid
-      WHERE status_p = -1;"
-    )
+    query = 
+      "SELECT username, pid, first, last, tpe, tpeused, tpebank, render FROM unapprovedPlayersView;"
   ) 
 }
 
 approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
-  tryCatch(
+  # Start a transaction before running the queries
+  portalQuery(query = "START TRANSACTION;", type = "set")
+  
+  # Use a tryCatch block to run all queries then commit or rollback
+  result <- tryCatch({
+    # -------------------------------
+    # 1. Insert TPE History
+    currentTime <- lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric()
     portalQuery(
-      paste(
-        "INSERT INTO tpehistory (time, uid, pid, source, tpe) 
-      SELECT ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), ", 1, pid, 'Initial TPE', 350
-      FROM playerdata
-      WHERE uid = ", uid, "AND status_p = -1;"
-      )
-    ),
-    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in inserting TPE History.", e, sep = "\n"))
-  )
-  
-  data <- portalQuery(
-  paste(
-  "SELECT pid, `pos_st`, `pos_lam`, `pos_cam`, `pos_ram`, `pos_lm`, `pos_cm`, `pos_rm`, `pos_lwb`, 
-    `pos_cdm`, `pos_rwb`, `pos_ld`, `pos_cd`, `pos_rd`, `pos_gk`, `acceleration`, `agility`, 
-    `balance`, `jumping reach`, `natural fitness`, `pace`, `stamina`, `strength`, `corners`, 
-    `crossing`, `dribbling`, `finishing`, `first touch`, `free kick`, `heading`, `long shots`, 
-    `long throws`, `marking`, `passing`, `penalty taking`, `tackling`, `technique`, `aggression`, 
-    `anticipation`, `bravery`, `composure`, `concentration`, `decisions`, `determination`, `flair`, 
-    `leadership`, `off the ball`, `positioning`, `teamwork`, `vision`, `work rate`, `aerial reach`, 
-    `command of area`, `communication`, `eccentricity`, `handling`, `kicking`, `one on ones`, `reflexes`, 
-    `tendency to rush`, `tendency to punch`, `throwing`, `traits`, `left foot`, `right foot`
-     FROM playerdata WHERE uid = ", uid, "AND status_p = -1;")
-  ) %>% 
-    pivot_longer(!pid, values_transform = as.character)
-  
-  tryCatch(
-    portalQuery(
-      paste(
-        "INSERT INTO updatehistory (time, uid, pid, attribute, old, new) VALUES",
-        paste(
-          "(",
-          paste(
-            paste0("'", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), "'"),
-            1,
-            data$pid,
-            paste0("'", data$name %>% str_to_upper(), "'"),
-            if_else(data$name %>% str_detect("pos"), '0', if_else(data$name == "traits", "'NO TRAITS'", '5')),
-            paste0("'", data$value, "'"),
-            sep = ","
-          ),
-          ")",
-          collapse = ","
-        ),
-        ";"
-      )
-    ),
-    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in inserting Update History.", e, sep = "\n"))
-  )
-  
-  data <- 
-    portalQuery(
-      paste(
-        "SELECT pd.pid, pd.first, pd.last, pd.tpebank, pd.tpe, pd.position, mybb.username AS username, mbuf.fid4 AS discord
-        FROM playerdata pd 
-        LEFT JOIN mybbdb.mybb_users mybb ON pd.uid = mybb.uid 
-        LEFT JOIN mybbdb.mybb_userfields mbuf ON pd.uid = mbuf.ufid
-        WHERE pd.uid = ", uid, "AND pd.status_p = -1;"
-      )
-    )
-  
-  tryCatch(
-    addBankTransaction(uid = 1, pid = data$pid, source = "Academy Contract", transaction = 3000000, status = 1),
-    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in adding academy contract.", e, sep = "\n"))
-  )
-  
-  today <- (now() %>% with_tz("US/Pacific") %>% as_date() %>% as.numeric())
-  start <- (currentSeason$startDate %>% as_date()) %>% as.numeric()
-  
-  tpe <- 
-    tibble(
-      source = "Catch-up TPE",
-      tpe = floor((today - start)/7)*6
-    )
-  
-  if(tpe$tpe > 0){
-    tryCatch(
-      tpeLog(uid = 1, pid = data$pid, tpe = tpe),
-      error = function(e) showToast(.options = myToastOptions,"error", paste("Error in logging catch-up TPE.", e, sep = "\n"))
+      query = "INSERT INTO tpehistory (time, uid, pid, source, tpe)
+               SELECT ?currentTime, 1, pid, 'Initial TPE', 350
+               FROM playerdata
+               WHERE uid = ?uid AND status_p = -1;",
+      currentTime = currentTime,
+      uid = uid,
+      type = "set"
     )
     
-    tryCatch(
-      updateTPE(pid = data$pid, tpe = tpe),
-      error = function(e) showToast(.options = myToastOptions,"error", paste("Error in adding catch-up TPE.", e, sep = "\n"))
+    # -------------------------------
+    # 2. Retrieve player attributes for update-history
+    data_attributes <- portalQuery(
+      query = "SELECT pid, 
+                       `pos_st`, `pos_lam`, `pos_cam`, `pos_ram`, `pos_lm`, `pos_cm`, `pos_rm`, 
+                       `pos_lwb`, `pos_cdm`, `pos_rwb`, `pos_ld`, `pos_cd`, `pos_rd`, `pos_gk`, 
+                       acceleration, agility, balance, `jumping reach`, `natural fitness`, pace, 
+                       stamina, strength, corners, crossing, dribbling, finishing, `first touch`, 
+                       `free kick`, heading, `long shots`, `long throws`, marking, passing, 
+                       `penalty taking`, tackling, technique, aggression, anticipation, bravery, 
+                       composure, concentration, decisions, determination, flair, leadership, 
+                       `off the ball`, positioning, teamwork, vision, `work rate`, `aerial reach`, 
+                       `command of area`, communication, eccentricity, handling, kicking, 
+                       `one on ones`, reflexes, `tendency to rush`, `tendency to punch`, throwing, 
+                       traits, `left foot`, `right foot`
+                FROM playerdata
+                WHERE uid = ?uid AND status_p = -1;",
+      uid = uid,
+      type = "get"
     )
-  }
-  
-  tryCatch(
-    sendApprovedCreate(data),
-    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in sending approved create to Discord.", e, sep = "\n"))
-  )
-  
-  tryCatch(
+    
+    # Pivot the attribute data from wide to long format
+    data_long <- data_attributes %>% pivot_longer(!pid, values_transform = as.character)
+    
+    # -------------------------------
+    # 3. Insert update history for each attribute row
+    for(i in seq_len(nrow(data_long))) {
+      attribute <- toupper(data_long$name[i])
+      oldVal <- if_else(str_detect(data_long$name[i], "pos"),
+                        "0",
+                        if_else(data_long$name[i] == "traits", "NO TRAITS", "5"))
+      newVal <- data_long$value[i]
+      
+      portalQuery(
+        query = "INSERT INTO updatehistory (time, uid, pid, attribute, old, new)
+                 VALUES (?time, ?uid, ?pid, ?attribute, ?old, ?new);",
+        time      = currentTime,
+        uid       = 1,  # Adjust if necessary; here uid 1 is used for update history records
+        pid       = data_long$pid[i],
+        attribute = attribute,
+        old       = oldVal,
+        new       = newVal,
+        type      = "set"
+      )
+    }
+    
+    # -------------------------------
+    # 4. Retrieve updated player data 
+    data_player <- portalQuery(
+      query = 
+        "SELECT *
+        FROM unapprovedPlayersView
+        WHERE pd.uid = ?uid;",
+      uid  = uid,
+      type = "get"
+    )
+    
+    # -------------------------------
+    # 5. Add Academy Contract Bank Transaction
+    addBankTransaction(uid = 1, pid = data_player$pid,
+                       source = "Academy Contract", transaction = 3000000, status = 1)
+    
+    # -------------------------------
+    # 6. Calculate and handle Catch-up TPE
+    today <- now() %>% with_tz("US/Pacific") %>% as_date() %>% as.numeric()
+    start <- currentSeason$startDate %>% as_date() %>% as.numeric()
+    tpe   <- tibble(source = "Catch-up TPE",
+                    tpe = floor((today - start)/7) * 6)
+    
+    if(tpe$tpe > 0) {
+      tpeLog(uid = 1, pid = data_player$pid, tpe = tpe)
+      updateTPE(pid = data_player$pid, tpe = tpe)
+    }
+    
+    # -------------------------------
+    # 7. Send approved create message to Discord
+    sendApprovedCreate(data_player)
+    
+    # -------------------------------
+    # 8. Final update to playerdata
+    newSeason <- currentSeason$season + 1
     portalQuery(
-      paste("UPDATE playerdata SET rerollused = 0, redistused = 0, team = -1, affiliate = 1, status_p = 1, name = concat(first, ' ', last),",
-            "class = concat('S', ", currentSeason$season + 1, "), created = ", lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric(), 
-            "WHERE uid = ", uid, "AND status_p = -1;")
-    ),
-    error = function(e) showToast(.options = myToastOptions,"error", paste("Error in updating player data.", e, sep = "\n"))
-  )
+      query = "UPDATE playerdata 
+               SET rerollused = 0,
+                   redistused = 0,
+                   team = -1,
+                   affiliate = 1,
+                   status_p = 1,
+                   name = concat(first, ' ', last),
+                   class = concat('S', ?newSeason),
+                   created = ?created
+               WHERE uid = ?uid AND status_p = -1;",
+      newSeason = newSeason,
+      created   = currentTime,
+      uid       = uid,
+      type      = "set"
+    )
+    
+    # If all queries succeed, mark as TRUE so we can commit later
+    TRUE 
+  }, error = function(e) {
+    # If any error occurs, roll back the entire transaction
+    portalQuery(query = "ROLLBACK;", type = "set")
+    showToast(.options = myToastOptions,
+              "error",
+              paste("Error during approvePlayer transaction.", e, sep = "\n"))
+    FALSE
+  })
   
+  # Only if the transaction block was successful, commit the changes
+  if(isTRUE(result)) {
+    portalQuery(query = "COMMIT;", type = "set")
+  }
 }
 
 

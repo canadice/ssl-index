@@ -293,33 +293,48 @@ academyUploadServer <- function(id) {
             )
           ) 
         
+        # Delete from academyoutfield with a parameterized query:
         indexQuery(
-          paste(
-            "DELETE FROM academyoutfield WHERE season = ", input$season, ";"
-          )
+          query = "DELETE FROM academyoutfield WHERE season = ?season;",
+          season = input$season,
+          type   = "set"
         )
         
+        # Insert new rows into academyoutfield
+        if (nrow(outfield) > 0) {
+          # Determine the number of columns in the data and build placeholders accordingly.
+          ncols <- ncol(outfield)
+          placeholders <- paste(rep("?", ncols), collapse = ", ")
+          query_out <- paste0("INSERT INTO academyoutfield VALUES (", placeholders, ");")
+          
+          # Loop over the rows of outfield and insert each row
+          for (i in seq_len(nrow(outfield))) {
+            # Coerce the i-th row into a named list.
+            # (Assumes that the names in outfield match the expected order)
+            params <- as.list(outfield[i, ])
+            # Use !!! to splice in the parameters.
+            indexQuery(query = query_out, type = "set", !!!params)
+          }
+        }
+        
+        # Delete from academykeeper with a parameterized query:
         indexQuery(
-          paste(
-            "INSERT INTO academyoutfield VALUES ",
-            do.call(function(...) paste(..., sep = ", "), args = outfield) %>% paste0("(", ., ")", collapse = ", "),
-            ";"
-          )
+          query = "DELETE FROM academykeeper WHERE season = ?season;",
+          season = input$season,
+          type   = "set"
         )
         
-        indexQuery(
-          paste(
-            "DELETE FROM academykeeper WHERE season = ", input$season, ";"
-          )
-        )
-        
-        indexQuery(
-          paste(
-            "INSERT INTO academykeeper VALUES ",
-            do.call(function(...) paste(..., sep = ", "), args = keeper) %>% paste0("(", ., ")", collapse = ", "),
-            ";"
-          )
-        )
+        # Insert new rows into academykeeper
+        if (nrow(keeper) > 0) {
+          ncols <- ncol(keeper)
+          placeholders <- paste(rep("?", ncols), collapse = ", ")
+          query_keeper <- paste0("INSERT INTO academykeeper VALUES (", placeholders, ");")
+          
+          for (i in seq_len(nrow(keeper))) {
+            params <- as.list(keeper[i, ])
+            indexQuery(query = query_keeper, type = "set", !!!params)
+          }
+        }
         
         sendAcademyIndexUpdate(input$season)
         

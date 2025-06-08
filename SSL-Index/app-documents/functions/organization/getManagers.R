@@ -15,13 +15,22 @@
 #   })
 # }
 
-editManagers <- function(managers, id){
+editManagers <- function(managers, id) {
+  # Pre-process the values: convert empty strings to NA
+  orgManager  <- if_else(managers[1] == "", NA_character_, as.character(managers[1]))
+  assManager1 <- if_else(managers[2] == "", NA_character_, as.character(managers[2]))
+  assManager2 <- if_else(managers[3] == "", NA_character_, as.character(managers[3]))
+  
   portalQuery(
-    paste(
-      "UPDATE managers SET orgManager = ", if_else(managers[1] == "", "NULL", managers[1] %>% as.character()), 
-      ", assManager1 = ", if_else(managers[2] == "","NULL", managers[2] %>% as.character()), 
-      ", assManager2 = ", if_else(managers[3] == "", "NULL", managers[3] %>% as.character()),
-      "WHERE orgID = ", id, ";"
-    )
+    query = "UPDATE managers
+             SET orgManager = ?orgManager,
+                 assManager1 = ?assManager1,
+                 assManager2 = ?assManager2
+             WHERE orgID = ?id;",
+    orgManager  = orgManager,
+    assManager1 = assManager1,
+    assManager2 = assManager2,
+    id          = id,
+    type        = "set"
   )
 }
