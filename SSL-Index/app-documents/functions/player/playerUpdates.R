@@ -78,8 +78,8 @@ updateBuild <- function(pid, updates, bank = NULL) {
     params$bank <- bank
   }
   
-  # Call portalQuery, splicing in the parameters using !!!.
-  portalQuery(query = query, type = "set", !!!params)
+  do.call(portalQuery, c(list(query = query, type = "set"), params))
+  
 }
 
 completeRedistribution <- function(pid) {
@@ -128,7 +128,7 @@ completeRetirement <- function(pid){
 getUpdateHistory <- function(pid){
   portalQuery(
     query = 
-      "SELECT *
+      "SELECT Time, Username, `Changed attribute`, `From`, `To`
       FROM updateHistoryView
       WHERE pid = ?pid
       ORDER BY Time DESC;",

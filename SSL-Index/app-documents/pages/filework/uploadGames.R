@@ -574,8 +574,8 @@ uploadGameServer <- function(id) {
             # Convert the i-th row to a named list.
             params <- as.list(outfield[i, , drop = FALSE])
             
-            # Execute the parameterized query using splicing with !!!.
-            indexQuery(query = query_outfield, type = "set", !!!params)
+            do.call(indexQuery, c(list(query = query_outfield, type = "set"), params))
+            
           }
         }
         
@@ -588,7 +588,8 @@ uploadGameServer <- function(id) {
           # Loop through each row in the keeper data frame
           for (i in seq_len(nrow(keeper))) {
             params <- as.list(keeper[i, , drop = FALSE])
-            indexQuery(query = query_keeper, type = "set", !!!params)
+            do.call(indexQuery, c(list(query = query_keeper, type = "set"), params))
+            
           }
         }
 

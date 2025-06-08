@@ -17,6 +17,7 @@ suppressMessages({
   require(arsenal, quietly = FALSE)
   require(rvest, quietly = FALSE)
   require(scales, quietly = FALSE)
+  require(rlang, quietly = FALSE)
   
   ## Visualizations
   require(ggplot2, quietly = FALSE)
@@ -504,7 +505,7 @@ server <- function(input, output, session) {
   ## Rendered menu in sidebar
   output$sidebarpanel <- renderUI({
     
-    print(!authOutput()$suspended)
+    # print(!authOutput()$suspended)
     if(menuGroup() %% 2 == 0){
       #### PORTAL SIDEBAR MENU ####
       tagList(

@@ -157,8 +157,8 @@ insertBuildForApproval <- function(playerInfo) {
   # The named list should have names that match the placeholders (without the ? prefix).
   params <- as.list(playerInfo[1, , drop = FALSE])
   
-  # Call portalQuery using the triple-bang operator to splice the parameters list into the function call
-  portalQuery(query = query, type = "set", !!!params)
+  do.call(portalQuery, c(list(query = query, type = "set"), params))
+  
 }
 
 checkIfAlreadyApproving <- function(uid) {
@@ -183,7 +183,7 @@ checkDuplicatedName <- function(first, last) {
 getPlayersForApproval <- function(){
   portalQuery(
     query = 
-      "SELECT username, pid, first, last, tpe, tpeused, tpebank, render FROM unapprovedPlayersView;"
+      "SELECT username, pid, first, last, tpe, tpebank, render FROM unapprovedPlayersView;"
   ) 
 }
 

@@ -58,21 +58,26 @@ bankProcessServer <- function(id, userinfo) {
         transactions() %>% 
           then(
             onFulfilled = function(data){
-              data %>% 
-                mutate(
-                  Time = as_datetime(Time, tz = "US/Pacific")
-                ) %>% 
-                reactable(
-                  selection = "multiple",
-                  onClick = "select",
-                  pagination = FALSE,
-                  columns = 
-                    list(
-                      Time = colDef(format = colFormat(datetime = TRUE)),
-                      Transaction = colDef(style = function(value){list(color = if_else(value < 0, red, "white"))},
-                                      format = colFormat(prefix = "$", separators = TRUE, digits = 0))
-                    )
-                )
+              if(data |> is_empty()){
+                NULL
+              } else {
+                data %>% 
+                  mutate(
+                    Time = as_datetime(Time, tz = "US/Pacific")
+                  ) %>% 
+                  reactable(
+                    selection = "multiple",
+                    onClick = "select",
+                    pagination = FALSE,
+                    columns = 
+                      list(
+                        Time = colDef(format = colFormat(datetime = TRUE)),
+                        Transaction = colDef(style = function(value){list(color = if_else(value < 0, red, "white"))},
+                                             format = colFormat(prefix = "$", separators = TRUE, digits = 0))
+                      )
+                  )
+              }
+              
             }
           )
       })

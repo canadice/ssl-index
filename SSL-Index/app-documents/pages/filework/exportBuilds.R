@@ -156,14 +156,18 @@ exportBuildServer <- function(id) {
       }
       
       #### ALL CHANGED BUILDS ####
+      ## TODO FIX THE CHANGED BUILDS DATA PULL
+      
       output$changes <- renderReactable({
          builds() %>% 
           then(
             onFulfilled = function(data){
               data %>% 
+                pivot_longer(cols = acceleration:throwing,
+                             names_to = "Attribute", values) |> 
                 select(
                   Name = name,
-                  Team = teamName,
+                  Team = team,
                   Nationality = nationality,
                   Attribute, 
                   Previous = old,

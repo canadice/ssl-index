@@ -312,8 +312,8 @@ academyUploadServer <- function(id) {
             # Coerce the i-th row into a named list.
             # (Assumes that the names in outfield match the expected order)
             params <- as.list(outfield[i, ])
-            # Use !!! to splice in the parameters.
-            indexQuery(query = query_out, type = "set", !!!params)
+            do.call(indexQuery, c(list(query = query_out, type = "set"), params))
+            
           }
         }
         
@@ -332,7 +332,8 @@ academyUploadServer <- function(id) {
           
           for (i in seq_len(nrow(keeper))) {
             params <- as.list(keeper[i, ])
-            indexQuery(query = query_keeper, type = "set", !!!params)
+            do.call(indexQuery, c(list(query = query_keeper, type = "set"), params))
+            
           }
         }
         

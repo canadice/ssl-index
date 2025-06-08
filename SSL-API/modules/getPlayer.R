@@ -205,7 +205,7 @@ function(name = NULL, pid = NULL, username = NULL, uid = NULL) {
   fullQuery <- paste0(baseQuery, whereClause)
   
   # Execute the parameterized query.
-  data <- portalQuery(query = fullQuery, !!!params) %>% 
+  data <- do.call(portalQuery, c(list(query = fullQuery), params)) %>% 
     mutate(across(where(is.numeric), ~ replace_na(.x, 5)))
   
   if(nrow(data) < 1) {

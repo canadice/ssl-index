@@ -499,7 +499,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                       )
                     
                     
-                    print(summary)
+                    # print(summary)
                     
                     ## Only calculate cost if all 13 positions are accounted for
                     if(summary$n %>% sum() == 13){
