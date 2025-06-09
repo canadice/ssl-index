@@ -405,7 +405,7 @@ server <- function(input, output, session) {
     msg <- list(name = "token")
     session$sendCustomMessage("cookie-remove", msg)
   }) %>% 
-    bindEvent(input$.shinymanager_logout)
+    bindEvent(input$logout)
   
   ## Adds all authentication list to a reactive object
   authOutput <- reactive({
