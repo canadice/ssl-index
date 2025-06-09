@@ -189,7 +189,7 @@ sendNewCreate <- function(data, username){
                    },
                    {
                       name: 'Position',
-                      value: ", data$position,",
+                      value: '", data$position,"',
                    },
                    { 
                       name: 'Username',

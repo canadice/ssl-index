@@ -78,6 +78,15 @@ updateBuild <- function(pid, updates, bank = NULL) {
     params$bank <- bank
   }
   
+  # Remove any double quotes from each character value
+  params <- lapply(params, function(x) {
+    if (is.character(x)) {
+      gsub('"', '', x)
+    } else {
+      x
+    }
+  })
+  
   do.call(portalQuery, c(list(query = query, type = "set"), params))
   
 }

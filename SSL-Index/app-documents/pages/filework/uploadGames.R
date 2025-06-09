@@ -572,7 +572,16 @@ uploadGameServer <- function(id) {
           # Loop through each row in the outfield data frame
           for (i in seq_len(nrow(outfield))) {
             # Convert the i-th row to a named list.
-            params <- as.list(outfield[i, , drop = FALSE])
+            params <- as.list(outfield[i, , drop = FALSE]) |> unname()
+            
+            # Remove any double quotes from each character value
+            params <- lapply(params, function(x) {
+              if (is.character(x)) {
+                gsub('"', '', x)
+              } else {
+                x
+              }
+            })
             
             do.call(indexQuery, c(list(query = query_outfield, type = "set"), params))
             
@@ -587,7 +596,17 @@ uploadGameServer <- function(id) {
           
           # Loop through each row in the keeper data frame
           for (i in seq_len(nrow(keeper))) {
-            params <- as.list(keeper[i, , drop = FALSE])
+            params <- as.list(keeper[i, , drop = FALSE]) |> unname()
+            
+            # Remove any double quotes from each character value
+            params <- lapply(params, function(x) {
+              if (is.character(x)) {
+                gsub('"', '', x)
+              } else {
+                x
+              }
+            })
+            
             do.call(indexQuery, c(list(query = query_keeper, type = "set"), params))
             
           }

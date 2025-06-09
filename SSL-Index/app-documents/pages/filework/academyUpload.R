@@ -309,13 +309,22 @@ academyUploadServer <- function(id) {
           
           # Loop over the rows of outfield and insert each row
           for (i in seq_len(nrow(outfield))) {
-            # Coerce the i-th row into a named list.
-            # (Assumes that the names in outfield match the expected order)
-            params <- as.list(outfield[i, ])
-            do.call(indexQuery, c(list(query = query_out, type = "set"), params))
+            # Coerce the i-th row into a list and remove names to get a positional parameter vector
+            params <- as.list(outfield[i, ]) |> unname()
             
+            # Remove any double quotes from each character value
+            params <- lapply(params, function(x) {
+              if (is.character(x)) {
+                gsub('"', '', x)
+              } else {
+                x
+              }
+            })
+            
+            do.call(indexQuery, c(list(query = query_out, type = "set"), params))
           }
         }
+        
         
         # Delete from academykeeper with a parameterized query:
         indexQuery(
@@ -331,7 +340,17 @@ academyUploadServer <- function(id) {
           query_keeper <- paste0("INSERT INTO academykeeper VALUES (", placeholders, ");")
           
           for (i in seq_len(nrow(keeper))) {
-            params <- as.list(keeper[i, ])
+            params <- as.list(keeper[i, ]) |> unname()
+            
+            # Remove any double quotes from each character value
+            params <- lapply(params, function(x) {
+              if (is.character(x)) {
+                gsub('"', '', x)
+              } else {
+                x
+              }
+            })
+            
             do.call(indexQuery, c(list(query = query_keeper, type = "set"), params))
             
           }

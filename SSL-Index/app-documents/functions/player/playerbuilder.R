@@ -123,10 +123,6 @@ submitBuild <- function(input, tpebank, userinfo){
     playerInfo %>% 
     mutate(
       across(
-        where(is.character),
-        ~ paste("'", .x, "'", sep = "")
-      ),
-      across(
         everything(),
         ~ if_else(.x == "", NA, .x)
       )
@@ -142,24 +138,42 @@ insertBuildForApproval <- function(playerInfo) {
   # Extract column names from playerInfo (assumes it's a data frame)
   cols <- colnames(playerInfo)
   
-  # Build a query using named placeholders.
-  # The column names are inserted directly (after being wrapped in backticks)
-  # because SQL identifiers cannot be parameterized.
-  # The VALUES clause uses named placeholders that correspond to each column.
-  placeholders <- paste0("?", cols)
-  query <- paste0("INSERT INTO playerdata (", 
-                  paste(sprintf("`%s`", cols), collapse = ", "), 
-                  ") VALUES (", 
-                  paste(placeholders, collapse = ", "), 
-                  ");")
+  # Create cleaned parameter names by removing spaces from the column names.
+  # You can adjust this replacement if needed.
+  param_names <- gsub(" ", "", cols)
+  
+  # Build the placeholders for each column using the cleaned names.
+  # For example, if a column is "left foot", then the placeholder becomes ?leftfoot.
+  placeholders <- paste0("?", param_names)
+  
+  # Construct the query:
+  # The column names are still quoted exactly as in the database using backticks.
+  query <- paste0(
+    "INSERT INTO playerdata (", 
+    paste(sprintf("`%s`", cols), collapse = ", "), 
+    ") VALUES (", 
+    paste(placeholders, collapse = ", "), 
+    ");"
+  )
   
   # Convert the first row of playerInfo into a list of parameters.
-  # The named list should have names that match the placeholders (without the ? prefix).
   params <- as.list(playerInfo[1, , drop = FALSE])
   
-  do.call(portalQuery, c(list(query = query, type = "set"), params))
+  # Clean character values by removing any double quotes.
+  params <- lapply(params, function(x) {
+    if (is.character(x)) gsub('"', '', x) else x
+  })
   
+  # Rename the list elements to match our cleaned parameter names.
+  names(params) <- param_names
+  
+  # print(query)
+  # print(params)
+  
+  # Use do.call to invoke portalQuery with the query and the named parameters.
+  do.call(portalQuery, c(list(query = query, type = "set"), params))
 }
+
 
 checkIfAlreadyApproving <- function(uid) {
   portalQuery(
