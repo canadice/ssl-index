@@ -73,14 +73,14 @@ getPlayerName <- function(userID = NULL, playerID = NULL){
     if(playerID %>% is.null()){
       readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
         filter(uid == userID, status_p == 1) %>% 
-        select(pid, name, class) %>% 
+        select(pid, name, class, purchasedTPE) %>% 
         arrange(pid %>% desc()) %>% 
         slice_head()
         
     } else {
       readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true")) %>%
         filter(pid == playerID) %>% 
-        select(pid, name, class)
+        select(pid, name, class, purchasedTPE)
       
     }
   }) %>% 

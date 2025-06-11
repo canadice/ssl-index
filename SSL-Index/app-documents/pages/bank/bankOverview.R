@@ -127,7 +127,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       output$totalSum <- renderUI({
         h4(paste("Total sum of purchase:", 
                  sum(
-                   c(input$individualTraining, 
+                   c(input$individualTraining * 425000, 
                      traitSum(),
                      positionSum(),
                      footSum()
@@ -136,32 +136,27 @@ bankOverviewServer <- function(id, uid, parent, updated) {
       
       #### INDIVIDUAL TRAINING ####
       output$purchaseTraining <- renderUI({
-        tagList(
-          p(paste(
-          "You can purchase an individual training package in five different levels:",
-          tags$ul(
-            tags$li("Sunday League ($1.5 million) - 1 TPE"),
-            tags$li("Amateur League ($3 million) - 4 TPE"),
-            tags$li("Professional League ($4.5 million) - 8 TPE"),
-            tags$li("Superstar League ($5.5 million) - 12 TPE"),
-            tags$li("World Class League ($7.5 million) - 18 TPE")
-            ),
-          "There is no limit to the amount of individual trainings you can purchase during a season.") %>% 
-            HTML()
-          ),
-          selectInput(session$ns("individualTraining"),
-                      label = NULL,
-                      choices = 
-                        c("Select a level of training" = 0,
-                          "Sunday League (1 TPE)" = 1500000,
-                          "Amateur League (4 TPE)" = 3000000,
-                          "Professional League (8 TPE)" = 4500000,
-                          "Superstar League (12 TPE)" = 5500000,
-                          "World Class League (18 TPE)" = 7500000 
-                          )
-                      )
-        )%>% 
-          box(title = "Individual Training", collapsible = TRUE, width = NULL, collapsed = TRUE)
+        player() |> 
+          then(
+            onFulfilled = function(data){
+              tagList(
+                p(
+                  "You may purchase at most 18 TPE from individual training per season. Each TPE purchased
+            cost $425 000 for a total cost of $7.65 million for the entire 18 TPE."
+                ),
+                sliderInput(session$ns("individualTraining"),
+                            label = "Select the number of TPE:",
+                            min = 0,
+                            max = 18 - data$purchasedTPE,
+                            value = 0,
+                            step = 1,
+                            ticks = FALSE,
+                            width = "80%"
+                )
+              ) %>% 
+                box(title = "Individual Training", collapsible = TRUE, width = NULL, collapsed = TRUE)
+            }
+          ) 
       })
       
       #### TRAITS ####
@@ -602,7 +597,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         shinyjs::disable(session$ns("verifyPurchase"))
         
         totalCost <- sum(
-          c(input$individualTraining, 
+          c(input$individualTraining * 425000, 
             traitSum(),
             positionSum(),
             footSum()
@@ -675,15 +670,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                                 tibble(
                                   attribute = "tpe",
                                   old = "0",
-                                  new = case_when(
-                                    input$individualTraining == 1500000 ~ 1,
-                                    input$individualTraining == 3000000 ~ 4,
-                                    input$individualTraining == 4500000 ~ 8,
-                                    input$individualTraining == 5500000 ~ 12,
-                                    input$individualTraining == 7500000 ~ 18,
-                                    TRUE ~ 0
-                                  ) %>% 
-                                    as.character()
+                                  new = input$individualTraining |> as.character()
                                 )
                               )
                             
@@ -786,14 +773,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                     
                     tpe <- tibble(
                       source = "Individual Training",
-                      tpe = case_when(
-                        input$individualTraining == 1500000 ~ 1,
-                        input$individualTraining == 3000000 ~ 4,
-                        input$individualTraining == 4500000 ~ 8,
-                        input$individualTraining == 5500000 ~ 12,
-                        input$individualTraining == 7500000 ~ 18,
-                        TRUE ~ 0
-                      )
+                      tpe = input$individualTraining
                     )
                     
                     update <- 
@@ -810,6 +790,12 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                     if(tpe$tpe > 0){
                       tpeLog(uid, data$pid, tpe)
                       updateTPE(data$pid, tpe)
+                      portalQuery(
+                        query = "UPDATE playerdata SET purchasedTPE = purchasedTPE + ?tpe WHERE pid = ?pid;",
+                        tpe = input$individualTraining,
+                        pid = data$pid,
+                        type = "set"
+                      )
                     }
                     
                     addBankTransaction(uid = uid, pid = data$pid, source = "Store Purchase", transaction = -totalCost)

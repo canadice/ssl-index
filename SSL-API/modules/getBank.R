@@ -63,7 +63,7 @@ function(pid = -1, status = 1){
   if(pid < 0){
     portalQuery(
       query = 
-        "SELECT * 
+        "SELECT Time, Player, Username, Source, Transaction, pid 
         FROM 
           bankHistoryView
         WHERE
@@ -74,7 +74,7 @@ function(pid = -1, status = 1){
   } else {
     portalQuery(
       query = 
-        "SELECT * 
+        "SELECT Time, Player, Username, Source, Transaction, pid 
         FROM 
           bankHistoryView
         WHERE
