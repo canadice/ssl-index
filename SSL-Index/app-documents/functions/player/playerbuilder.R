@@ -197,7 +197,7 @@ checkDuplicatedName <- function(first, last) {
 getPlayersForApproval <- function(){
   portalQuery(
     query = 
-      "SELECT username, pid, first, last, tpe, tpebank, render FROM unapprovedPlayersView;"
+      "SELECT username, pid, first, last, tpe, tpebank, render, uid FROM unapprovedPlayersView;"
   ) 
 }
 
