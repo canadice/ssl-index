@@ -199,10 +199,10 @@ playerTPEBoxServer <- function(id, data, uid = uid, updated = updated, tpeTotal 
                 tibble(
                   source = paste("S", currentSeason$season, " Training Camp", sep = ""),
                   tpe = case_when(
-                    age <= 2 ~ 40,
-                    age <= 5 ~ 30,
-                    age <= 8 ~ 20,
-                    TRUE ~ 10
+                    age <= 1 ~ 24,
+                    age <= 4 ~ 18,
+                    age <= 7 ~ 12,
+                    TRUE ~ 6
                   )
                 )
               
