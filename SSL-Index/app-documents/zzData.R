@@ -14,7 +14,7 @@ green <- "#66B38C"
 keyColor <- "#276BB0"
 importantColor <- "#60c689"
 
-traitSep <- " \\\\ "
+traitSep <- " \\ "
 
 
 ## Loads common and small tables
