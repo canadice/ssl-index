@@ -167,7 +167,7 @@ exportBuildServer <- function(id) {
                 #              names_to = "Attribute", values_to = "values") |> 
                 select(
                   Name = name,
-                  Team = team,
+                  Team = teamName,
                   Nationality = nationality,
                   Attribute, 
                   Previous = old,
