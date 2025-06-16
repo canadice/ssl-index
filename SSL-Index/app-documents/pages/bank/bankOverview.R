@@ -627,8 +627,8 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                             update <- 
                               tibble(
                                 attribute = c("traits"),
-                                old = paste0(traits, collapse = " \\\\ "),
-                                new = paste0(input$traits, collapse = " \\\\ ")
+                                old = paste0(traits, collapse = traitSep),
+                                new = paste0(input$traits, collapse = traitSep)
                               ) %>% 
                               add_row(
                                 attribute = "left foot",
@@ -703,7 +703,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
         shinyjs::disable(session$ns("confirmPurchase"))
         
         totalCost <- sum(
-          c(input$individualTraining, 
+          c(input$individualTraining * 425000, 
             traitSum(),
             positionSum(),
             footSum()
@@ -730,8 +730,8 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                     update <- 
                       tibble(
                         attribute = c("traits"),
-                        old = paste("'", paste0(traits, collapse = " \\\\ ") %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = ""),
-                        new = paste("'", paste0(input$traits, collapse = " \\\\ ") %>% str_replace_all(pattern = "'", replacement = "\\\\'"), "'", sep = "")
+                        old = paste0(traits, collapse = traitSep),
+                        new = paste0(input$traits, collapse = traitSep)
                       ) %>% 
                       add_row(
                         attribute = "left foot",

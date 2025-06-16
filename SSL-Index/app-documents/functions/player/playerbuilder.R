@@ -98,7 +98,7 @@ submitBuild <- function(input, tpebank, userinfo){
         ))
     }
     
-    playerInfo$traits <- paste0(input$traits, collapse = traitSep) %>% str_replace_all(pattern = "'", replacement = "\\\\'")
+    playerInfo$traits <- paste0(input$traits, collapse = traitSep)
   } else {
     playerInfo$position <- "GK"
     
@@ -272,7 +272,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
       query = 
         "SELECT *
         FROM unapprovedPlayersView
-        WHERE pd.uid = ?uid;",
+        WHERE uid = ?uid;",
       uid  = uid,
       type = "get"
     )
