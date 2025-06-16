@@ -163,8 +163,8 @@ exportBuildServer <- function(id) {
           then(
             onFulfilled = function(data){
               data %>% 
-                pivot_longer(cols = acceleration:throwing,
-                             names_to = "Attribute", values) |> 
+                # pivot_longer(cols = acceleration:throwing,
+                #              names_to = "Attribute", values_to = "values") |> 
                 select(
                   Name = name,
                   Team = team,
