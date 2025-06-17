@@ -466,26 +466,32 @@ bankOverviewServer <- function(id, uid, parent, updated) {
                       ) %>% 
                       ungroup()
                     
-                    
+                    # print(summary)
                     
                     ## Calculates number of swaps
                     swaps <- 
                       summary %>%
                       summarize(
-                        Addition = if_else(str_detect(change, "Addition"), n, 0),
-                        Remove = if_else(str_detect(change, "Remove"), n, 0),
-                        Upgrade = if_else(str_detect(change, "Upgrade"), n, 0),
-                        Downgrade = if_else(str_detect(change, "Downgrade"), n, 0)
+                        Addition = if_else(str_detect(change, "^Addition$"), n, 0),
+                        Remove = if_else(str_detect(change, "^Remove$"), n, 0),
+                        Upgrade = if_else(str_detect(change, "^Upgrade$"), n, 0),
+                        Downgrade = if_else(str_detect(change, "^Downgrade$"), n, 0),
+                        AdditionPlus = if_else(str_detect(change, "Addition +"), n, 0),
+                        RemovePlus = if_else(str_detect(change, "Downgrade +"), n, 0)
                       ) %>% 
                       summarise(
                         Addition = sum(Addition),
                         Remove = sum(Remove),
                         Upgrade = sum(Upgrade),
-                        Downgrade = sum(Downgrade)
+                        Downgrade = sum(Downgrade),
+                        AdditionPlus = sum(AdditionPlus),
+                        RemovePlus = sum(RemovePlus)
                       ) %>% 
                       summarize(
-                        swaps = floor((Addition + Remove)/2) + floor((Upgrade + Downgrade)/2)
+                        swaps = floor((Addition + Remove)/2) + floor((Upgrade + Downgrade)/2) + floor((AdditionPlus + RemovePlus)/2)
                       )
+                    
+                    # print(swaps)
                     
                     summary <-
                       summary %>% 
