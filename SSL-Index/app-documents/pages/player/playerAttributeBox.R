@@ -165,12 +165,18 @@ playerAttributeBoxServer <- function(id, parent, pid, uid, rv) {
               map(
                 .x = .,
                 .f = function(x){
+                  # print(data2)
+                  
                   updateNumericInput(
                     session = session,
                     inputId = x %>% stringr::str_to_title() %>% str_remove_all(pattern = " "),
                     value = data2[, x],
                     min = 5,
-                    max = data2[, x]
+                    max = if_else(
+                      x %in% c("acceleration", "agility", "balance", "jumping reach", "pace", "strength"),
+                      min(data2[,x], 20 - max(data2$timesregressed - 2, 0)),
+                      data2[, x]
+                    )
                   )
                 }
               )
