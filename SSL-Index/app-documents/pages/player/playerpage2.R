@@ -460,7 +460,7 @@ playerPage2Server <- function(id, uid, parent) {
         playerData() %>% 
           then(
             onFulfilled = function(data){
-              currentTraits <- data$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
+              currentTraits <- data$traits %>% str_split(pattern = traitSep, simplify = TRUE) %>% unlist()
               nrTraits <- length(currentTraits)
               
               tagList(
@@ -1210,7 +1210,7 @@ playerPage2Server <- function(id, uid, parent) {
                                                                  select(pos) %>% unlist())
                     ]
                     
-                    currentTraits <- current$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
+                    currentTraits <- current$traits %>% str_split(pattern = traitSep, simplify = TRUE) %>% unlist()
                     nrTraits <- length(currentTraits)
                     
                     if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
@@ -1225,7 +1225,7 @@ playerPage2Server <- function(id, uid, parent) {
                         add_row(
                           attribute = "traits",
                           old = current$traits,
-                          new = paste0(input$traits, collapse = " \\ ")
+                          new = paste0(input$traits, collapse = traitSep)
                         )
                       
                       modalVerify(update, session = session)
@@ -1255,7 +1255,7 @@ playerPage2Server <- function(id, uid, parent) {
                                                                  select(pos) %>% unlist())
                     ]
                     
-                    currentTraits <- current$traits %>% str_split(pattern = " \\\\ ", simplify = TRUE) %>% unlist()
+                    currentTraits <- current$traits %>% str_split(pattern = traitSep, simplify = TRUE) %>% unlist()
                     nrTraits <- length(currentTraits)
                     
                     if(length(input$primary) != length(posPrim) | length(input$secondary) != length(posSec)){
@@ -1268,7 +1268,7 @@ playerPage2Server <- function(id, uid, parent) {
                         add_row(
                           attribute = "traits",
                           old = current$traits,
-                          new = paste0(input$traits, collapse = " \\ ")
+                          new = paste0(input$traits, collapse = traitSep)
                         )
                       
                       modalVerify(update, session = session)                    
