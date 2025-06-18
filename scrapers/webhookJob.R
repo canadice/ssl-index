@@ -99,11 +99,11 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
  
-# if(length(new)>0){
-#   title <- title %>% .[seq(2, length(.), by =2)]
-# }
+link <- new |> 
+  html_elements("a[title]") |> 
+  html_attr("href")
 
-index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+index <- !(link %in% postedThreads$link)
 
 new <- new[index]   
 title <- title[index]
@@ -263,11 +263,11 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
-# if(length(new)>0){
-#   title <- title %>% .[seq(2, length(.), by =2)]
-# }
+link <- new |> 
+  html_elements("a[title]") |> 
+  html_attr("href")
 
-index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+index <- !(link %in% postedThreads$link)
 
 new <- new[index]   
 title <- title[index]
@@ -326,11 +326,11 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
-# if(length(new)>0){
-#   title <- title %>% .[seq(2, length(.), by =2)]
-# }
+link <- new |> 
+  html_elements("a[title]") |> 
+  html_attr("href")
 
-index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+index <- !(link %in% postedThreads$link)
 
 new <- new[index]   
 title <- title[index]
@@ -379,11 +379,11 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
-# if(length(new)>0){
-#   title <- title %>% .[seq(2, length(.), by =2)]
-# }
+link <- new |> 
+  html_elements("a[title]") |> 
+  html_attr("href")
 
-index <- !(title %in% postedThreads$title & forum %in% postedThreads$forum)
+index <- !(link %in% postedThreads$link)
 
 new <- new[index]   
 title <- title[index]
@@ -402,6 +402,59 @@ if(length(new) > 0){
   send_webhook_message(
     paste(
       "## :frame_photo: | New Graphics!", "\n\n", 
+      paste(
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n"
+    )
+  )
+  
+  postedThreads <- 
+    rbind(
+      postedThreads,
+      data.frame(
+        title = title, link = link, forum = forum
+      )
+    )
+  
+  print("Sent new media.")
+  
+} else {
+  print("No new media!")
+}
+
+forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=47"
+
+new <- newThreads(forum)
+
+title <- 
+  new %>% 
+  html_elements("a[title]") %>% 
+  html_text2() 
+
+link <- new |> 
+  html_elements("a[title]") |> 
+  html_attr("href")
+  
+index <- !(link %in% postedThreads$link)
+
+new <- new[index]   
+title <- title[index]
+
+if(length(new) > 0){
+  link <- 
+    new %>% 
+    html_elements("a[title]") %>% 
+    html_attr("href") %>% 
+    paste(
+      "https://forum.simulationsoccer.com/",
+      .,
+      sep = ""
+    )
+  
+  send_webhook_message(
+    paste(
+      "## :speaking_head: | New Podcast!", "\n\n", 
       paste(
         paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
       ),
