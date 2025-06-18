@@ -84,10 +84,10 @@ managerTeamServer <- function(id, userinfo) {
               if(selection$tpebank < 0){
                 shinyjs::show("selectedPlayer")
                 
-                playerInfoBoxServer(id = "playerInfo", pid = selection$pid)
+                playerInfoBoxServer(id = paste0("playerInfo", selection$pid), pid = selection$pid)
                 
                 playerAttributeBoxServer(
-                  id = "playerAttributes", 
+                  id = paste0("playerAttributes", selection$pid), 
                   parent = session, 
                   pid = selection$pid, 
                   uid = userinfo$uid,
