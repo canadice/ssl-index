@@ -132,8 +132,11 @@ playerEditServer <- function(id, uid) {
             orgVector <- setNames(organizations$id, organizations$name)
             currentOrg <- data$organization
             
+            # print(organizations)
+            # print(currentOrg)
+            
             tagList(
-              selectInput(session$ns("organization"), label = "Select organization", choices = c("", orgVector), selected = currentOrg),
+              selectInput(session$ns("organization"), label = "Select organization", choices = c("", orgVector), selected = orgVector[currentOrg]),
               selectInput(session$ns("affiliate"), label = "Select affiliate", choices = c("", "Major" = 1, "Minor" = 2), selected = data$affiliate)
             )
           })
