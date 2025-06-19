@@ -16,8 +16,8 @@ managerTeamUI <- function(id) {
       column(
         width = 12,
         box(title = "Regress player", collapsible = TRUE, width = NULL,
-            playerInfoBoxUI(ns("playerInfo")),
-            playerAttributeBoxUI(ns("playerAttributes"))
+            uiOutput(ns("selectedUI")) |> 
+              withSpinner30()
         )
       )
     ) %>% 
@@ -84,16 +84,27 @@ managerTeamServer <- function(id, userinfo) {
               if(selection$tpebank < 0){
                 shinyjs::show("selectedPlayer")
                 
-                playerInfoBoxServer(id = paste0("playerInfo", selection$pid), pid = selection$pid)
                 
-                playerAttributeBoxServer(
-                  id = paste0("playerAttributes", selection$pid), 
-                  parent = session, 
-                  pid = selection$pid, 
-                  uid = userinfo$uid,
-                  rv = rv
-                ) 
+                output$selectedUI <- renderUI({
+                  tagList(
+                    playerInfoBoxUI(session$ns(paste0("playerInfo", selection$pid))),
+                    playerAttributeBoxUI(session$ns(paste0("playerAttributes", selection$pid)))  
+                  )
+                })
                 
+                
+                delay(500, {
+                  playerInfoBoxServer(id = paste0("playerInfo", selection$pid), pid = selection$pid)
+                  
+                  playerAttributeBoxServer(
+                    id = paste0("playerAttributes", selection$pid), 
+                    parent = session, 
+                    pid = selection$pid, 
+                    uid = userinfo$uid,
+                    rv = rv
+                  ) 
+                })
+                  
               } else {
                 shinyjs::hide("selectedPlayer")
                 showToast(.options = myToastOptions,type = "error", "The chosen player does not need to regress.")
