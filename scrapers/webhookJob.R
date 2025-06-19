@@ -99,11 +99,13 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
  
-link <- new |> 
+tid <- new |> 
   html_elements("a[title]") |> 
-  html_attr("href")
+  html_attr("href") |> 
+  str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
 
-index <- !(link %in% postedThreads$link)
+index <- !sapply(X = tid, FUN = function(x) any(str_detect(postedThreads$link, x), na.rm = TRUE))
+
 
 new <- new[index]   
 title <- title[index]
@@ -263,11 +265,13 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
-link <- new |> 
+tid <- new |> 
   html_elements("a[title]") |> 
-  html_attr("href")
+  html_attr("href") |> 
+  str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
 
-index <- !(link %in% postedThreads$link)
+index <- !sapply(X = tid, FUN = function(x) any(str_detect(postedThreads$link, x), na.rm = TRUE))
+
 
 new <- new[index]   
 title <- title[index]
@@ -326,11 +330,12 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
-link <- new |> 
+tid <- new |> 
   html_elements("a[title]") |> 
-  html_attr("href")
+  html_attr("href") |> 
+  str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
 
-index <- !(link %in% postedThreads$link)
+index <- !sapply(X = tid, FUN = function(x) any(str_detect(postedThreads$link, x), na.rm = TRUE))
 
 new <- new[index]   
 title <- title[index]
@@ -379,11 +384,13 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
-link <- new |> 
+tid <- new |> 
   html_elements("a[title]") |> 
-  html_attr("href")
+  html_attr("href") |> 
+  str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
 
-index <- !(link %in% postedThreads$link)
+index <- !sapply(X = tid, FUN = function(x) any(str_detect(postedThreads$link, x), na.rm = TRUE))
+
 
 new <- new[index]   
 title <- title[index]
@@ -432,11 +439,13 @@ title <-
   html_elements("a[title]") %>% 
   html_text2() 
 
-link <- new |> 
+tid <- new |> 
   html_elements("a[title]") |> 
-  html_attr("href")
-  
-index <- !(link %in% postedThreads$link)
+  html_attr("href") |> 
+  str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
+
+index <- !sapply(X = tid, FUN = function(x) any(str_detect(postedThreads$link, x), na.rm = TRUE))
+
 
 new <- new[index]   
 title <- title[index]
