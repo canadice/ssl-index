@@ -52,6 +52,7 @@ jobs:
       TRANSACTIONS: ${{ secrets.TRANSACTIONS }}
       MEDIA_FEED: ${{ secrets.MEDIA_FEED }}
       DISCIPLINARY: ${{ secrets.DISCIPLINARY }}
+      BOUNTYTRACKER: ${{ secrets.BOUNTYTRACKER }}
 
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +98,7 @@ jobs:
           echo TRANSACTIONS ="$TRANSACTIONS" >> ~/.Renviron
           echo MEDIA_FEED ="$MEDIA_FEED" >> ~/.Renviron
           echo DISCIPLINARY ="$DISCIPLINARY" >> ~/.Renviron
+          echo BOUNTYTRACKER = "$BOUNTYTRACKER" >> ~/.Renviron
         shell: bash
 
       - name: Generate data

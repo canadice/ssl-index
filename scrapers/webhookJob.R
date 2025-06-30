@@ -315,6 +315,13 @@ if(length(new) > 0){
 ##                      New Discord Channel                     -
 ##---------------------------------------------------------------
 
+
+conn_obj_bounty <- 
+  create_discord_connection(
+    webhook = Sys.getenv('BOUNTYTRACKER'), 
+    username = 'Bounty Tracker', 
+    set_default = TRUE)
+
 conn_obj <- 
   create_discord_connection(
     webhook = Sys.getenv('MEDIA_FEED'), 
@@ -359,6 +366,17 @@ if(length(new) > 0){
       ),
       "\n\n"
     )
+  )
+  
+  send_webhook_message(
+    paste(
+      "## :writing_hand: | New Media!", "\n\n", 
+      paste(
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n"
+    ),
+    conn = conn_obj_bounty
   )
   
   postedThreads <- 
@@ -416,6 +434,17 @@ if(length(new) > 0){
     )
   )
   
+  send_webhook_message(
+    paste(
+      "## :frame_photo: | New Graphics!", "\n\n", 
+      paste(
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n"
+    ),
+    conn = conn_obj_bounty
+  )
+  
   postedThreads <- 
     rbind(
       postedThreads,
@@ -469,6 +498,17 @@ if(length(new) > 0){
       ),
       "\n\n"
     )
+  )
+  
+  send_webhook_message(
+    paste(
+      "## :speaking_head: | New Podcast!", "\n\n", 
+      paste(
+        paste("[",title,"](", link, ")", sep = ""), collapse = "\n\n"
+      ),
+      "\n\n"
+    ),
+    conn = conn_obj_bounty
   )
   
   postedThreads <- 
