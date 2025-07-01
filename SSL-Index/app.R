@@ -84,6 +84,10 @@ suppressMessages({
   
   require(vembedr, quietly = FALSE)
   
+  require(googlesheets4, quietly = FALSE)
+  
+  gs4_deauth()
+  
   ## Packages for asynchronuous programming
   require(promises, quietly = FALSE)
   require(future, quietly = FALSE)
@@ -440,7 +444,9 @@ server <- function(input, output, session) {
       tabItem("organizationPages",organizationPagesUI(id = "organizationPages")),
       tabItem("leagueSchedule",leagueScheduleUI(id = "leagueSchedule")),
       tabItem("nationTracker",nationTrackerUI(id = "nationTracker")),
-      tabItem("positionTracker",positionTrackerUI(id = "positionTracker"))
+      tabItem("positionTracker",positionTrackerUI(id = "positionTracker")),
+      tabItem("academyStandings",academyStandingsUI(id = "academyStandings"))
+      
       # tabItem("contractProcess",contractProcessUI(id = "contractProcess")),
       # tabItem("budgetOverview",budgetOverviewUI(id = "budgetOverview")),
       # tabItem("tradeProcess",tradeProcessUI(id = "tradeProcess")),
@@ -670,6 +676,7 @@ server <- function(input, output, session) {
         ),
         menuItem("Welcome",tabName = "welcome",selected = TRUE),
         menuItem("Academy Index",tabName = "academyIndex"),
+        menuItem("Academy Standings", tabName = "academyStandings"),
         menuItem("League Index",tabName = "leagueindex"),
         menuItem("Standings", tabName = "leagueStandings"),
         menuItem("Schedule", tabName = "leagueSchedule"),
@@ -752,7 +759,7 @@ server <- function(input, output, session) {
       tradeProcess = FALSE, playerEdit = FALSE, submitPT = FALSE, bankDeposit = FALSE, bankProcess = FALSE,
       leagueStandings = FALSE, leagueSchedule = FALSE, managerTeam = FALSE, assignManager = FALSE,
       bodoverview = FALSE, exportBuild = FALSE, organizationPages = FALSE, draftClass = FALSE,
-      nationTracker = FALSE, positionTracker = FALSE
+      nationTracker = FALSE, positionTracker = FALSE, academyStandings = FALSE
     )
   
   ## Adds a reactive value to send to player page and bank overview that will trigger a reload of player data in case something happens in either
@@ -881,6 +888,10 @@ server <- function(input, output, session) {
       req(authOutput())
       bankOverviewServer("bankOverview", uid = authOutput()$uid, parent = session, updated = updated)
       loadedPage$bankOverview <- TRUE
+      
+    } else if(!loadedPage$academyStandings & input$tabs == "academyStandings"){
+      academyStandingsSERVER("academyStandings")
+      loadedPage$academyStandings <- TRUE
       
     # } else if(input$tabs == "budgetOverview"){
     #   budgetOverviewServer("budgetOverview")
