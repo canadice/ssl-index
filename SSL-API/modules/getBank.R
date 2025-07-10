@@ -40,7 +40,7 @@ function(name){
       "SELECT 
           Time, Username AS User, Source, Transaction
       FROM 
-          bankHistoryView
+          bankhistoryview
       WHERE 
           Player = ?name AND Status = 1
       ORDER BY Time DESC;",
@@ -65,7 +65,7 @@ function(pid = -1, status = 1){
       query = 
         "SELECT Time, Player, Username, Source, Transaction, pid 
         FROM 
-          bankHistoryView
+          bankhistoryview
         WHERE
           Status = ?status
       ORDER BY Time DESC;",
@@ -76,7 +76,7 @@ function(pid = -1, status = 1){
       query = 
         "SELECT Time, Player, Username, Source, Transaction, pid 
         FROM 
-          bankHistoryView
+          bankhistoryview
         WHERE
           pid = ?pid AND Status = ?status
       ORDER BY Time DESC;",

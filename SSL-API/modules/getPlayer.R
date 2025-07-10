@@ -36,7 +36,7 @@ function(active = FALSE) {
     query = 
       "SELECT *
       FROM
-        allPlayersView
+        allplayersview
       WHERE
         status_p >= ?active;",
     active = if_else(active == "true", 1, 0)
@@ -54,7 +54,7 @@ function() {
   portalQuery(
     paste(
       "SELECT *
-      FROM allPlayersWeeklyView;"
+      FROM allplayersweeklyview;"
     )
   ) %>% 
     mutate(
@@ -174,7 +174,7 @@ function(name = NULL, pid = NULL, username = NULL, uid = NULL) {
       playerStatus,     
       `minimum salary`, 
       timesregressed
-    FROM allPlayersView
+    FROM allplayersview
 "
   
   # Determine the WHERE clause and parameters based on which identifiers are provided.
@@ -236,7 +236,7 @@ function(class = NULL) {
         name, tpe, team, username, userStatus, playerStatus,
         position, bankBalance
       FROM
-        allPlayersView
+        allplayersview
       WHERE
         class = ?class
         AND status_p > 0
@@ -288,7 +288,7 @@ function(username) {
       ),
       player_class AS (
         SELECT CONCAT('S', MAX(CAST(SUBSTRING(ap.class, 2) AS UNSIGNED))) AS class
-        FROM allPlayersView ap
+        FROM allplayersview ap
         WHERE ap.username = ?username
       )
       SELECT 
@@ -298,8 +298,8 @@ function(username) {
         CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link,
         t.subject,
         t.username AS op
-      FROM threadsView t
-      JOIN postsView p ON p.tid = t.tid
+      FROM threadsview t
+      JOIN postsview p ON p.tid = t.tid
       JOIN player_class pc ON 1 = 1
       JOIN current_season cs ON 1 = 1
       WHERE (
@@ -329,7 +329,7 @@ function(username) {
       posted = (portalQuery(
         query = 
         "SELECT * 
-        FROM acView
+        FROM acview
         WHERE username = ?username
           AND time > ?weekStart;",
         username = username,
@@ -360,11 +360,11 @@ function(username) {
     query = 
     "SELECT 
       username AS user, name AS player_name
-    FROM allPlayersView
+    FROM allplayersview
     WHERE
       organization = (
         SELECT organization 
-        FROM allPlayersView 
+        FROM allplayersview 
         WHERE username = ?username
         ORDER BY created DESC
         LIMIT 1
@@ -377,7 +377,7 @@ function(username) {
     tasks <- portalQuery(
       query = 
         "SELECT *
-        FROM checklistView
+        FROM checklistview
         WHERE username = ?username;",
       username = currentUsername
     )
@@ -398,7 +398,7 @@ function(username) {
   activityCheck <- portalQuery(
     query = 
       "SELECT * 
-        FROM acView
+        FROM acview
         WHERE username = ?username
           AND time > ?weekStart;",
     username = currentUsername,
@@ -432,7 +432,7 @@ function() {
   portalQuery(
     paste(
       "SELECT *
-      FROM weeklyTPEView
+      FROM weeklytpeview
       ORDER BY `TPE Earned` DESC
       LIMIT 10;"
     )
