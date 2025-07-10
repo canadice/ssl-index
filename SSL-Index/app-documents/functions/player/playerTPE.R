@@ -3,7 +3,7 @@ getTpeHistory <- function(pid){
   portalQuery(
     query = 
       "SELECT Time, Username, Source, `TPE Change`
-      FROM tpeHistoryView
+      FROM tpehistoryview
       WHERE pid = ?pid
       ORDER BY time DESC;",
     pid = pid

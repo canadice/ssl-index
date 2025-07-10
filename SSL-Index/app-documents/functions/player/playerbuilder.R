@@ -197,7 +197,8 @@ checkDuplicatedName <- function(first, last) {
 getPlayersForApproval <- function(){
   portalQuery(
     query = 
-      "SELECT username, pid, first, last, tpe, tpebank, render, uid FROM unapprovedPlayersView;"
+      "SELECT username, pid, first, last, tpe, tpebank, render, uid 
+    FROM unapprovedplayersview;"
   ) 
 }
 
@@ -271,7 +272,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
     data_player <- portalQuery(
       query = 
         "SELECT *
-        FROM unapprovedPlayersView
+        FROM unapprovedplayersview
         WHERE uid = ?uid;",
       uid  = uid,
       type = "get"

@@ -72,7 +72,7 @@ getRefreshToken <- function(token){
   portalQuery(
     query = 
     "SELECT * 
-    FROM currentRefreshTokensView
+    FROM currentrefreshtokensview
     WHERE token = ?token;",
     token = token
   ) %>% 

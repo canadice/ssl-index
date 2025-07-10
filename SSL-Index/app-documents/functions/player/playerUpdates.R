@@ -118,7 +118,7 @@ completeRetirement <- function(pid){
     portalQuery(
       query = 
         "SELECT * 
-        FROM allPlayersView
+        FROM allplayersview
         WHERE pid = ?pid;",
       pid = pid
     )
@@ -138,7 +138,7 @@ getUpdateHistory <- function(pid){
   portalQuery(
     query = 
       "SELECT Time, Username, `Changed attribute`, `From`, `To`
-      FROM updateHistoryView
+      FROM updatehistoryview
       WHERE pid = ?pid
       ORDER BY Time DESC;",
     pid = pid
