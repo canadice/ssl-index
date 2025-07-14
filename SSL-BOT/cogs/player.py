@@ -95,33 +95,30 @@ class Player(commands.Cog): # create a class for our cog that inherits from comm
             
     @app_commands.command(name='teamchecklist', description='Returns the weekly TPE checklist for all users on the team')
     async def teamchecklist(self, interaction: discord.Interaction, username: typing.Optional[str] = None):
-        if username is None:
-          username = get_username(interaction.user.id)
-        if username is None:
-          await interaction.response.send_message("You have no user stored. Use /store to store your forum username.")
-        else:
+        await interaction.response.defer()  # Defer immediately to avoid timeout
+        try:
+            if username is None:
+                username = get_username(interaction.user.id)
+            if username is None:
+                await interaction.followup.send("You have no user stored. Use /store to store your forum username.")
+                return
             checklist = requests.get('https://api.simulationsoccer.com/player/teamTPEChecklist?username=' + username.replace(" ", "%20"))
-            # Data formatting
+            checklist.raise_for_status()  # Raise error for bad HTTP status
             checklistdata = pd.DataFrame(json.loads(checklist.content))
             if checklistdata.empty:
-                await interaction.response.send_message("This user is not part of a team. Check the spelling.")
-            else:
-                # Group by subject
-                grouped = checklistdata.groupby('subject')
-                embed = discord.Embed(color = discord.Color(0xBD9523))
-                embed.title = 'Uncompleted Weekly Tasks'
-                # Iterate over each group (subject)
-                for subject, rows in grouped:
-                    # Get all users who have posted
-                    posted_true_users = rows[rows['posted'] == True]
-                    # Get all users who have not posted
-                    posted_false_users = rows[rows['posted'] == False]
-                    # Build strings for each subject
-                    posted_false_str = "\n".join([f"{row['user']}" for index, row in posted_false_users.iterrows()])
-                    # embed.add_field(name=f"**[{subject}]({rows['link'].unique()}) Completed**", value = '\n '.join(posted_true_users), inline=False)                    
-                    embed.add_field(name=f"**{subject}**", value = posted_false_str, inline=False)
-                    embed.add_field(name="", value = f"[Link to task]({rows['link'].iloc[0]})")                    
-                await interaction.response.send_message(embed = embed)
+                await interaction.followup.send("This user is not part of a team. Check the spelling.")
+                return
+            grouped = checklistdata.groupby('subject')
+            embed = discord.Embed(color = discord.Color(0xBD9523))
+            embed.title = 'Uncompleted Weekly Tasks'
+            for subject, rows in grouped:
+                posted_false_users = rows[rows['posted'] == False]
+                posted_false_str = "\n".join([f"{row['user']}" for index, row in posted_false_users.iterrows()])
+                embed.add_field(name=f"**{subject}**", value = posted_false_str or "All complete!", inline=False)
+                embed.add_field(name="", value = f"[Link to task]({rows['link'].iloc[0]})")
+            await interaction.followup.send(embed = embed)
+        except Exception as e:
+            await interaction.followup.send(f"An error occurred: {e}")
         
 async def setup(bot): # this is called by Pycord to setup the cog
     await bot.add_cog(Player(bot)) # add the cog to the bot

@@ -376,49 +376,66 @@ function(username) {
   allTasks <- purrr::map_df(playersInSameTeam$user, function(currentUsername) {
     tasks <- portalQuery(
       query = 
-        "SELECT *
-        FROM checklistview
-        WHERE username = ?username;",
-      username = currentUsername
-    )
-  
-  # Summarize the tasks for the current user.
-  tasks <- tasks %>% 
-    group_by(subject, link) %>% 
-    summarize(
-      posted = dplyr::if_else(
-        any(str_to_lower(user) == str_to_lower(currentUsername) & count > 0), 
-        TRUE, 
-        FALSE
-      ) %>% tidyr::replace_na(replace = FALSE)
-    ) %>% 
-    ungroup()
-  
-  # Activity Check using a parameterized query (portalQuery):
-  activityCheck <- portalQuery(
-    query = 
-      "SELECT * 
-        FROM acview
-        WHERE username = ?username
-          AND time > ?weekStart;",
-    username = currentUsername,
-    weekStart = weekStart
-  )
-  
-  # Add the Activity Check row.
-  tasks <- tasks %>% 
-    add_row(
-      tibble(
-        subject = "Activity Check",
-        link = "https://index.simulationsoccer.com",
-        posted = (nrow(activityCheck) > 0),
-        user = currentUsername
+        "WITH current_season AS (
+        SELECT MAX(season) AS current_season 
+        FROM indexdb.seasoninfo
+      ),
+      player_class AS (
+        SELECT CONCAT('S', MAX(CAST(SUBSTRING(ap.class, 2) AS UNSIGNED))) AS class
+        FROM allplayersview ap
+        WHERE ap.username = ?username
       )
+      SELECT 
+        p.username AS user,
+        COUNT(p.pid) - (CASE WHEN p.username = t.username THEN 1 ELSE 0 END) AS count,
+        t.tid,
+        CONCAT('https://forum.simulationsoccer.com/showthread.php?tid=', t.tid) AS link,
+        t.subject,
+        t.username AS op
+      FROM threadsview t
+      JOIN postsview p ON p.tid = t.tid
+      JOIN player_class pc ON 1 = 1
+      JOIN current_season cs ON 1 = 1
+      WHERE (
+              (pc.class <> CONCAT('S', cs.current_season + 1) 
+               AND t.fid IN (22, 49, 25, 24, 122))
+           OR (pc.class = CONCAT('S', cs.current_season + 1)
+               AND t.fid IN (22, 49, 25, 24, 122, 179, 180, 181, 182, 183)
+               AND NOT (t.subject LIKE CONCAT('%S', cs.current_season, ' Minor%')
+                        OR t.subject LIKE CONCAT('%S', cs.current_season, ' Major%'))
+              )
+            )
+        AND t.sticky = 0
+        AND t.closed = 0
+      GROUP BY p.username, t.tid, t.subject, t.username;",
+      username = currentUsername
     ) %>% 
-    mutate(user = currentUsername) %>% 
-    suppressWarnings()
+      group_by(subject, link) %>% 
+      summarize(
+        posted = dplyr::if_else(any(str_to_lower(user) == str_to_lower(currentUsername) & count > 0),
+                                TRUE, FALSE) %>% tidyr::replace_na(replace = FALSE)
+      ) %>% 
+      ungroup() %>% 
+      add_row(
+        tibble(
+          subject = "Activity Check",
+          link = "https://index.simulationsoccer.com",
+          posted = (portalQuery(
+            query = 
+              "SELECT * 
+              FROM acview
+              WHERE username = ?username
+                AND time > ?weekStart;",
+            username = currentUsername,
+            weekStart = weekStart
+          ) %>% nrow()) > 0
+        )
+      ) %>% 
+      mutate(user = currentUsername) |> 
+      suppressWarnings() |> 
+      suppressMessages()
   
-  return(tasks)
+    return(tasks)
   })
 
 return(allTasks)
