@@ -632,4 +632,109 @@ function(season, league = "ALL") {
   )
 }
 
+#* Gets the boxscore for a specific game
+#* @get /boxscore
+#* @param season The selected season
+#* @param league The selected league (0 = Cup, 1 = Majors, 2 = Minors)
+#* @param matchday The selected matchday (League matchdays as numbers, cup uses shorthand A, B, C, D for group stage, FR, R16, QF, SF, F for knockout followed by game/leg number)
+#* @param team The selected team using the full name found <a href="https://docs.google.com/spreadsheets/d/1dCOGjnLrtgYjO43Zz1dYkuQ5ZQRpION3LQiRrooMZaQ/edit?gid=731383221#gid=731383221">here</a> in column C.
+function(season, league, matchday, team) {
+  gid <- 
+    indexQuery(
+      "SELECT gid
+      FROM schedule
+      WHERE (season = ?season) 
+        AND (MatchType = ?league) 
+        AND (Matchday = ?matchday)
+        AND ( (Home = ?team) OR (Away = ?team))",
+      season = season,
+      league = league,
+      matchday = matchday,
+      team = team
+    )
+  
+  if (nrow(gid) != 0){
+    indexQuery(
+      query = 
+        "SELECT 
+          s.IRLDate, 
+          s.MatchType, 
+          s.MatchDay, 
+          s.Home, 
+          s.Away, 
+          s.HomeScore, 
+          s.AwayScore, 
+          s.ExtraTime, 
+          s.Penalties,
+          /* Home scorers only where goals > 0 */
+          (
+            SELECT 
+              GROUP_CONCAT(
+                CONCAT(o.name, ' (', o.goals, ')')
+                ORDER BY o.goals DESC, o.name
+                SEPARATOR ', '
+              )
+            FROM gamedataoutfield o
+            WHERE o.gid    = s.gid
+              AND o.club   = s.Home
+              AND o.goals > 0
+          ) AS homeGoals,
+          /* Home assisters where assists > 0 */
+          (
+            SELECT 
+              GROUP_CONCAT(
+                CONCAT(o.name, ' (', o.assists, ')')
+                ORDER BY o.assists DESC, o.name
+                SEPARATOR ', '
+              )
+            FROM gamedataoutfield AS o
+            WHERE o.gid      = s.gid
+              AND o.club     = s.Home
+              AND o.assists > 0
+          ) AS homeAssists,
+          /* Away scorers only where goals > 0 */
+          (
+            SELECT 
+              GROUP_CONCAT(
+                CONCAT(o.name, ' (', o.goals, ')')
+                ORDER BY o.goals DESC, o.name
+                SEPARATOR ', '
+              )
+            FROM gamedataoutfield o
+            WHERE o.gid    = s.gid
+              AND o.club   = s.Away
+              AND o.goals > 0
+          ) AS awayGoals,
+          /* Away assisters where assists > 0 */
+          (
+            SELECT 
+              GROUP_CONCAT(
+                CONCAT(o.name, ' (', o.assists, ')')
+                ORDER BY o.assists DESC, o.name
+                SEPARATOR ', '
+              )
+            FROM gamedataoutfield AS o
+            WHERE o.gid      = s.gid
+              AND o.club     = s.Away
+              AND o.assists > 0
+          ) AS awayAssists,
+          (
+            SELECT
+              CONCAT(o.name, ' (', o.club, ')')
+            FROM gamedataoutfield AS o
+            WHERE o.gid     = s.gid
+              AND o.`player of the match` > 0
+          ) AS `Player of the Match`
+        FROM schedule s
+               
+       WHERE gid = ?gid;",
+      gid = gid$gid
+    )
+  } else {
+    "No game found with these inputs."
+  }
+  
+}
+
+
 
