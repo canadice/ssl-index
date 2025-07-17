@@ -76,7 +76,7 @@ submitBuild <- function(input, tpebank, userinfo){
       hair_color = input$hairColor,
       hair_length = input$hairLength,
       skintone = input$skinColor,
-      render = if_else(is.na(input$render), "", input$render)
+      render = input$render
     ) %>% 
     mutate(
       `left foot` = if_else(input$footedness == "Right", 10, 20),
@@ -123,7 +123,7 @@ submitBuild <- function(input, tpebank, userinfo){
     playerInfo %>% 
     mutate(
       across(
-        everything(),
+        .cols = !render,
         ~ if_else(.x == "", NA, .x)
       )
     )
