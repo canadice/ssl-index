@@ -1,123 +1,49 @@
-source("SSL-Index/app-documents/dataLoader.R")
+require(sslrtools)
 require(googlesheets4)
+
+playerData <- readAPI("https://api.simulationsoccer.com/player/getAllPlayers", query = list(active = "true"))
+
+names <- c(
+  "Nicolás Muñoz", "Sterling Scott", "Bengt Rubin", "Leo Fiachra", "Daryl McManus",
+  "Louie Duck", "Valentin Morgenstern", "Bartholomew Lorequavius", "Misagh Khabiri",
+  "Riamel Kloulechad", "Kuba Kunicki", "Hugh Mann", "Joga Bonito", "Aart de Trella",
+  "Carolien Miedema", "Bartholomew Twinkletoes", "Ben Nelson", "Tre Quartista",
+  "Ilya Prusikin", "Bernardo Fry", "Ljubica Kamenova", "Jordan Bamford",
+  "Ali Dia", "Goku Atliketwopercent", "Gerd Klose",
+  "Pete Martell", "Nathan Cormier", "Alexandros Mograine",
+  "Duncan Walrusson", "Alex Calderon", "Hercule Hefeweizen",
+  "Jalen Brooks", "Nikola Lovrić", "Alessandro Del Pirlo",
+  "Bimitar Derbatov", "Brick Wall Jr.", "Florian Gaisberg", "Furious Chicken",
+  "George Shaheen", "Marco Tentacles", "Mikko Rashford II", "Orlando Mastache Maldonado",
+  "Santos Neymarinho", "Steven Urkel", "David Luiz Jr.", "Coin Flip", "Hippity Hoppity",
+  "Emmanuel Blackman", "Andres Pedrillo", "Rigby Emerson", "Rodiano Santori",
+  "Bob Kronkowski", "Dizzy Martin", "Daedalus Kronus", "Jürgen Müller",
+  "Wang Zhihao", "Fara Dian", "Kimi Häkkinen", "Duncan Maxwell", "Clara Schmidt",
+  "Maggie Sinclair", "William Williams", "Dina Skovgaard", "Cameron Millwall",
+  "Zoe Clarke", "Erik Beermann", "Ryan Kirkpatrick", "Beaklie Eilish",
+  "Zyqwarndalethron Velstrazyn-Smith", "Roquefort Cotswold", "Julian Rubio",
+  "Benecio Aguilera II", "Slab Head", "Yoma Hashimoto", "João Peixoto", "Chef Gagne",
+  "Zach Mulder", "Jude Greer", "Freja Ekholm-Gunnarsson", "Puma Superhoops",
+  "Fernand Rivest", "Momo Adamu", "Zlatan Ibruhimovic", "Jia Yun", "Charlie Chambers",
+  "Dalton Canders II", "Amore Delo", "Malachi Shturm"
+)
+
+
 
 exposedPlayers <- 
   playerData %>% 
   filter(
-    !(Name %in% 
-      c(
-        #ATH 9
-        "Henrik Lind",
-        "Jannik Andersen",
-        "Deedee Yoker",
-        "Zinedine Gintonic",
-        "Sydney Ramirez",
-        "Cal Labovitch",
-        "Nico Fischer",
-        'Makrus "The Tater" Jager',
-        "Jeffrey LaVert",
-        
-        #CBA 7
-        "Laurent Gourcuff",
-        # "Antonio Governo",
-        # "Siegward OfCatarina",
-        # "Patrik Björkås",
-        # "Aimo Tälli",
-        # "Jaume Vila",
-        # "Koschei Oakdown",
-        
-        #CAI 8
-        "Connor Azpilicueta",
-        "Franco Torres",
-        "Powdered ToastMan",
-        "Ask Jeeves",
-        "Alessio Calvatore",
-        "Pierre Houde",
-        "Wesley Stains",
-        "Arnošt Hlemýžď",
-        
-        #CAT 7
-        "Budget Busquets",
-        # "Tim Sinclair",
-        "Shion Okamoto",
-        # "Juha Jarvinen",
-        # "Jökull Júlíusson",
-        # "Alexandra Gunnarsson",
-        # "Vins Vins",
-        
-        #HOL 9
-        "Tiki Taka",
-        "Hunter Jones",
-        "Ricky Bobby",
-        "Mikko Rashford",
-        "Spack Jarrow",
-        "Scott Sterling",
-        "Hun Possible",
-        "Gerald Gerrard",
-        "Alfredo Puttanesca",
-        
-        #LON 7
-        # "Tony Yeboah",
-        # "Mazrim Taim",
-        # "Linnea Nesse",
-        "Donna Rumma",
-        # 'Bud-Lite "Large Box" McGuirk',
-        # "Gavin Millar",
-        # "K Clamence",
-        # "Kuai Liang",
-        
-        #MTL 8
-        "Alexander Eyesak",
-        "Manny Calavera",
-        "Ioannis Papastathopoulos",
-        "Siilver Druid",
-        "Dorian Lexington",
-        "Coffee Biscuit",
-        "Yves Mathieu",
-        "Seth Dolan",
-        
-        #SDY 8
-        "Xherdan Xhaka",
-        "Tim Possible",
-        # "Owen Forty-Four",
-        # "Sator Freddy",
-        # "Skoomina Hulk a Votto",
-        # "Certified Problem",
-        # "Hunter Havok",
-        # "Malakai Black",
-        
-        #SEO 8
-        "King Kong",
-        "Ketchup Noodle",
-        "Cole Mertz",
-        "Jay Jay Okocha",
-        "Hugh Mann",
-        "Kjell Holmberg",
-        "Berocka Aloisi",
-        "Darren Lockyer",
-        
-        #TKY
-        "Sky Ryze",
-        "Mike Rup",
-        
-        #Paris
-        "Leonidas Papadopoulos",
-        
-        #Accra
-        "Kofi Anshah",
-        
-        # Retiring
-        "Haruka Mayoi"
-      )),
-    !(Team %in% c("FA", "Prospect", "Retired"))
+    !(name %in% names),
+    !(team %in% c("Free Agent", "Academy", "Retired")),
+    !status_p == 2
   ) %>% 
-  relocate(
-    Active,
-    .after = Username
+  select(
+    username, userStatus, name, class, organization, tpe, tpebank, bankBalance, `left foot`:redistused
   ) %>% 
   arrange(
-    Team,
-    Active
+    organization,
+    userStatus,
+    tpe %>% desc()
   )
 
 gs4_auth()
