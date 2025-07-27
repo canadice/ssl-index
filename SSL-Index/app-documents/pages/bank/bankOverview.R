@@ -617,7 +617,7 @@ bankOverviewServer <- function(id, uid, parent, updated) {
           player() %>% 
             then(
               onFulfilled = function(data){
-                readAPI(url = "https://api.simulationsoccer.com/bank/getBankBalance", query = list(name = data$name)) %>% 
+                readAPI(url = "https://api.simulationsoccer.com/bank/getBankBalance", query = list(pid = data$pid)) %>% 
                   future_promise() %>% 
                   then(
                     onFulfilled = function(balance){
