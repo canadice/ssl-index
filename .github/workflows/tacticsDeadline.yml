@@ -63,6 +63,10 @@ jobs:
       TACTICSCDT: ${{ secrets.TACTICSCDT }}
       TACTICSKTH: ${{ secrets.TACTICSKTH }}
       TACTICSMAG: ${{ secrets.TACTICSMAG }}
+      TACTICSLIF: ${{ secrets.TACTICSLIF }}
+      TACTICSXLC: ${{ secrets.TACTICSXLC }}
+      TACTICSMSD: ${{ secrets.TACTICSMSD }}
+      TACTICSRMP: ${{ secrets.TACTICSRMP }}
       PRODUCTIONCH: ${{ secrets.PRODUCTIONCH }}
       PRODUCTIONSH: ${{ secrets.PRODUCTIONSH }}
 
@@ -120,6 +124,10 @@ jobs:
           echo TACTICSCDT ="TACTICSCDT" >> ~/.Renviron
           echo TACTICSKTH ="TACTICSKTH" >> ~/.Renviron
           echo TACTICSMAG ="TACTICSMAG" >> ~/.Renviron
+          echo TACTICSLIF ="TACTICSLIF" >> ~/.Renviron
+          echo TACTICSXLC ="TACTICSXLC" >> ~/.Renviron
+          echo TACTICSMSD ="TACTICSMSD" >> ~/.Renviron
+          echo TACTICSRMP ="TACTICSRMP" >> ~/.Renviron
           echo PRODUCTIONSH ="PRODUCTIONSH" >> ~/.Renviron
           echo PRODUCTIONCH ="PRODUCTIONCH" >> ~/.Renviron
         shell: bash
