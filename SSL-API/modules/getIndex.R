@@ -244,8 +244,8 @@ function(name, season = NA) {
          g.*
       FROM `gamedataoutfield` AS g 
       JOIN schedule AS s ON g.gid = s.gid
-      JOIN teaminformation AS ti 
-         ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
+      JOIN portaldb.teams AS ti 
+         ON ti.name = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
       WHERE ( ?season = 'ALL' OR s.season = ?season )
         AND ( ?name   = 'ALL' OR g.name = ?name )
       ORDER BY g.gid DESC;",
@@ -305,7 +305,7 @@ function(name, outfield = TRUE) {
            g.`xg prevented`
          FROM `gamedatakeeper` AS g
          JOIN schedule AS s ON g.gid = s.gid
-         JOIN teaminformation AS ti ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
+         JOIN portaldb.teams AS ti ON ti.name = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
          WHERE g.name = ?name
          ORDER BY g.gid DESC
          LIMIT 10;",
@@ -409,8 +409,8 @@ function(name, season = NA){
          g.*
       FROM `gamedatakeeper` AS g
       JOIN schedule AS s ON g.gid = s.gid
-      JOIN teaminformation AS ti 
-         ON ti.team = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
+      JOIN portaldb.teams AS ti 
+         ON ti.name = (CASE WHEN g.club = s.home THEN s.away ELSE s.home END)
       WHERE ( ?season = 'ALL' OR s.season = ?season )
          AND ( ?name   = 'ALL' OR g.name     = ?name )
       ORDER BY g.gid DESC;",
