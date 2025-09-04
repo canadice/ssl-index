@@ -66,7 +66,11 @@ if(nrow(current) > 0){
       Sys.getenv('TACTICSSHA'),
       Sys.getenv('TACTICSCDT'),
       Sys.getenv('TACTICSKTH'),
-      Sys.getenv('TACTICSMAG')
+      Sys.getenv('TACTICSMAG'),
+      Sys.getenv('TACTICSLIF'),
+      Sys.getenv('TACTICSXLC'),
+      Sys.getenv('TACTICSMSD'),
+      Sys.getenv('TACTICSRMP')
     )
   
   sendReminder <- function(x){
