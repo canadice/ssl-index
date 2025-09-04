@@ -89,6 +89,7 @@ welcomeServer <- function(id, usergroup) {
                        Points
                      ) %>% 
                      reactable(
+                       pagination = FALSE,
                        defaultColDef = colDef(minWidth = 30),
                        columns = 
                          list(
@@ -269,7 +270,7 @@ welcomeServer <- function(id, usergroup) {
             ),
             yaxis = list(
               title = "#ACs",
-              range = c(0, 250),
+              range = c(0, 300),
               tickfont = list(color = "white"),  # Set y-axis tick labels color to white
               titlefont = list(color = "white"),  # Set y-axis title color to white
               dtick = 20,  # Show tickmarks at intervals of 20
