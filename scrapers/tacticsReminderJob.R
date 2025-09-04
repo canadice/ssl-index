@@ -109,7 +109,9 @@ if(nrow(current) > 0){
   simmerDeadline <- 
     paste(
       "<t:", 
-      current$`Eastern (UTC-5 / UTC-4)...7` |> lubridate::force_tz(tzone = "America/New_York") |> as.numeric(),
+      current$`Eastern (UTC-5 / UTC-4)...7` |> 
+        #lubridate::force_tz(tzone = "America/New_York") |> 
+        as.numeric() + 6 * 60 * 60,
         ":R>!\n",
       sep = ""
     )
@@ -117,7 +119,9 @@ if(nrow(current) > 0){
   commentaryDeadline <- 
     paste(
       "<t:", 
-      current$`Eastern (UTC-5 / UTC-4)...11` |> lubridate::force_tz(tzone = "America/New_York") |> as.numeric(),
+      current$`Eastern (UTC-5 / UTC-4)...11` |> 
+        # lubridate::force_tz(tzone = "America/New_York") |> 
+        as.numeric() + 6 * 60 * 60,
       ":R>!\n",
       sep = ""
     )
