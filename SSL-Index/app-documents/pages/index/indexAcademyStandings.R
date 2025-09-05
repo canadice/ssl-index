@@ -22,7 +22,7 @@ academyStandingsUI <- function(id){
           selectInput(
             inputId = ns("season"),
             label = "Select season",
-            choices = 21
+            choices = c(21, 22)
           )
         )
       ),
