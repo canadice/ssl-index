@@ -22,7 +22,7 @@ academyStandingsUI <- function(id){
           selectInput(
             inputId = ns("season"),
             label = "Select season",
-            choices = c(21, 22)
+            choices = c(22, 21)
           )
         )
       ),
@@ -31,9 +31,16 @@ academyStandingsUI <- function(id){
           width = 10,
           offset = 1,
           h4("Academy", align = "center"),
-          reactableOutput(
-            outputId = ns("standings1")
-            ) %>% 
+          reactableOutput(outputId = ns("standings1")) %>% 
+            withSpinner()
+        )
+      ),
+      h4(" "),
+      fluidRow(
+        column(
+          width = 10,
+          offset = 1, 
+          reactableOutput(outputId = ns("schedule")) |>
             withSpinner()
         )
       )
@@ -50,19 +57,24 @@ academyStandingsSERVER <- function(id){
     ## Definining the mechanisms
     function(input, output, session){
       
+      schedule <- reactive({
+        read_sheet(
+          ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
+          sheet = paste("Season", input$season, "Academy")
+        ) %>% 
+        mutate(
+          across(
+            Division:Matchday,
+            unlist
+          )
+        )
+      }) |> 
+        bindEvent(input$season)
+      
       standings1 <- 
         reactive({
           sheet <- 
-            read_sheet(
-              ss = "https://docs.google.com/spreadsheets/d/1jcsFLjtiq-jK273DI-m-N38x9yUS66HwuX5x5Uig8Uc/edit?usp=sharing", 
-              sheet = paste("Season", input$season, "Academy")
-            ) %>% 
-            mutate(
-              across(
-                Division:Matchday,
-                unlist
-              )
-            )
+            schedule()
           
           sheet %>% 
             mutate(
@@ -192,6 +204,59 @@ academyStandingsSERVER <- function(id){
               Pts = colDef(header = tippy("P", "Points", placement = "top", theme = "ssl", arrow = TRUE))
             )
         ) 
+      })
+      
+      output$schedule <- renderReactable({
+        schedule() %>% 
+          select(Date = `IRL Date`, Matchday, Home, Away, Result) |>
+          mutate(
+            Date = Date |> as_date()
+          ) |> 
+          reactable(
+            pagination = FALSE,
+            columns = 
+              list(
+                Date = colDef(width = 100),
+                Matchday = colDef(width = 100)
+              )
+          )
+          # reactable(
+          #   pagination = FALSE,
+          #   # searchable = TRUE,
+          #   columns = 
+          #     list(
+          #       Date = colDef(width = 100),
+          #       Matchday = colDef(width = 100),
+          #       Home = 
+          #         colDef(
+          #           cell = function(value){
+          #             image <- img(src = sprintf("%s.png", value), style = "height: 30px;", alt = value, title = value)  
+          #             
+          #             list <- 
+          #               tagList(
+          #                 flexRow(style = "align-items: center; gap: 8px;", tagList(
+          #                   image,
+          #                   span(class = "truncated-text", value)
+          #                 ))
+          #               )
+          #           }
+          #         ),
+          #       Away = 
+          #         colDef(
+          #           cell = function(value){
+          #             image <- img(src = sprintf("%s.png", value), style = "height: 30px;", alt = value, title = value)  
+          #             
+          #             list <- 
+          #               tagList(
+          #                 flexRow(style = "align-items: center; gap: 8px;", tagList(
+          #                   image,
+          #                   span(class = "truncated-text", value)
+          #                 ))
+          #               )
+          #           }
+          #         )
+          #     )
+          
       })
       
       
