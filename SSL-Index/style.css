@@ -230,7 +230,7 @@ h1, h2, h3, h4, h5 {
 
 .skin-blue .main-header .navbar {
     background-color: var(--sslBlueD);
-    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+    background-image: url(https://forum.simulationsoccer.com/images/forumBanners/k7qNGB5.jpg);
 }
 
 .skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
@@ -243,7 +243,7 @@ h1, h2, h3, h4, h5 {
     background-color: var(--topBackground);
     color: #fff;
     border-bottom: 0 solid rgba(0, 0, 0, 0);
-    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+    background-image: url(https://forum.simulationsoccer.com/images/forumBanners/k7qNGB5.jpg);
     border-right: 2px solid var(--sslGold);
 }
 
@@ -259,7 +259,7 @@ h1, h2, h3, h4, h5 {
 .skin-blue .sidebar-menu>li:hover>a, .skin-blue .sidebar-menu>li.active>a, .skin-blue .sidebar-menu>li.menu-open>a {
     color: #fff;
     background: var(--sslGold);
-    background-image: url(https://i.imgur.com/gVNA3OP.jpg);
+    background-image: url(https://forum.simulationsoccer.com/images/forumBanners/gVNA3OP.jpg);
 }
 
 .skin-blue .sidebar-menu>li.active>a {
@@ -285,7 +285,7 @@ h1, h2, h3, h4, h5 {
     margin-right: auto;
     margin-left: auto;
     background-color: var(--middleBackground);
-    background-image: url(https://i.imgur.com/9BuU3Op.jpeg);
+    background-image: url(https://forum.simulationsoccer.com/images/forumBanners/9BuU3Op.jpeg);
 }
 
 .box-header {
@@ -293,7 +293,7 @@ h1, h2, h3, h4, h5 {
     display: block;
     padding: 10px;
     position: relative;
-    background-image: url(https://i.imgur.com/k7qNGB5.jpg);
+    background-image: url(https://forum.simulationsoccer.com/images/forumBanners/k7qNGB5.jpg);
     border: 2px solid var(--sslGold);
     text-align: center;
 }
