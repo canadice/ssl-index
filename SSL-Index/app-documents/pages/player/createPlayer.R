@@ -160,7 +160,7 @@ createPlayerUI <- function(id) {
               width = 12, align = "center", style = "display: flex; justify-content: center;",
               valueBox(
                 subtitle = "Total Earned TPE",
-                value = 350,
+                value = 250,
                 width = 3
               ),
               valueBox(
@@ -321,7 +321,7 @@ createPlayerServer <- function(id, userinfo, parent) {
     function(input, output, session) {
       
       tpeBanked <- 
-        reactiveVal({350}) 
+        reactiveVal({250}) 
       
       output$tpeRemaining <- output$tpeRemaining2 <- renderText({
         tpeBanked()
@@ -549,7 +549,7 @@ createPlayerServer <- function(id, userinfo, parent) {
             unlist() %>% 
             sum() %>% 
             {
-              350 - .
+              250 - .
             }
         )
       }) %>% 

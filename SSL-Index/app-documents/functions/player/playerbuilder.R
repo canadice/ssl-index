@@ -3,8 +3,8 @@ checkBuild <- function(input, tpebank, session){
     tibble(
       first = input$firstName,
       last = input$lastName,
-      tpe = 350,
-      tpeused = 350 - tpebank,
+      tpe = 250,
+      tpeused = 250 - tpebank,
       tpebank = tpebank,
       birthplace = input$birthplace,
       nationality = input$nationality,
@@ -66,8 +66,8 @@ submitBuild <- function(input, tpebank, userinfo){
       status_p = -1,
       first = input$firstName,
       last = input$lastName,
-      tpe = 350,
-      tpeused = 350 - tpebank,
+      tpe = 250,
+      tpeused = 250 - tpebank,
       tpebank = tpebank,
       birthplace = input$birthplace,
       nationality = input$nationality,
@@ -213,7 +213,7 @@ approvePlayer <- function(uid, session = getDefaultReactiveDomain()){
     currentTime <- lubridate::now() %>% with_tz("US/Pacific") %>% as.numeric()
     portalQuery(
       query = "INSERT INTO tpehistory (time, uid, pid, source, tpe)
-               SELECT ?currentTime, 1, pid, 'Initial TPE', 350
+               SELECT ?currentTime, 1, pid, 'Initial TPE', 250
                FROM playerdata
                WHERE uid = ?uid AND status_p = -1;",
       currentTime = currentTime,
