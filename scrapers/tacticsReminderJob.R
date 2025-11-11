@@ -17,13 +17,17 @@ require(dplyr)
 
 require(lubridate)
 
+leagueReminder <- 
+  c(
+    Sys.getenv('MATCHDAYREM')
+  )
+
 production <- 
   Sys.getenv("PRODUCTIONCH")
 
 googlesheets4::gs4_deauth()
 
 sheet <- Sys.getenv("PRODUCTIONSH")
-
 
 schedule <- 
   read_sheet(
@@ -41,7 +45,38 @@ current <-
   schedule %>% 
   filter(
     as.Date(`Eastern (UTC-5 / UTC-4)...3`) == today()
+  ) |> 
+  rename(AIRING = 13)
+
+## Sending weekly games to the Matchday channel
+conn_obj <- 
+  create_discord_connection(
+    webhook = leagueReminder, 
+    username = 'Matchday Reminder', 
+    set_default = TRUE)
+
+send_webhook_message(
+  paste(
+    "# Matchday Schedule \n",
+    "## Next set of matches:\n\n",
+    paste(
+      current$Matchday, "\n @ ", 
+      paste(
+        "<t:", 
+        current$`AIRING` |> 
+          # lubridate::force_tz(tzone = "America/New_York") |> 
+          as.numeric() + 6 * 60 * 60,
+        ":f>!\n",
+        sep = ""
+      ),
+      sep = "",
+      collapse = "\n\n"
+    ),
+    "######",
+    sep = ""
   )
+)
+
 
 if(nrow(current) > 0){
   
