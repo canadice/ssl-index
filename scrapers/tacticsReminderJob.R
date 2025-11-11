@@ -143,23 +143,50 @@ if(nrow(current) > 0){
   
   simmerDeadline <- 
     paste(
-      "<t:", 
+      "<t:",
       current$`Eastern (UTC-5 / UTC-4)...7` |> 
         #lubridate::force_tz(tzone = "America/New_York") |> 
         as.numeric() + 6 * 60 * 60,
-        ":R>!\n",
       sep = ""
-    )
+    ) |> 
+      sapply(
+        FUN = function(x) {
+          paste0(
+            x,
+            ":",
+            c("f", "R"), 
+            ">",
+            sep = "",
+            collapse = " / "
+          )
+        },
+        simplify = TRUE
+      ) |> 
+      unname()
+  
   
   commentaryDeadline <- 
     paste(
-      "<t:", 
+      "<t:",
       current$`Eastern (UTC-5 / UTC-4)...11` |> 
-        # lubridate::force_tz(tzone = "America/New_York") |> 
+        #lubridate::force_tz(tzone = "America/New_York") |> 
         as.numeric() + 6 * 60 * 60,
-      ":R>!\n",
       sep = ""
-    )
+    ) |> 
+    sapply(
+      FUN = function(x) {
+        paste0(
+          x,
+          ":",
+          c("f", "R"), 
+          ">",
+          sep = "",
+          collapse = " / "
+        )
+      },
+      simplify = TRUE
+    ) |> 
+    unname()
   
   send_webhook_message(
     paste(
