@@ -48,37 +48,37 @@ current <-
   ) |> 
   rename(AIRING = 13)
 
-## Sending weekly games to the Matchday channel
-conn_obj <- 
-  create_discord_connection(
-    webhook = leagueReminder, 
-    username = 'Matchday Reminder', 
-    set_default = TRUE)
-
-send_webhook_message(
-  paste(
-    "# Matchday Schedule \n",
-    "## Next set of matches:\n\n",
-    paste(
-      current$Matchday, "\n @ ", 
-      paste(
-        "<t:", 
-        current$`AIRING` |> 
-          # lubridate::force_tz(tzone = "America/New_York") |> 
-          as.numeric() + 6 * 60 * 60,
-        ":f>!\n",
-        sep = ""
-      ),
-      sep = "",
-      collapse = "\n\n"
-    ),
-    "######",
-    sep = ""
-  )
-)
-
 
 if(nrow(current) > 0){
+  ## Sending weekly games to the Matchday channel
+  conn_obj <- 
+    create_discord_connection(
+      webhook = leagueReminder, 
+      username = 'Matchday Reminder', 
+      set_default = TRUE)
+  
+  send_webhook_message(
+    paste(
+      "# Matchday Schedule \n",
+      "## Next set of matches:\n\n",
+      paste(
+        current$Matchday, "\n @ ", 
+        paste(
+          "<t:", 
+          current$`AIRING` |> 
+            # lubridate::force_tz(tzone = "America/New_York") |> 
+            as.numeric() + 6 * 60 * 60,
+          ":f>!\n",
+          sep = ""
+        ),
+        sep = "",
+        collapse = "\n\n"
+      ),
+      "######",
+      sep = ""
+    )
+  )
+  
   
   hooks <- 
     c(
