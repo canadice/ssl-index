@@ -69,6 +69,7 @@ jobs:
       TACTICSRMP: ${{ secrets.TACTICSRMP }}
       PRODUCTIONCH: ${{ secrets.PRODUCTIONCH }}
       PRODUCTIONSH: ${{ secrets.PRODUCTIONSH }}
+      MATCHDAYREM: ${{ secrets.MATCHDAYREM }}
       
 
     steps:
@@ -131,6 +132,7 @@ jobs:
           echo TACTICSRMP ="TACTICSRMP" >> ~/.Renviron
           echo PRODUCTIONSH ="PRODUCTIONSH" >> ~/.Renviron
           echo PRODUCTIONCH ="PRODUCTIONCH" >> ~/.Renviron
+          echo MATCHDAYREM ="MATCHDAYREM" >> ~/.Renviron
         shell: bash
 
       - name: Generate data
