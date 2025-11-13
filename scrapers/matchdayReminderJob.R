@@ -54,14 +54,22 @@ if(nrow(current) > 0){
         username = 'Matchday Reminder', 
         set_default = TRUE)
     
-    premiere <- if_else(today() |> wday(week_start = 1) %in% c(4), 16, 12)
+    premiere <- if_else(today() |> wday(week_start = 1) %in% c(7), c(12,16), 12)
     
     send_webhook_message(
       paste(
         "========================\n",
-        "<@&957275484385861672>, the next matchday will premiere in <t:", 
-        (lubridate::today() %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(premiere)) %>% as.numeric(),
-        ":R>!\n\n",
+        "<@&957275484385861672>, today's will premiere in ", 
+        paste(
+          paste(
+            "<t:",
+            (lubridate::today() %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(premiere)) %>% as.numeric(),
+            ":R>",
+            sep = ""
+          ),
+          collapse = " & "
+        ),
+        "!\n\n",
         "Watch the game on the [SSL Youtube](https://www.youtube.com/@simulationsoccerleague/videos) \n",
         "========================",
         sep = ""
