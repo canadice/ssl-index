@@ -67,14 +67,13 @@ if(nrow(current) > 0){
           "<t:", 
           current$`AIRING` |> 
             # lubridate::force_tz(tzone = "America/New_York") |> 
-            as.numeric() + 6 * 60 * 60,
+            as.numeric() + 5 * 60 * 60,
           ":f>!\n",
           sep = ""
         ),
         sep = "",
         collapse = "\n\n"
       ),
-      "######",
       sep = ""
     )
   )
