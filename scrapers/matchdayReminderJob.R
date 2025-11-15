@@ -54,7 +54,11 @@ if(nrow(current) > 0){
         username = 'Matchday Reminder', 
         set_default = TRUE)
     
-    premiere <- if_else(today() |> wday(week_start = 1) %in% c(7), c(12,16), 12)
+    premiere <- if((today() |> wday(week_start = 1)) %in% c(7)){
+      c(12,16)
+    } else {
+      12
+    }
     
     send_webhook_message(
       paste(
