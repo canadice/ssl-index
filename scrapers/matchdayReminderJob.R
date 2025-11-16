@@ -55,9 +55,9 @@ if(nrow(current) > 0){
         set_default = TRUE)
     
     premiere <- if((today() |> wday(week_start = 1)) %in% c(7)){
-      c(12,16)
-    } else {
       12
+    } else {
+      c(12,16)
     }
     
     send_webhook_message(
