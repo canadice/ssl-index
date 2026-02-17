@@ -677,7 +677,7 @@ currentFileThread <-
 if(length(currentFileThread) > 0){
   posts <-
     currentFileThread %>% 
-      html_elements(".forumdisplay_regular div a[title]") %>%
+      html_elements("a[title]") %>%
       html_attr("href") %>%
       paste(
         "https://forum.simulationsoccer.com/",
@@ -787,11 +787,11 @@ forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=52"
 new <- newThreads(forum)
 
 title <- new %>% 
-  html_elements(".forumdisplay_regular div a[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2()
 
 link <- new %>% 
-  html_elements(".forumdisplay_regular div a[title]") %>% 
+  html_elements("a[title]") %>% 
   html_attr("href")
 
 tid <- link %>% str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
@@ -829,11 +829,11 @@ forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=72"
 new <- newThreads(forum)
 
 title <- new %>% 
-  html_elements(".forumdisplay_regular div a[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2()
 
 link <- new %>% 
-  html_elements(".forumdisplay_regular div a[title]") %>% 
+  html_elements("a[title]") %>% 
   html_attr("href")
 
 tid <- link %>% str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
@@ -872,11 +872,11 @@ forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=86"
 new <- newThreads(forum)
 
 title <- new %>% 
-  html_elements(".forumdisplay_regular div a[title]") %>% 
+  html_elements("a[title]") %>% 
   html_text2()
 
 link <- new %>% 
-  html_elements(".forumdisplay_regular div a[title]") %>% 
+  html_elements("a[title]") %>% 
   html_attr("href")
 
 tid <- link %>% str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
