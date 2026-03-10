@@ -664,7 +664,7 @@ forum <- "https://forum.simulationsoccer.com/forumdisplay.php?fid=92"
 
 topics <-
   read_html(forum) %>%
-  html_elements(".inline_row .forumdisplay_regular .subject_new")
+  html_elements(".inline_row .forumdisplay_regular > div > span > .subject_new")
 
 currentFileThread <-
   topics[
@@ -675,21 +675,40 @@ currentFileThread <-
   ][1]
 
 if(length(currentFileThread) > 0){
-  posts <-
-    currentFileThread %>% 
-      html_elements("a[title]") %>%
-      html_attr("href") %>%
-      paste(
-        "https://forum.simulationsoccer.com/",
-        .,
-        "&page=2",
-        sep = ""
-      ) %>% 
-    read_html() %>% 
-    html_elements(".post")
-    
+  url <- currentFileThread %>% 
+    html_elements("a[title]") %>%
+    html_attr("href")
   
-  if(posts %>% length() > 0){
+  multiplePages <- read_html(sprintf("https://forum.simulationsoccer.com/%s", url)) |> 
+    html_elements(".pagination_page") |> 
+    html_attr("href") |> 
+    unique()
+  
+  if (length(multiplePages) > 0) {
+    posts <- 
+      lapply(
+        multiplePages,
+        FUN = function(page) {
+          read_html(sprintf("https://forum.simulationsoccer.com/%s", page)) |> 
+            html_elements(".post")
+        }
+      ) 
+    
+    for (i in seq_along(posts)[-1]) {
+      n <- length(posts[[1]])
+      vec <- seq_along(posts[[i]])
+      posts[[1]][n + vec] <- posts[[i]]
+    }
+    
+    posts <- posts[1][[1]]
+    
+  } else {
+    posts <- 
+      read_html(sprintf("https://forum.simulationsoccer.com/%s", url)) |> 
+      html_elements(".post")
+  }
+  
+  if (posts %>% length() > 0) {
     posted <-
       posts %>%
       html_elements(".post_date") %>%
