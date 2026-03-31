@@ -52,10 +52,15 @@ function(active = FALSE) {
 #* 
 function() {
   portalQuery(
-    paste(
-      "SELECT *
-      FROM allplayersweeklyview;"
-    )
+    query = 
+      "SELECT t.name AS teamName, t.affiliate AS currentAffiliate, wb.*,
+        nat.fmID AS nationalityID
+        FROM allplayersweeklyview wb
+        LEFT JOIN playerdata pd ON wb.pid = pd.pid
+        LEFT JOIN nationality nat ON 
+          (pd.nationality = nat.abbreviation) OR 
+          (pd.nationality = nat.name)
+        LEFT JOIN teams t ON pd.team = t.orgID AND pd.affiliate = t.affiliate;"
   ) %>% 
     mutate(
       across(where(is.numeric), ~replace_na(.x, 5))
@@ -454,4 +459,39 @@ function() {
       LIMIT 10;"
     )
   )
+}
+
+#* Get sticker information from the database
+#* @get /getStickerInfo
+#* @serializer json
+#* 
+function() {
+  portalQuery(
+    query = 
+      "SELECT *
+      FROM
+        stickerInfo;"
+  )
+}
+
+
+#* Get sticker information from the database
+#* @get /getTPEhistory
+#* @param name Player name
+#* @serializer json
+#* 
+function(name) {
+  portalQuery(
+    "SELECT th.Time, th.Username, th.Source, th.`TPE Change`
+    FROM tpehistoryview th
+    LEFT JOIN playerdata pd ON th.pid = pd.pid
+    WHERE pd.name = ?name
+    ORDER BY th.Time DESC;",
+    name = name
+  ) |>
+    mutate(
+      Time = Time |>
+        as.numeric() |>
+        as_datetime(tz = "US/Pacific")
+    )
 }

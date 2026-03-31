@@ -36,9 +36,10 @@ function(season) {
 #* Gets outfield index data for season and league
 #* @get /outfield
 #* @param season The selected season
-#* @param league The selected league
+#* @param league The selected league (0 = Cup, 1 = Majors, 2 = Minors, 5 = WSFC)
+#* @param division The selected division applicable if season >= 24, (1 = Division 1, 2 = Division 2, ALL = All games including playoffs for the league)
 
-function(league, season) {
+function(league, season, division = "ALL") {
   indexQuery(
     query = 
       "SELECT
@@ -58,20 +59,28 @@ function(league, season) {
          `penalties scored`,
          `successful passes`,
          `attempted passes`,
-         SUM(`successful passes`) / SUM(`attempted passes`) * 100 AS `pass%`,
+         CASE WHEN IFNULL(SUM(`attempted passes`),0) = 0 THEN 0
+              ELSE SUM(`successful passes`) / SUM(`attempted passes`) * 100
+         END AS `pass%`,
          `key passes`,
          `successful crosses`,
          `attempted crosses`,
-         SUM(`successful crosses`) / SUM(`attempted crosses`) * 100 AS `cross%`,
+         CASE WHEN IFNULL(SUM(`attempted crosses`),0) = 0 THEN 0
+              ELSE SUM(`successful crosses`) / SUM(`attempted crosses`) * 100
+         END AS `cross%`,
          `chances created`,
          `successful headers`,
          `attempted headers`,
-         SUM(`successful headers`) / SUM(`attempted headers`) * 100 AS `header%`,
+         CASE WHEN IFNULL(SUM(`attempted headers`),0) = 0 THEN 0
+              ELSE SUM(`successful headers`) / SUM(`attempted headers`) * 100
+         END AS `header%`,
          `key headers`,
          `dribbles`,
          `tackles won`,
          `attempted tackles`,
-         SUM(`tackles won`) / SUM(`attempted tackles`) * 100 AS `tackle%`,
+         CASE WHEN IFNULL(SUM(`attempted tackles`),0) = 0 THEN 0
+              ELSE SUM(`tackles won`) / SUM(`attempted tackles`) * 100
+         END AS `tackle%`,
          `key tackles`,
          `interceptions`,
          `clearances`,
@@ -88,7 +97,9 @@ function(league, season) {
          `open play key passes`,
          `successful open play crosses`,
          `attempted open play crosses`,
-         SUM(`successful open play crosses`) / SUM(`attempted open play crosses`) * 100 AS `open play crosses%`,
+         CASE WHEN IFNULL(SUM(`attempted open play crosses`),0) = 0 THEN 0
+              ELSE SUM(`successful open play crosses`) / SUM(`attempted open play crosses`) * 100
+         END AS `open play crosses%`,
          `shots blocked`,
          `progressive passes`,
          `successful presses`,
@@ -206,14 +217,17 @@ function(league, season) {
              `goals outside box`
            FROM `gamedataoutfield` AS gd
            JOIN schedule AS s ON gd.gid = s.gid
+           JOIN scheduleview sv ON gd.gid = sv.gid
            WHERE ( ?league = 'ALL' OR s.Matchtype = ?league )
              AND ( ?season = 'ALL' OR s.season = ?season )
+             AND ( ?division = 'ALL' OR sv.division = ?division )
          ) AS q01
          GROUP BY `name`
        ) AS q02
        GROUP BY `name`;",
     league = league,
-    season = season
+    season = season,
+    division = division
   )
 }
 
@@ -317,9 +331,9 @@ function(name, outfield = TRUE) {
 #* Gets keeper index data for season and league
 #* @get /keeper
 #* @param season The selected season
-#* @param league The selected league
-#* 
-function(league, season) {
+#* @param league The selected league (0 = Cup, 1 = Majors, 2 = Minors, 5 = WSFC)
+#* @param division The selected division (if season >= 24)
+function(league, season, division = "ALL") {
   indexQuery(
     query = 
       "SELECT
@@ -374,14 +388,17 @@ function(league, season) {
              s.*
            FROM `gamedatakeeper` AS gd
            JOIN schedule AS s ON gd.gid = s.gid
+           JOIN scheduleview sv ON gd.gid = sv.gid
            WHERE ( ?league = 'ALL' OR s.Matchtype = ?league )
              AND ( ?season = 'ALL' OR s.season = ?season )
+             AND ( ?division = 'ALL' OR sv.division = ?division )
          ) AS q01
          GROUP BY `name`
        ) AS q02
        GROUP BY `name`;",
     league = league,
-    season = season
+    season = season,
+    division = division
   )
 }
 
@@ -423,69 +440,18 @@ function(name, season = NA){
 #* Gets aggregated standings
 #* @get /standings
 #* @param season The selected season
-#* @param league The selected league
+#* @param league The selected league (0 = Cup, 1 = Majors, 2 = Minors, 5 = WSFC)
 #* 
 function(league = "ALL", season = "ALL"){
   indexQuery(
     query =
-      "SELECT
-         Team,
-         COUNT(*) AS MatchesPlayed,
-         SUM(CASE
-             WHEN (Home = Team AND HomeScore > AwayScore) 
-               OR (Away = Team AND AwayScore > HomeScore) THEN 1
-             ELSE 0
-         END) AS Wins,
-         SUM(CASE
-             WHEN (HomeScore = AwayScore) THEN 1
-             ELSE 0
-         END) AS Draws,
-         SUM(CASE
-             WHEN (Home = Team AND HomeScore < AwayScore) 
-               OR (Away = Team AND AwayScore < HomeScore) THEN 1
-             ELSE 0
-         END) AS Losses,
-         SUM(CASE
-             WHEN (Home = Team) THEN HomeScore
-             ELSE AwayScore
-         END) AS GoalsFor,
-         SUM(CASE
-             WHEN (Home = Team) THEN AwayScore
-             ELSE HomeScore
-         END) AS GoalsAgainst,
-         SUM(CASE
-             WHEN (Home = Team AND HomeScore > AwayScore) 
-               OR (Away = Team AND AwayScore > HomeScore) THEN 3
-             WHEN (HomeScore = AwayScore) THEN 1
-             ELSE 0
-         END) AS Points,
-         SUM(CASE
-             WHEN (Home = Team) THEN HomeScore
-             ELSE AwayScore
-         END)
-         - SUM(CASE
-             WHEN (Home = Team) THEN AwayScore
-             ELSE HomeScore
-         END) AS GoalDifference
-       FROM (
-         SELECT 
-           Home AS Team, Home, Away, HomeScore, AwayScore
-         FROM schedule
-         WHERE HomeScore IS NOT NULL
-           AND ( (?league = 'ALL' AND matchtype >= 0)
-                 OR (matchtype = ?league) )
-           AND ( (?season = 'ALL') OR (Season = ?season) )
-         UNION ALL
-         SELECT 
-           Away AS Team, Home, Away, HomeScore, AwayScore
-         FROM schedule
-         WHERE HomeScore IS NOT NULL
-           AND ( (?league = 'ALL' AND matchtype >= 0)
-                 OR (matchtype = ?league) )
-           AND ( (?season = 'ALL') OR (Season = ?season) )
-       ) AS combined
-       GROUP BY Team
-       ORDER BY Points DESC, GoalDifference DESC, GoalsFor DESC;",
+      "SELECT * 
+        FROM standings
+        WHERE ( ( ?season = 'ALL' AND season > 0 )
+              OR ( ?season <> 'ALL' AND season = ?season ) )
+         AND ( ( ?league = 'ALL' AND MatchType < 10 )
+              OR ( ?league <> 'ALL' AND MatchType = ?league ) )
+        ORDER BY p DESC, gd DESC, gf DESC;",
     league = league,
     season = season
   ) %>% 
@@ -607,7 +573,7 @@ function(season) {
 #* Gets the schedule for the league
 #* @get /schedule
 #* @param season The selected season
-#* @param league The selected league
+#* @param league The selected league (0 = Cup, 1 = Majors, 2 = Minors, 5 = WSFC)
 #* 
 function(season, league = "ALL") {
   indexQuery(
@@ -635,7 +601,7 @@ function(season, league = "ALL") {
 #* Gets the boxscore for a specific game
 #* @get /boxscore
 #* @param season The selected season
-#* @param league The selected league (0 = Cup, 1 = Majors, 2 = Minors)
+#* @param league The selected league (0 = Cup, 1 = Majors, 2 = Minors, 5 = WSFC)
 #* @param matchday The selected matchday (League matchdays as numbers, cup uses shorthand A, B, C, D for group stage, FR, R16, QF, SF, F for knockout followed by game/leg number)
 #* @param team The selected team using the full name found <a href="https://docs.google.com/spreadsheets/d/1dCOGjnLrtgYjO43Zz1dYkuQ5ZQRpION3LQiRrooMZaQ/edit?gid=731383221#gid=731383221">here</a> in column C.
 function(season, league, matchday, team) {
