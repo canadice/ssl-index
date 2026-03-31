@@ -102,9 +102,10 @@ title <-
 tid <- new |> 
   html_elements(".forumdisplay_regular div a[title]") |> 
   html_attr("href") |> 
-  str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
+  str_extract_all(pattern = "[0-9]+$", simplify = TRUE) |> 
+  c()
 
-index <- !sapply(X = tid, FUN = function(x) any(postedThreads$link %in% x, na.rm = TRUE))
+index <- !sapply(X = tid, FUN = function(x) any(x %in% postedThreads$link, na.rm = TRUE))
 
 
 new <- new[index]   
