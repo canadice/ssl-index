@@ -104,7 +104,7 @@ tid <- new |>
   html_attr("href") |> 
   str_extract_all(pattern = "[0-9]+$", simplify = TRUE)
 
-index <- !sapply(X = tid, FUN = function(x) any(str_detect(postedThreads$link, x), na.rm = TRUE))
+index <- !sapply(X = tid, FUN = function(x) any(postedThreads$link %in% x, na.rm = TRUE))
 
 
 new <- new[index]   
