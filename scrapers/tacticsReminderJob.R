@@ -66,8 +66,9 @@ if(nrow(current) > 0){
         paste(
           "<t:", 
           current$`AIRING` |> 
-            # lubridate::force_tz(tzone = "America/New_York") |> 
-            as.numeric() + 5 * 60 * 60,
+            lubridate::force_tz(tzone = "America/New_York") |>
+            lubridate::with_tz(tzone = "Europe/London") |> 
+            as.numeric(),
           ":f>!\n",
           sep = ""
         ),
@@ -144,8 +145,9 @@ if(nrow(current) > 0){
     paste(
       "<t:",
       current$`Eastern (UTC-5 / UTC-4)...7` |> 
-        #lubridate::force_tz(tzone = "America/New_York") |> 
-        as.numeric() + 6 * 60 * 60,
+        lubridate::force_tz(tzone = "America/New_York") |>
+        lubridate::with_tz(tzone = "Europe/London") |> 
+        as.numeric(),
       sep = ""
     ) |> 
       sapply(
@@ -168,8 +170,9 @@ if(nrow(current) > 0){
     paste(
       "<t:",
       current$`Eastern (UTC-5 / UTC-4)...11` |> 
-        #lubridate::force_tz(tzone = "America/New_York") |> 
-        as.numeric() + 6 * 60 * 60,
+        lubridate::force_tz(tzone = "America/New_York") |>
+        lubridate::with_tz(tzone = "Europe/London") |> 
+        as.numeric(),
       sep = ""
     ) |> 
     sapply(

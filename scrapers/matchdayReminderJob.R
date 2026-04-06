@@ -37,7 +37,8 @@ schedule <-
       everything(),
       unlist
     )
-  ) 
+  ) |> 
+  rename(AIRING = 13)
 
 current <- 
   schedule %>% 
@@ -54,20 +55,17 @@ if(nrow(current) > 0){
         username = 'Matchday Reminder', 
         set_default = TRUE)
     
-    premiere <- if((today() |> wday(week_start = 1)) %in% c(7)){
-      12
-    } else {
-      c(12,16)
-    }
-    
     send_webhook_message(
       paste(
         "========================\n",
-        "<@&957275484385861672>, today's will premiere in ", 
+        "<@&957275484385861672>, Today's matches will premiere in: ", 
         paste(
           paste(
             "<t:",
-            (lubridate::today() %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(premiere)) %>% as.numeric(),
+            current$`AIRING` |> 
+              lubridate::force_tz(tzone = "America/New_York") |>
+              lubridate::with_tz(tzone = "Europe/London") |> 
+              as.numeric(),
             ":R>",
             sep = ""
           ),
