@@ -705,9 +705,8 @@ function(season, league, matchday, team) {
 memoiseIndexQuery <- 
   memoise(
     indexQuery, 
-    cache = cachem::cache_mem(max_age = 60)
+    cache = cachem::cache_mem(max_age = 300)
   )
-
 
 #* Gets career keeper data for a given player using their name
 #* @get /careerKeeper
