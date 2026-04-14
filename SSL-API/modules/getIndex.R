@@ -702,5 +702,254 @@ function(season, league, matchday, team) {
   
 }
 
+memoiseIndexQuery <- 
+  memoise(
+    indexQuery, 
+    cache = cachem::cache_mem(max_age = 60)
+  )
 
+
+#* Gets career keeper data for a given player using their name
+#* @get /careerKeeper
+#* @param name:str        Optional, The name of the player, ALL for all players
+#* @param league:bool     Optional, groups career stats based on league 
+#* @param division:bool   Optional, groups career stats based on division
+#* @param club:bool       Optional, groups career stats based on club
+function(name = "ALL", league = FALSE, division = FALSE, club = FALSE) {
+  
+  # Build dynamic grouping
+  group_cols <- c("name")
+  
+  if (league)   group_cols <- c(group_cols, "league")
+  if (division) group_cols <- c(group_cols, "division")
+  if (club)     group_cols <- c(group_cols, "club")
+  
+  grouping <- paste(group_cols, collapse = ", ")
+  
+  memoiseIndexQuery(
+    query = paste0("
+        SELECT
+          ", grouping, ", `club`, `apps`, `minutes played`, `average rating`,
+          `player of the match`, won, lost, drawn,
+          `clean sheets`, conceded,
+          `saves parried`, `saves held`, `saves tipped`,
+          (1 - (conceded / (
+             conceded + `saves parried` + `saves held` + `saves tipped`))
+          ) * 100                     AS `save%`,
+          `penalties faced`, `penalties saved`,
+          `xsave%`, `xg prevented`, pid
+        FROM (
+          SELECT
+            ", gsub('club', 'club_raw', grouping), ",
+            GROUP_CONCAT(DISTINCT club_raw SEPARATOR ', ') AS `club`,
+            SUM(`apps`)                             AS `apps`,
+            SUM(`minutes played`)                   AS `minutes played`,
+            AVG(`average rating`)                   AS `average rating`,
+            SUM(`player of the match`)              AS `player of the match`,
+            SUM(CASE
+                  WHEN (Home = club_raw AND HomeScore > AwayScore)
+                     OR (Away = club_raw AND AwayScore > HomeScore)
+                  THEN 1 ELSE 0
+                END)                                  AS won,
+            SUM(CASE
+                  WHEN (Home = club_raw AND HomeScore < AwayScore)
+                     OR (Away = club_raw AND AwayScore < HomeScore)
+                  THEN 1 ELSE 0
+                END)                                  AS lost,
+            SUM(CASE
+                  WHEN HomeScore = AwayScore THEN 1 ELSE 0
+                END)                                  AS drawn,
+            SUM(`clean sheets`)                     AS `clean sheets`,
+            SUM(`conceded`)                         AS conceded,
+            SUM(`saves parried`)                    AS `saves parried`,
+            SUM(`saves held`)                       AS `saves held`,
+            SUM(`saves tipped`)                     AS `saves tipped`,
+            SUM(`save%`)                            AS `save%`,
+            SUM(`penalties faced`)                  AS `penalties faced`,
+            SUM(`penalties saved`)                  AS `penalties saved`,
+            AVG(`xsave%`)                           AS `xsave%`,
+            SUM(`xg prevented`)                     AS `xg prevented`,
+            MAX(pid)                                AS `pid`
+          FROM (
+            SELECT
+              gd.`name`, CASE
+                  WHEN gd.club IN ('Red Star Laos', 'North Shore United')
+                      THEN 'North Shore United'
+                  WHEN gd.club IN ('Adowa Accra FC', 'Schwarzwälder FV')
+                      THEN 'Schwarzwälder FV'
+                  WHEN gd.club IN ('Sydney City', 'Reykjavik United')
+                      THEN 'Reykjavik United'
+                  WHEN gd.club IN ('FC Rio', 'Seoul MFC')
+                      THEN 'Seoul MFC'
+                  ELSE gd.club
+              END AS club_raw, gd.`apps`, gd.`minutes played`,
+              gd.`average rating`, gd.`player of the match`,
+              gd.`clean sheets`, gd.`conceded`, gd.`saves parried`,
+              gd.`saves held`, gd.`saves tipped`, gd.`save%`,
+              gd.`penalties faced`, gd.`penalties saved`,
+              gd.`xsave%`, gd.`xg prevented`,
+              s.Home, s.Away, s.HomeScore, s.AwayScore,
+              s.season,
+              s.MatchType AS league,
+              s.division  AS division,
+              pd.pid
+            FROM `gamedatakeeper` AS gd
+            JOIN scheduleview AS s
+              ON gd.gid = s.gid
+            LEFT JOIN portaldb.playerdata AS pd 
+              ON gd.name = pd.name
+            WHERE
+              ( ?name = 'ALL' OR gd.name = ?name ) 
+          ) AS q01
+          GROUP BY ", gsub('club', 'club_raw', grouping), "
+        ) AS q02;"),
+    name = name
+  ) |> 
+    suppressWarnings()
+}
+
+#* Gets career keeper data for a given player using their name
+#* @get /careerOutfield
+#* @param name:str        The name of the player
+#* @param league:bool     Optional, groups career stats based on league 
+#* @param division:bool   Optional, groups career stats based on division
+#* @param club:bool       Optional, groups career stats based on club
+function(name = "ALL", league = FALSE, division = FALSE, club = FALSE) {
+  
+  # Build dynamic grouping
+  group_cols <- c("name")
+  
+  if (league)   group_cols <- c(group_cols, "league")
+  if (division) group_cols <- c(group_cols, "division")
+  if (club)     group_cols <- c(group_cols, "club") 
+  
+  grouping <- paste(group_cols, collapse = ", ")
+  
+  memoiseIndexQuery(
+    query = paste0("
+        SELECT
+          ", grouping, ", `club`, `position`, `apps`, `minutes played`,`average rating`, 
+          `player of the match`, `distance run (km)`, `goals`,`assists`,`xg`,`shots on target`,
+          `shots`, `penalties taken`,`penalties scored`,`successful passes`,`attempted passes`,
+          `successful passes`/`attempted passes`*100 AS `pass%`,`key passes`,
+          `successful crosses`,`attempted crosses`,`successful crosses`/`attempted crosses`*100 AS `cross%`,
+          `chances created`,`successful headers`,`attempted headers`,
+          `successful headers`/`attempted headers`*100 AS `header%`,`key headers`,
+          `dribbles`,`tackles won`,`attempted tackles`,`tackles won`/`attempted tackles`*100 AS `tackle%`,
+          `key tackles`,`interceptions`,`clearances`,`mistakes leading to goals`,
+          `yellow cards`,`red cards`,`fouls`,`fouls against`,`offsides`,`xa`,
+          `xg overperformance`,`fk shots`,`blocks`,`open play key passes`,
+          `successful open play crosses`,`attempted open play crosses`,`shots blocked`,
+          `progressive passes`,`successful presses`,`attempted presses`, `goals outside box`,
+          CASE WHEN IFNULL(`attempted presses`,0)=0 THEN 0
+               ELSE `successful presses`/`attempted presses`*100 END AS `press%`,
+          CASE WHEN IFNULL(`attempted open play crosses`,0)=0 THEN 0
+               ELSE `successful open play crosses`/`attempted open play crosses`*100 END AS `open play crosses%`,
+          `shots on target`/`shots`*100 AS `shot accuracy%`,
+          `xG` - 0.83*`penalties taken` AS `pen adj xG`, pid
+        FROM (
+          SELECT
+          ", gsub('club', 'club_raw', grouping), ", 
+            GROUP_CONCAT(DISTINCT club_raw SEPARATOR ', ')    AS `club`,
+            MAX(`position`)                              AS `position`,
+            SUM(`apps`)                                  AS `apps`,
+            SUM(`minutes played`)                        AS `minutes played`,
+            SUM(`distance run (km)`)                     AS `distance run (km)`,
+            SUM(`goals`)                                 AS `goals`,
+            SUM(`assists`)                               AS `assists`,
+            SUM(`xg`)                                    AS `xg`,
+            SUM(`shots on target`)                       AS `shots on target`,
+            SUM(`shots`)                                 AS `shots`,
+            SUM(`penalties taken`)                       AS `penalties taken`,
+            SUM(`penalties scored`)                      AS `penalties scored`,
+            SUM(`successful passes`)                     AS `successful passes`,
+            SUM(`attempted passes`)                      AS `attempted passes`,
+            SUM(`key passes`)                            AS `key passes`,
+            SUM(`successful crosses`)                    AS `successful crosses`,
+            SUM(`attempted crosses`)                     AS `attempted crosses`,
+            SUM(`chances created`)                       AS `chances created`,
+            SUM(`successful headers`)                    AS `successful headers`,
+            SUM(`attempted headers`)                     AS `attempted headers`,
+            SUM(`key headers`)                           AS `key headers`,
+            SUM(`dribbles`)                              AS `dribbles`,
+            SUM(`tackles won`)                           AS `tackles won`,
+            SUM(`attempted tackles`)                     AS `attempted tackles`,
+            SUM(`key tackles`)                           AS `key tackles`,
+            SUM(`interceptions`)                         AS `interceptions`,
+            SUM(`clearances`)                            AS `clearances`,
+            SUM(`mistakes leading to goals`)             AS `mistakes leading to goals`,
+            SUM(`yellow cards`)                          AS `yellow cards`,
+            SUM(`red cards`)                             AS `red cards`,
+            SUM(`fouls`)                                 AS `fouls`,
+            SUM(`fouls against`)                         AS `fouls against`,
+            SUM(`offsides`)                              AS `offsides`,
+            SUM(`xa`)                                    AS `xa`,
+            SUM(`xg overperformance`)                    AS `xg overperformance`,
+            SUM(`fk shots`)                              AS `fk shots`,
+            SUM(`blocks`)                                AS `blocks`,
+            SUM(`open play key passes`)                  AS `open play key passes`,
+            SUM(`successful open play crosses`)           AS `successful open play crosses`,
+            SUM(`attempted open play crosses`)            AS `attempted open play crosses`,
+            SUM(`shots blocked`)                         AS `shots blocked`,
+            SUM(`progressive passes`)                     AS `progressive passes`,
+            SUM(`successful presses`)                    AS `successful presses`,
+            SUM(`attempted presses`)                     AS `attempted presses`,
+            SUM(`goals outside box`)                     AS `goals outside box`,
+            SUM(`player of the match`)                   AS `player of the match`,
+            AVG(`average rating`)                        AS `average rating`,
+            MAX(pid)                                     AS `pid`
+          FROM (
+            SELECT
+              gd.`name`, CASE
+                  WHEN gd.club IN ('Red Star Laos', 'North Shore United')
+                      THEN 'North Shore United'
+                  WHEN gd.club IN ('Adowa Accra FC', 'Schwarzwälder FV')
+                      THEN 'Schwarzwälder FV'
+                  WHEN gd.club IN ('Sydney City', 'Reykjavik United')
+                      THEN 'Reykjavik United'
+                  WHEN gd.club IN ('FC Rio', 'Seoul MFC')
+                      THEN 'Seoul MFC'
+                  ELSE gd.club
+              END AS club_raw, gd.`position`, gd.`apps`, gd.`minutes played`,
+              gd.`distance run (km)`, gd.`average rating`, gd.`player of the match`,
+              gd.`goals`, gd.`assists`, gd.`xg`, gd.`shots on target`, gd.`shots`,
+              gd.`penalties taken`, gd.`penalties scored`, gd.`successful passes`,
+              gd.`attempted passes`, gd.`key passes`, gd.`successful crosses`,
+              gd.`attempted crosses`, gd.`chances created`, gd.`successful headers`,
+              gd.`attempted headers`, gd.`key headers`, gd.`dribbles`, gd.`tackles won`,
+              gd.`attempted tackles`, gd.`key tackles`, gd.`interceptions`,
+              gd.`clearances`, gd.`mistakes leading to goals`, gd.`yellow cards`,
+              gd.`red cards`, gd.`fouls`, gd.`fouls against`, gd.`offsides`, gd.`xa`,
+              gd.`xg overperformance`, gd.`fk shots`, gd.`blocks`,
+              gd.`open play key passes`, gd.`successful open play crosses`,
+              gd.`attempted open play crosses`, gd.`shots blocked`,
+              gd.`progressive passes`, gd.`successful presses`, gd.`attempted presses`,
+              gd.`goals outside box`, s.season,
+              s.MatchType AS league,
+              s.division  AS division, pd.pid
+            FROM `gamedataoutfield` AS gd
+            JOIN scheduleview AS s ON gd.gid = s.gid
+            LEFT JOIN portaldb.playerdata AS pd 
+              ON gd.name = pd.name
+            WHERE
+              ( ?name = 'ALL' OR gd.name = ?name ) 
+          ) AS q01
+          GROUP BY ", gsub('club', 'club_raw', grouping), "
+        ) AS q02;"),
+    name = name
+  ) |> 
+    suppressWarnings()
+}
+
+#* Gets aggregate statistics for a given player for each season, club and league
+#* @get /playerAggregate
+#* @param name:str        The name of the player
+function(name) {
+  indexQuery(
+    "SELECT * 
+     FROM playerAggregate
+     WHERE name = ?name",
+    name = name
+  )
+}
 

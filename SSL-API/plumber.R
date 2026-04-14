@@ -14,6 +14,8 @@ require(lubridate)
 require(scales)
 require(tidyr)
 require(stringr)
+require(memoise)
+require(cachem)
 
 #* @apiTitle Player API
 #* @apiDescription Endpoints to get player information.
