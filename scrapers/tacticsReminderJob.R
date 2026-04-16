@@ -108,6 +108,9 @@ if(nrow(current) > 0){
       Sys.getenv('TACTICSRMP')
     )
   
+  nonAcademyCurrent <- current |> 
+    filter(!grep("Academy", Matchday))
+  
   sendReminder <- function(x){
     conn_obj <- 
       create_discord_connection(
@@ -119,7 +122,7 @@ if(nrow(current) > 0){
       paste(
         "######\n",
         "## Next set of matches:\n\n", 
-        paste(current$Matchday, collapse = "\n\n"),
+        paste(nonAcademyCurrent$Matchday, collapse = "\n\n"),
         "\n\n",
         "The tactics deadline is <t:", 
         (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(12)) %>% as.numeric(),
