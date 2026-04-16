@@ -44,6 +44,7 @@ jobs:
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       ANNOUNCEMENTS: ${{ secrets.ANNOUNCEMENTS }}
+      OPENJOBS: ${{ secrets.OPENJOBS }}
       TPE_OPPS: ${{ secrets.TPE_OPPS }}
       PLAYER_CHECKS: ${{ secrets.PLAYER_CHECKS }}
       WAIVER_WATCHER: ${{ secrets.WAIVER_WATCHER }}
@@ -90,6 +91,7 @@ jobs:
       - name: Create and populate .Renviron file
         run: |
           echo ANNOUNCEMENTS ="$ANNOUNCEMENTS" >> ~/.Renviron
+          echo OPENJOBS ="$OPENJOBS" >> ~/.Renviron
           echo TPE_OPPS ="$TPE_OPPS" >> ~/.Renviron
           echo PLAYER_CHECKS ="$PLAYER_CHECKS" >> ~/.Renviron
           echo WAIVER_WATCHER ="$WAIVER_WATCHER" >> ~/.Renviron
