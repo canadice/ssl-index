@@ -23,7 +23,7 @@ on:
 #        required: false
         #type: boolean
    schedule:
-        - cron: "15 12 * * 1,4"
+        - cron: "30 12 * * 1,4"
           timezone: "America/Los_Angeles"
 
    workflow_dispatch:
