@@ -111,32 +111,34 @@ if(nrow(current) > 0){
   nonAcademyCurrent <- current |> 
     filter(!grep("Academy", Matchday))
   
-  sendReminder <- function(x){
-    conn_obj <- 
-      create_discord_connection(
-        webhook = x, 
-        username = 'Tactics Reminder', 
-        set_default = TRUE)
-    
-    send_webhook_message(
-      paste(
-        "######\n",
-        "## Next set of matches:\n\n", 
-        paste(nonAcademyCurrent$Matchday, collapse = "\n\n"),
-        "\n\n",
-        "The tactics deadline is <t:", 
-        (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(12)) %>% as.numeric(),
-        ":R>!\n", 
-        "######",
-        sep = ""
+  if (nonAcademyCurrent |> nrow() > 0) {
+    sendReminder <- function(x){
+      conn_obj <- 
+        create_discord_connection(
+          webhook = x, 
+          username = 'Tactics Reminder', 
+          set_default = TRUE)
+      
+      send_webhook_message(
+        paste(
+          "######\n",
+          "## Next set of matches:\n\n", 
+          paste(nonAcademyCurrent$Matchday, collapse = "\n\n"),
+          "\n\n",
+          "The tactics deadline is <t:", 
+          (lubridate::today()  %>% lubridate::force_tz(tzone = "America/Los_Angeles") + lubridate::hours(12)) %>% as.numeric(),
+          ":R>!\n", 
+          "######",
+          sep = ""
+        )
       )
+    }
+    
+    lapply(
+      X = hooks, 
+      FUN = sendReminder
     )
   }
-  
-  lapply(
-    X = hooks, 
-    FUN = sendReminder
-  )
   
   conn_obj <- 
     create_discord_connection(
