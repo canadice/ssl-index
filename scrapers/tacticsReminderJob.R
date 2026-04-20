@@ -13,7 +13,7 @@ require(discordr)
 
 require(googlesheets4)
 
-require(dplyr)
+require(tidyverse)
 
 require(lubridate)
 
@@ -109,7 +109,7 @@ if(nrow(current) > 0){
     )
   
   nonAcademyCurrent <- current |> 
-    filter(!grep("Academy", Matchday))
+    filter(!str_detect(Matchday, "Academy"))
   
   if (nonAcademyCurrent |> nrow() > 0) {
     sendReminder <- function(x){
