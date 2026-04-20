@@ -13,7 +13,9 @@ require(discordr)
 
 require(googlesheets4)
 
-require(tidyverse)
+require(dplyr)
+
+require(stringr)
 
 require(lubridate)
 
