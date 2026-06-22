@@ -209,7 +209,8 @@ if(nrow(current) > 0){
                 paste("@", current$`Commentator 1`, sep = "")), 
         if_else(is.na(current$`Commentator 2`), "", 
                 paste(" & @", current$`Commentator 2`, sep = "")), 
-        ", Deadline:", commentaryDeadline[1:length(current$Simmer)], 
+        ", Deadline:", commentaryDeadline[1:length(current$Simmer)], "\n",
+        "Producer: @", current$`Post Producer`,
         sep = "",
         collapse = "\n\n"
       ),
