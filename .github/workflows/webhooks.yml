@@ -84,7 +84,7 @@ jobs:
         run: |
           remotes::install_github("Canadice/sslrtools")
           remotes::install_github("yonicd/texPreview")
-          remotes::install_github("EriqLaplus/discordr")
+          remotes::install_github("canadice/discordr")
           remotes::install_deps(dependencies = TRUE, quiet = TRUE)
         shell: Rscript {0}
 
