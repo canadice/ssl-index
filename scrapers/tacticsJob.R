@@ -71,7 +71,11 @@ if(nrow(current) > 0){
       Sys.getenv('TACTICSLIF'),
       Sys.getenv('TACTICSXLC'),
       Sys.getenv('TACTICSMSD'),
-      Sys.getenv('TACTICSRMP')
+      Sys.getenv('TACTICSRMP'),
+      Sys.getenv('TACTICSIRC'),
+      Sys.getenv('TACTICSASCD'),
+      Sys.getenv('TACTICSCDA'),
+      Sys.getenv('TACTICSSDG')
     )
   
   sendDeadline <- function(x){
