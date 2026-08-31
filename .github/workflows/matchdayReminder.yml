@@ -22,9 +22,9 @@ on:
   #      description: 'Test scenario tags'
 #        required: false
         #type: boolean
-   schedule:
-       - cron: "30 10 * * 2,3,4,5,6"
-         timezone: "America/Los_Angeles"
+   # schedule:
+   #     - cron: "30 10 * * 2,3,4,5,6"
+   #       timezone: "America/Los_Angeles"
          
    workflow_dispatch:
 
